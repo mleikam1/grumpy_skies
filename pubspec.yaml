@@ -1,0 +1,27 @@
+name: grumpy_skies
+description: A funny persona-based weather app.
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP & storage
+  http: ^1.2.0
+  shared_preferences: ^2.2.3
+
+  # State mgmt (simple)
+  provider: ^6.1.2
+
+  # For basic icons and material design
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
