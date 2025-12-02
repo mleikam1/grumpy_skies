@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:weather_icons/weather_icons.dart';
 
 import '../models/weather_models.dart';
 
@@ -23,11 +22,8 @@ class WeatherSummaryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BoxedIcon(
-                  iconData,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                Icon(iconData,
+                    size: 48, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,24 +74,24 @@ class WeatherSummaryCard extends StatelessWidget {
     final description = condition.toLowerCase();
 
     if (description.contains('storm') || description.contains('thunder')) {
-      return WeatherIcons.thunderstorm;
+      return Icons.thunderstorm;
     }
     if (description.contains('rain') || description.contains('drizzle')) {
-      return WeatherIcons.rain;
+      return Icons.water_drop;
     }
     if (description.contains('snow') || description.contains('sleet')) {
-      return WeatherIcons.snow;
+      return Icons.ac_unit;
     }
     if (description.contains('fog') || description.contains('mist')) {
-      return WeatherIcons.fog;
+      return Icons.blur_on;
     }
     if (description.contains('cloud')) {
-      return WeatherIcons.cloudy;
+      return Icons.cloud;
     }
     if (description.contains('sun') || description.contains('clear')) {
-      return WeatherIcons.day_sunny;
+      return Icons.wb_sunny;
     }
 
-    return WeatherIcons.cloud;
+    return Icons.cloud_queue;
   }
 }
