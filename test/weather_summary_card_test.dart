@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:weather_icons/weather_icons.dart';
 
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/widgets/weather_summary_card.dart';
@@ -30,7 +29,7 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(WeatherIcons.day_sunny), findsOneWidget);
+    expect(find.byIcon(Icons.wb_sunny), findsOneWidget);
     expect(find.textContaining('Sunny'), findsOneWidget);
   });
 
@@ -43,7 +42,7 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(WeatherIcons.rain), findsOneWidget);
+    expect(find.byIcon(Icons.water_drop), findsOneWidget);
     expect(find.textContaining('Heavy rain'), findsOneWidget);
   });
 
@@ -56,7 +55,7 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(WeatherIcons.cloud), findsOneWidget);
+    expect(find.byIcon(Icons.cloud_queue), findsOneWidget);
     expect(find.textContaining('Mystery weather'), findsOneWidget);
   });
 }
