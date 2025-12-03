@@ -6,6 +6,7 @@ import 'repositories/weather_repository.dart';
 import 'services/cache_service.dart';
 import 'services/dummy_weather_service.dart';
 import 'services/persona_roast_service.dart';
+import 'services/settings_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,9 @@ void main() async {
       providers: [
         Provider<WeatherRepository>.value(value: weatherRepository),
         Provider<PersonaRoastService>.value(value: roastService),
+        ChangeNotifierProvider<SettingsController>(
+          create: (_) => SettingsController(),
+        ),
       ],
       child: const GrumpySkiesApp(),
     ),

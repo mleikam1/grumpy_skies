@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/weather_models.dart';
+import '../models/temperature_unit.dart';
+import '../services/settings_controller.dart';
 
 class WeatherSummaryCard extends StatelessWidget {
   final WeatherBundle weather;
@@ -9,8 +12,22 @@ class WeatherSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsController>();
     final current = weather.current;
     final iconData = _iconForCondition(current.condition);
+    final unit = settings.temperatureUnit;
+    final tempString = _formatTemp(
+      unit == TemperatureUnit.fahrenheit
+          ? current.temperatureF
+          : current.temperatureC,
+      unit,
+    );
+    final feelsLikeString = _formatTemp(
+      unit == TemperatureUnit.fahrenheit
+          ? current.feelsLikeF
+          : current.feelsLikeC,
+      unit,
+    );
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -29,7 +46,7 @@ class WeatherSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${current.temperatureC.toStringAsFixed(1)}°C',
+                      tempString,
                       style: Theme.of(context).textTheme.displaySmall,
                     ),
                     const SizedBox(height: 4),
@@ -45,8 +62,7 @@ class WeatherSummaryCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _infoTile('Feels like',
-                    '${current.feelsLikeC.toStringAsFixed(1)}°C'),
+                _infoTile('Feels like', feelsLikeString),
                 _infoTile('Wind', '${current.windKph.toStringAsFixed(1)} km/h'),
                 _infoTile('Humidity', '${current.humidity}%'),
               ],
@@ -68,6 +84,10 @@ class WeatherSummaryCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _formatTemp(double temp, TemperatureUnit unit) {
+    return '${temp.toStringAsFixed(1)}°${unit.suffix}';
   }
 
   IconData _iconForCondition(String condition) {
