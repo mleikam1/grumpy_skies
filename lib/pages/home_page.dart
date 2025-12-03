@@ -631,15 +631,9 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text(
-              'Hourly',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text('Karen says wear sunscreen, you absolute lobster.'),
-          ],
+        const Text(
+          'Hourly',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         SizedBox(
