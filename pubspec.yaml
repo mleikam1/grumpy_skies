@@ -15,6 +15,9 @@ dependencies:
   # State mgmt (simple)
   provider: ^6.1.2
 
+  # Bottom navigation with personality
+  google_nav_bar: ^5.0.6
+
   # For basic icons and material design
   cupertino_icons: ^1.0.8
 
