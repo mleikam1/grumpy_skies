@@ -24,6 +24,10 @@ class CurrentWeather {
     'lastUpdated': lastUpdated.toIso8601String(),
   };
 
+  double get temperatureF => _cToF(temperatureC);
+
+  double get feelsLikeF => _cToF(feelsLikeC);
+
   factory CurrentWeather.fromJson(Map<String, dynamic> json) {
     return CurrentWeather(
       temperatureC: (json['temperatureC'] as num).toDouble(),
@@ -46,6 +50,8 @@ class HourlyForecast {
     required this.temperatureC,
     required this.condition,
   });
+
+  double get temperatureF => _cToF(temperatureC);
 
   Map<String, dynamic> toJson() => {
     'time': time.toIso8601String(),
@@ -74,6 +80,10 @@ class DailyForecast {
     required this.maxTempC,
     required this.condition,
   });
+
+  double get minTempF => _cToF(minTempC);
+
+  double get maxTempF => _cToF(maxTempC);
 
   Map<String, dynamic> toJson() => {
     'date': date.toIso8601String(),
@@ -122,3 +132,5 @@ class WeatherBundle {
     );
   }
 }
+
+double _cToF(double tempC) => tempC * 9 / 5 + 32;

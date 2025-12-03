@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/persona.dart';
 import '../config/app_routes.dart';
+import '../models/temperature_unit.dart';
+import '../services/settings_controller.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,12 +19,31 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsController>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
       body: ListView(
         children: [
+          const ListTile(
+            title: Text('Temperature units'),
+            subtitle: Text('Default is Fahrenheit'),
+          ),
+          ...TemperatureUnit.values.map(
+            (unit) => RadioListTile<TemperatureUnit>(
+              title: Text(unit.label),
+              value: unit,
+              groupValue: settings.temperatureUnit,
+              onChanged: (value) {
+                if (value != null) {
+                  settings.setTemperatureUnit(value);
+                }
+              },
+            ),
+          ),
+          const Divider(),
           const ListTile(
             title: Text('Persona'),
             subtitle: Text('Choose who roasts your weather'),
