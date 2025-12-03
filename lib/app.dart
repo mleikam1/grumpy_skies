@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'config/app_routes.dart';
 import 'pages/splash_page.dart';
 import 'pages/home_page.dart';
-import 'pages/radar_page.dart';
-import 'pages/burns_page.dart';
 import 'pages/meme_generator_page.dart';
-import 'pages/settings_page.dart';
 import 'pages/about_page.dart';
 
 class GrumpySkiesApp extends StatelessWidget {
@@ -25,10 +22,10 @@ class GrumpySkiesApp extends StatelessWidget {
       routes: {
         AppRoutes.splash: (_) => const SplashPage(),
         AppRoutes.home: (_) => const HomePage(),
-        AppRoutes.radar: (_) => const RadarPage(),
-        AppRoutes.burns: (_) => const BurnsPage(),
+        AppRoutes.radar: (_) => const HomePage(initialTab: 2),
+        AppRoutes.burns: (_) => const HomePage(initialTab: 1),
         AppRoutes.memeGenerator: (_) => const MemeGeneratorPage(),
-        AppRoutes.settings: (_) => const SettingsPage(),
+        AppRoutes.settings: (_) => const HomePage(initialTab: 4),
         AppRoutes.about: (_) => const AboutPage(),
       },
     );
