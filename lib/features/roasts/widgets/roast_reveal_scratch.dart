@@ -4,10 +4,12 @@ import '../models/roast.dart';
 
 class RoastRevealScratch extends StatefulWidget {
   final Roast roast;
+  final VoidCallback? onRevealed;
 
   const RoastRevealScratch({
     super.key,
     required this.roast,
+    this.onRevealed,
   });
 
   @override
@@ -18,6 +20,9 @@ class _RoastRevealScratchState extends State<RoastRevealScratch> {
   bool _revealed = false;
 
   void _reveal() {
+    if (!_revealed) {
+      widget.onRevealed?.call();
+    }
     setState(() {
       _revealed = true;
     });
