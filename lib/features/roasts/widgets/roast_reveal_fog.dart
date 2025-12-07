@@ -4,10 +4,12 @@ import '../models/roast.dart';
 
 class RoastRevealFog extends StatefulWidget {
   final Roast roast;
+  final VoidCallback? onRevealed;
 
   const RoastRevealFog({
     super.key,
     required this.roast,
+    this.onRevealed,
   });
 
   @override
@@ -18,6 +20,9 @@ class _RoastRevealFogState extends State<RoastRevealFog> {
   bool _revealed = false;
 
   void _toggleReveal() {
+    if (!_revealed) {
+      widget.onRevealed?.call();
+    }
     setState(() {
       _revealed = !_revealed;
     });
