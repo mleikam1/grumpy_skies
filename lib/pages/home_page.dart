@@ -8,10 +8,15 @@ import 'package:provider/provider.dart';
 
 import '../config/app_routes.dart';
 import '../models/persona.dart';
+import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
 import '../repositories/weather_repository.dart';
 import '../services/persona_roast_service.dart';
-import '../widgets/persona_roast_bubble.dart';
+import '../services/settings_controller.dart';
+import '../widgets/daily_row.dart';
+import '../widgets/hourly_row.dart';
+import '../widgets/metric_chip.dart';
+import '../widgets/roast_block.dart';
 import '../widgets/weather_summary_card.dart';
 import 'settings_page.dart';
 
@@ -146,23 +151,6 @@ class _HomePageState extends State<HomePage> {
       default:
         return 'Forecast';
     }
-  }
-
-  String _annoyanceLabel(double score) {
-    if (score > 0.75) return 'Peak annoyance. Proceed with caution.';
-    if (score > 0.5) return 'Mild rage simmering.';
-    if (score > 0.25) return 'Snark levels stable.';
-    return 'Shockingly tolerable.';
-  }
-
-  double _annoyanceScore(WeatherBundle weather) {
-    final temp = weather.current.temperatureF;
-    final humidity = weather.current.humidity.toDouble();
-    final wind = weather.current.windKph;
-    final tempPenalty = (temp - 68).abs() / 80;
-    final humidityPenalty = humidity / 200;
-    final windPenalty = wind / 80;
-    return (tempPenalty + humidityPenalty + windPenalty).clamp(0.0, 1.0);
   }
 
   String _randomFortune() {
@@ -310,51 +298,41 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    final annoyanceScore = _annoyanceScore(_weather!);
-    final roast = _currentRoast ??
-        roastService.getRoast(persona: _persona, weather: _weather!);
+    final weather = _weather!;
+    final roast =
+        _currentRoast ?? roastService.getRoast(persona: _persona, weather: weather);
 
     return RefreshIndicator(
       onRefresh: () => _loadWeather(force: true),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          WeatherSummaryCard(weather: _weather!),
-          const SizedBox(height: 16),
-          _buildAnnoyanceMeter(annoyanceScore),
-          const SizedBox(height: 16),
+          WeatherSummaryCard(weather: weather),
+          const SizedBox(height: 12),
           _buildPersonaSelector(),
-          PersonaRoastBubble(
+          const SizedBox(height: 12),
+          RoastBlock(
             personaName: _persona.displayName,
             roast: roast,
+            stats: RoastStatBuilder.buildStats([
+              (icon: Icons.water_drop, label: '${weather.current.precipitationChance}% rain odds'),
+              (icon: Icons.air, label: 'AQI ${weather.current.aqi}'),
+              (icon: Icons.thermostat, label: 'Feels ${_formatTemperature(weather.current)}'),
+            ]),
+            coolingDown: _roastCoolingDown,
+            onRefresh: _roastCoolingDown
+                ? null
+                : () => _refreshRoast(roastService),
+            onShare: _currentRoast == null ? null : _copyRoastLink,
           ),
           const SizedBox(height: 16),
-          _buildHourlyForecast(),
+          _buildMetricChips(weather),
           const SizedBox(height: 16),
-          _buildDailyForecast(),
+          HourlyRow(hourly: weather.hourly),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _goToRadarTab,
-                  icon: const Icon(Icons.radar),
-                  label: const Text('Radar quick-access'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.memeGenerator,
-                  ),
-                  icon: const Icon(Icons.mood),
-                  label: const Text('Meme Maker'),
-                ),
-              ),
-            ],
-          ),
+          DailyRow(daily: weather.daily),
+          const SizedBox(height: 16),
+          _buildQuickActions(),
         ],
       ),
     );
@@ -623,107 +601,190 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHourlyForecast() {
-    final hourly = _weather?.hourly ?? [];
-    if (hourly.isEmpty) {
-      return const Text('Hourly forecast coming soon.');
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildMetricChips(WeatherBundle weather) {
+    final current = weather.current;
+    final settings = context.watch<SettingsController>();
+    final feelsLikeValue = settings.temperatureUnit == TemperatureUnit.fahrenheit
+        ? '${current.feelsLikeF.toStringAsFixed(0)}°F'
+        : '${current.feelsLikeC.toStringAsFixed(0)}°C';
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
       children: [
-        const Text(
-          'Hourly',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        MetricChip(
+          icon: Icons.water_drop_outlined,
+          label: 'Precipitation',
+          value: '${current.precipitationChance}%',
+          onTap: () => _showMetricSheet(
+            title: 'Precipitation chances',
+            value: '${current.precipitationChance}%',
+            description:
+                'Probability your day gets soaked. Umbrella confidence level: ${current.precipitationChance >= 60 ? 'mandatory' : 'optimistic'}.',
+          ),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 130,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: min(hourly.length, 8),
-            itemBuilder: (context, index) {
-              final hour = hourly[index];
-              final time = TimeOfDay.fromDateTime(hour.time).format(context);
-              return Container(
-                width: 120,
-                margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(time, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text('${hour.temperatureF.toStringAsFixed(0)}°F'),
-                    Text(hour.condition),
-                  ],
-                ),
-              );
-            },
+        MetricChip(
+          icon: Icons.opacity,
+          label: 'Humidity',
+          value: '${current.humidity}%',
+          onTap: () => _showMetricSheet(
+            title: 'Humidity',
+            value: '${current.humidity}%',
+            description:
+                'Sticky factor for the day. ${current.humidity > 80 ? 'Expect instant frizz.' : 'Manageable, but keep the water handy.'}',
+          ),
+        ),
+        MetricChip(
+          icon: Icons.wb_sunny_outlined,
+          label: 'UV Index',
+          value: current.uvIndex.toStringAsFixed(1),
+          onTap: () => _showMetricSheet(
+            title: 'UV Index',
+            value: current.uvIndex.toStringAsFixed(1),
+            description:
+                'How fast you will cook without sunscreen. Higher numbers mean faster sizzle.',
+          ),
+        ),
+        MetricChip(
+          icon: Icons.thermostat,
+          label: 'Feels Like',
+          value: feelsLikeValue,
+          onTap: () => _showMetricSheet(
+            title: 'Feels like temperature',
+            value: feelsLikeValue,
+            description:
+                'What your skin thinks the temp is after humidity and wind do their thing.',
+          ),
+        ),
+        MetricChip(
+          icon: Icons.air,
+          label: 'Air Quality',
+          value: 'AQI ${current.aqi}',
+          onTap: () => _showMetricSheet(
+            title: 'Air Quality Index',
+            value: 'AQI ${current.aqi}',
+            description:
+                '${current.aqi < 50 ? 'Breathe easy.' : 'Maybe skip the deep breaths today.'} Higher numbers mean more gunk in the air.',
+          ),
+        ),
+        MetricChip(
+          icon: Icons.wb_twilight,
+          label: 'Sunrise / Sunset',
+          value: '${_formatTime(current.sunrise)} / ${_formatTime(current.sunset)}',
+          onTap: () => _showMetricSheet(
+            title: 'Sunrise & Sunset',
+            value: '${_formatTime(current.sunrise)} / ${_formatTime(current.sunset)}',
+            description:
+                'Your golden-hour window. Plan photos, walks, and complaints accordingly.',
+          ),
+        ),
+        MetricChip(
+          icon: Icons.dark_mode_outlined,
+          label: 'Moonrise / Moonset',
+          value: '${_formatTime(current.moonrise)} / ${_formatTime(current.moonset)}',
+          onTap: () => _showMetricSheet(
+            title: 'Moonrise & Moonset',
+            value: '${_formatTime(current.moonrise)} / ${_formatTime(current.moonset)}',
+            description: 'For night owls and lunar gremlins tracking their glow-ups.',
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDailyForecast() {
-    final daily = _weather?.daily ?? [];
-    if (daily.isEmpty) {
-      return const Text('Daily forecast coming soon.');
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildQuickActions() {
+    return Row(
       children: [
-        const Text(
-          'Daily',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1C1C1E),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            onPressed: _goToRadarTab,
+            icon: const Icon(Icons.radar),
+            label: const Text('Radar quick-access'),
+          ),
         ),
-        const SizedBox(height: 8),
-        ...daily.take(5).map(
-          (day) {
-            return Card(
-              child: ListTile(
-                leading: const Text('☁️', style: TextStyle(fontSize: 18)),
-                title: Text('${day.date.month}/${day.date.day} · ${day.condition}'),
-                subtitle: Text(
-                  'High ${day.maxTempF.toStringAsFixed(0)}° • Low ${day.minTempF.toStringAsFixed(0)}°',
-                ),
-              ),
-            );
-          },
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.memeGenerator,
+            ),
+            icon: const Icon(Icons.mood),
+            label: const Text('Meme Maker'),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildAnnoyanceMeter(double score) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text(
-                  'How Annoying Today Feels',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 8),
-                Text('(${(score * 100).round()}%)'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(value: score),
-            const SizedBox(height: 8),
-            Text(_annoyanceLabel(score)),
-          ],
-        ),
+  void _showMetricSheet({
+    required String title,
+    required String value,
+    required String description,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                description,
+                style: const TextStyle(color: Colors.white70, height: 1.4),
+              ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  String _formatTime(DateTime time) {
+    final hours = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final minutes = time.minute.toString().padLeft(2, '0');
+    final suffix = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hours:$minutes $suffix';
+  }
+
+  String _formatTemperature(CurrentWeather current) {
+    final settings = context.read<SettingsController>();
+    return settings.temperatureUnit == TemperatureUnit.fahrenheit
+        ? '${current.feelsLikeF.toStringAsFixed(0)}°F'
+        : '${current.feelsLikeC.toStringAsFixed(0)}°C';
   }
 }

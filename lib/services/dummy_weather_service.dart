@@ -14,6 +14,10 @@ class DummyWeatherService implements WeatherApiService {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final now = DateTime.now();
+    final sunrise = DateTime(now.year, now.month, now.day, 6, 45);
+    final sunset = DateTime(now.year, now.month, now.day, 19, 30);
+    final moonrise = DateTime(now.year, now.month, now.day, 21, 10);
+    final moonset = DateTime(now.year, now.month, now.day + 1, 7, 5);
 
     final current = CurrentWeather(
       temperatureC: 20 + _random.nextInt(15).toDouble(),
@@ -21,6 +25,13 @@ class DummyWeatherService implements WeatherApiService {
       feelsLikeC: 20 + _random.nextInt(15).toDouble(),
       windKph: 5 + _random.nextInt(20).toDouble(),
       humidity: 40 + _random.nextInt(40),
+      precipitationChance: 10 + _random.nextInt(70),
+      aqi: 40 + _random.nextInt(120),
+      sunrise: sunrise,
+      sunset: sunset,
+      moonrise: moonrise,
+      moonset: moonset,
+      uvIndex: 3 + _random.nextDouble() * 6,
       lastUpdated: now,
     );
 
@@ -28,8 +39,8 @@ class DummyWeatherService implements WeatherApiService {
       final time = now.add(Duration(hours: index));
       return HourlyForecast(
         time: time,
-        temperatureC: current.temperatureC +
-            _random.nextDouble() * 4 - 2, // +/- 2 degrees
+        temperatureC:
+            current.temperatureC + _random.nextDouble() * 4 - 2, // +/- 2 degrees
         condition: 'Cloudy',
       );
     });
