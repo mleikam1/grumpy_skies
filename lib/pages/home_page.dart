@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 import '../config/app_routes.dart';
@@ -13,6 +12,7 @@ import '../models/weather_models.dart';
 import '../repositories/weather_repository.dart';
 import '../services/persona_roast_service.dart';
 import '../services/settings_controller.dart';
+import '../shared/widgets/daymaker_components.dart';
 import '../widgets/daily_row.dart';
 import '../widgets/hourly_row.dart';
 import '../widgets/metric_chip.dart';
@@ -206,58 +206,9 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 12,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: GNav(
-            gap: 8,
-            padding: const EdgeInsets.all(12),
-            backgroundColor: Colors.transparent,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            activeColor: Theme.of(context).colorScheme.onSecondaryContainer,
-            tabBackgroundColor:
-                Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.9),
-            selectedIndex: _selectedIndex,
-            onTabChange: _onTabChange,
-            tabs: const [
-              GButton(
-                icon: Icons.wb_cloudy_outlined,
-                text: 'Forecast',
-                leading: Text('🌤️', style: TextStyle(fontSize: 18)),
-              ),
-              GButton(
-                icon: Icons.whatshot_outlined,
-                text: 'Roasts',
-                leading: Text('🔥', style: TextStyle(fontSize: 18)),
-              ),
-              GButton(
-                icon: Icons.radar,
-                text: 'Radar',
-                leading: Text('🌀', style: TextStyle(fontSize: 18)),
-              ),
-              GButton(
-                icon: Icons.emoji_emotions_outlined,
-                text: 'Fun',
-                leading: Text('🎮', style: TextStyle(fontSize: 18)),
-              ),
-              GButton(
-                icon: Icons.settings_outlined,
-                text: 'Settings',
-                leading: Text('⚙️', style: TextStyle(fontSize: 18)),
-              ),
-            ],
-          ),
-        ),
+      bottomNavigationBar: DmBottomNav(
+        currentIndex: _selectedIndex,
+        onDestinationSelected: _onTabChange,
       ),
     );
   }
