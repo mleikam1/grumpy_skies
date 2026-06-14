@@ -82,7 +82,7 @@ class _HomePageState extends State<HomePage> {
         _weather = data;
         _currentRoast = roast;
         _roastHistory = ['Today: $roast'];
-        _chaosMeter = '${(60 + _random.nextInt(41)).toString()}%';
+        _chaosMeter = '${data.current.chaosMeterPercent}%';
         _fortune = _randomFortune();
         _gremlinPersona = _randomGremlin();
       });
@@ -316,7 +316,7 @@ class _HomePageState extends State<HomePage> {
             roast: roast,
             stats: RoastStatBuilder.buildStats([
               (icon: Icons.water_drop, label: '${weather.current.precipitationChance}% rain odds'),
-              (icon: Icons.air, label: 'AQI ${weather.current.aqi}'),
+              (icon: Icons.air, label: weather.current.aqiLabel),
               (icon: Icons.thermostat, label: 'Feels ${_formatTemperature(weather.current)}'),
             ]),
             coolingDown: _roastCoolingDown,
@@ -637,10 +637,10 @@ class _HomePageState extends State<HomePage> {
         MetricChip(
           icon: Icons.wb_sunny_outlined,
           label: 'UV Index',
-          value: current.uvIndex.toStringAsFixed(1),
+          value: current.uvLabel,
           onTap: () => _showMetricSheet(
             title: 'UV Index',
-            value: current.uvIndex.toStringAsFixed(1),
+            value: current.uvLabel,
             description:
                 'How fast you will cook without sunscreen. Higher numbers mean faster sizzle.',
           ),
@@ -659,10 +659,10 @@ class _HomePageState extends State<HomePage> {
         MetricChip(
           icon: Icons.air,
           label: 'Air Quality',
-          value: 'AQI ${current.aqi}',
+          value: current.aqiLabel,
           onTap: () => _showMetricSheet(
             title: 'Air Quality Index',
-            value: 'AQI ${current.aqi}',
+            value: current.aqiLabel,
             description:
                 '${current.aqi < 50 ? 'Breathe easy.' : 'Maybe skip the deep breaths today.'} Higher numbers mean more gunk in the air.',
           ),

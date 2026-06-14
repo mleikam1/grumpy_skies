@@ -50,6 +50,13 @@ class WeatherSummaryCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.displaySmall,
                     ),
                     const SizedBox(height: 4),
+                    if (current.locationName.isNotEmpty) ...[
+                      Text(
+                        current.locationName,
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                     Text(
                       current.condition,
                       style: Theme.of(context).textTheme.titleMedium,
@@ -63,7 +70,7 @@ class WeatherSummaryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _infoTile('Feels like', feelsLikeString),
-                _infoTile('Wind', '${current.windKph.toStringAsFixed(1)} km/h'),
+                _infoTile('Wind', current.windLabel),
                 _infoTile('Humidity', '${current.humidity}%'),
               ],
             ),
@@ -87,7 +94,7 @@ class WeatherSummaryCard extends StatelessWidget {
   }
 
   String _formatTemp(double temp, TemperatureUnit unit) {
-    return '${temp.toStringAsFixed(1)}°${unit.suffix}';
+    return '${temp.toStringAsFixed(0)}°${unit.suffix}';
   }
 
   IconData _iconForCondition(String condition) {

@@ -33,7 +33,7 @@ class PersonaRoastService {
     final tempF = _cToF(tempC).toStringAsFixed(0);
     switch (persona) {
       case PersonaType.karen:
-        return "It's $tempF°F and still not meeting my standards.";
+        return "It’s $tempF°F and somehow still making a scene.";
       case PersonaType.fratBro:
         return "$tempF°F? Still down to grill, bro.";
       case PersonaType.grandpa:

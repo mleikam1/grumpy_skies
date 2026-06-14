@@ -1,0 +1,70 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:grumpy_skies/models/temperature_unit.dart';
+import 'package:grumpy_skies/repositories/fake_roast_repository.dart';
+import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
+import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
+
+void main() {
+  test('FakeWeatherRepository returns stable San Francisco sample data',
+      () async {
+    const repo = FakeWeatherRepository();
+
+    final snapshot = await repo.getSnapshot(
+      latitude: 37.7749,
+      longitude: -122.4194,
+    );
+    final bundle = await repo.getWeather(
+      latitude: 37.7749,
+      longitude: -122.4194,
+    );
+
+    expect(snapshot.locationName, 'San Francisco, CA');
+    expect(snapshot.condition, 'Partly Cloudy');
+    expect(snapshot.temperatureF, 72);
+    expect(snapshot.feelsLikeF, 74);
+    expect(snapshot.windLabel, '8 mph SW');
+    expect(snapshot.humidityPercent, 56);
+    expect(snapshot.rainChancePercent, 38);
+    expect(snapshot.aqiLabel, '82 Moderate');
+    expect(snapshot.uvLabel, '5 Moderate');
+    expect(snapshot.chaosMeterPercent, 82);
+    expect(bundle.current.temperatureF.round(), 72);
+    expect(bundle.current.windLabel, '8 mph SW');
+  });
+
+  test('FakeRoastRepository returns stable Karen roast sample', () async {
+    const repo = FakeRoastRepository();
+
+    final persona = await repo.getPersona('karen');
+    final roast = await repo.getDailyRoast(
+      personaId: persona.id,
+      weatherSnapshotId: 'sf-partly-cloudy-2026-06-14',
+    );
+
+    expect(persona.displayName, 'Karen, Roast Queen');
+    expect(roast.text, 'It’s 72°F and somehow still making a scene.');
+  });
+
+  test('InMemorySettingsRepository starts with sample settings and saves',
+      () async {
+    final repo = InMemorySettingsRepository();
+
+    final initial = await repo.loadSettings();
+    expect(initial.xp, 420);
+    expect(initial.level, 3);
+    expect(initial.streakDays, 5);
+    expect(initial.temperatureUnit, TemperatureUnit.fahrenheit);
+
+    await repo.saveSettings(
+      initial.copyWith(
+        temperatureUnit: TemperatureUnit.celsius,
+        adsEnabled: false,
+      ),
+    );
+
+    final updated = await repo.loadSettings();
+    expect(updated.temperatureUnit, TemperatureUnit.celsius);
+    expect(updated.adsEnabled, isFalse);
+    expect(updated.xp, 420);
+  });
+}
