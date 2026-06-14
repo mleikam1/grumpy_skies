@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'config/app_routes.dart';
+import 'design/dm_theme.dart';
 import 'pages/splash_page.dart';
 import 'pages/home_page.dart';
 import 'pages/meme_generator_page.dart';
@@ -13,11 +14,7 @@ class GrumpySkiesApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Grumpy Skies',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.blueGrey,
-        brightness: Brightness.light,
-      ),
+      theme: DMTheme.light,
       initialRoute: AppRoutes.splash,
       routes: {
         AppRoutes.splash: (_) => const SplashPage(),
