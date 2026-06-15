@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
 import '../features/forecast/forecast_screen.dart';
+import '../features/radar/radar_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/roasts/advanced_roast_reveal_screen.dart';
 import '../features/roasts/roasts_screen.dart';
@@ -50,7 +51,7 @@ final daymakerRouter = GoRouter(
         GoRoute(
           path: AppRoutes.radar,
           name: 'radar',
-          builder: (context, state) => const HomePage.routeTab(tabIndex: 2),
+          builder: (context, state) => const RadarScreen(),
         ),
         GoRoute(
           path: AppRoutes.fun,
