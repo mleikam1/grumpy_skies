@@ -87,6 +87,7 @@ class FunFeatureTile extends StatelessWidget {
                 variant: featured
                     ? DmPillButtonVariant.secondary
                     : DmPillButtonVariant.primary,
+                expand: true,
               ),
             ],
           ],

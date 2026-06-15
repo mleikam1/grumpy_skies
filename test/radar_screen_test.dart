@@ -28,8 +28,8 @@ void main() {
     expect(find.text('Live Radar'), findsOneWidget);
     expect(find.text('San Francisco, CA'), findsOneWidget);
     expect(find.text('Moderate storm moving in'), findsOneWidget);
-    expect(find.text('Lightning On'), findsOneWidget);
-    expect(find.text('FutureCast On'), findsOneWidget);
+    expect(find.text('Lightning'), findsOneWidget);
+    expect(find.text('FutureCast'), findsOneWidget);
     expect(find.text('Now'), findsOneWidget);
     expect(find.text('+120m'), findsOneWidget);
     expect(find.text('82% chance of drama'), findsOneWidget);

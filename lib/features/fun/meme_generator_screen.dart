@@ -210,6 +210,7 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
 
   Widget _buildTools(DMBreakpoint breakpoint) {
     final crossAxisCount = breakpoint.isCompact ? 2 : 4;
+    final mainAxisExtent = breakpoint.isCompact ? 156.0 : 152.0;
 
     return GridView(
       shrinkWrap: true,
@@ -218,7 +219,7 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: DMSpacing.md,
         mainAxisSpacing: DMSpacing.md,
-        mainAxisExtent: breakpoint.isCompact ? 132 : 120,
+        mainAxisExtent: mainAxisExtent,
       ),
       children: [
         MemeToolCard(

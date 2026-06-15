@@ -61,7 +61,7 @@ class _SplashBody extends StatelessWidget {
       builder: (context, constraints) {
         final metrics = _SplashMetrics.forBreakpoint(breakpoint);
         final useWideLayout =
-            breakpoint.isExpanded && constraints.maxWidth > 880;
+            breakpoint.isExpanded && constraints.maxWidth >= 1100;
 
         final content = useWideLayout
             ? Row(
@@ -80,7 +80,7 @@ class _SplashBody extends StatelessWidget {
                       child: _SplashGlassPanel(
                         metrics: metrics,
                         textAlign: TextAlign.left,
-                        buttonExpanded: false,
+                        buttonExpanded: true,
                         onCtaPressed: onCtaPressed,
                       ),
                     ),
@@ -95,7 +95,7 @@ class _SplashBody extends StatelessWidget {
                   _SplashGlassPanel(
                     metrics: metrics,
                     textAlign: TextAlign.center,
-                    buttonExpanded: breakpoint.isCompact,
+                    buttonExpanded: true,
                     onCtaPressed: onCtaPressed,
                   ),
                 ],
@@ -170,21 +170,27 @@ class _SplashGlassPanel extends StatelessWidget {
             ? CrossAxisAlignment.start
             : CrossAxisAlignment.center,
         children: [
-          Text(
-            'DayMaker',
-            textAlign: textAlign,
-            maxLines: 1,
-            overflow: TextOverflow.visible,
-            style: DMTypography.brandDisplay.copyWith(
-              color: textColor,
-              fontSize: metrics.titleSize,
-              shadows: const [
-                Shadow(
-                  color: Color(0x66FFFFFF),
-                  blurRadius: 12,
-                  offset: Offset(0, 2),
-                ),
-              ],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: textAlign == TextAlign.left
+                ? Alignment.centerLeft
+                : Alignment.center,
+            child: Text(
+              'DayMaker',
+              textAlign: textAlign,
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: DMTypography.brandDisplay.copyWith(
+                color: textColor,
+                fontSize: metrics.titleSize,
+                shadows: const [
+                  Shadow(
+                    color: Color(0x66FFFFFF),
+                    blurRadius: 12,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: DMSpacing.sm),

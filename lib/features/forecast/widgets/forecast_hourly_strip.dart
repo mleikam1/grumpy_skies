@@ -25,7 +25,7 @@ class ForecastHourlyStrip extends StatelessWidget {
         const DmSectionHeader(title: 'Hourly'),
         const SizedBox(height: DMSpacing.sm),
         SizedBox(
-          height: 148,
+          height: 164,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),

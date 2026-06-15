@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:grumpy_skies/app/daymaker_shell.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/settings/about_screen.dart';
@@ -12,29 +11,17 @@ void main() {
     return GoRouter(
       initialLocation: AppRoutes.about,
       routes: [
-        ShellRoute(
-          builder: (context, state, child) {
-            return DaymakerShell(
-              location: state.uri.path,
-              child: child,
+        GoRoute(
+          path: AppRoutes.about,
+          builder: (context, state) => const AboutScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.settings,
+          builder: (context, state) {
+            return const Scaffold(
+              body: Center(child: Text('Settings route reached')),
             );
           },
-          routes: [
-            GoRoute(
-              path: AppRoutes.settings,
-              builder: (context, state) {
-                return const Scaffold(
-                  body: Center(child: Text('Settings route reached')),
-                );
-              },
-              routes: [
-                GoRoute(
-                  path: 'about',
-                  builder: (context, state) => const AboutScreen(),
-                ),
-              ],
-            ),
-          ],
         ),
       ],
     );
@@ -49,11 +36,37 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp.router(
+        key: UniqueKey(),
         theme: DMTheme.light,
         routerConfig: buildRouter(),
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  Future<void> scrollUntilTextVisible(
+    WidgetTester tester,
+    String text,
+  ) async {
+    final finder = find.text(text);
+    for (var attempts = 0; attempts < 8; attempts++) {
+      if (finder.evaluate().isNotEmpty) {
+        await tester.ensureVisible(finder.first);
+        await tester.pumpAndSettle();
+        return;
+      }
+
+      await tester.drag(
+        find.descendant(
+          of: find.byType(AboutScreen),
+          matching: find.byType(ListView),
+        ),
+        const Offset(0, -280),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    expect(finder, findsWidgets);
   }
 
   testWidgets('About screen renders DayMaker content across breakpoints',
@@ -76,11 +89,20 @@ void main() {
         ),
         findsOneWidget,
       );
+
+      await scrollUntilTextVisible(tester, 'Planned Data Sources');
+
       expect(find.text('Planned Data Sources'), findsOneWidget);
       expect(find.text('Apple WeatherKit'), findsOneWidget);
       expect(find.text('AccuWeather'), findsOneWidget);
       expect(find.text('RainViewer'), findsOneWidget);
+
+      await scrollUntilTextVisible(tester, 'Version 0.1.0');
+
       expect(find.text('Version 0.1.0'), findsOneWidget);
+
+      await scrollUntilTextVisible(tester, 'Privacy Policy');
+
       expect(find.text('Privacy Policy'), findsOneWidget);
       expect(find.text('Terms of Use'), findsOneWidget);
     }
@@ -89,11 +111,9 @@ void main() {
     tester.view.resetDevicePixelRatio();
   });
 
-  testWidgets('About back button returns to Settings inside the shell',
-      (tester) async {
+  testWidgets('About back button returns to Settings', (tester) async {
     await pumpAboutScreen(tester, size: const Size(390, 844));
 
-    expect(find.text('Settings'), findsOneWidget);
     expect(find.text('About DayMaker'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));

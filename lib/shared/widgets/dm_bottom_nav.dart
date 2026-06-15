@@ -67,55 +67,69 @@ class DmBottomNav extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final List<DmBottomNavItem> items;
 
+  static double reservedHeightFor(BuildContext context, double width) {
+    final breakpoint = DMBreakpoints.fromWidth(width);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return bottomInset + (breakpoint.isCompact ? 88.0 : 96.0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    final breakpoint = DMBreakpoints.fromWidth(width);
-    final maxWidth = breakpoint.isCompact ? double.infinity : 720.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+        final breakpoint = DMBreakpoints.fromWidth(width);
+        final maxWidth = breakpoint.isCompact ? double.infinity : 720.0;
+        final horizontalPadding =
+            breakpoint.isCompact ? DMSpacing.xs : DMSpacing.md;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          DMSpacing.md,
-          DMSpacing.xs,
-          DMSpacing.md,
-          breakpoint.isCompact ? DMSpacing.xs : DMSpacing.md,
-        ),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Semantics(
-              container: true,
-              label: 'Primary navigation',
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: DMColors.glassNavy,
-                  borderRadius: DMRadius.full,
-                  border: Border.all(color: DMColors.glassBorder),
-                  boxShadow: DMShadows.floating,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(DMSpacing.xxs),
-                  child: Row(
-                    children: [
-                      for (var index = 0; index < items.length; index++)
-                        Expanded(
-                          child: _DmBottomNavTile(
-                            item: items[index],
-                            selected: currentIndex == index,
-                            onTap: () => onDestinationSelected(index),
-                          ),
-                        ),
-                    ],
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              DMSpacing.xs,
+              horizontalPadding,
+              breakpoint.isCompact ? DMSpacing.xs : DMSpacing.md,
+            ),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: Semantics(
+                  container: true,
+                  label: 'Primary navigation',
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: DMColors.glassNavy,
+                      borderRadius: DMRadius.full,
+                      border: Border.all(color: DMColors.glassBorder),
+                      boxShadow: DMShadows.floating,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(DMSpacing.xxs),
+                      child: Row(
+                        children: [
+                          for (var index = 0; index < items.length; index++)
+                            Expanded(
+                              child: _DmBottomNavTile(
+                                item: items[index],
+                                selected: currentIndex == index,
+                                onTap: () => onDestinationSelected(index),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -137,36 +151,46 @@ class _DmBottomNavTile extends StatelessWidget {
     final foreground = selected ? DMColors.deepNavy : DMColors.textMuted;
     final background = selected ? DMColors.skyBlue : Colors.transparent;
 
-    final tile = AnimatedContainer(
-      duration: duration,
-      curve: DMMotion.easeOut,
-      constraints: const BoxConstraints(minHeight: DMSpacing.tapTarget),
-      padding: const EdgeInsets.symmetric(
-        horizontal: DMSpacing.xs,
-        vertical: DMSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: DMRadius.full,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            selected ? item.selectedIcon : item.icon,
-            color: foreground,
-            size: DMSpacing.iconLg,
+    final tile = LayoutBuilder(
+      builder: (context, constraints) {
+        final tight =
+            constraints.maxWidth.isFinite && constraints.maxWidth < 72;
+        final labelStyle =
+            (tight ? DMTypography.labelSmall : DMTypography.label)
+                .copyWith(color: foreground);
+
+        return AnimatedContainer(
+          duration: duration,
+          curve: DMMotion.easeOut,
+          constraints: const BoxConstraints(minHeight: DMSpacing.tapTarget),
+          padding: EdgeInsets.symmetric(
+            horizontal: tight ? DMSpacing.xxs : DMSpacing.xs,
+            vertical: DMSpacing.xs,
           ),
-          const SizedBox(height: DMSpacing.xxs),
-          Text(
-            item.label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DMTypography.labelSmall.copyWith(color: foreground),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: DMRadius.full,
           ),
-        ],
-      ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                selected ? item.selectedIcon : item.icon,
+                color: foreground,
+                size: tight ? DMSpacing.iconMd : DMSpacing.iconLg,
+              ),
+              const SizedBox(height: DMSpacing.xxs),
+              Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: labelStyle,
+              ),
+            ],
+          ),
+        );
+      },
     );
 
     return Semantics(

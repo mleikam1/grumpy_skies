@@ -34,7 +34,7 @@ class DmAchievementBadge extends StatelessWidget {
       label: semanticLabel ?? '$label achievement, $status',
       child: ExcludeSemantics(
         child: SizedBox(
-          width: 112,
+          width: 124,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

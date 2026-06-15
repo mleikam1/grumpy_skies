@@ -64,37 +64,47 @@ class DmPillButton extends StatelessWidget {
       style: DMTypography.labelLarge.copyWith(color: style.foreground),
     );
 
-    Widget content = Row(
-      mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (loading) ...[
-          SizedBox.square(
-            dimension: DMSpacing.iconMd,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: style.foreground,
-            ),
-          ),
-          const SizedBox(width: DMSpacing.xs),
-        ] else if (leading != null) ...[
-          IconTheme(
-            data:
-                IconThemeData(color: style.foreground, size: DMSpacing.iconMd),
-            child: leading!,
-          ),
-          const SizedBox(width: DMSpacing.xs),
-        ],
-        if (expand) Flexible(child: labelWidget) else labelWidget,
-        if (trailing != null) ...[
-          const SizedBox(width: DMSpacing.xs),
-          IconTheme(
-            data:
-                IconThemeData(color: style.foreground, size: DMSpacing.iconMd),
-            child: trailing!,
-          ),
-        ],
-      ],
+    Widget content = LayoutBuilder(
+      builder: (context, constraints) {
+        final flexibleLabel = expand || constraints.maxWidth.isFinite;
+
+        return Row(
+          mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (loading) ...[
+              SizedBox.square(
+                dimension: DMSpacing.iconMd,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: style.foreground,
+                ),
+              ),
+              const SizedBox(width: DMSpacing.xs),
+            ] else if (leading != null) ...[
+              IconTheme(
+                data: IconThemeData(
+                  color: style.foreground,
+                  size: DMSpacing.iconMd,
+                ),
+                child: leading!,
+              ),
+              const SizedBox(width: DMSpacing.xs),
+            ],
+            if (flexibleLabel) Flexible(child: labelWidget) else labelWidget,
+            if (trailing != null) ...[
+              const SizedBox(width: DMSpacing.xs),
+              IconTheme(
+                data: IconThemeData(
+                  color: style.foreground,
+                  size: DMSpacing.iconMd,
+                ),
+                child: trailing!,
+              ),
+            ],
+          ],
+        );
+      },
     );
 
     content = AnimatedContainer(

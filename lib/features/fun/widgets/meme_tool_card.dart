@@ -29,8 +29,9 @@ class MemeToolCard extends StatelessWidget {
       borderRadius: DMRadius.large,
       borderColor: DMColors.glassBorderStrong,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 82),
+        constraints: const BoxConstraints(minHeight: 116),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

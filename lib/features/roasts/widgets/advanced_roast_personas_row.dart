@@ -37,7 +37,7 @@ class AdvancedRoastPersonasRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160,
+      height: 184,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(vertical: DMSpacing.xs),
@@ -69,7 +69,7 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
       label: '${persona.name}, $status',
       child: ExcludeSemantics(
         child: Container(
-          width: 126,
+          width: 132,
           padding: const EdgeInsets.all(DMSpacing.sm),
           decoration: BoxDecoration(
             gradient:

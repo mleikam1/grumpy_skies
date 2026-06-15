@@ -78,12 +78,24 @@ class DmResponsiveScaffold extends StatelessWidget {
         }
 
         if (centerContent) {
-          content = Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxWidth),
-              child: content,
-            ),
+          final centeredContent = content;
+          content = LayoutBuilder(
+            builder: (context, contentConstraints) {
+              final minHeight = contentConstraints.maxHeight.isFinite
+                  ? contentConstraints.maxHeight
+                  : 0.0;
+
+              return Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: maxWidth,
+                    minHeight: minHeight,
+                  ),
+                  child: centeredContent,
+                ),
+              );
+            },
           );
         }
 

@@ -432,7 +432,7 @@ class _AchievementsRow extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 132,
+      height: 160,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: achievements.length,

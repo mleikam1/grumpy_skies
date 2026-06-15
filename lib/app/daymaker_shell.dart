@@ -14,8 +14,6 @@ class DaymakerShell extends StatelessWidget {
   final String location;
   final Widget child;
 
-  static const _bottomNavReserve = 96.0;
-
   static const tabLocations = <String>[
     AppRoutes.forecast,
     AppRoutes.roasts,
@@ -28,32 +26,41 @@ class DaymakerShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentIndex = indexForLocation(location);
 
-    return ColoredBox(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            right: 0,
-            bottom: _bottomNavReserve,
-            left: 0,
-            child: child,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+        final bottomReserve = DmBottomNav.reservedHeightFor(context, width);
+
+        return ColoredBox(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: bottomReserve,
+                left: 0,
+                child: child,
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                left: 0,
+                child: DmBottomNav(
+                  currentIndex: currentIndex,
+                  onDestinationSelected: (index) {
+                    final destination = tabLocations[index];
+                    if (location == destination) return;
+                    context.go(destination);
+                  },
+                ),
+              ),
+            ],
           ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            left: 0,
-            child: DmBottomNav(
-              currentIndex: currentIndex,
-              onDestinationSelected: (index) {
-                final destination = tabLocations[index];
-                if (location == destination) return;
-                context.go(destination);
-              },
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
