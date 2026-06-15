@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
+import 'package:grumpy_skies/features/settings/about_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
@@ -111,9 +112,7 @@ void main() {
           routes: [
             GoRoute(
               path: 'about',
-              builder: (context, state) => const Scaffold(
-                body: Center(child: Text('About route reached')),
-              ),
+              builder: (context, state) => const AboutScreen(),
             ),
           ],
         ),
@@ -142,7 +141,8 @@ void main() {
       router.routerDelegate.currentConfiguration.uri.path,
       AppRoutes.about,
     );
-    expect(find.text('About route reached'), findsOneWidget);
+    expect(find.text('Planned Data Sources'), findsOneWidget);
+    expect(find.text('Version 0.1.0'), findsOneWidget);
   });
 
   testWidgets('settings layout renders on phone, tablet, and web widths',

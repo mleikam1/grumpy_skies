@@ -5,11 +5,11 @@ import '../features/forecast/forecast_screen.dart';
 import '../features/fun/meme_generator_screen.dart';
 import '../features/fun/fun_zone_screen.dart';
 import '../features/radar/radar_screen.dart';
+import '../features/settings/about_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/roasts/advanced_roast_reveal_screen.dart';
 import '../features/roasts/roasts_screen.dart';
-import '../pages/about_page.dart';
 import 'daymaker_shell.dart';
 
 final daymakerRouter = GoRouter(
@@ -74,7 +74,7 @@ final daymakerRouter = GoRouter(
             GoRoute(
               path: 'about',
               name: 'about',
-              builder: (context, state) => const AboutPage(),
+              builder: (context, state) => const AboutScreen(),
             ),
           ],
         ),
