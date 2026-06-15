@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
+import '../features/splash/splash_screen.dart';
 import '../features/roasts/models/persona.dart';
 import '../features/roasts/pages/roasts_page.dart';
 import '../features/roasts/services/roast_engine.dart';
@@ -10,7 +11,6 @@ import '../features/roasts/widgets/roast_reveal_scratch.dart';
 import '../pages/about_page.dart';
 import '../pages/home_page.dart';
 import '../pages/meme_generator_page.dart';
-import '../pages/splash_page.dart';
 import 'daymaker_shell.dart';
 
 final daymakerRouter = GoRouter(
@@ -23,7 +23,7 @@ final daymakerRouter = GoRouter(
     GoRoute(
       path: AppRoutes.splash,
       name: 'splash',
-      builder: (context, state) => const SplashPage(),
+      builder: (context, state) => const SplashScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) {
