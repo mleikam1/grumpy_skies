@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../config/app_routes.dart';
@@ -21,9 +22,23 @@ import '../widgets/weather_summary_card.dart';
 import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.initialTab = 0});
+  const HomePage({
+    super.key,
+    this.initialTab = 0,
+    this.lockedTab,
+    this.showBottomNav = true,
+  });
+
+  const HomePage.routeTab({
+    super.key,
+    required int tabIndex,
+  })  : initialTab = tabIndex,
+        lockedTab = tabIndex,
+        showBottomNav = false;
 
   final int initialTab;
+  final int? lockedTab;
+  final bool showBottomNav;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -50,8 +65,17 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialTab;
+    _selectedIndex = _normalizeTabIndex(widget.lockedTab ?? widget.initialTab);
     _loadWeather();
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextIndex = _normalizeTabIndex(widget.lockedTab ?? widget.initialTab);
+    if (nextIndex != _selectedIndex) {
+      _selectedIndex = nextIndex;
+    }
   }
 
   @override
@@ -75,6 +99,8 @@ class _HomePageState extends State<HomePage> {
         longitude: lon,
         forceRefresh: force,
       );
+      if (!mounted) return;
+
       final roastService = context.read<PersonaRoastService>();
       final roast = roastService.getRoast(persona: _persona, weather: data);
 
@@ -87,17 +113,26 @@ class _HomePageState extends State<HomePage> {
         _gremlinPersona = _randomGremlin();
       });
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
         _error = 'Failed to load weather: $e';
       });
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
   void _onTabChange(int index) {
+    if (widget.lockedTab != null) {
+      context.go(_routeForTab(index));
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
     });
@@ -135,11 +170,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _goToRadarTab() {
+    if (widget.lockedTab != null || !widget.showBottomNav) {
+      context.go(AppRoutes.radar);
+      return;
+    }
+
     setState(() => _selectedIndex = 2);
   }
 
   String _appBarTitle() {
-    switch (_selectedIndex) {
+    switch (_activeTabIndex) {
       case 1:
         return 'Roasts';
       case 2:
@@ -183,6 +223,14 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final roastService = context.read<PersonaRoastService>();
+    final activeIndex = _activeTabIndex;
+    final tabBodies = [
+      _buildForecastTab(roastService),
+      _buildRoastsTab(roastService),
+      _buildRadarTab(),
+      _buildFunTab(),
+      _buildSettingsTab(),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -190,26 +238,21 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.about),
+            onPressed: () => context.push(AppRoutes.about),
           ),
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: [
-            _buildForecastTab(roastService),
-            _buildRoastsTab(roastService),
-            _buildRadarTab(),
-            _buildFunTab(),
-            _buildSettingsTab(),
-          ],
-        ),
+        child: widget.lockedTab == null
+            ? IndexedStack(index: activeIndex, children: tabBodies)
+            : tabBodies[activeIndex],
       ),
-      bottomNavigationBar: DmBottomNav(
-        currentIndex: _selectedIndex,
-        onDestinationSelected: _onTabChange,
-      ),
+      bottomNavigationBar: widget.showBottomNav
+          ? DmBottomNav(
+              currentIndex: activeIndex,
+              onDestinationSelected: _onTabChange,
+            )
+          : null,
     );
   }
 
@@ -250,8 +293,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     final weather = _weather!;
-    final roast =
-        _currentRoast ?? roastService.getRoast(persona: _persona, weather: weather);
+    final roast = _currentRoast ??
+        roastService.getRoast(persona: _persona, weather: weather);
 
     return RefreshIndicator(
       onRefresh: () => _loadWeather(force: true),
@@ -266,14 +309,19 @@ class _HomePageState extends State<HomePage> {
             personaName: _persona.displayName,
             roast: roast,
             stats: RoastStatBuilder.buildStats([
-              (icon: Icons.water_drop, label: '${weather.current.precipitationChance}% rain odds'),
+              (
+                icon: Icons.water_drop,
+                label: '${weather.current.precipitationChance}% rain odds'
+              ),
               (icon: Icons.air, label: weather.current.aqiLabel),
-              (icon: Icons.thermostat, label: 'Feels ${_formatTemperature(weather.current)}'),
+              (
+                icon: Icons.thermostat,
+                label: 'Feels ${_formatTemperature(weather.current)}'
+              ),
             ]),
             coolingDown: _roastCoolingDown,
-            onRefresh: _roastCoolingDown
-                ? null
-                : () => _refreshRoast(roastService),
+            onRefresh:
+                _roastCoolingDown ? null : () => _refreshRoast(roastService),
             onShare: _currentRoast == null ? null : _copyRoastLink,
           ),
           const SizedBox(height: 16),
@@ -329,9 +377,7 @@ class _HomePageState extends State<HomePage> {
                           : () => _refreshRoast(roastService),
                       icon: const Icon(Icons.refresh),
                       label: Text(
-                        _roastCoolingDown
-                            ? 'Cooling down...'
-                            : 'Refresh roast',
+                        _roastCoolingDown ? 'Cooling down...' : 'Refresh roast',
                       ),
                     ),
                     OutlinedButton.icon(
@@ -346,10 +392,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         const SizedBox(height: 12),
-        ListTile(
-          leading: const Icon(Icons.people_outline),
-          title: const Text('Persona selector'),
-          subtitle: const Text(
+        const ListTile(
+          leading: Icon(Icons.people_outline),
+          title: Text('Persona selector'),
+          subtitle: Text(
             'Swap between Karen, Grandpa, Frat Bro, Politician, and Toddler.',
           ),
         ),
@@ -386,9 +432,9 @@ class _HomePageState extends State<HomePage> {
               ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'RainViewer radar (live)',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -413,10 +459,10 @@ class _HomePageState extends State<HomePage> {
           title: const Text('Storm projections'),
           subtitle: Text('Chaos meter: $_chaosMeter chance of drama.'),
         ),
-        ListTile(
-          leading: const Icon(Icons.bolt),
-          title: const Text('Lightning alerts'),
-          subtitle: const Text('If Mother Nature rages, we yell at you first.'),
+        const ListTile(
+          leading: Icon(Icons.bolt),
+          title: Text('Lightning alerts'),
+          subtitle: Text('If Mother Nature rages, we yell at you first.'),
         ),
         ListTile(
           leading: const Icon(Icons.timeline),
@@ -479,8 +525,8 @@ class _HomePageState extends State<HomePage> {
             subtitle: Text(_randomChaosPrediction()),
             trailing: IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: () => setState(() => _chaosMeter =
-                  '${(60 + _random.nextInt(41)).toString()}%'),
+              onPressed: () => setState(() =>
+                  _chaosMeter = '${(60 + _random.nextInt(41)).toString()}%'),
             ),
           ),
         ),
@@ -492,7 +538,8 @@ class _HomePageState extends State<HomePage> {
             subtitle: Text(_gremlinPersona),
             trailing: IconButton(
               icon: const Icon(Icons.shuffle),
-              onPressed: () => setState(() => _gremlinPersona = _randomGremlin()),
+              onPressed: () =>
+                  setState(() => _gremlinPersona = _randomGremlin()),
             ),
           ),
         ),
@@ -504,10 +551,7 @@ class _HomePageState extends State<HomePage> {
             subtitle: const Text(
                 'Tiny HTML5 distractions. Coming soon with maximum snark.'),
             trailing: FilledButton(
-              onPressed: () => Navigator.pushNamed(
-                context,
-                AppRoutes.memeGenerator,
-              ),
+              onPressed: () => context.push(AppRoutes.memeGenerator),
               child: const Text('Meme Generator'),
             ),
           ),
@@ -555,9 +599,10 @@ class _HomePageState extends State<HomePage> {
   Widget _buildMetricChips(WeatherBundle weather) {
     final current = weather.current;
     final settings = context.watch<SettingsController>();
-    final feelsLikeValue = settings.temperatureUnit == TemperatureUnit.fahrenheit
-        ? '${current.feelsLikeF.toStringAsFixed(0)}°F'
-        : '${current.feelsLikeC.toStringAsFixed(0)}°C';
+    final feelsLikeValue =
+        settings.temperatureUnit == TemperatureUnit.fahrenheit
+            ? '${current.feelsLikeF.toStringAsFixed(0)}°F'
+            : '${current.feelsLikeC.toStringAsFixed(0)}°C';
 
     return Wrap(
       spacing: 10,
@@ -621,10 +666,12 @@ class _HomePageState extends State<HomePage> {
         MetricChip(
           icon: Icons.wb_twilight,
           label: 'Sunrise / Sunset',
-          value: '${_formatTime(current.sunrise)} / ${_formatTime(current.sunset)}',
+          value:
+              '${_formatTime(current.sunrise)} / ${_formatTime(current.sunset)}',
           onTap: () => _showMetricSheet(
             title: 'Sunrise & Sunset',
-            value: '${_formatTime(current.sunrise)} / ${_formatTime(current.sunset)}',
+            value:
+                '${_formatTime(current.sunrise)} / ${_formatTime(current.sunset)}',
             description:
                 'Your golden-hour window. Plan photos, walks, and complaints accordingly.',
           ),
@@ -632,11 +679,14 @@ class _HomePageState extends State<HomePage> {
         MetricChip(
           icon: Icons.dark_mode_outlined,
           label: 'Moonrise / Moonset',
-          value: '${_formatTime(current.moonrise)} / ${_formatTime(current.moonset)}',
+          value:
+              '${_formatTime(current.moonrise)} / ${_formatTime(current.moonset)}',
           onTap: () => _showMetricSheet(
             title: 'Moonrise & Moonset',
-            value: '${_formatTime(current.moonrise)} / ${_formatTime(current.moonset)}',
-            description: 'For night owls and lunar gremlins tracking their glow-ups.',
+            value:
+                '${_formatTime(current.moonrise)} / ${_formatTime(current.moonset)}',
+            description:
+                'For night owls and lunar gremlins tracking their glow-ups.',
           ),
         ),
       ],
@@ -651,7 +701,8 @@ class _HomePageState extends State<HomePage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1C1C1E),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
             onPressed: _goToRadarTab,
             icon: const Icon(Icons.radar),
@@ -664,12 +715,10 @@ class _HomePageState extends State<HomePage> {
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               side: const BorderSide(color: Colors.white24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
-            onPressed: () => Navigator.pushNamed(
-              context,
-              AppRoutes.memeGenerator,
-            ),
+            onPressed: () => context.push(AppRoutes.memeGenerator),
             icon: const Icon(Icons.mood),
             label: const Text('Meme Maker'),
           ),
@@ -737,5 +786,25 @@ class _HomePageState extends State<HomePage> {
     return settings.temperatureUnit == TemperatureUnit.fahrenheit
         ? '${current.feelsLikeF.toStringAsFixed(0)}°F'
         : '${current.feelsLikeC.toStringAsFixed(0)}°C';
+  }
+
+  int get _activeTabIndex =>
+      _normalizeTabIndex(widget.lockedTab ?? _selectedIndex);
+
+  int _normalizeTabIndex(int index) => index.clamp(0, 4).toInt();
+
+  String _routeForTab(int index) {
+    switch (_normalizeTabIndex(index)) {
+      case 1:
+        return AppRoutes.roasts;
+      case 2:
+        return AppRoutes.radar;
+      case 3:
+        return AppRoutes.fun;
+      case 4:
+        return AppRoutes.settings;
+      default:
+        return AppRoutes.forecast;
+    }
   }
 }

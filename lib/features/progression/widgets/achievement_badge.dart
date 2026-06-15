@@ -22,8 +22,9 @@ class AchievementBadge extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 28,
-          backgroundColor:
-              unlocked ? colorScheme.primaryContainer : colorScheme.surfaceVariant,
+          backgroundColor: unlocked
+              ? colorScheme.primaryContainer
+              : colorScheme.surfaceContainerHighest,
           foregroundColor: unlocked ? colorScheme.primary : colorScheme.outline,
           child: Icon(icon, size: 28),
         ),
@@ -38,10 +39,9 @@ class AchievementBadge extends StatelessWidget {
         ),
         Text(
           unlocked ? 'Unlocked' : 'Locked',
-          style: Theme.of(context)
-              .textTheme
-              .labelMedium
-              ?.copyWith(color: unlocked ? colorScheme.primary : colorScheme.outline),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: unlocked ? colorScheme.primary : colorScheme.outline,
+              ),
         ),
       ],
     );

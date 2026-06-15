@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
 
@@ -19,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _goNext() async {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    context.go(AppRoutes.forecast);
   }
 
   @override

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class RoastBlock extends StatelessWidget {
   final String personaName;
   final String roast;
-  final List<_RoastStat> stats;
+  final List<RoastStat> stats;
   final VoidCallback? onRefresh;
   final VoidCallback? onShare;
   final bool coolingDown;
@@ -31,7 +31,7 @@ class RoastBlock extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -111,7 +111,7 @@ class RoastBlock extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.white10),
                     ),
@@ -136,15 +136,17 @@ class RoastBlock extends StatelessWidget {
   }
 }
 
-class _RoastStat {
+class RoastStat {
   final IconData icon;
   final String label;
 
-  const _RoastStat(this.icon, this.label);
+  const RoastStat(this.icon, this.label);
 }
 
 extension RoastStatBuilder on RoastBlock {
-  static List<_RoastStat> buildStats(List<({IconData icon, String label})> items) {
-    return items.map((e) => _RoastStat(e.icon, e.label)).toList();
+  static List<RoastStat> buildStats(
+    List<({IconData icon, String label})> items,
+  ) {
+    return items.map((e) => RoastStat(e.icon, e.label)).toList();
   }
 }

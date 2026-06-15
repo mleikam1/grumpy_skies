@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../config/app_routes.dart';
 import '../../progression/models/achievement.dart';
 import '../../progression/services/achievement_service.dart';
 import '../../progression/services/xp_service.dart';
@@ -71,6 +73,13 @@ class _RoastsPageState extends State<RoastsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Roasts'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            tooltip: 'Advanced reveal',
+            onPressed: () => context.push(AppRoutes.roastReveal),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -107,18 +116,30 @@ class _RoastsPageState extends State<RoastsPage> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ToggleButtons(
-                isSelected: _toggleSelections,
-                onPressed: _onToggleChanged,
-                borderRadius: BorderRadius.circular(12),
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('Scratch'),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  ToggleButtons(
+                    isSelected: _toggleSelections,
+                    onPressed: _onToggleChanged,
+                    borderRadius: BorderRadius.circular(12),
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('Scratch'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('Fog'),
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('Fog'),
+                  FilledButton.icon(
+                    onPressed: () => context.push(AppRoutes.roastReveal),
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('Advanced Reveal'),
                   ),
                 ],
               ),
@@ -215,7 +236,8 @@ class _RoastsPageState extends State<RoastsPage> {
     Roast roast,
   ) async {
     await xpService.addXp(20);
-    final achievements = achievementService.evaluate(xpService.state, recentRoast: roast);
+    final achievements =
+        achievementService.evaluate(xpService.state, recentRoast: roast);
     setState(() {
       _achievementsFuture = Future.value(achievements);
     });

@@ -42,16 +42,14 @@ class ExtraRoastsSection extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          ...hourlyRoasts
-              .map(
-                (roast) => Card(
-                  child: ListTile(
-                    title: Text(roast.text),
-                    subtitle: Text('Hourly'),
-                  ),
-                ),
-              )
-              .toList(),
+          ...hourlyRoasts.map(
+            (roast) => Card(
+              child: ListTile(
+                title: Text(roast.text),
+                subtitle: const Text('Hourly'),
+              ),
+            ),
+          ),
         ],
       ),
     );

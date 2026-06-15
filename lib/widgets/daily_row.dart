@@ -13,7 +13,7 @@ class DailyRow extends StatelessWidget {
       return const SizedBox();
     }
 
-    final cardColor = const Color(0xFF1C1C1E);
+    const cardColor = Color(0xFF1C1C1E);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,8 +39,8 @@ class DailyRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      cardColor.withOpacity(0.92),
-                      cardColor.withOpacity(0.75),
+                      cardColor.withValues(alpha: 0.92),
+                      cardColor.withValues(alpha: 0.75),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,

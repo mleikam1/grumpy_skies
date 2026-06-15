@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../models/persona.dart';
@@ -21,7 +22,12 @@ class SettingsPage extends StatelessWidget {
 }
 
 class SettingsContent extends StatefulWidget {
-  const SettingsContent({super.key, this.initialPersona, this.onPersonaChanged, this.showAboutTile = false});
+  const SettingsContent({
+    super.key,
+    this.initialPersona,
+    this.onPersonaChanged,
+    this.showAboutTile = false,
+  });
 
   final PersonaType? initialPersona;
   final ValueChanged<PersonaType>? onPersonaChanged;
@@ -52,16 +58,22 @@ class _SettingsContentState extends State<SettingsContent> {
           title: Text('Temperature units'),
           subtitle: Text('Default is Fahrenheit'),
         ),
-        ...TemperatureUnit.values.map(
-          (unit) => RadioListTile<TemperatureUnit>(
-            title: Text(unit.label),
-            value: unit,
-            groupValue: settings.temperatureUnit,
-            onChanged: (value) {
-              if (value != null) {
-                settings.setTemperatureUnit(value);
-              }
-            },
+        RadioGroup<TemperatureUnit>(
+          groupValue: settings.temperatureUnit,
+          onChanged: (value) {
+            if (value != null) {
+              settings.setTemperatureUnit(value);
+            }
+          },
+          child: Column(
+            children: [
+              ...TemperatureUnit.values.map(
+                (unit) => RadioListTile<TemperatureUnit>(
+                  title: Text(unit.label),
+                  value: unit,
+                ),
+              ),
+            ],
           ),
         ),
         const Divider(),
@@ -103,7 +115,7 @@ class _SettingsContentState extends State<SettingsContent> {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
-            onTap: () => Navigator.pushNamed(context, AppRoutes.about),
+            onTap: () => context.push(AppRoutes.about),
           ),
         ListTile(
           leading: const Icon(Icons.feedback_outlined),

@@ -1,30 +1,5 @@
-import 'package:flutter/material.dart';
+import 'app/daymaker_app.dart';
 
-import 'config/app_routes.dart';
-import 'design/dm_theme.dart';
-import 'pages/splash_page.dart';
-import 'pages/home_page.dart';
-import 'pages/meme_generator_page.dart';
-import 'pages/about_page.dart';
-
-class GrumpySkiesApp extends StatelessWidget {
+class GrumpySkiesApp extends DaymakerApp {
   const GrumpySkiesApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Grumpy Skies',
-      theme: DMTheme.light,
-      initialRoute: AppRoutes.splash,
-      routes: {
-        AppRoutes.splash: (_) => const SplashPage(),
-        AppRoutes.home: (_) => const HomePage(),
-        AppRoutes.radar: (_) => const HomePage(initialTab: 2),
-        AppRoutes.burns: (_) => const HomePage(initialTab: 1),
-        AppRoutes.memeGenerator: (_) => const MemeGeneratorPage(),
-        AppRoutes.settings: (_) => const HomePage(initialTab: 4),
-        AppRoutes.about: (_) => const AboutPage(),
-      },
-    );
-  }
 }

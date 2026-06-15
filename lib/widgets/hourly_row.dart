@@ -13,7 +13,7 @@ class HourlyRow extends StatelessWidget {
       return const SizedBox();
     }
 
-    final cardColor = const Color(0xFF1C1C1E);
+    const cardColor = Color(0xFF1C1C1E);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,8 +39,8 @@ class HourlyRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      cardColor.withOpacity(0.9),
-                      cardColor.withOpacity(0.7),
+                      cardColor.withValues(alpha: 0.9),
+                      cardColor.withValues(alpha: 0.7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,

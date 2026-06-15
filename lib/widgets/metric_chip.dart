@@ -16,7 +16,7 @@ class MetricChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = const Color(0xFF1C1C1E);
+    const baseColor = Color(0xFF1C1C1E);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -25,8 +25,8 @@ class MetricChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              baseColor.withOpacity(0.9),
-              baseColor.withOpacity(0.7),
+              baseColor.withValues(alpha: 0.9),
+              baseColor.withValues(alpha: 0.7),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
