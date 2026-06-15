@@ -5,9 +5,9 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'repositories/fake_roast_repository.dart';
 import 'repositories/fake_weather_repository.dart';
-import 'repositories/in_memory_settings_repository.dart';
 import 'repositories/roast_repository.dart';
 import 'repositories/settings_repository.dart';
+import 'repositories/shared_preferences_settings_repository.dart';
 import 'repositories/weather_repository.dart';
 import 'services/persona_roast_service.dart';
 import 'services/settings_controller.dart';
@@ -20,7 +20,9 @@ void main() async {
 
   const weatherRepository = FakeWeatherRepository();
   const roastRepository = FakeRoastRepository();
-  final settingsRepository = InMemorySettingsRepository();
+  final settingsRepository = await SharedPreferencesSettingsRepository.create();
+  final settingsController = SettingsController(repository: settingsRepository);
+  await settingsController.loadSettings();
   final roastService = PersonaRoastService();
   final xpService = await XpService.create();
   final achievementService = await AchievementService.create();
@@ -34,8 +36,8 @@ void main() async {
         Provider<PersonaRoastService>.value(value: roastService),
         ChangeNotifierProvider<XpService>.value(value: xpService),
         Provider<AchievementService>.value(value: achievementService),
-        ChangeNotifierProvider<SettingsController>(
-          create: (_) => SettingsController(),
+        ChangeNotifierProvider<SettingsController>.value(
+          value: settingsController,
         ),
       ],
       child: const GrumpySkiesApp(),

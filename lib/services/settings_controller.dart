@@ -1,15 +1,94 @@
 import 'package:flutter/foundation.dart';
 
+import '../data/daymaker_sample_data.dart';
 import '../models/temperature_unit.dart';
+import '../models/weather_models.dart';
+import '../repositories/settings_repository.dart';
 
 class SettingsController extends ChangeNotifier {
-  TemperatureUnit _temperatureUnit = TemperatureUnit.fahrenheit;
+  SettingsController({
+    SettingsRepository? repository,
+    UserSettings initialSettings = DayMakerSampleData.userSettings,
+  })  : _repository = repository,
+        _settings = initialSettings;
 
-  TemperatureUnit get temperatureUnit => _temperatureUnit;
+  final SettingsRepository? _repository;
+
+  UserSettings _settings;
+  bool _isLoaded = false;
+  bool _isSaving = false;
+  Object? _lastError;
+
+  UserSettings get settings => _settings;
+
+  TemperatureUnit get temperatureUnit => _settings.temperatureUnit;
+
+  bool get notificationsEnabled => _settings.notificationsEnabled;
+
+  bool get adsEnabled => _settings.adsEnabled;
+
+  bool get isLoaded => _isLoaded;
+
+  bool get isSaving => _isSaving;
+
+  Object? get lastError => _lastError;
+
+  Future<void> loadSettings() async {
+    final repository = _repository;
+    if (repository == null) {
+      _isLoaded = true;
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _settings = await repository.loadSettings();
+      _lastError = null;
+    } catch (error) {
+      _lastError = error;
+    } finally {
+      _isLoaded = true;
+      notifyListeners();
+    }
+  }
 
   void setTemperatureUnit(TemperatureUnit unit) {
-    if (unit == _temperatureUnit) return;
-    _temperatureUnit = unit;
+    if (unit == _settings.temperatureUnit) return;
+    _updateSettings(_settings.copyWith(temperatureUnit: unit));
+  }
+
+  void setNotificationsEnabled(bool enabled) {
+    if (enabled == _settings.notificationsEnabled) return;
+    _updateSettings(_settings.copyWith(notificationsEnabled: enabled));
+  }
+
+  void setAdsEnabled(bool enabled) {
+    if (enabled == _settings.adsEnabled) return;
+    _updateSettings(_settings.copyWith(adsEnabled: enabled));
+  }
+
+  void _updateSettings(UserSettings next) {
+    _settings = next;
+    _lastError = null;
     notifyListeners();
+    _saveSettings();
+  }
+
+  Future<void> _saveSettings() async {
+    final repository = _repository;
+    if (repository == null) return;
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      await repository.saveSettings(_settings);
+      _lastError = null;
+    } catch (error) {
+      _lastError = error;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
   }
 }
