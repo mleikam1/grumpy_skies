@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
+import '../features/forecast/forecast_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/roasts/models/persona.dart';
 import '../features/roasts/pages/roasts_page.dart';
@@ -36,7 +37,7 @@ final daymakerRouter = GoRouter(
         GoRoute(
           path: AppRoutes.forecast,
           name: 'forecast',
-          builder: (context, state) => const HomePage.routeTab(tabIndex: 0),
+          builder: (context, state) => const ForecastScreen(),
         ),
         GoRoute(
           path: AppRoutes.roasts,
