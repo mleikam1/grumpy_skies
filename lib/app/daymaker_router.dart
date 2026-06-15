@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
 import '../features/forecast/forecast_screen.dart';
 import '../features/splash/splash_screen.dart';
-import '../features/roasts/models/persona.dart';
+import '../features/roasts/advanced_roast_reveal_screen.dart';
 import '../features/roasts/roasts_screen.dart';
-import '../features/roasts/services/roast_engine.dart';
-import '../features/roasts/widgets/roast_reveal_fog.dart';
-import '../features/roasts/widgets/roast_reveal_scratch.dart';
 import '../pages/about_page.dart';
 import '../pages/home_page.dart';
 import '../pages/meme_generator_page.dart';
@@ -47,7 +43,7 @@ final daymakerRouter = GoRouter(
             GoRoute(
               path: 'reveal',
               name: 'roastReveal',
-              builder: (context, state) => const _AdvancedRoastRevealPage(),
+              builder: (context, state) => const AdvancedRoastRevealScreen(),
             ),
           ],
         ),
@@ -100,80 +96,3 @@ final daymakerRouter = GoRouter(
     ),
   ],
 );
-
-class _AdvancedRoastRevealPage extends StatefulWidget {
-  const _AdvancedRoastRevealPage();
-
-  @override
-  State<_AdvancedRoastRevealPage> createState() =>
-      _AdvancedRoastRevealPageState();
-}
-
-class _AdvancedRoastRevealPageState extends State<_AdvancedRoastRevealPage> {
-  final RoastEngine _roastEngine = const RoastEngine();
-  var _selectedPersona = samplePersonas.first;
-  var _useScratch = true;
-
-  @override
-  Widget build(BuildContext context) {
-    final roast = _roastEngine.generateDailyRoast(_selectedPersona);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Advanced Roast Reveal'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: DropdownButtonFormField<Persona>(
-              initialValue: _selectedPersona,
-              decoration: const InputDecoration(
-                labelText: 'Persona',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                for (final persona in samplePersonas)
-                  DropdownMenuItem(
-                    value: persona,
-                    child: Text(persona.name),
-                  ),
-              ],
-              onChanged: (persona) {
-                if (persona == null) return;
-                setState(() => _selectedPersona = persona);
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(
-                  value: true,
-                  icon: Icon(Icons.gesture),
-                  label: Text('Scratch'),
-                ),
-                ButtonSegment(
-                  value: false,
-                  icon: Icon(Icons.foggy),
-                  label: Text('Fog'),
-                ),
-              ],
-              selected: {_useScratch},
-              onSelectionChanged: (selection) {
-                setState(() => _useScratch = selection.first);
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (_useScratch)
-            RoastRevealScratch(roast: roast)
-          else
-            RoastRevealFog(roast: roast),
-        ],
-      ),
-    );
-  }
-}
