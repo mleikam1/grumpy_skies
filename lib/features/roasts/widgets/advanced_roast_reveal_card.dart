@@ -316,6 +316,7 @@ class _RoastBody extends StatelessWidget {
             ),
             DmPillButton(
               label: 'Share',
+              semanticLabel: 'Share revealed roast',
               leading: const Icon(Icons.ios_share_rounded),
               onPressed: onShare,
               variant: DmPillButtonVariant.glass,

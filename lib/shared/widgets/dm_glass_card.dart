@@ -8,7 +8,7 @@ import '../../design/dm_radius.dart';
 import '../../design/dm_shadows.dart';
 import '../../design/dm_spacing.dart';
 
-class DmGlassCard extends StatelessWidget {
+class DmGlassCard extends StatefulWidget {
   const DmGlassCard({
     super.key,
     required this.child,
@@ -37,37 +37,63 @@ class DmGlassCard extends StatelessWidget {
   final String? semanticLabel;
 
   @override
+  State<DmGlassCard> createState() => _DmGlassCardState();
+}
+
+class _DmGlassCardState extends State<DmGlassCard> {
+  var _focused = false;
+
+  @override
   Widget build(BuildContext context) {
     Widget card = ClipRRect(
-      borderRadius: borderRadius,
+      borderRadius: widget.borderRadius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+        filter: ImageFilter.blur(
+          sigmaX: widget.blurSigma,
+          sigmaY: widget.blurSigma,
+        ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: color,
-            gradient: gradient,
-            borderRadius: borderRadius,
-            border: Border.all(color: borderColor),
-            boxShadow: shadows,
+            color: widget.color,
+            gradient: widget.gradient,
+            borderRadius: widget.borderRadius,
+            border: Border.all(
+              color: _focused ? DMColors.sunriseYellow : widget.borderColor,
+              width: _focused ? 2 : 1,
+            ),
+            boxShadow: _focused
+                ? [
+                    ...widget.shadows,
+                    BoxShadow(
+                      color: DMColors.opacity(DMColors.sunriseYellow, 0.32),
+                      blurRadius: 18,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : widget.shadows,
           ),
           child: Padding(
-            padding: padding,
-            child: child,
+            padding: widget.padding,
+            child: widget.child,
           ),
         ),
       ),
     );
 
-    if (onTap != null) {
+    if (widget.onTap != null) {
       card = Semantics(
         button: true,
         enabled: true,
-        label: semanticLabel,
+        label: widget.semanticLabel,
+        explicitChildNodes: true,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: borderRadius,
-            onTap: onTap,
+            borderRadius: widget.borderRadius,
+            focusColor: DMColors.opacity(DMColors.sunriseYellow, 0.16),
+            hoverColor: DMColors.opacity(DMColors.cloudWhite, 0.08),
+            onFocusChange: (focused) => setState(() => _focused = focused),
+            onTap: widget.onTap,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: DMSpacing.tapTarget),
               child: card,
@@ -75,16 +101,17 @@ class DmGlassCard extends StatelessWidget {
           ),
         ),
       );
-    } else if (semanticLabel != null) {
+    } else if (widget.semanticLabel != null) {
       card = Semantics(
         container: true,
-        label: semanticLabel,
+        label: widget.semanticLabel,
+        explicitChildNodes: true,
         child: card,
       );
     }
 
-    if (margin != EdgeInsets.zero) {
-      card = Padding(padding: margin, child: card);
+    if (widget.margin != EdgeInsets.zero) {
+      card = Padding(padding: widget.margin, child: card);
     }
 
     return card;

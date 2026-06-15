@@ -134,7 +134,7 @@ class DmBottomNav extends StatelessWidget {
   }
 }
 
-class _DmBottomNavTile extends StatelessWidget {
+class _DmBottomNavTile extends StatefulWidget {
   const _DmBottomNavTile({
     required this.item,
     required this.selected,
@@ -146,10 +146,17 @@ class _DmBottomNavTile extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_DmBottomNavTile> createState() => _DmBottomNavTileState();
+}
+
+class _DmBottomNavTileState extends State<_DmBottomNavTile> {
+  var _focused = false;
+
+  @override
   Widget build(BuildContext context) {
     final duration = DMMotion.resolve(context, DMMotion.fast);
-    final foreground = selected ? DMColors.deepNavy : DMColors.textMuted;
-    final background = selected ? DMColors.skyBlue : Colors.transparent;
+    final foreground = widget.selected ? DMColors.deepNavy : DMColors.textMuted;
+    final background = widget.selected ? DMColors.skyBlue : Colors.transparent;
 
     final tile = LayoutBuilder(
       builder: (context, constraints) {
@@ -170,19 +177,30 @@ class _DmBottomNavTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: background,
             borderRadius: DMRadius.full,
+            border: _focused
+                ? Border.all(color: DMColors.sunriseYellow, width: 2)
+                : null,
+            boxShadow: _focused
+                ? [
+                    BoxShadow(
+                      color: DMColors.opacity(DMColors.sunriseYellow, 0.28),
+                      blurRadius: 16,
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                selected ? item.selectedIcon : item.icon,
+                widget.selected ? widget.item.selectedIcon : widget.item.icon,
                 color: foreground,
                 size: tight ? DMSpacing.iconMd : DMSpacing.iconLg,
               ),
               const SizedBox(height: DMSpacing.xxs),
               Text(
-                item.label,
+                widget.item.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: labelStyle,
@@ -195,14 +213,17 @@ class _DmBottomNavTile extends StatelessWidget {
 
     return Semantics(
       button: true,
-      selected: selected,
-      label: item.semanticLabel,
+      selected: widget.selected,
+      label: widget.item.semanticLabel,
       child: ExcludeSemantics(
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             customBorder: const StadiumBorder(),
-            onTap: onTap,
+            focusColor: DMColors.opacity(DMColors.sunriseYellow, 0.16),
+            hoverColor: DMColors.opacity(DMColors.cloudWhite, 0.08),
+            onFocusChange: (focused) => setState(() => _focused = focused),
+            onTap: widget.onTap,
             child: tile,
           ),
         ),

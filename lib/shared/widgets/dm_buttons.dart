@@ -22,7 +22,7 @@ enum DmIconButtonVariant {
   outline,
 }
 
-class DmPillButton extends StatelessWidget {
+class DmPillButton extends StatefulWidget {
   const DmPillButton({
     super.key,
     required this.label,
@@ -52,13 +52,24 @@ class DmPillButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   @override
+  State<DmPillButton> createState() => _DmPillButtonState();
+}
+
+class _DmPillButtonState extends State<DmPillButton> {
+  var _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    final enabled = onPressed != null && !loading;
-    final style = _DmPillStyle.resolve(variant, selected, enabled);
+    final enabled = widget.onPressed != null && !widget.loading;
+    final style = _DmPillStyle.resolve(
+      widget.variant,
+      widget.selected,
+      enabled,
+    );
     final motion = DMMotion.resolve(context, DMMotion.fast);
 
     final labelWidget = Text(
-      label,
+      widget.label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: DMTypography.labelLarge.copyWith(color: style.foreground),
@@ -66,13 +77,13 @@ class DmPillButton extends StatelessWidget {
 
     Widget content = LayoutBuilder(
       builder: (context, constraints) {
-        final flexibleLabel = expand || constraints.maxWidth.isFinite;
+        final flexibleLabel = widget.expand || constraints.maxWidth.isFinite;
 
         return Row(
-          mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisSize: widget.expand ? MainAxisSize.max : MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (loading) ...[
+            if (widget.loading) ...[
               SizedBox.square(
                 dimension: DMSpacing.iconMd,
                 child: CircularProgressIndicator(
@@ -81,25 +92,25 @@ class DmPillButton extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: DMSpacing.xs),
-            ] else if (leading != null) ...[
+            ] else if (widget.leading != null) ...[
               IconTheme(
                 data: IconThemeData(
                   color: style.foreground,
                   size: DMSpacing.iconMd,
                 ),
-                child: leading!,
+                child: widget.leading!,
               ),
               const SizedBox(width: DMSpacing.xs),
             ],
             if (flexibleLabel) Flexible(child: labelWidget) else labelWidget,
-            if (trailing != null) ...[
+            if (widget.trailing != null) ...[
               const SizedBox(width: DMSpacing.xs),
               IconTheme(
                 data: IconThemeData(
                   color: style.foreground,
                   size: DMSpacing.iconMd,
                 ),
-                child: trailing!,
+                child: widget.trailing!,
               ),
             ],
           ],
@@ -114,13 +125,13 @@ class DmPillButton extends StatelessWidget {
         minWidth: DMSpacing.tapTarget,
         minHeight: DMSpacing.tapTarget,
       ),
-      padding: padding,
+      padding: widget.padding,
       decoration: BoxDecoration(
         color: style.background,
         gradient: style.gradient,
-        border: style.border,
+        border: _focusedBorder(style.border, _focused),
         borderRadius: DMRadius.full,
-        boxShadow: style.shadows,
+        boxShadow: _focusedShadows(style.shadows, _focused),
       ),
       child: content,
     );
@@ -129,26 +140,29 @@ class DmPillButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         customBorder: const StadiumBorder(),
-        onTap: enabled ? onPressed : null,
+        focusColor: DMColors.opacity(DMColors.sunriseYellow, 0.18),
+        hoverColor: DMColors.opacity(DMColors.cloudWhite, 0.08),
+        onFocusChange: (focused) => setState(() => _focused = focused),
+        onTap: enabled ? widget.onPressed : null,
         child: content,
       ),
     );
 
-    if (expand) {
+    if (widget.expand) {
       content = SizedBox(width: double.infinity, child: content);
     }
 
     return Semantics(
       button: true,
       enabled: enabled,
-      selected: selected,
-      label: semanticLabel ?? label,
+      selected: widget.selected,
+      label: widget.semanticLabel ?? widget.label,
       child: ExcludeSemantics(child: content),
     );
   }
 }
 
-class DmIconButton extends StatelessWidget {
+class DmIconButton extends StatefulWidget {
   const DmIconButton({
     super.key,
     required this.icon,
@@ -171,25 +185,38 @@ class DmIconButton extends StatelessWidget {
   final double iconSize;
 
   @override
+  State<DmIconButton> createState() => _DmIconButtonState();
+}
+
+class _DmIconButtonState extends State<DmIconButton> {
+  var _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    final style = _DmIconStyle.resolve(variant, selected, enabled);
+    final enabled = widget.onPressed != null;
+    final style = _DmIconStyle.resolve(
+      widget.variant,
+      widget.selected,
+      enabled,
+    );
     final motion = DMMotion.resolve(context, DMMotion.fast);
 
     Widget button = AnimatedContainer(
       duration: motion,
       curve: DMMotion.easeOut,
-      width: size < DMSpacing.tapTarget ? DMSpacing.tapTarget : size,
-      height: size < DMSpacing.tapTarget ? DMSpacing.tapTarget : size,
+      width:
+          widget.size < DMSpacing.tapTarget ? DMSpacing.tapTarget : widget.size,
+      height:
+          widget.size < DMSpacing.tapTarget ? DMSpacing.tapTarget : widget.size,
       decoration: BoxDecoration(
         color: style.background,
-        border: style.border,
+        border: _focusedBorder(style.border, _focused),
         shape: BoxShape.circle,
-        boxShadow: style.shadows,
+        boxShadow: _focusedShadows(style.shadows, _focused),
       ),
       child: IconTheme(
-        data: IconThemeData(color: style.foreground, size: iconSize),
-        child: Center(child: icon),
+        data: IconThemeData(color: style.foreground, size: widget.iconSize),
+        child: Center(child: widget.icon),
       ),
     );
 
@@ -198,7 +225,10 @@ class DmIconButton extends StatelessWidget {
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
-        onTap: enabled ? onPressed : null,
+        focusColor: DMColors.opacity(DMColors.sunriseYellow, 0.18),
+        hoverColor: DMColors.opacity(DMColors.cloudWhite, 0.08),
+        onFocusChange: (focused) => setState(() => _focused = focused),
+        onTap: enabled ? widget.onPressed : null,
         child: button,
       ),
     );
@@ -206,16 +236,35 @@ class DmIconButton extends StatelessWidget {
     button = Semantics(
       button: true,
       enabled: enabled,
-      selected: selected,
-      label: semanticLabel,
+      selected: widget.selected,
+      label: widget.semanticLabel,
       child: ExcludeSemantics(child: button),
     );
 
     return Tooltip(
-      message: tooltip ?? semanticLabel,
+      message: widget.tooltip ?? widget.semanticLabel,
       child: button,
     );
   }
+}
+
+BoxBorder? _focusedBorder(BoxBorder? fallback, bool focused) {
+  return focused
+      ? Border.all(color: DMColors.sunriseYellow, width: 2)
+      : fallback;
+}
+
+List<BoxShadow> _focusedShadows(List<BoxShadow> shadows, bool focused) {
+  if (!focused) return shadows;
+
+  return [
+    ...shadows,
+    BoxShadow(
+      color: DMColors.opacity(DMColors.sunriseYellow, 0.34),
+      blurRadius: 18,
+      spreadRadius: 1,
+    ),
+  ];
 }
 
 class _DmPillStyle {

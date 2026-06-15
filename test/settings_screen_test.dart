@@ -85,6 +85,10 @@ void main() {
     );
 
     expect(controller.notificationsEnabled, isTrue);
+    expect(
+      find.bySemanticsLabel('Toggle daily weather notifications'),
+      findsWidgets,
+    );
 
     await tester.tap(find.text('Daily weather nudges'));
     await tester.pumpAndSettle();

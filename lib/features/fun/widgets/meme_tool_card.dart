@@ -13,18 +13,20 @@ class MemeToolCard extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onTap,
+    this.semanticLabel,
   });
 
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return DmGlassCard(
       onTap: onTap,
-      semanticLabel: label,
+      semanticLabel: semanticLabel ?? label,
       padding: const EdgeInsets.all(DMSpacing.md),
       borderRadius: DMRadius.large,
       borderColor: DMColors.glassBorderStrong,

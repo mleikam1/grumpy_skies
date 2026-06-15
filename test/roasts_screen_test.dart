@@ -72,6 +72,10 @@ void main() {
 
     await tester.ensureVisible(find.text('Share').first);
     await tester.pumpAndSettle();
+    expect(
+      find.bySemanticsLabel('Share featured roast from Frat Bro'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Share').first);
     await tester.pump();
 

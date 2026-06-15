@@ -76,11 +76,13 @@ class ForecastRoastCard extends StatelessWidget {
             children: [
               DmPillButton(
                 label: 'New Roast',
+                semanticLabel: 'Show a new weather roast',
                 leading: const Icon(Icons.refresh_rounded),
                 onPressed: onNewRoast,
               ),
               DmPillButton(
                 label: 'Share',
+                semanticLabel: 'Share current weather roast',
                 leading: const Icon(Icons.ios_share_rounded),
                 variant: DmPillButtonVariant.glass,
                 onPressed: onShare,

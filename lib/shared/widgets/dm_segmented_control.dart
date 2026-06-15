@@ -81,7 +81,7 @@ class DmSegmentedControl<T> extends StatelessWidget {
   }
 }
 
-class _DmSegmentTile<T> extends StatelessWidget {
+class _DmSegmentTile<T> extends StatefulWidget {
   const _DmSegmentTile({
     required this.segment,
     required this.selected,
@@ -95,10 +95,19 @@ class _DmSegmentTile<T> extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_DmSegmentTile<T>> createState() => _DmSegmentTileState<T>();
+}
+
+class _DmSegmentTileState<T> extends State<_DmSegmentTile<T>> {
+  var _focused = false;
+
+  @override
   Widget build(BuildContext context) {
     final duration = DMMotion.resolve(context, DMMotion.fast);
-    final foreground = selected ? DMColors.deepNavy : DMColors.textSecondary;
-    final background = selected ? DMColors.sunriseYellow : Colors.transparent;
+    final foreground =
+        widget.selected ? DMColors.deepNavy : DMColors.textSecondary;
+    final background =
+        widget.selected ? DMColors.sunriseYellow : Colors.transparent;
 
     final tile = AnimatedContainer(
       duration: duration,
@@ -111,18 +120,25 @@ class _DmSegmentTile<T> extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: DMRadius.full,
+        border: _focused
+            ? Border.all(color: DMColors.sunriseYellow, width: 2)
+            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (segment.icon != null) ...[
-            Icon(segment.icon, color: foreground, size: DMSpacing.iconMd),
+          if (widget.segment.icon != null) ...[
+            Icon(
+              widget.segment.icon,
+              color: foreground,
+              size: DMSpacing.iconMd,
+            ),
             const SizedBox(width: DMSpacing.xs),
           ],
           Flexible(
             child: Text(
-              segment.label,
+              widget.segment.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: DMTypography.label.copyWith(color: foreground),
@@ -134,15 +150,18 @@ class _DmSegmentTile<T> extends StatelessWidget {
 
     return Semantics(
       button: true,
-      enabled: enabled,
-      selected: selected,
-      label: segment.semanticLabel,
+      enabled: widget.enabled,
+      selected: widget.selected,
+      label: widget.segment.semanticLabel,
       child: ExcludeSemantics(
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             customBorder: const StadiumBorder(),
-            onTap: enabled ? onTap : null,
+            focusColor: DMColors.opacity(DMColors.sunriseYellow, 0.16),
+            hoverColor: DMColors.opacity(DMColors.cloudWhite, 0.08),
+            onFocusChange: (focused) => setState(() => _focused = focused),
+            onTap: widget.enabled ? widget.onTap : null,
             child: tile,
           ),
         ),

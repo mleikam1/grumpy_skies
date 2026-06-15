@@ -113,6 +113,7 @@ class _RoastsScreenState extends State<RoastsScreen> {
   }
 
   void _showShareSnackBar(Roast _) {
+    // TODO(haptics): Add success feedback when native sharing is wired.
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(

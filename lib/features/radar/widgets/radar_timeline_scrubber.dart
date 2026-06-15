@@ -165,6 +165,10 @@ class _TimelineTrack extends StatelessWidget {
             max: 3,
             divisions: 3,
             label: activeLabel,
+            semanticFormatterCallback: (value) {
+              final label = labels[value.round().clamp(0, labels.length - 1)];
+              return 'Radar timeline $label';
+            },
             onChanged: onChanged,
           ),
         ),

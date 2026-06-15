@@ -73,6 +73,7 @@ class FeaturedRoastCard extends StatelessWidget {
                 roast: roast,
                 weather: weather,
                 onShare: onShare,
+                shareSemanticLabel: 'Share featured roast from ${persona.name}',
               ),
             ],
           );
@@ -140,6 +141,7 @@ class _FeaturedRoastContent extends StatelessWidget {
           roast: roast,
           weather: weather,
           onShare: onShare,
+          shareSemanticLabel: 'Share featured roast from ${persona.name}',
         ),
       ],
     );
@@ -177,11 +179,13 @@ class _FeaturedRoastBody extends StatelessWidget {
     required this.roast,
     required this.weather,
     required this.onShare,
+    required this.shareSemanticLabel,
   });
 
   final Roast roast;
   final WeatherSnapshot weather;
   final VoidCallback onShare;
+  final String shareSemanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +218,7 @@ class _FeaturedRoastBody extends StatelessWidget {
         const SizedBox(height: DMSpacing.lg),
         DmPillButton(
           label: 'Share',
+          semanticLabel: shareSemanticLabel,
           leading: const Icon(Icons.ios_share_rounded),
           variant: DmPillButtonVariant.secondary,
           onPressed: onShare,

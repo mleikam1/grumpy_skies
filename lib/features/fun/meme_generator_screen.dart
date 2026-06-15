@@ -114,9 +114,12 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
   void _randomizeText() {
     final nextLine = _randomLines[_random.nextInt(_randomLines.length)];
     _setMemeText(nextLine);
+    // TODO(haptics): Add light impact feedback when randomizing on mobile.
+    _showSnackBar('Randomized meme text.');
   }
 
   void _exportAndShare() {
+    // TODO(haptics): Add success feedback when export/share is implemented.
     _showSnackBar('Export & Share will capture this canvas soon.');
   }
 
@@ -225,24 +228,28 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
         MemeToolCard(
           icon: Icons.add_photo_alternate_outlined,
           label: 'Change Background',
+          semanticLabel: 'Change meme background',
           color: DMColors.skyBlue,
           onTap: _changeBackground,
         ),
         MemeToolCard(
           icon: Icons.local_fire_department_outlined,
           label: 'Use Current Roast',
+          semanticLabel: 'Use current roast in meme',
           color: DMColors.coral,
           onTap: _useCurrentRoast,
         ),
         MemeToolCard(
           icon: Icons.shuffle_rounded,
           label: 'Randomize Text',
+          semanticLabel: 'Randomize meme text',
           color: DMColors.sunriseYellow,
           onTap: _randomizeText,
         ),
         MemeToolCard(
           icon: Icons.ios_share_rounded,
           label: 'Export & Share',
+          semanticLabel: 'Export and share meme',
           color: DMColors.mintGreen,
           onTap: _exportAndShare,
         ),

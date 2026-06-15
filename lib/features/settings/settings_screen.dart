@@ -193,15 +193,25 @@ class _PreferencesColumn extends StatelessWidget {
             subtitle: settings.notificationsEnabled
                 ? 'On, so the forecast can interrupt with purpose.'
                 : 'Off, for a quieter sky check.',
-            trailing: Switch.adaptive(
-              value: settings.notificationsEnabled,
-              activeThumbColor: DMColors.sunriseYellow,
-              activeTrackColor: DMColors.opacity(DMColors.sunriseYellow, 0.34),
-              onChanged: settings.setNotificationsEnabled,
+            semanticLabel: 'Toggle daily weather notifications',
+            trailing: Semantics(
+              label: 'Toggle daily weather notifications',
+              toggled: settings.notificationsEnabled,
+              child: Switch.adaptive(
+                value: settings.notificationsEnabled,
+                activeThumbColor: DMColors.sunriseYellow,
+                activeTrackColor:
+                    DMColors.opacity(DMColors.sunriseYellow, 0.34),
+                onChanged: (enabled) {
+                  // TODO(haptics): Add light selection feedback on mobile.
+                  settings.setNotificationsEnabled(enabled);
+                },
+              ),
             ),
-            onTap: () => settings.setNotificationsEnabled(
-              !settings.notificationsEnabled,
-            ),
+            onTap: () {
+              // TODO(haptics): Mirror the switch feedback for row taps.
+              settings.setNotificationsEnabled(!settings.notificationsEnabled);
+            },
           ),
         ),
       ],

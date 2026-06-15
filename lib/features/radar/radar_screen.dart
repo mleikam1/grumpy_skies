@@ -25,11 +25,14 @@ class _RadarScreenState extends State<RadarScreen> {
   var _timelineValue = 1.0;
 
   void _showPlaceholderAction(String action) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$action is ready for the future radar provider.'),
-      ),
-    );
+    // TODO(haptics): Add a light tap cue for native radar controls.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('$action is ready for the future radar provider.'),
+        ),
+      );
   }
 
   @override

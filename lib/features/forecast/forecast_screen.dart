@@ -87,15 +87,18 @@ class _ForecastScreenState extends State<ForecastScreen> {
   }
 
   void _showNotificationsMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Forecast notifications are on.')),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Forecast notifications are on.')),
+      );
   }
 
   void _showNextRoast() {
     final history = DayMakerSampleData.roastHistory;
     if (history.isEmpty) return;
 
+    // TODO(haptics): Use light selection feedback when cycling roasts.
     setState(() {
       _roastIndex = (_roastIndex + 1) % history.length;
     });
@@ -106,9 +109,12 @@ class _ForecastScreenState extends State<ForecastScreen> {
     await Clipboard.setData(ClipboardData(text: roast.text));
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Roast copied for sharing.')),
-    );
+    // TODO(haptics): Add success feedback after native share/copy completes.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Roast copied for sharing.')),
+      );
   }
 
   @override

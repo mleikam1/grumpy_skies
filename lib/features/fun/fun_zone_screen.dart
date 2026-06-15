@@ -72,6 +72,8 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       _hasCrackedFortune = true;
       _fortuneIndex = (_fortuneIndex + 1) % _fortunes.length;
     });
+    // TODO(haptics): Add a gentle success tick when the cookie opens.
+    _showSnackBar('Fortune cookie cracked. Weather reveal ready.');
   }
 
   void _spinPrediction() {
@@ -89,10 +91,15 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
   }
 
   void _showPollVoteMessage() {
+    // TODO(haptics): Add selection feedback once poll votes persist.
+    _showSnackBar('Vote counted for today.');
+  }
+
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(content: Text('Vote counted for today.')),
+        SnackBar(content: Text(message)),
       );
   }
 
@@ -240,6 +247,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       title: 'Weather Fortune Cookie',
       subtitle: 'Crack a cookie. Get a weather reveal.',
       actionLabel: 'Crack One',
+      actionSemanticLabel: 'Crack fortune cookie',
       onAction: _crackFortune,
       accentColor: DMColors.sunriseYellow,
       featured: featured,
@@ -268,6 +276,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       icon: Icons.poll_outlined,
       title: 'Daily Weather Poll',
       actionLabel: 'Vote Now',
+      actionSemanticLabel: 'Vote in daily weather poll',
       onAction: _showPollVoteMessage,
       accentColor: DMColors.mintGreen,
       minHeight: minHeight,
@@ -296,6 +305,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       icon: Icons.cyclone_outlined,
       title: 'Crazy Day Predictor',
       actionLabel: 'Spin Now',
+      actionSemanticLabel: 'Spin crazy day predictor',
       onAction: _spinPrediction,
       accentColor: DMColors.playfulPink,
       minHeight: minHeight,
@@ -323,6 +333,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       title: 'Weather Menace',
       subtitle: 'What kind of weather menace are you?',
       actionLabel: 'Find Out',
+      actionSemanticLabel: 'Find your weather menace type',
       onAction: _findMenace,
       accentColor: DMColors.lavenderGlass,
       minHeight: minHeight,
@@ -339,6 +350,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       icon: Icons.image_outlined,
       title: 'Meme Generator',
       actionLabel: 'Make a Meme',
+      actionSemanticLabel: 'Open meme generator',
       onAction: _openMemeGenerator,
       accentColor: DMColors.skyBlue,
       minHeight: minHeight,

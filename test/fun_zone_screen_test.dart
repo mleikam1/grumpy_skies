@@ -57,6 +57,8 @@ void main() {
     expect(find.text('Cloudy 28%'), findsOneWidget);
     expect(find.text('Rainy 16%'), findsOneWidget);
     expect(find.text('1,842 votes'), findsOneWidget);
+    expect(find.bySemanticsLabel('Crack fortune cookie'), findsOneWidget);
+    expect(find.bySemanticsLabel('Vote in daily weather poll'), findsOneWidget);
   });
 
   testWidgets('FunZoneScreen buttons reveal playful results', (tester) async {
@@ -71,6 +73,13 @@ void main() {
       find.text('Your umbrella has main-character energy today.'),
       findsOneWidget,
     );
+    expect(
+      find.text('Fortune cookie cracked. Weather reveal ready.'),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Vote Now'));
     await tester.pumpAndSettle();

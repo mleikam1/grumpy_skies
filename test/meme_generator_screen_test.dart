@@ -73,6 +73,13 @@ void main() {
     expect(find.text('Use Current Roast'), findsOneWidget);
     expect(find.text('Randomize Text'), findsOneWidget);
     expect(find.text('Export & Share'), findsOneWidget);
+    expect(find.bySemanticsLabel('Top Text meme text field'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Bottom Text meme text field'),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel('Randomize meme text'), findsOneWidget);
+    expect(find.bySemanticsLabel('Export and share meme'), findsOneWidget);
   });
 
   testWidgets('text fields update meme preview live', (tester) async {

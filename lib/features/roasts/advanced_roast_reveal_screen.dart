@@ -30,11 +30,13 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
   var _revealed = false;
 
   void _toggleReveal() {
+    // TODO(haptics): Add a soft reveal tick on mobile.
     setState(() => _revealed = !_revealed);
   }
 
   void _revealFromGesture() {
     if (_revealed) return;
+    // TODO(haptics): Trigger subtle feedback when drag reveal completes.
     setState(() => _revealed = true);
   }
 
@@ -48,10 +50,18 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
       );
   }
 
+  void _showPlaceholderMessage(String message) {
+    // TODO(haptics): Add light tap feedback when these header actions exist.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _shareRoast() async {
     await Clipboard.setData(const ClipboardData(text: _roastText));
     if (!mounted) return;
 
+    // TODO(haptics): Add success feedback after native share/copy completes.
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -102,7 +112,16 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _Header(onBackPressed: _goBack),
+                          _Header(
+                            onBackPressed: _goBack,
+                            onLocationPressed: () => _showPlaceholderMessage(
+                              'Location refresh is coming soon.',
+                            ),
+                            onNotificationsPressed: () =>
+                                _showPlaceholderMessage(
+                              'Roast notifications are coming soon.',
+                            ),
+                          ),
                           SizedBox(height: gap),
                           const _ProgressStrip(),
                           SizedBox(height: gap),
@@ -179,9 +198,15 @@ const _personas = <AdvancedRoastPersona>[
 ];
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onBackPressed});
+  const _Header({
+    required this.onBackPressed,
+    required this.onLocationPressed,
+    required this.onNotificationsPressed,
+  });
 
   final VoidCallback onBackPressed;
+  final VoidCallback onLocationPressed;
+  final VoidCallback onNotificationsPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +255,7 @@ class _Header extends StatelessWidget {
           icon: const Icon(Icons.my_location_rounded),
           semanticLabel: 'Use current location',
           tooltip: 'Use current location',
-          onPressed: () {},
+          onPressed: onLocationPressed,
           variant: DmIconButtonVariant.outline,
         ),
         const SizedBox(width: DMSpacing.xs),
@@ -238,7 +263,7 @@ class _Header extends StatelessWidget {
           icon: const Icon(Icons.notifications_none_rounded),
           semanticLabel: 'Notifications',
           tooltip: 'Notifications',
-          onPressed: () {},
+          onPressed: onNotificationsPressed,
           variant: DmIconButtonVariant.glass,
         ),
       ],

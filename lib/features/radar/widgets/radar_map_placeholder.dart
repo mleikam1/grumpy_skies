@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
+import '../../../design/dm_motion.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
@@ -23,9 +24,13 @@ class RadarMapPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final decorativeScanActive =
+        scanActive && !DMMotion.shouldReduceMotion(context);
+
     // Provider-ready placeholder: replace the base CustomPaint layer with a
     // real radar/map provider later, keeping these branded overlays and state
-    // inputs as the integration surface.
+    // inputs as the integration surface. Reduced-motion users keep a static
+    // radar treatment instead of decorative scan/pulse loops.
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
@@ -38,7 +43,7 @@ class RadarMapPlaceholder extends StatelessWidget {
           ),
           CustomPaint(
             painter: _RadarRingsPainter(
-              scanActive: scanActive,
+              scanActive: decorativeScanActive,
               timelineIndex: timelineIndex,
             ),
           ),
@@ -56,7 +61,7 @@ class RadarMapPlaceholder extends StatelessWidget {
               size: 34,
             ),
           ],
-          Center(child: _LocationPulse(active: scanActive)),
+          Center(child: _LocationPulse(active: decorativeScanActive)),
           const Positioned(
             left: DMSpacing.md,
             bottom: DMSpacing.md,

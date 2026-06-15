@@ -15,6 +15,7 @@ class FunFeatureTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.actionLabel,
+    this.actionSemanticLabel,
     this.onAction,
     this.body,
     this.accentColor = DMColors.skyBlue,
@@ -28,6 +29,7 @@ class FunFeatureTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final String? actionLabel;
+  final String? actionSemanticLabel;
   final VoidCallback? onAction;
   final Widget? body;
   final Color accentColor;
@@ -82,6 +84,7 @@ class FunFeatureTile extends StatelessWidget {
               SizedBox(height: featured ? DMSpacing.xl : DMSpacing.lg),
               DmPillButton(
                 label: actionLabel!,
+                semanticLabel: actionSemanticLabel ?? actionLabel,
                 onPressed: onAction,
                 leading: Icon(_actionIconFor(icon)),
                 variant: featured

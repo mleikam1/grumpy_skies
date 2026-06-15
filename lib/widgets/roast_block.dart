@@ -78,12 +78,20 @@ class RoastBlock extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: coolingDown ? null : onRefresh,
-                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: Colors.white,
+                      semanticLabel: 'Refresh roast',
+                    ),
                     tooltip: 'Refresh roast',
                   ),
                   IconButton(
                     onPressed: onShare,
-                    icon: const Icon(Icons.share, color: Colors.white),
+                    icon: const Icon(
+                      Icons.share,
+                      color: Colors.white,
+                      semanticLabel: 'Share roast',
+                    ),
                     tooltip: 'Share roast',
                   ),
                 ],

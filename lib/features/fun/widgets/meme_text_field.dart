@@ -52,16 +52,25 @@ class MemeTextField extends StatelessWidget {
           ],
         ),
         const SizedBox(height: DMSpacing.xs),
-        TextField(
-          controller: controller,
-          maxLength: maxLength,
-          maxLines: 2,
-          minLines: 1,
-          textCapitalization: TextCapitalization.sentences,
-          style: DMTypography.bodyLarge,
-          decoration: InputDecoration(
-            hintText: hintText,
-            counterText: '',
+        Semantics(
+          label: '$label meme text field',
+          textField: true,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: DMSpacing.tapTarget),
+            child: TextField(
+              controller: controller,
+              maxLength: maxLength,
+              maxLines: 2,
+              minLines: 1,
+              textCapitalization: TextCapitalization.sentences,
+              style: DMTypography.bodyLarge,
+              decoration: InputDecoration(
+                hintText: hintText,
+                counterText: '',
+                semanticCounterText:
+                    '${controller.text.length} of $maxLength characters used',
+              ),
+            ),
           ),
         ),
       ],
