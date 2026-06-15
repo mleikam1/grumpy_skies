@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
 import '../features/forecast/forecast_screen.dart';
+import '../features/fun/fun_zone_screen.dart';
 import '../features/radar/radar_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/roasts/advanced_roast_reveal_screen.dart';
@@ -56,7 +57,7 @@ final daymakerRouter = GoRouter(
         GoRoute(
           path: AppRoutes.fun,
           name: 'fun',
-          builder: (context, state) => const HomePage.routeTab(tabIndex: 3),
+          builder: (context, state) => const FunZoneScreen(),
           routes: [
             GoRoute(
               path: 'meme',
