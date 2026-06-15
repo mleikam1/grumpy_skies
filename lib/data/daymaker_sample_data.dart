@@ -161,7 +161,7 @@ abstract final class DayMakerSampleData {
     id: 'karen',
     name: 'Karen',
     title: 'Roast Queen',
-    avatarAsset: 'assets/images/avatar_karen.png',
+    avatarAsset: 'assets/personas/karen.png',
     requiredXp: 0,
     unlocked: true,
   );
@@ -169,20 +169,36 @@ abstract final class DayMakerSampleData {
   static final List<Persona> personas = List.unmodifiable([
     persona,
     const Persona(
-      id: 'grandpa',
-      name: 'Grandpa',
-      title: 'Cloud Historian',
-      avatarAsset: 'assets/images/avatar_grandpa.png',
-      requiredXp: 120,
-      unlocked: true,
-    ),
-    const Persona(
       id: 'frat-bro',
       name: 'Frat Bro',
       title: 'Barometer Bro',
-      avatarAsset: 'assets/images/avatar_frat_bro.png',
-      requiredXp: 240,
-      unlocked: false,
+      avatarAsset: 'assets/personas/frat_bro.png',
+      requiredXp: 0,
+      unlocked: true,
+    ),
+    const Persona(
+      id: 'grandpa',
+      name: 'Grandpa',
+      title: 'Cloud Historian',
+      avatarAsset: 'assets/personas/grandpa.png',
+      requiredXp: 0,
+      unlocked: true,
+    ),
+    const Persona(
+      id: 'politician',
+      name: 'Politician',
+      title: 'Spin Doctor',
+      avatarAsset: 'assets/personas/politician.png',
+      requiredXp: 0,
+      unlocked: true,
+    ),
+    const Persona(
+      id: 'two-year-old',
+      name: '2-Year-Old',
+      title: 'Tiny Thunder',
+      avatarAsset: 'assets/personas/toddler.png',
+      requiredXp: 0,
+      unlocked: true,
     ),
   ]);
 
@@ -196,6 +212,48 @@ abstract final class DayMakerSampleData {
     xpReward: 15,
   );
 
+  static final List<Roast> dailyRoasts = List.unmodifiable([
+    roast,
+    Roast(
+      id: 'sf-frat-bro-daily-roast',
+      personaId: 'frat-bro',
+      weatherSnapshotId: weatherSnapshot.id,
+      text:
+          'It’s 72°F, bro. The clouds are mid and the humidity is doing keg stands.',
+      category: 'daily',
+      createdAt: observedAt.subtract(const Duration(minutes: 12)),
+      xpReward: 15,
+    ),
+    Roast(
+      id: 'sf-grandpa-daily-roast',
+      personaId: 'grandpa',
+      weatherSnapshotId: weatherSnapshot.id,
+      text: 'Back in my day, 8 mph wind was called walking to school uphill.',
+      category: 'daily',
+      createdAt: observedAt.subtract(const Duration(minutes: 24)),
+      xpReward: 15,
+    ),
+    Roast(
+      id: 'sf-politician-daily-roast',
+      personaId: 'politician',
+      weatherSnapshotId: weatherSnapshot.id,
+      text:
+          'We are forming a committee to investigate why 56% humidity feels personal.',
+      category: 'daily',
+      createdAt: observedAt.subtract(const Duration(minutes: 36)),
+      xpReward: 15,
+    ),
+    Roast(
+      id: 'sf-two-year-old-daily-roast',
+      personaId: 'two-year-old',
+      weatherSnapshotId: weatherSnapshot.id,
+      text: 'Clouds said no nap, so now the whole sky is cranky.',
+      category: 'daily',
+      createdAt: observedAt.subtract(const Duration(minutes: 48)),
+      xpReward: 15,
+    ),
+  ]);
+
   static final List<Roast> roastHistory = List.unmodifiable([
     roast,
     Roast(
@@ -205,6 +263,42 @@ abstract final class DayMakerSampleData {
       text: 'Partly cloudy with a 100% chance of asking for the manager.',
       category: 'hourly',
       createdAt: observedAt.subtract(const Duration(hours: 1)),
+      xpReward: 10,
+    ),
+    Roast(
+      id: 'sf-frat-bro-hourly-roast',
+      personaId: 'frat-bro',
+      weatherSnapshotId: weatherSnapshot.id,
+      text: 'Wind at 8 mph: light breeze, heavy main-character energy.',
+      category: 'hourly',
+      createdAt: observedAt.subtract(const Duration(hours: 2)),
+      xpReward: 10,
+    ),
+    Roast(
+      id: 'sf-grandpa-hourly-roast',
+      personaId: 'grandpa',
+      weatherSnapshotId: weatherSnapshot.id,
+      text: 'Humidity at 56% and everyone acts like the sky invented problems.',
+      category: 'hourly',
+      createdAt: observedAt.subtract(const Duration(hours: 3)),
+      xpReward: 10,
+    ),
+    Roast(
+      id: 'sf-politician-hourly-roast',
+      personaId: 'politician',
+      weatherSnapshotId: weatherSnapshot.id,
+      text: 'The forecast is committed to transparency, except for the sun.',
+      category: 'hourly',
+      createdAt: observedAt.subtract(const Duration(hours: 4)),
+      xpReward: 10,
+    ),
+    Roast(
+      id: 'sf-two-year-old-hourly-roast',
+      personaId: 'two-year-old',
+      weatherSnapshotId: weatherSnapshot.id,
+      text: 'Rain chance is 38%, which is also the chance of sharing snacks.',
+      category: 'hourly',
+      createdAt: observedAt.subtract(const Duration(hours: 5)),
       xpReward: 10,
     ),
   ]);

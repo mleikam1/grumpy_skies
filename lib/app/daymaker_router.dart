@@ -5,7 +5,7 @@ import '../config/app_routes.dart';
 import '../features/forecast/forecast_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/roasts/models/persona.dart';
-import '../features/roasts/pages/roasts_page.dart';
+import '../features/roasts/roasts_screen.dart';
 import '../features/roasts/services/roast_engine.dart';
 import '../features/roasts/widgets/roast_reveal_fog.dart';
 import '../features/roasts/widgets/roast_reveal_scratch.dart';
@@ -42,7 +42,7 @@ final daymakerRouter = GoRouter(
         GoRoute(
           path: AppRoutes.roasts,
           name: 'roasts',
-          builder: (context, state) => const RoastsPage(),
+          builder: (context, state) => const RoastsScreen(),
           routes: [
             GoRoute(
               path: 'reveal',

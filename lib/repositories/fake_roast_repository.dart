@@ -23,7 +23,12 @@ class FakeRoastRepository implements RoastRepository {
     required String personaId,
     required String weatherSnapshotId,
   }) async {
-    return DayMakerSampleData.roast;
+    return DayMakerSampleData.dailyRoasts.firstWhere(
+      (roast) =>
+          roast.personaId == personaId &&
+          roast.weatherSnapshotId == weatherSnapshotId,
+      orElse: () => DayMakerSampleData.roast,
+    );
   }
 
   @override
