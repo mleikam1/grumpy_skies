@@ -15,7 +15,8 @@ class RoastEngine {
   }
 
   Roast generateDailyRoast(Persona p) {
-    return _buildRoast('daily', p, "You're somehow managing to annoy the weather today.");
+    return _buildRoast(
+        'daily', p, "You're somehow managing to annoy the weather today.");
   }
 
   Roast generateMorningRoast(Persona p) {
@@ -23,7 +24,8 @@ class RoastEngine {
   }
 
   Roast generateAfternoonRoast(Persona p) {
-    return _buildRoast('afternoon', p, 'Afternoon check-in: still chaotic, still you.');
+    return _buildRoast(
+        'afternoon', p, 'Afternoon check-in: still chaotic, still you.');
   }
 
   Roast generateNightRoast(Persona p) {
@@ -31,15 +33,18 @@ class RoastEngine {
   }
 
   Roast generateMoodRoast(Persona p) {
-    return _buildRoast('mood', p, 'Your mood is as predictable as a surprise drizzle.');
+    return _buildRoast(
+        'mood', p, 'Your mood is as predictable as a surprise drizzle.');
   }
 
   Roast generateCommuteRoast(Persona p) {
-    return _buildRoast('commute', p, 'Traffic and your playlist both need help.');
+    return _buildRoast(
+        'commute', p, 'Traffic and your playlist both need help.');
   }
 
   Roast generateWeekendRoast(Persona p) {
-    return _buildRoast('weekend', p, 'Weekend plans? The weather rolls its eyes.');
+    return _buildRoast(
+        'weekend', p, 'Weekend plans? The weather rolls its eyes.');
   }
 
   List<Roast> generateHourlyRoasts(Persona p) {

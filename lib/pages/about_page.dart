@@ -20,14 +20,14 @@ class AboutPage extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               'A personality-driven weather app that roasts your forecast '
-                  'instead of politely whispering it.',
+              'instead of politely whispering it.',
             ),
             SizedBox(height: 16),
             Text(
               'Data Sources (planned):\n'
-                  '- Apple WeatherKit\n'
-                  '- AccuWeather (hourly)\n'
-                  '- RainViewer (radar)',
+              '- Apple WeatherKit\n'
+              '- AccuWeather (hourly)\n'
+              '- RainViewer (radar)',
             ),
             SizedBox(height: 16),
             Text('Version 0.1.0'),

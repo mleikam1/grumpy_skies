@@ -70,12 +70,10 @@ class XpService extends ChangeNotifier {
   Future<void> markAppOpened() async {
     final now = DateTime.now();
     final lastOpened = _state.lastOpened;
-    final isNewDay =
-        lastOpened == null || !_isSameDay(lastOpened, now);
+    final isNewDay = lastOpened == null || !_isSameDay(lastOpened, now);
 
     if (isNewDay) {
-      final isConsecutive =
-          lastOpened != null && _isYesterday(lastOpened, now);
+      final isConsecutive = lastOpened != null && _isYesterday(lastOpened, now);
       final streak = isConsecutive ? _state.streakCount + 1 : 1;
 
       _state = _state.copyWith(
@@ -126,9 +124,7 @@ class XpService extends ChangeNotifier {
   }
 
   bool _hasViewedAll() {
-    return _state.viewedMorning &&
-        _state.viewedAfternoon &&
-        _state.viewedNight;
+    return _state.viewedMorning && _state.viewedAfternoon && _state.viewedNight;
   }
 
   Future<void> _awardAllDayBonusIfNeeded(bool alreadyHadAll) async {

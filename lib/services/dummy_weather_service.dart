@@ -39,8 +39,9 @@ class DummyWeatherService implements WeatherApiService {
       final time = now.add(Duration(hours: index));
       return HourlyForecast(
         time: time,
-        temperatureC:
-            current.temperatureC + _random.nextDouble() * 4 - 2, // +/- 2 degrees
+        temperatureC: current.temperatureC +
+            _random.nextDouble() * 4 -
+            2, // +/- 2 degrees
         condition: 'Cloudy',
       );
     });

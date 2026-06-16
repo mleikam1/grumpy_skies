@@ -33,6 +33,10 @@ class RadarMapPlaceholder extends StatelessWidget {
     // real radar/map provider later, keeping these branded overlays and state
     // inputs as the integration surface. Reduced-motion users keep a static
     // radar treatment instead of decorative scan/pulse loops.
+    //
+    // TODO(integration): Wire RainViewer or the selected radar provider's tile
+    // frames here, mapping timelineIndex/playback to provider frame URLs outside
+    // the widget so no API keys or provider secrets enter the UI layer.
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,

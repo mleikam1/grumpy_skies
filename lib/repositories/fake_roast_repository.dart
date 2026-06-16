@@ -7,6 +7,8 @@ class FakeRoastRepository implements RoastRepository {
 
   @override
   Future<List<Persona>> getPersonas() async {
+    // TODO(integration): Keep generated persona artwork local, but source
+    // persona availability, XP gates, and live roast copy from the app backend.
     return DayMakerSampleData.personas;
   }
 
@@ -54,6 +56,8 @@ class FakeRoastRepository implements RoastRepository {
 
   @override
   Future<List<MemeTemplate>> getMemeTemplates() async {
+    // TODO(integration): Replace sample templates with backend-managed
+    // share/export templates once the meme pipeline is connected.
     return DayMakerSampleData.memeTemplates;
   }
 }

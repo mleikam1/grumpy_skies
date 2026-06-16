@@ -46,20 +46,20 @@ class _BurnsPageState extends State<BurnsPage> {
       body: _loading || _weather == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-        children: [
-          const SizedBox(height: 8),
-          ...PersonaType.values.map((persona) {
-            final roast = roastService.getRoast(
-              persona: persona,
-              weather: _weather!,
-            );
-            return PersonaRoastBubble(
-              personaName: persona.displayName,
-              roast: roast,
-            );
-          }),
-        ],
-      ),
+              children: [
+                const SizedBox(height: 8),
+                ...PersonaType.values.map((persona) {
+                  final roast = roastService.getRoast(
+                    persona: persona,
+                    weather: _weather!,
+                  );
+                  return PersonaRoastBubble(
+                    personaName: persona.displayName,
+                    roast: roast,
+                  );
+                }),
+              ],
+            ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
         onTap: (index) {

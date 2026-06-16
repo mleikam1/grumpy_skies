@@ -18,6 +18,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
 
+  // TODO(integration): Swap these fake repositories for provider-backed
+  // implementations here. Keep WeatherKit, AccuWeather, and any roast-service
+  // credentials on a backend or secure platform layer, never in app source.
   const weatherRepository = FakeWeatherRepository();
   const roastRepository = FakeRoastRepository();
   final settingsRepository = await SharedPreferencesSettingsRepository.create();

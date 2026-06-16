@@ -171,7 +171,8 @@ class PersonaRoastService {
     DateTime moonset,
   ) {
     final now = DateTime.now();
-    final moonriseSoon = moonrise.isAfter(now) && moonrise.difference(now).inHours <= 4;
+    final moonriseSoon =
+        moonrise.isAfter(now) && moonrise.difference(now).inHours <= 4;
     final moonsetLate = moonset.hour >= 7 && moonset.hour <= 9;
 
     if (!moonriseSoon && !moonsetLate) return null;

@@ -119,6 +119,9 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
   }
 
   void _exportAndShare() {
+    // TODO(integration): Capture _canvasKey with RepaintBoundary and pass the
+    // generated image to the native share/export service once that dependency is
+    // added. No provider secrets are needed for local export.
     // TODO(haptics): Add success feedback when export/share is implemented.
     _showSnackBar('Export & Share will capture this canvas soon.');
   }
