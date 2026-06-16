@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/widgets/dm_asset_image.dart';
 import '../models/achievement.dart';
 
 class AchievementBadge extends StatelessWidget {
   final Achievement achievement;
   final IconData icon;
+  final String? assetPath;
 
   const AchievementBadge({
     super.key,
     required this.achievement,
     required this.icon,
+    this.assetPath,
   });
 
   @override
@@ -26,7 +29,16 @@ class AchievementBadge extends StatelessWidget {
               ? colorScheme.primaryContainer
               : colorScheme.surfaceContainerHighest,
           foregroundColor: unlocked ? colorScheme.primary : colorScheme.outline,
-          child: Icon(icon, size: 28),
+          child: DmAssetImage(
+            // TODO(assets): Generated badge art should land at the
+            // DmAssets.badges paths passed into this widget.
+            assetPath: assetPath,
+            width: 38,
+            height: 38,
+            fit: BoxFit.contain,
+            excludeFromSemantics: true,
+            placeholderBuilder: (_) => Icon(icon, size: 28),
+          ),
         ),
         const SizedBox(height: 8),
         Text(

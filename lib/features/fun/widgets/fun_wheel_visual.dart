@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
 import '../../../design/dm_spacing.dart';
+import '../../../shared/assets/dm_assets.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 
 class FunWheelVisual extends StatelessWidget {
   const FunWheelVisual({
     super.key,
-    this.assetPath = 'assets/fun/crazy_day_wheel.png',
+    this.assetPath,
     this.size = 152,
   });
 
@@ -36,7 +37,9 @@ class FunWheelVisual extends StatelessWidget {
           padding: const EdgeInsets.all(DMSpacing.xs),
           child: ClipOval(
             child: DmAssetImage(
-              assetPath: assetPath,
+              // TODO(assets): Add the generated Crazy Day Predictor wheel at
+              // DmAssets.fun.crazyDayWheel.
+              assetPath: assetPath ?? DmAssets.fun.crazyDayWheel,
               width: size,
               height: size,
               fit: BoxFit.cover,

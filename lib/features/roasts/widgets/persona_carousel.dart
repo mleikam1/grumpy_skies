@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/widgets/dm_asset_image.dart';
 import '../models/persona.dart';
 
 class PersonaCarousel extends StatelessWidget {
@@ -36,12 +37,33 @@ class PersonaCarousel extends StatelessWidget {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundImage: loadPersonaAvatar(persona.avatar),
-                        child: isLocked
-                            ? const Icon(Icons.lock, color: Colors.black54)
-                            : null,
+                      SizedBox.square(
+                        dimension: 64,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // TODO(assets): Add persona portraits at the
+                            // DmAssets.personas paths used by this model.
+                            DmAssetImage(
+                              assetPath: persona.avatar,
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(999),
+                              semanticLabel: '${persona.name} avatar',
+                              placeholderIcon: Icons.person_rounded,
+                            ),
+                            if (isLocked)
+                              const DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.black38,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.lock,
+                                  color: Colors.white,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(

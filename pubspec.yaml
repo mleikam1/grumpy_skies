@@ -31,6 +31,28 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/backgrounds/about/
+    - assets/backgrounds/forecast/
+    - assets/backgrounds/fun/
+    - assets/backgrounds/meme/
+    - assets/backgrounds/radar/
+    - assets/backgrounds/reveal/
+    - assets/backgrounds/roasts/
+    - assets/backgrounds/settings/
+    - assets/backgrounds/splash/
+    - assets/badges/
     - assets/brand/
+    - assets/fun/
+    - assets/icons/controls/
+    - assets/icons/fun/
+    - assets/icons/metrics/
+    - assets/icons/nav/
+    - assets/icons/settings/
+    - assets/icons/status/
+    - assets/icons/weather/
     - assets/mascots/
+    - assets/meme_backgrounds/
+    - assets/meme_stickers/
     - assets/personas/
+    - assets/radar/
+    - assets/textures/

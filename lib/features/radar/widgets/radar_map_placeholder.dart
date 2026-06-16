@@ -7,6 +7,8 @@ import '../../../design/dm_motion.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../shared/assets/dm_assets.dart';
+import '../../../shared/widgets/dm_asset_image.dart';
 
 class RadarMapPlaceholder extends StatelessWidget {
   const RadarMapPlaceholder({
@@ -41,6 +43,36 @@ class RadarMapPlaceholder extends StatelessWidget {
               timelineIndex: timelineIndex,
             ),
           ),
+          DmAssetImage(
+            // TODO(assets): Add the generated neutral radar base map at
+            // DmAssets.backgrounds.radar.map.
+            assetPath: DmAssets.backgrounds.radar.map,
+            fit: BoxFit.cover,
+            excludeFromSemantics: true,
+            placeholderBuilder: (_) => const SizedBox.shrink(),
+          ),
+          DmAssetImage(
+            // TODO(assets): Add transparent generated radar overlays at
+            // DmAssets.radar paths; these sit above the fallback map.
+            assetPath: DmAssets.radar.precipitationModerate,
+            fit: BoxFit.cover,
+            excludeFromSemantics: true,
+            placeholderBuilder: (_) => const SizedBox.shrink(),
+          ),
+          if (futureCastEnabled)
+            DmAssetImage(
+              assetPath: DmAssets.radar.stormCells,
+              fit: BoxFit.cover,
+              excludeFromSemantics: true,
+              placeholderBuilder: (_) => const SizedBox.shrink(),
+            ),
+          if (lightningEnabled)
+            DmAssetImage(
+              assetPath: DmAssets.radar.lightning,
+              fit: BoxFit.cover,
+              excludeFromSemantics: true,
+              placeholderBuilder: (_) => const SizedBox.shrink(),
+            ),
           CustomPaint(
             painter: _RadarRingsPainter(
               scanActive: decorativeScanActive,

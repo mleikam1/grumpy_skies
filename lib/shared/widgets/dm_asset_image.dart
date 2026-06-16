@@ -18,6 +18,7 @@ class DmAssetImage extends StatelessWidget {
     this.excludeFromSemantics = false,
     this.placeholderGradient = DMGradients.twilight,
     this.placeholderIcon = Icons.image_outlined,
+    this.placeholderBuilder,
     this.color,
     this.colorBlendMode,
     this.filterQuality = FilterQuality.medium,
@@ -33,6 +34,7 @@ class DmAssetImage extends StatelessWidget {
   final bool excludeFromSemantics;
   final Gradient placeholderGradient;
   final IconData placeholderIcon;
+  final WidgetBuilder? placeholderBuilder;
   final Color? color;
   final BlendMode? colorBlendMode;
   final FilterQuality filterQuality;
@@ -67,25 +69,39 @@ class DmAssetImage extends StatelessWidget {
   }
 
   Widget _placeholder(BuildContext context) {
-    final fallback = Container(
-      width: width,
-      height: height,
-      constraints: BoxConstraints(
-        minWidth: width == null ? DMSpacing.tapTarget : 0,
-        minHeight: height == null ? DMSpacing.tapTarget : 0,
-      ),
-      decoration: BoxDecoration(
-        gradient: placeholderGradient,
-        borderRadius: borderRadius ?? DMRadius.medium,
-      ),
-      child: Center(
-        child: Icon(
-          placeholderIcon,
-          color: DMColors.textSecondary,
-          size: DMSpacing.iconLg,
+    Widget fallback;
+
+    final customPlaceholder = placeholderBuilder;
+    if (customPlaceholder != null) {
+      fallback = customPlaceholder(context);
+      if (width != null || height != null) {
+        fallback = SizedBox(
+          width: width,
+          height: height,
+          child: fallback,
+        );
+      }
+    } else {
+      fallback = Container(
+        width: width,
+        height: height,
+        constraints: BoxConstraints(
+          minWidth: width == null ? DMSpacing.tapTarget : 0,
+          minHeight: height == null ? DMSpacing.tapTarget : 0,
         ),
-      ),
-    );
+        decoration: BoxDecoration(
+          gradient: placeholderGradient,
+          borderRadius: borderRadius ?? DMRadius.medium,
+        ),
+        child: Center(
+          child: Icon(
+            placeholderIcon,
+            color: DMColors.textSecondary,
+            size: DMSpacing.iconLg,
+          ),
+        ),
+      );
+    }
 
     if (excludeFromSemantics) {
       return ExcludeSemantics(child: fallback);

@@ -313,12 +313,11 @@ class _WeatherAssetIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.square(
       dimension: size,
-      child: Image.asset(
-        DmAssets.icons.weather.partlyCloudyDay,
+      child: DmAssetImage(
+        assetPath: DmAssets.icons.weather.partlyCloudyDay,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return const _FallbackSunCloudIcon();
-        },
+        semanticLabel: 'Partly cloudy weather',
+        placeholderBuilder: (_) => const _FallbackSunCloudIcon(),
       ),
     );
   }
@@ -360,13 +359,14 @@ class _SplashBackgroundImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      DmAssets.backgrounds.splash.day,
+    // TODO(assets): Replace the gradient fallback with generated splash art at
+    // DmAssets.backgrounds.splash.day.
+    return DmAssetImage(
+      assetPath: DmAssets.backgrounds.splash.day,
       fit: BoxFit.cover,
       alignment: Alignment.center,
-      errorBuilder: (context, error, stackTrace) {
-        return const _SunriseGradientFallback();
-      },
+      excludeFromSemantics: true,
+      placeholderBuilder: (_) => const _SunriseGradientFallback(),
     );
   }
 }

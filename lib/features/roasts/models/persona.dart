@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import '../../../shared/assets/dm_assets.dart';
 
 class Persona {
   final String id;
@@ -17,11 +17,11 @@ class Persona {
 }
 
 /// Placeholder list of personas that can be expanded later.
-const List<Persona> samplePersonas = [
+final List<Persona> samplePersonas = [
   Persona(
     id: 'p1',
     name: 'Snarky Storm',
-    avatar: 'assets/images/avatar_placeholder_1.png',
+    avatar: DmAssets.personas.snarkyStorm,
     requiredXp: 0,
     roastTemplates: [
       "You're somehow managing to annoy the weather today.",
@@ -31,7 +31,7 @@ const List<Persona> samplePersonas = [
   Persona(
     id: 'p2',
     name: 'Cloudy Cynic',
-    avatar: 'assets/images/avatar_placeholder_2.png',
+    avatar: DmAssets.personas.cloudyCynic,
     requiredXp: 100,
     roastTemplates: [
       'Even the clouds are rolling their eyes at you.',
@@ -41,7 +41,7 @@ const List<Persona> samplePersonas = [
   Persona(
     id: 'p3',
     name: 'Sunny Sass',
-    avatar: 'assets/images/avatar_placeholder_3.png',
+    avatar: DmAssets.personas.sunnySass,
     requiredXp: 250,
     roastTemplates: [
       'So bright you might blind us with bad decisions.',
@@ -49,7 +49,3 @@ const List<Persona> samplePersonas = [
     ],
   ),
 ];
-
-ImageProvider<Object> loadPersonaAvatar(String assetPath) {
-  return AssetImage(assetPath);
-}

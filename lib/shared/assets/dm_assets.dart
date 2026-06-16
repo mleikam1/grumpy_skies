@@ -48,6 +48,7 @@ final class DmBackgroundAssets {
 final class DmSplashBackgroundAssets {
   const DmSplashBackgroundAssets._();
 
+  // TODO(assets): Add generated splash backgrounds at these exact paths.
   final String day = 'assets/backgrounds/splash/day.png';
   final String night = 'assets/backgrounds/splash/night.png';
   final String storm = 'assets/backgrounds/splash/storm.png';
@@ -56,6 +57,7 @@ final class DmSplashBackgroundAssets {
 final class DmForecastBackgroundAssets {
   const DmForecastBackgroundAssets._();
 
+  // TODO(assets): Add generated forecast backgrounds at these exact paths.
   final String clearDay = 'assets/backgrounds/forecast/clear_day.png';
   final String clearNight = 'assets/backgrounds/forecast/clear_night.png';
   final String cloudy = 'assets/backgrounds/forecast/cloudy.png';
@@ -129,6 +131,7 @@ final class DmAboutBackgroundAssets {
 final class DmMascotAssets {
   const DmMascotAssets._();
 
+  // TODO(assets): Add final DayMaker mascot poses at these exact paths.
   final String idle = 'assets/mascots/daymaker_idle.png';
   final String happy = 'assets/mascots/daymaker_happy.png';
   final String annoyed = 'assets/mascots/daymaker_annoyed.png';
@@ -142,6 +145,7 @@ final class DmMascotAssets {
 final class DmPersonaAssets {
   const DmPersonaAssets._();
 
+  // TODO(assets): Add generated persona portraits at these exact paths.
   final String karen = 'assets/personas/karen.png';
   final String fratBro = 'assets/personas/frat_bro.png';
   final String grandpa = 'assets/personas/grandpa.png';
@@ -276,6 +280,7 @@ final class DmSettingsIconAssets {
 final class DmBadgeAssets {
   const DmBadgeAssets._();
 
+  // TODO(assets): Add generated badge art at these exact paths.
   final String firstRoast = 'assets/badges/first_roast.png';
   final String weekStreak = 'assets/badges/week_streak.png';
   final String monthStreak = 'assets/badges/month_streak.png';
@@ -291,6 +296,7 @@ final class DmBadgeAssets {
 final class DmFunIllustrationAssets {
   const DmFunIllustrationAssets._();
 
+  // TODO(assets): Add generated fun illustrations at these exact paths.
   final String emptyState = 'assets/fun/empty_state.png';
   final String noWeather = 'assets/fun/no_weather.png';
   final String pullToRefresh = 'assets/fun/pull_to_refresh.png';
@@ -299,11 +305,13 @@ final class DmFunIllustrationAssets {
   final String weatherQuiz = 'assets/fun/weather_quiz.png';
   final String roastHistory = 'assets/fun/roast_history.png';
   final String sharePrompt = 'assets/fun/share_prompt.png';
+  final String crazyDayWheel = 'assets/fun/crazy_day_wheel.png';
 }
 
 final class DmMemeBackgroundAssets {
   const DmMemeBackgroundAssets._();
 
+  // TODO(assets): Add generated meme backgrounds at these exact paths.
   final String sunny = 'assets/meme_backgrounds/sunny.png';
   final String rainy = 'assets/meme_backgrounds/rainy.png';
   final String stormy = 'assets/meme_backgrounds/stormy.png';
@@ -332,6 +340,7 @@ final class DmMemeStickerAssets {
 final class DmRadarOverlayAssets {
   const DmRadarOverlayAssets._();
 
+  // TODO(assets): Add transparent generated radar overlays at these paths.
   final String precipitationLight = 'assets/radar/precipitation_light.png';
   final String precipitationModerate =
       'assets/radar/precipitation_moderate.png';

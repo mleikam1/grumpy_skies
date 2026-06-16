@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
+import '../../../shared/assets/dm_assets.dart';
 
 enum MemeVisualStyle {
   epic,
@@ -58,20 +59,23 @@ class MemeBackgroundPreset {
     required this.icon,
     required this.gradient,
     required this.accentColor,
+    required this.assetPath,
   });
 
   final String label;
   final IconData icon;
   final LinearGradient gradient;
   final Color accentColor;
+  final String assetPath;
 }
 
-const memeBackgroundPresets = <MemeBackgroundPreset>[
+final memeBackgroundPresets = <MemeBackgroundPreset>[
   MemeBackgroundPreset(
     label: 'Storm Break',
     icon: Icons.thunderstorm_rounded,
+    assetPath: DmAssets.memeBackgrounds.stormy,
     accentColor: DMColors.sunriseYellow,
-    gradient: LinearGradient(
+    gradient: const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
@@ -85,8 +89,9 @@ const memeBackgroundPresets = <MemeBackgroundPreset>[
   MemeBackgroundPreset(
     label: 'Soft Drizzle',
     icon: Icons.water_drop_rounded,
+    assetPath: DmAssets.memeBackgrounds.rainy,
     accentColor: DMColors.playfulPinkSoft,
-    gradient: LinearGradient(
+    gradient: const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomRight,
       colors: [
@@ -100,8 +105,9 @@ const memeBackgroundPresets = <MemeBackgroundPreset>[
   MemeBackgroundPreset(
     label: 'Golden Hour',
     icon: Icons.wb_sunny_rounded,
+    assetPath: DmAssets.memeBackgrounds.sunny,
     accentColor: DMColors.sunriseYellow,
-    gradient: LinearGradient(
+    gradient: const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
@@ -115,8 +121,9 @@ const memeBackgroundPresets = <MemeBackgroundPreset>[
   MemeBackgroundPreset(
     label: 'Radar Glow',
     icon: Icons.radar_rounded,
+    assetPath: DmAssets.memeBackgrounds.office,
     accentColor: DMColors.mintGreen,
-    gradient: LinearGradient(
+    gradient: const LinearGradient(
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
       colors: [

@@ -1,5 +1,6 @@
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
+import '../shared/assets/dm_assets.dart';
 
 abstract final class DayMakerSampleData {
   static final DateTime observedAt = DateTime(2026, 6, 14, 9);
@@ -157,46 +158,46 @@ abstract final class DayMakerSampleData {
   static final WeatherBundle weatherBundle =
       WeatherBundle.fromSnapshot(weatherSnapshot);
 
-  static const Persona persona = Persona(
+  static final Persona persona = Persona(
     id: 'karen',
     name: 'Karen',
     title: 'Roast Queen',
-    avatarAsset: 'assets/personas/karen.png',
+    avatarAsset: DmAssets.personas.karen,
     requiredXp: 0,
     unlocked: true,
   );
 
   static final List<Persona> personas = List.unmodifiable([
     persona,
-    const Persona(
+    Persona(
       id: 'frat-bro',
       name: 'Frat Bro',
       title: 'Barometer Bro',
-      avatarAsset: 'assets/personas/frat_bro.png',
+      avatarAsset: DmAssets.personas.fratBro,
       requiredXp: 0,
       unlocked: true,
     ),
-    const Persona(
+    Persona(
       id: 'grandpa',
       name: 'Grandpa',
       title: 'Cloud Historian',
-      avatarAsset: 'assets/personas/grandpa.png',
+      avatarAsset: DmAssets.personas.grandpa,
       requiredXp: 0,
       unlocked: true,
     ),
-    const Persona(
+    Persona(
       id: 'politician',
       name: 'Politician',
       title: 'Spin Doctor',
-      avatarAsset: 'assets/personas/politician.png',
+      avatarAsset: DmAssets.personas.politician,
       requiredXp: 0,
       unlocked: true,
     ),
-    const Persona(
+    Persona(
       id: 'two-year-old',
       name: '2-Year-Old',
       title: 'Tiny Thunder',
-      avatarAsset: 'assets/personas/toddler.png',
+      avatarAsset: DmAssets.personas.toddler,
       requiredXp: 0,
       unlocked: true,
     ),
@@ -358,17 +359,17 @@ abstract final class DayMakerSampleData {
   ]);
 
   static final List<MemeTemplate> memeTemplates = List.unmodifiable([
-    const MemeTemplate(
+    MemeTemplate(
       id: 'partly-cloudy-scene',
       name: 'Making A Scene',
-      imageAsset: 'assets/memes/partly_cloudy_scene.png',
+      imageAsset: DmAssets.memeBackgrounds.sunny,
       topText: 'IT IS 72°F',
       bottomText: 'AND STILL MAKING A SCENE',
     ),
-    const MemeTemplate(
+    MemeTemplate(
       id: 'moderate-air',
       name: 'Moderate Air',
-      imageAsset: 'assets/memes/moderate_air.png',
+      imageAsset: DmAssets.memeBackgrounds.office,
       topText: 'AQI 82',
       bottomText: 'THE AIR HAS NOTES',
     ),

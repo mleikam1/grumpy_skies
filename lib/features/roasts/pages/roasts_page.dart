@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_routes.dart';
+import '../../../shared/assets/dm_assets.dart';
 import '../../progression/models/achievement.dart';
 import '../../progression/services/achievement_service.dart';
 import '../../progression/services/xp_service.dart';
@@ -208,12 +209,14 @@ class _RoastsPageState extends State<RoastsPage> {
                             (a) => AchievementBadge(
                               achievement: a,
                               icon: Icons.emoji_events,
+                              assetPath: _assetForAchievement(a.id),
                             ),
                           ),
                           ...locked.map(
                             (a) => AchievementBadge(
                               achievement: a,
                               icon: Icons.lock_outline,
+                              assetPath: _assetForAchievement(a.id),
                             ),
                           ),
                         ],
@@ -228,6 +231,21 @@ class _RoastsPageState extends State<RoastsPage> {
         ),
       ),
     );
+  }
+
+  String _assetForAchievement(String id) {
+    return switch (id) {
+      'streak_7' => DmAssets.badges.weekStreak,
+      'streak_30' => DmAssets.badges.monthStreak,
+      'all_day_roasts' => DmAssets.badges.allDayRoasts,
+      'severe_weather' => DmAssets.badges.severeWeather,
+      'share_10' => DmAssets.badges.socialRoaster,
+      'karen_10' => DmAssets.badges.karenMode,
+      'persona_switch' => DmAssets.badges.personaSwitcher,
+      'level_5' => DmAssets.badges.levelFive,
+      'level_10' => DmAssets.badges.legendaryRoaster,
+      _ => DmAssets.badges.firstRoast,
+    };
   }
 
   Future<void> _handleRoastReveal(

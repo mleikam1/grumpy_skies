@@ -6,6 +6,7 @@ import '../../../design/dm_radius.dart';
 import '../../../design/dm_shadows.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../shared/widgets/dm_asset_image.dart';
 
 class DmAchievementBadge extends StatelessWidget {
   const DmAchievementBadge({
@@ -13,6 +14,7 @@ class DmAchievementBadge extends StatelessWidget {
     required this.label,
     required this.icon,
     this.unlocked = true,
+    this.assetPath,
     this.progressLabel,
     this.semanticLabel,
   });
@@ -20,6 +22,7 @@ class DmAchievementBadge extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool unlocked;
+  final String? assetPath;
   final String? progressLabel;
   final String? semanticLabel;
 
@@ -55,10 +58,22 @@ class DmAchievementBadge extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Icon(
-                      icon,
-                      color: unlocked ? DMColors.deepNavy : accent,
-                      size: 28,
+                    // TODO(assets): Generated badge art should land at the
+                    // DmAssets.badges paths passed into this widget.
+                    Padding(
+                      padding: const EdgeInsets.all(DMSpacing.xs),
+                      child: DmAssetImage(
+                        assetPath: assetPath,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.contain,
+                        excludeFromSemantics: true,
+                        placeholderBuilder: (_) => Icon(
+                          icon,
+                          color: unlocked ? DMColors.deepNavy : accent,
+                          size: 28,
+                        ),
+                      ),
                     ),
                     if (!unlocked)
                       Positioned(

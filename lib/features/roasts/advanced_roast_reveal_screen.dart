@@ -10,6 +10,7 @@ import '../../design/dm_gradients.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
+import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/daymaker_components.dart';
 import 'widgets/advanced_roast_personas_row.dart';
 import 'widgets/advanced_roast_reveal_card.dart';
@@ -140,7 +141,7 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
                           SizedBox(height: gap),
                           const _SectionLabel('Personas'),
                           const SizedBox(height: DMSpacing.xs),
-                          const AdvancedRoastPersonasRow(
+                          AdvancedRoastPersonasRow(
                             personas: _personas,
                           ),
                           SizedBox(height: gap),
@@ -161,34 +162,34 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
   }
 }
 
-const _personas = <AdvancedRoastPersona>[
+final _personas = <AdvancedRoastPersona>[
   AdvancedRoastPersona(
     name: 'Karen',
     unlocked: true,
-    avatarAsset: 'assets/personas/karen.png',
+    avatarAsset: DmAssets.personas.karen,
     placeholderGradient: DMGradients.sunrise,
   ),
-  AdvancedRoastPersona(
+  const AdvancedRoastPersona(
     name: 'Sunny',
     unlocked: true,
     placeholderGradient: DMGradients.clearSky,
     placeholderIcon: Icons.wb_sunny_rounded,
   ),
-  AdvancedRoastPersona(
+  const AdvancedRoastPersona(
     name: 'Cloudy Carl',
     unlocked: false,
     lockLabel: 'Locked',
     placeholderGradient: DMGradients.twilight,
     placeholderIcon: Icons.cloud_rounded,
   ),
-  AdvancedRoastPersona(
+  const AdvancedRoastPersona(
     name: 'Drizzle',
     unlocked: false,
     lockLabel: 'Locked',
     placeholderGradient: DMGradients.rain,
     placeholderIcon: Icons.grain_rounded,
   ),
-  AdvancedRoastPersona(
+  const AdvancedRoastPersona(
     name: 'Thunder',
     unlocked: false,
     lockLabel: 'Locked',
@@ -426,31 +427,36 @@ class _AchievementsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const achievements = [
+    final achievements = [
       DmAchievementBadge(
         label: 'Early Bird',
         icon: Icons.wb_twilight_rounded,
+        assetPath: DmAssets.badges.firstRoast,
         progressLabel: 'Unlocked',
       ),
       DmAchievementBadge(
         label: 'Roast Master',
         icon: Icons.local_fire_department_rounded,
+        assetPath: DmAssets.badges.legendaryRoaster,
         progressLabel: 'Unlocked',
       ),
       DmAchievementBadge(
         label: 'Streak King',
         icon: Icons.workspace_premium_rounded,
+        assetPath: DmAssets.badges.weekStreak,
         unlocked: false,
         progressLabel: '4/5',
       ),
       DmAchievementBadge(
         label: 'Cloud Clearer',
         icon: Icons.filter_drama_rounded,
+        assetPath: DmAssets.badges.allDayRoasts,
         progressLabel: 'Unlocked',
       ),
       DmAchievementBadge(
         label: 'Mood Maker',
         icon: Icons.mood_rounded,
+        assetPath: DmAssets.badges.personaSwitcher,
         unlocked: false,
         progressLabel: '2/3',
       ),

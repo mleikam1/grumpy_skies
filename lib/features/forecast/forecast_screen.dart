@@ -10,6 +10,7 @@ import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/weather_repository.dart';
+import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/daymaker_components.dart';
 import 'widgets/forecast_dashboard_widgets.dart';
 
@@ -364,7 +365,20 @@ class _ForecastBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(painter: _ForecastBackdropPainter());
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // TODO(assets): Drop generated forecast backgrounds into DmAssets so
+        // condition-specific art can replace the painted fallback.
+        DmAssetImage(
+          assetPath: DmAssets.backgrounds.forecast.clearDay,
+          fit: BoxFit.cover,
+          excludeFromSemantics: true,
+          placeholderBuilder: (_) => const SizedBox.shrink(),
+        ),
+        CustomPaint(painter: _ForecastBackdropPainter()),
+      ],
+    );
   }
 }
 

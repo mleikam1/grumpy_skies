@@ -7,6 +7,7 @@ import '../../../design/dm_radius.dart';
 import '../../../design/dm_shadows.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../shared/widgets/dm_asset_image.dart';
 import '../../../shared/widgets/dm_glass_card.dart';
 import 'meme_style.dart';
 
@@ -84,6 +85,31 @@ class MemeCanvas extends StatelessWidget {
 
 class _MemeImagePlaceholder extends StatelessWidget {
   const _MemeImagePlaceholder({
+    required this.background,
+    required this.accentColor,
+  });
+
+  final MemeBackgroundPreset background;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return DmAssetImage(
+      // TODO(assets): Add generated meme backgrounds at DmAssets.memeBackgrounds
+      // paths; captions and stickers stay Flutter-rendered.
+      assetPath: background.assetPath,
+      fit: BoxFit.cover,
+      excludeFromSemantics: true,
+      placeholderBuilder: (_) => _MemeGeneratedFallback(
+        background: background,
+        accentColor: accentColor,
+      ),
+    );
+  }
+}
+
+class _MemeGeneratedFallback extends StatelessWidget {
+  const _MemeGeneratedFallback({
     required this.background,
     required this.accentColor,
   });
