@@ -252,7 +252,7 @@ class _AppColumn extends StatelessWidget {
             icon: Icons.cloud_sync_outlined,
             accentColor: DMColors.rainTeal,
             title: 'Weather data sources',
-            subtitle: 'Review forecast, radar, and air quality providers.',
+            subtitle: 'Weather data © OpenWeather',
             trailing: const _Chevron(),
             onTap: () => _showSnackBar(
               context,

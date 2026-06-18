@@ -40,6 +40,8 @@ void main() {
     expect(find.text('82 Moderate'), findsWidgets);
     expect(find.text('74° Comfortable'), findsOneWidget);
     expect(find.text('7-day forecast'), findsOneWidget);
+    await tester.ensureVisible(find.text('Weather data © OpenWeather'));
+    expect(find.text('Weather data © OpenWeather'), findsOneWidget);
     expect(find.bySemanticsLabel('Show a new weather roast'), findsOneWidget);
     expect(
         find.bySemanticsLabel('Share current weather roast'), findsOneWidget);

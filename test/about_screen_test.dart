@@ -90,12 +90,13 @@ void main() {
         findsOneWidget,
       );
 
-      await scrollUntilTextVisible(tester, 'Planned Data Sources');
+      await scrollUntilTextVisible(tester, 'Live Data Sources');
 
-      expect(find.text('Planned Data Sources'), findsOneWidget);
-      expect(find.text('Apple WeatherKit'), findsOneWidget);
-      expect(find.text('AccuWeather'), findsOneWidget);
-      expect(find.text('RainViewer'), findsOneWidget);
+      expect(find.text('Live Data Sources'), findsOneWidget);
+      expect(find.text('OpenWeather'), findsOneWidget);
+      expect(find.text('Weather data © OpenWeather'), findsOneWidget);
+      expect(find.text('One Call API 4.0'), findsOneWidget);
+      expect(find.text('US Precipitation Map Forecast'), findsOneWidget);
 
       await scrollUntilTextVisible(tester, 'Version 0.1.0');
 

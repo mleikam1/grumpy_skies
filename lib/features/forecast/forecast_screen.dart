@@ -210,6 +210,8 @@ class _ForecastScreenState extends State<ForecastScreen> {
                         gap: gap,
                         expanded: breakpoint.isExpanded,
                       ),
+                      SizedBox(height: gap),
+                      const _WeatherAttributionFooter(),
                     ],
                   ),
                 ),
@@ -312,6 +314,21 @@ class _ForecastLowerSection extends StatelessWidget {
         SizedBox(width: gap),
         Expanded(flex: 4, child: details),
       ],
+    );
+  }
+}
+
+class _WeatherAttributionFooter extends StatelessWidget {
+  const _WeatherAttributionFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Weather data © OpenWeather',
+      textAlign: TextAlign.center,
+      style: DMTypography.bodySmall.copyWith(
+        color: DMColors.textMuted,
+      ),
     );
   }
 }

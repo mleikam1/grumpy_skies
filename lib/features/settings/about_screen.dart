@@ -387,27 +387,27 @@ class _DataSourcesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _LinkSectionCard(
-      title: 'Planned Data Sources',
+      title: 'Live Data Sources',
       children: [
         _FutureLinkRow(
           icon: Icons.cloud_queue_rounded,
           accentColor: DMColors.skyBlue,
-          title: 'Apple WeatherKit',
-          subtitle: 'Forecast and current conditions',
+          title: 'OpenWeather',
+          subtitle: 'Weather data © OpenWeather',
           onTap: null,
         ),
         _FutureLinkRow(
           icon: Icons.wb_cloudy_rounded,
           accentColor: DMColors.sunriseYellow,
-          title: 'AccuWeather',
-          subtitle: 'Additional forecast coverage',
+          title: 'One Call API 4.0',
+          subtitle: 'Forecast and current conditions',
           onTap: null,
         ),
         _FutureLinkRow(
           icon: Icons.radar_rounded,
           accentColor: DMColors.rainTeal,
-          title: 'RainViewer',
-          subtitle: 'Radar layers and storm movement',
+          title: 'US Precipitation Map Forecast',
+          subtitle: 'Radar layers and precipitation frames',
           onTap: null,
         ),
       ],
@@ -560,7 +560,7 @@ class _FutureLinkRow extends StatelessWidget {
               const SizedBox(height: DMSpacing.xxs),
               Text(
                 subtitle,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.bodySmall.copyWith(
                   color: DMColors.textMuted,

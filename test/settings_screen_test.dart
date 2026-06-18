@@ -145,7 +145,8 @@ void main() {
       router.routerDelegate.currentConfiguration.uri.path,
       AppRoutes.about,
     );
-    expect(find.text('Planned Data Sources'), findsOneWidget);
+    expect(find.text('Live Data Sources'), findsOneWidget);
+    expect(find.text('Weather data © OpenWeather'), findsOneWidget);
     expect(find.text('Version 0.1.0'), findsOneWidget);
   });
 

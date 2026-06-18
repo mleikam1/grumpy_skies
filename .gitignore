@@ -43,3 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase/OpenWeather local secrets and generated logs
+.env
+.env.*
+!.env.example
+.secret.local
+**/.secret.local
+firebase-debug.log
+firebase-debug.*.log
+*-service-account*.json
+*service-account*.json
+*api-key*.json
+*api_key*.json
+*apikey*.json
