@@ -8,14 +8,18 @@ import '../repositories/weather_repository.dart';
 import 'location_service.dart';
 
 enum LocationSelectionStatus {
-  idle,
-  loading,
-  success,
-  denied,
-  deniedForever,
-  unavailable,
-  timeout,
-  error,
+  noSavedLocation,
+  requestingPermission,
+  permissionGranted,
+  permissionDenied,
+  permissionDeniedForever,
+  locationServicesDisabled,
+  locationTimeout,
+  locationError,
+  fetchingWeather,
+  weatherLoaded,
+  weatherError,
+  manualSearch,
 }
 
 class WeatherLocationController extends ChangeNotifier {
@@ -27,7 +31,12 @@ class WeatherLocationController extends ChangeNotifier {
   })  : _repository = repository,
         _locationService = locationService,
         _preferences = preferences,
-        _selectedLocation = initialLocation;
+        _selectedLocation = initialLocation?.hasValidCoordinates == true
+            ? initialLocation
+            : null,
+        _status = initialLocation?.hasValidCoordinates == true
+            ? LocationSelectionStatus.weatherLoaded
+            : LocationSelectionStatus.noSavedLocation;
 
   static const _selectedLocationKey = 'weather_selected_location';
 
@@ -50,8 +59,9 @@ class WeatherLocationController extends ChangeNotifier {
   final SharedPreferences? _preferences;
 
   WeatherLocation? _selectedLocation;
-  LocationSelectionStatus _status = LocationSelectionStatus.idle;
+  LocationSelectionStatus _status;
   String? _message;
+  bool _disposed = false;
 
   WeatherLocation? get selectedLocation => _selectedLocation;
   LocationSelectionStatus get status => _status;
@@ -60,27 +70,38 @@ class WeatherLocationController extends ChangeNotifier {
 
   Future<void> restoreLastSelectedLocation() async {
     final raw = _preferences?.getString(_selectedLocationKey);
-    if (raw == null || raw.trim().isEmpty) return;
+    if (raw == null || raw.trim().isEmpty) {
+      _selectedLocation = null;
+      _status = LocationSelectionStatus.noSavedLocation;
+      _message = null;
+      return;
+    }
 
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;
-      if (_isLegacyBundledLocation(json)) {
-        await _preferences?.remove(_selectedLocationKey);
+      if (_isBundledSanFranciscoLocation(json)) {
+        await _clearStoredLocation();
         return;
       }
 
-      _selectedLocation = WeatherLocation.fromJson(json);
-      _status = LocationSelectionStatus.success;
+      final restored = WeatherLocation.fromJson(json);
+      if (!restored.hasValidCoordinates) {
+        await _clearStoredLocation();
+        return;
+      }
+
+      _selectedLocation = restored;
+      _status = LocationSelectionStatus.weatherLoaded;
       _message = 'Restored ${_selectedLocation!.displayName}.';
-      notifyListeners();
+      _notifyListenersSafely();
     } catch (_) {
-      await _preferences?.remove(_selectedLocationKey);
+      await _clearStoredLocation();
     }
   }
 
   Future<void> useCurrentLocation() async {
     _setStatus(
-      LocationSelectionStatus.loading,
+      LocationSelectionStatus.requestingPermission,
       'Checking location permission...',
     );
 
@@ -96,8 +117,21 @@ class WeatherLocationController extends ChangeNotifier {
       return;
     }
 
+    if (!LocationCandidate.hasValidCoordinatePair(
+      deviceLocation.latitude,
+      deviceLocation.longitude,
+    )) {
+      _setStatus(
+        LocationSelectionStatus.locationError,
+        'Location returned invalid coordinates. Search manually instead.',
+      );
+      return;
+    }
+
     _setStatus(
-        LocationSelectionStatus.loading, 'Getting your forecast spot...');
+      LocationSelectionStatus.permissionGranted,
+      'Location permission granted. Finding your forecast spot...',
+    );
     try {
       final candidate = await _repository.reverseGeocode(
             latitude: deviceLocation.latitude,
@@ -144,6 +178,14 @@ class WeatherLocationController extends ChangeNotifier {
     LocationCandidate location, {
     WeatherLocationSource source = WeatherLocationSource.manual,
   }) async {
+    if (!location.hasValidCoordinates) {
+      _setStatus(
+        LocationSelectionStatus.locationError,
+        'That location has invalid coordinates. Search manually instead.',
+      );
+      return;
+    }
+
     _selectedLocation = location is WeatherLocation
         ? location.copyWith(updatedAt: DateTime.now())
         : WeatherLocation.fromCandidate(
@@ -151,28 +193,69 @@ class WeatherLocationController extends ChangeNotifier {
             source: source,
             updatedAt: DateTime.now(),
           );
-    _status = LocationSelectionStatus.success;
+    _status = source == WeatherLocationSource.device
+        ? LocationSelectionStatus.permissionGranted
+        : LocationSelectionStatus.manualSearch;
     _message = 'Using ${_selectedLocation!.displayName}.';
     await _preferences?.setString(
       _selectedLocationKey,
       jsonEncode(_selectedLocation!.toJson()),
     );
     _debugSelectedLocation(_selectedLocation!);
-    notifyListeners();
+    _notifyListenersSafely();
   }
 
   Future<void> clearLocation() async {
     _selectedLocation = null;
-    _status = LocationSelectionStatus.idle;
+    _status = LocationSelectionStatus.noSavedLocation;
     _message = null;
     await _preferences?.remove(_selectedLocationKey);
-    notifyListeners();
+    _notifyListenersSafely();
+  }
+
+  void beginManualSearch() {
+    _setStatus(
+      LocationSelectionStatus.manualSearch,
+      'Search by city or ZIP to choose your forecast location.',
+    );
+  }
+
+  void markFetchingWeather() {
+    final location = _selectedLocation;
+    if (location == null) return;
+    _setStatus(
+      LocationSelectionStatus.fetchingWeather,
+      'Fetching weather for ${location.displayName}...',
+    );
+    _debugWeatherFetchStarted(location);
+  }
+
+  void markWeatherLoaded() {
+    final location = _selectedLocation;
+    if (location == null) return;
+    _setStatus(
+      LocationSelectionStatus.weatherLoaded,
+      'Showing weather for ${location.displayName}.',
+    );
+    _debugWeatherFetchSucceeded(location);
+  }
+
+  void markWeatherError(String message) {
+    if (_selectedLocation == null) return;
+    _setStatus(LocationSelectionStatus.weatherError, message);
+    _debugWeatherFetchFailed(message);
   }
 
   void _setStatus(LocationSelectionStatus status, String message) {
     _status = status;
     _message = message;
-    notifyListeners();
+    _notifyListenersSafely();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   static LocationSelectionStatus _statusForFailure(
@@ -180,18 +263,32 @@ class WeatherLocationController extends ChangeNotifier {
   ) {
     return switch (type) {
       DeviceLocationFailureType.servicesDisabled =>
-        LocationSelectionStatus.unavailable,
+        LocationSelectionStatus.locationServicesDisabled,
       DeviceLocationFailureType.permissionDenied =>
-        LocationSelectionStatus.denied,
+        LocationSelectionStatus.permissionDenied,
       DeviceLocationFailureType.permissionDeniedForever =>
-        LocationSelectionStatus.deniedForever,
-      DeviceLocationFailureType.timeout => LocationSelectionStatus.timeout,
-      DeviceLocationFailureType.unknown => LocationSelectionStatus.error,
+        LocationSelectionStatus.permissionDeniedForever,
+      DeviceLocationFailureType.timeout =>
+        LocationSelectionStatus.locationTimeout,
+      DeviceLocationFailureType.unknown =>
+        LocationSelectionStatus.locationError,
     };
   }
 
-  static bool _isLegacyBundledLocation(Map<String, dynamic> json) {
-    if (json['updatedAt'] != null) return false;
+  Future<void> _clearStoredLocation() async {
+    _selectedLocation = null;
+    _status = LocationSelectionStatus.noSavedLocation;
+    _message = null;
+    await _preferences?.remove(_selectedLocationKey);
+    _notifyListenersSafely();
+  }
+
+  void _notifyListenersSafely() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
+  static bool _isBundledSanFranciscoLocation(Map<String, dynamic> json) {
     final name = (json['name'] as String?)
         ?.trim()
         .toLowerCase()
@@ -199,13 +296,17 @@ class WeatherLocationController extends ChangeNotifier {
     final lat = (json['lat'] as num?)?.toDouble();
     final lon = (json['lon'] as num?)?.toDouble();
     final bundledName = ['san', 'francisco'].join(' ');
-    return name == bundledName &&
+    final looksLikeBundledLocation = name == bundledName &&
         lat != null &&
         lon != null &&
         lat > 37.7 &&
         lat < 37.8 &&
         lon > -122.5 &&
         lon < -122.3;
+    if (!looksLikeBundledLocation) return false;
+
+    final source = WeatherLocationSourceX.parse(json['source']);
+    return json['updatedAt'] == null || source == WeatherLocationSource.unknown;
   }
 
   static void _debugSelectedLocation(WeatherLocation location) {
@@ -216,5 +317,32 @@ class WeatherLocationController extends ChangeNotifier {
       'lon=${location.longitude.toStringAsFixed(3)} '
       'name=${location.displayName}',
     );
+  }
+
+  static void _debugWeatherFetchStarted(WeatherLocation location) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] weather fetch started '
+      'source=${location.source} '
+      'lat=${location.latitude.toStringAsFixed(3)} '
+      'lon=${location.longitude.toStringAsFixed(3)} '
+      'name=${location.displayName}',
+    );
+  }
+
+  static void _debugWeatherFetchSucceeded(WeatherLocation location) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] weather fetch succeeded '
+      'source=${location.source} '
+      'lat=${location.latitude.toStringAsFixed(3)} '
+      'lon=${location.longitude.toStringAsFixed(3)} '
+      'name=${location.displayName}',
+    );
+  }
+
+  static void _debugWeatherFetchFailed(String message) {
+    if (!kDebugMode) return;
+    debugPrint('[GrumpySkies] weather fetch failed: $message');
   }
 }

@@ -258,7 +258,7 @@ class _LocationSettingsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final selected = controller.selectedLocation;
     final status = controller.status;
-    final loading = status == LocationSelectionStatus.loading;
+    final loading = _isBusy(status);
 
     return DmSettingsRow(
       icon: Icons.location_on_outlined,
@@ -340,14 +340,26 @@ class _LocationSettingsRow extends StatelessWidget {
 
   static Color _statusColor(LocationSelectionStatus status) {
     return switch (status) {
-      LocationSelectionStatus.success => DMColors.mintSoft,
-      LocationSelectionStatus.denied ||
-      LocationSelectionStatus.deniedForever ||
-      LocationSelectionStatus.unavailable ||
-      LocationSelectionStatus.timeout ||
-      LocationSelectionStatus.error =>
+      LocationSelectionStatus.permissionGranted ||
+      LocationSelectionStatus.weatherLoaded =>
+        DMColors.mintSoft,
+      LocationSelectionStatus.permissionDenied ||
+      LocationSelectionStatus.permissionDeniedForever ||
+      LocationSelectionStatus.locationServicesDisabled ||
+      LocationSelectionStatus.locationTimeout ||
+      LocationSelectionStatus.locationError ||
+      LocationSelectionStatus.weatherError =>
         DMColors.sunriseYellow,
       _ => DMColors.textMuted,
+    };
+  }
+
+  static bool _isBusy(LocationSelectionStatus status) {
+    return switch (status) {
+      LocationSelectionStatus.requestingPermission ||
+      LocationSelectionStatus.fetchingWeather =>
+        true,
+      _ => false,
     };
   }
 }

@@ -16,7 +16,7 @@ class WeatherLocationSelector extends StatefulWidget {
   const WeatherLocationSelector({
     super.key,
     required this.controller,
-    this.title = 'See your local forecast',
+    this.title = 'Your local sky, not San Francisco.',
     this.onLocationSelected,
   });
 
@@ -64,6 +64,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
   }
 
   void _showManualSearch() {
+    widget.controller.beginManualSearch();
     setState(() => _manualSearchVisible = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -186,6 +187,13 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
             ],
           ),
           const SizedBox(height: DMSpacing.sm),
+          Text(
+            'Grumpy Skies needs your location to show your local forecast, radar, alerts, and weather roasts.',
+            style: DMTypography.body.copyWith(
+              color: DMColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: DMSpacing.md),
           LayoutBuilder(
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 520;
@@ -194,8 +202,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
                 semanticLabel: 'Use my current location',
                 leading: const Icon(Icons.my_location),
                 expand: true,
-                loading:
-                    widget.controller.status == LocationSelectionStatus.loading,
+                loading: _isBusy(widget.controller.status),
                 onPressed: _useCurrentLocation,
               );
               final manualButton = DmPillButton(
@@ -341,11 +348,21 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
 
   static bool _shouldShowManualSearch(LocationSelectionStatus status) {
     return switch (status) {
-      LocationSelectionStatus.denied ||
-      LocationSelectionStatus.deniedForever ||
-      LocationSelectionStatus.unavailable ||
-      LocationSelectionStatus.timeout ||
-      LocationSelectionStatus.error =>
+      LocationSelectionStatus.manualSearch ||
+      LocationSelectionStatus.permissionDenied ||
+      LocationSelectionStatus.permissionDeniedForever ||
+      LocationSelectionStatus.locationServicesDisabled ||
+      LocationSelectionStatus.locationTimeout ||
+      LocationSelectionStatus.locationError =>
+        true,
+      _ => false,
+    };
+  }
+
+  static bool _isBusy(LocationSelectionStatus status) {
+    return switch (status) {
+      LocationSelectionStatus.requestingPermission ||
+      LocationSelectionStatus.fetchingWeather =>
         true,
       _ => false,
     };
@@ -353,12 +370,15 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
 
   static Color _statusColor(LocationSelectionStatus status) {
     return switch (status) {
-      LocationSelectionStatus.success => DMColors.mintSoft,
-      LocationSelectionStatus.denied ||
-      LocationSelectionStatus.deniedForever ||
-      LocationSelectionStatus.unavailable ||
-      LocationSelectionStatus.timeout ||
-      LocationSelectionStatus.error =>
+      LocationSelectionStatus.permissionGranted ||
+      LocationSelectionStatus.weatherLoaded =>
+        DMColors.mintSoft,
+      LocationSelectionStatus.permissionDenied ||
+      LocationSelectionStatus.permissionDeniedForever ||
+      LocationSelectionStatus.locationServicesDisabled ||
+      LocationSelectionStatus.locationTimeout ||
+      LocationSelectionStatus.locationError ||
+      LocationSelectionStatus.weatherError =>
         DMColors.sunriseYellow,
       _ => DMColors.textMuted,
     };

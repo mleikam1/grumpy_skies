@@ -125,6 +125,37 @@ void main() {
     expect(repository.lastLongitude, closeTo(-98.7654, 0.0001));
     expect(find.text('Actual Place'), findsOneWidget);
   });
+
+  testWidgets('ForecastScreen shows first-run location prompt without weather',
+      (tester) async {
+    const repository = FakeWeatherRepository();
+    final locationController = WeatherLocationController(
+      repository: repository,
+    );
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<WeatherRepository>.value(value: repository),
+          ChangeNotifierProvider<WeatherLocationController>.value(
+            value: locationController,
+          ),
+        ],
+        child: MaterialApp(
+          theme: DMTheme.light,
+          home: const ForecastScreen(weatherRepository: repository),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Your local sky, not San Francisco.'), findsOneWidget);
+    expect(find.text('Use my current location'), findsOneWidget);
+    expect(find.text('Search manually'), findsOneWidget);
+    expect(find.text('Demo City'), findsNothing);
+    expect(find.text('72°F'), findsNothing);
+  });
 }
 
 class _RecordingWeatherRepository extends WeatherRepository {

@@ -45,7 +45,7 @@ void main() {
     expect(
         controller.selectedLocation?.appSource, WeatherLocationSource.manual);
     expect(controller.selectedLocation?.latitude, closeTo(41.8781, 0.0001));
-    expect(controller.status, LocationSelectionStatus.success);
+    expect(controller.status, LocationSelectionStatus.weatherLoaded);
   });
 
   test('clears legacy bundled San Francisco location instead of restoring it',
@@ -68,6 +68,30 @@ void main() {
 
     expect(controller.selectedLocation, isNull);
     expect(preferences.getString(storageKey), isNull);
+    expect(controller.status, LocationSelectionStatus.noSavedLocation);
+  });
+
+  test('clears invalid persisted coordinates before startup uses them',
+      () async {
+    SharedPreferences.setMockInitialValues({
+      storageKey: jsonEncode({
+        'name': 'Broken Place',
+        'country': 'US',
+        'lat': 91,
+        'lon': -87.6298,
+        'source': 'manual',
+        'updatedAt': DateTime(2026, 6, 19, 9).toIso8601String(),
+      }),
+    });
+
+    final controller = await WeatherLocationController.create(
+      repository: const FakeWeatherRepository(),
+    );
+    final preferences = await SharedPreferences.getInstance();
+
+    expect(controller.selectedLocation, isNull);
+    expect(preferences.getString(storageKey), isNull);
+    expect(controller.status, LocationSelectionStatus.noSavedLocation);
   });
 
   test('useCurrentLocation persists device coordinates from location service',
@@ -88,6 +112,45 @@ void main() {
     expect(selected.latitude, closeTo(12.3456, 0.0001));
     expect(selected.longitude, closeTo(-98.7654, 0.0001));
     expect(preferences.getString(storageKey), isNotNull);
+  });
+
+  test('denied permission leaves location empty and shows manual fallback',
+      () async {
+    final preferences = await SharedPreferences.getInstance();
+    final controller = WeatherLocationController(
+      repository: const FakeWeatherRepository(),
+      locationService: const _DeniedLocationService(),
+      preferences: preferences,
+    );
+
+    await controller.useCurrentLocation();
+
+    expect(controller.selectedLocation, isNull);
+    expect(controller.status, LocationSelectionStatus.permissionDenied);
+    expect(controller.message, contains('denied'));
+    expect(preferences.getString(storageKey), isNull);
+  });
+
+  test('rejects manual selections with invalid coordinates', () async {
+    final preferences = await SharedPreferences.getInstance();
+    final controller = WeatherLocationController(
+      repository: const FakeWeatherRepository(),
+      preferences: preferences,
+    );
+
+    await controller.selectLocation(
+      const LocationCandidate(
+        name: 'Impossible Place',
+        country: 'US',
+        lat: 10,
+        lon: -181,
+        source: 'city',
+      ),
+    );
+
+    expect(controller.selectedLocation, isNull);
+    expect(controller.status, LocationSelectionStatus.locationError);
+    expect(preferences.getString(storageKey), isNull);
   });
 }
 
@@ -121,6 +184,20 @@ class _ReverseGeocodingRepository extends FakeWeatherRepository {
       lat: latitude,
       lon: longitude,
       source: 'device',
+    );
+  }
+}
+
+class _DeniedLocationService extends LocationService {
+  const _DeniedLocationService();
+
+  @override
+  Future<DeviceLocationResult> getCurrentLocation() async {
+    return const DeviceLocationResult.failure(
+      DeviceLocationFailure(
+        type: DeviceLocationFailureType.permissionDenied,
+        message: 'Location permission was denied.',
+      ),
     );
   }
 }

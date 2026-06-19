@@ -61,7 +61,9 @@ class _ForecastScreenState extends State<ForecastScreen> {
     if (_locationController!.selectedLocation == null) {
       setState(() => _loading = false);
     } else {
-      _loadWeather();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadWeather();
+      });
     }
   }
 
@@ -137,6 +139,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
       _loading = true;
       _error = null;
     });
+    _locationController?.markFetchingWeather();
 
     try {
       final weather = await _repository!.getWeather(
@@ -157,9 +160,11 @@ class _ForecastScreenState extends State<ForecastScreen> {
         _weather = weather;
         _relativeNow = relativeNow;
       });
+      _locationController?.markWeatherLoaded();
     } catch (error) {
       if (!mounted) return;
       setState(() => _error = error);
+      _locationController?.markWeatherError(_friendlyError(error));
     } finally {
       if (mounted) {
         setState(() => _loading = false);

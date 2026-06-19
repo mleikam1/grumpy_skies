@@ -3,6 +3,8 @@ import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/repositories/fake_roast_repository.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
+import 'package:grumpy_skies/repositories/open_weather_repository.dart';
+import 'package:grumpy_skies/services/open_weather_backend_client.dart';
 
 void main() {
   test('FakeWeatherRepository returns stable demo sample data', () async {
@@ -37,7 +39,7 @@ void main() {
     final persona = await repo.getPersona('karen');
     final roast = await repo.getDailyRoast(
       personaId: persona.id,
-      weatherSnapshotId: 'sf-partly-cloudy-2026-06-14',
+      weatherSnapshotId: 'demo-partly-cloudy-2026-06-14',
     );
 
     expect(persona.displayName, 'Karen, Roast Queen');
@@ -65,5 +67,17 @@ void main() {
     expect(updated.temperatureUnit, TemperatureUnit.celsius);
     expect(updated.adsEnabled, isFalse);
     expect(updated.xp, 420);
+  });
+
+  test('OpenWeatherRepository rejects invalid coordinates before backend calls',
+      () async {
+    final repo = OpenWeatherRepository(
+      client: OpenWeatherBackendClient(baseUrl: 'https://example.com/api'),
+    );
+
+    await expectLater(
+      repo.getWeather(latitude: 91, longitude: -87.6298),
+      throwsA(isA<ArgumentError>()),
+    );
   });
 }

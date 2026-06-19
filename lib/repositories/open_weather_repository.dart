@@ -39,6 +39,7 @@ class OpenWeatherRepository extends WeatherRepository {
     required double latitude,
     required double longitude,
   }) {
+    _validateCoordinates(latitude, longitude);
     return _client.reverse(latitude: latitude, longitude: longitude);
   }
 
@@ -48,6 +49,7 @@ class OpenWeatherRepository extends WeatherRepository {
     required double longitude,
     bool forceRefresh = false,
   }) async {
+    _validateCoordinates(latitude, longitude);
     final bundle = await getWeather(
       latitude: latitude,
       longitude: longitude,
@@ -63,6 +65,7 @@ class OpenWeatherRepository extends WeatherRepository {
     bool forceRefresh = false,
     LocationCandidate? location,
   }) async {
+    _validateCoordinates(latitude, longitude);
     if (!forceRefresh) {
       final cached = _validCachedBundle(latitude, longitude);
       if (cached != null) return cached;
@@ -312,6 +315,16 @@ class OpenWeatherRepository extends WeatherRepository {
   }
 
   static double _fToC(double tempF) => (tempF - 32) * 5 / 9;
+
+  static void _validateCoordinates(double latitude, double longitude) {
+    if (!LocationCandidate.hasValidCoordinatePair(latitude, longitude)) {
+      throw ArgumentError.value(
+        'lat=$latitude lon=$longitude',
+        'coordinates',
+        'Weather requests require valid latitude and longitude.',
+      );
+    }
+  }
 
   static void _debugWeatherLocation({
     required double latitude,

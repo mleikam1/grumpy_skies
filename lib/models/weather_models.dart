@@ -34,6 +34,17 @@ class LocationCandidate {
 
   bool get isUs => country.toUpperCase() == 'US';
 
+  bool get hasValidCoordinates => hasValidCoordinatePair(lat, lon);
+
+  static bool hasValidCoordinatePair(double latitude, double longitude) {
+    return latitude.isFinite &&
+        longitude.isFinite &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180;
+  }
+
   Map<String, dynamic> toJson() => {
         'name': name,
         if (state != null) 'state': state,
@@ -58,22 +69,22 @@ class LocationCandidate {
 enum WeatherLocationSource {
   device,
   manual,
-  fallback,
+  unknown,
 }
 
 extension WeatherLocationSourceX on WeatherLocationSource {
   String get storageValue => switch (this) {
         WeatherLocationSource.device => 'device',
         WeatherLocationSource.manual => 'manual',
-        WeatherLocationSource.fallback => 'fallback',
+        WeatherLocationSource.unknown => 'unknown',
       };
 
   static WeatherLocationSource parse(Object? value) {
     final normalized = value?.toString().trim().toLowerCase();
     return switch (normalized) {
       'device' || 'browser' => WeatherLocationSource.device,
-      'fallback' => WeatherLocationSource.fallback,
-      _ => WeatherLocationSource.manual,
+      'manual' || 'city' || 'zip' => WeatherLocationSource.manual,
+      _ => WeatherLocationSource.unknown,
     };
   }
 }
@@ -88,14 +99,21 @@ class WeatherLocation extends LocationCandidate {
     WeatherLocationSource source = WeatherLocationSource.manual,
     required this.updatedAt,
   })  : appSource = source,
+        assert(
+          latitude >= -90 &&
+              latitude <= 90 &&
+              longitude >= -180 &&
+              longitude <= 180,
+          'Weather location coordinates must be valid latitude/longitude values.',
+        ),
         super(
           lat: latitude,
           lon: longitude,
           source: source == WeatherLocationSource.device
               ? 'device'
-              : source == WeatherLocationSource.fallback
-                  ? 'fallback'
-                  : 'manual',
+              : source == WeatherLocationSource.manual
+                  ? 'manual'
+                  : 'unknown',
         );
 
   final WeatherLocationSource appSource;
@@ -126,6 +144,7 @@ class WeatherLocation extends LocationCandidate {
     WeatherLocationSource? source,
     DateTime? updatedAt,
   }) {
+    _validateCoordinates(candidate.latitude, candidate.longitude);
     return WeatherLocation(
       name: candidate.name,
       state: candidate.state,
@@ -145,16 +164,29 @@ class WeatherLocation extends LocationCandidate {
       };
 
   factory WeatherLocation.fromJson(Map<String, dynamic> json) {
+    final latitude = (json['lat'] as num).toDouble();
+    final longitude = (json['lon'] as num).toDouble();
+    _validateCoordinates(latitude, longitude);
     return WeatherLocation(
       name: (json['name'] ?? 'Selected location') as String,
       state: json['state'] as String?,
       country: (json['country'] ?? 'US') as String,
-      latitude: (json['lat'] as num).toDouble(),
-      longitude: (json['lon'] as num).toDouble(),
+      latitude: latitude,
+      longitude: longitude,
       source: WeatherLocationSourceX.parse(json['source']),
       updatedAt: DateTime.tryParse((json['updatedAt'] ?? '') as String) ??
           DateTime.now(),
     );
+  }
+
+  static void _validateCoordinates(double latitude, double longitude) {
+    if (!LocationCandidate.hasValidCoordinatePair(latitude, longitude)) {
+      throw ArgumentError.value(
+        'lat=$latitude lon=$longitude',
+        'coordinates',
+        'Weather location coordinates must be valid latitude/longitude values.',
+      );
+    }
   }
 }
 
