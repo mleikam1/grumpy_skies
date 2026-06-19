@@ -138,23 +138,25 @@ class OpenWeatherRepository extends WeatherRepository {
       locationName: locationName,
     );
 
-    final currentFuture = _client.current(
-      latitude: latitude,
-      longitude: longitude,
-      locationName: locationName,
-    );
-    final minuteFuture = _client.minute(
-      latitude: latitude,
-      longitude: longitude,
-    );
-    final hourlyFuture = _client.hourly(
-      latitude: latitude,
-      longitude: longitude,
-    );
+    final weatherParts = await Future.wait<Object>([
+      _client.current(
+        latitude: latitude,
+        longitude: longitude,
+        locationName: locationName,
+      ),
+      _client.minute(
+        latitude: latitude,
+        longitude: longitude,
+      ),
+      _client.hourly(
+        latitude: latitude,
+        longitude: longitude,
+      ),
+    ]);
 
-    final current = await currentFuture;
-    final minutes = await minuteFuture;
-    final timeline = await hourlyFuture;
+    final current = weatherParts[0] as CurrentWeather;
+    final minutes = weatherParts[1] as List<MinutePrecipitation>;
+    final timeline = weatherParts[2] as List<TimelineWeatherPoint>;
     final alerts = current.alertIds.isEmpty
         ? const <WeatherAlert>[]
         : await getWeatherAlerts(alertIds: current.alertIds);
