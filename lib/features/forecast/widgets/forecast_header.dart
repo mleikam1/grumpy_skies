@@ -10,10 +10,12 @@ class ForecastHeader extends StatelessWidget {
     super.key,
     required this.location,
     required this.onNotificationsPressed,
+    required this.onChangeLocation,
   });
 
   final String location;
   final VoidCallback onNotificationsPressed;
+  final VoidCallback onChangeLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,13 @@ class ForecastHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: DMSpacing.sm),
+        DmIconButton(
+          icon: const Icon(Icons.edit_location_alt_outlined),
+          semanticLabel: 'Change location',
+          tooltip: 'Change location',
+          onPressed: onChangeLocation,
+        ),
+        const SizedBox(width: DMSpacing.xs),
         DmIconButton(
           icon: const Icon(Icons.notifications_none_rounded),
           semanticLabel: 'Notifications',

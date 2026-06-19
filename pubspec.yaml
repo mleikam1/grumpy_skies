@@ -13,10 +13,15 @@ dependencies:
   # HTTP & storage
   http: ^1.2.0
   shared_preferences: ^2.2.3
+  geolocator: ^14.0.2
 
   # State mgmt (simple)
   provider: ^6.1.2
   go_router: ^14.8.1
+
+  # Maps
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
 
   # Icons and SVG support
   cupertino_icons: ^1.0.8

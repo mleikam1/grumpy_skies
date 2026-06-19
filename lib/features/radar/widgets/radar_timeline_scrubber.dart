@@ -12,25 +12,26 @@ class RadarTimelineScrubber extends StatelessWidget {
     super.key,
     required this.playing,
     required this.value,
+    required this.max,
+    required this.divisions,
+    required this.timeLabel,
+    required this.startLabel,
+    required this.endLabel,
     required this.onChanged,
     required this.onPlayPause,
+    required this.onLatest,
   });
-
-  static const _labels = ['-60m', 'Now', '+60m', '+120m'];
 
   final bool playing;
   final double value;
+  final double max;
+  final int divisions;
+  final String timeLabel;
+  final String startLabel;
+  final String endLabel;
   final ValueChanged<double> onChanged;
   final VoidCallback onPlayPause;
-
-  String get _timeLabel {
-    return switch (value.round()) {
-      0 => 'Past hour',
-      1 => 'Now - storm edge ETA 24 min',
-      2 => '+60m FutureCast',
-      _ => '+120m FutureCast',
-    };
-  }
+  final VoidCallback onLatest;
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +45,17 @@ class RadarTimelineScrubber extends StatelessWidget {
           final compact = constraints.maxWidth < 520;
           final timeline = _TimelineTrack(
             value: value,
-            labels: _labels,
+            max: max,
+            divisions: divisions,
+            startLabel: startLabel,
+            endLabel: endLabel,
             onChanged: onChanged,
           );
           final header = _TimelineHeader(
             playing: playing,
-            timeLabel: _timeLabel,
+            timeLabel: timeLabel,
             onPlayPause: onPlayPause,
+            onLatest: onLatest,
           );
 
           if (compact) {
@@ -66,7 +71,7 @@ class RadarTimelineScrubber extends StatelessWidget {
 
           return Row(
             children: [
-              SizedBox(width: 220, child: header),
+              SizedBox(width: 320, child: header),
               const SizedBox(width: DMSpacing.md),
               Expanded(child: timeline),
             ],
@@ -82,11 +87,13 @@ class _TimelineHeader extends StatelessWidget {
     required this.playing,
     required this.timeLabel,
     required this.onPlayPause,
+    required this.onLatest,
   });
 
   final bool playing;
   final String timeLabel;
   final VoidCallback onPlayPause;
+  final VoidCallback onLatest;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +131,17 @@ class _TimelineHeader extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: DMSpacing.xs),
+        DmPillButton(
+          label: 'Latest',
+          semanticLabel: 'Show latest radar frame',
+          variant: DmPillButtonVariant.glass,
+          padding: const EdgeInsets.symmetric(
+            horizontal: DMSpacing.md,
+            vertical: DMSpacing.xs,
+          ),
+          onPressed: onLatest,
+        ),
       ],
     );
   }
@@ -132,18 +150,22 @@ class _TimelineHeader extends StatelessWidget {
 class _TimelineTrack extends StatelessWidget {
   const _TimelineTrack({
     required this.value,
-    required this.labels,
+    required this.max,
+    required this.divisions,
+    required this.startLabel,
+    required this.endLabel,
     required this.onChanged,
   });
 
   final double value;
-  final List<String> labels;
+  final double max;
+  final int divisions;
+  final String startLabel;
+  final String endLabel;
   final ValueChanged<double> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final activeLabel = labels[value.round().clamp(0, labels.length - 1)];
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -162,32 +184,50 @@ class _TimelineTrack extends StatelessWidget {
           child: Slider(
             value: value,
             min: 0,
-            max: 3,
-            divisions: 3,
-            label: activeLabel,
+            max: max,
+            divisions: divisions,
+            label: '${value.round()}',
             semanticFormatterCallback: (value) {
-              final label = labels[value.round().clamp(0, labels.length - 1)];
-              return 'Radar timeline $label';
+              return 'Radar timeline frame ${value.round() + 1}';
             },
             onChanged: onChanged,
           ),
         ),
         Row(
           children: [
-            for (final label in labels)
-              Expanded(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelSmall.copyWith(
-                    color: label == activeLabel
-                        ? DMColors.sunriseYellow
-                        : DMColors.textMuted,
-                  ),
+            Expanded(
+              child: Text(
+                startLabel,
+                textAlign: TextAlign.left,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.textMuted,
                 ),
               ),
+            ),
+            Expanded(
+              child: Text(
+                '10 min steps',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.sunriseYellow,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                endLabel,
+                textAlign: TextAlign.right,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.textMuted,
+                ),
+              ),
+            ),
           ],
         ),
       ],

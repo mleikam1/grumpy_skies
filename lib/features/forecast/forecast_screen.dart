@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +12,10 @@ import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/weather_repository.dart';
+import '../../services/weather_location_controller.dart';
 import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/daymaker_components.dart';
+import '../../shared/widgets/weather_location_selector.dart';
 import 'widgets/forecast_dashboard_widgets.dart';
 
 class ForecastScreen extends StatefulWidget {
@@ -27,17 +31,19 @@ class ForecastScreen extends StatefulWidget {
 }
 
 class _ForecastScreenState extends State<ForecastScreen> {
-  static const _latitude = 37.7749;
-  static const _longitude = -122.4194;
   static const _sampleUpdatedOffset = Duration(minutes: 10);
 
   WeatherRepository? _repository;
+  WeatherLocationController? _locationController;
   WeatherBundle? _weather;
   DateTime? _relativeNow;
   Object? _error;
+  Timer? _autoRefreshTimer;
+  String? _activeLocationKey;
   var _loading = true;
   var _roastIndex = 0;
   var _loadedRepository = false;
+  var _showLocationSelector = false;
 
   @override
   void didChangeDependencies() {
@@ -45,8 +51,19 @@ class _ForecastScreenState extends State<ForecastScreen> {
     if (_loadedRepository) return;
 
     _repository = widget.weatherRepository ?? context.read<WeatherRepository>();
+    _locationController = _readLocationController() ??
+        WeatherLocationController(
+          repository: _repository!,
+          initialLocation: WeatherLocationController.fallbackLocation,
+        );
+    _locationController!.addListener(_handleLocationChanged);
     _loadedRepository = true;
-    _loadWeather();
+    _startAutoRefresh();
+    if (_locationController!.selectedLocation == null) {
+      setState(() => _loading = false);
+    } else {
+      _loadWeather();
+    }
   }
 
   @override
@@ -59,7 +76,64 @@ class _ForecastScreenState extends State<ForecastScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    _locationController?.removeListener(_handleLocationChanged);
+    super.dispose();
+  }
+
+  WeatherLocationController? _readLocationController() {
+    try {
+      return context.read<WeatherLocationController>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
+      if (!mounted || _loading || _weather == null) return;
+      _loadWeather();
+    });
+  }
+
+  void _handleLocationChanged() {
+    final location = _locationController?.selectedLocation;
+    if (location == null) {
+      if (!mounted) return;
+      setState(() {
+        _weather = null;
+        _activeLocationKey = null;
+        _loading = false;
+        _showLocationSelector = true;
+      });
+      return;
+    }
+
+    final key = _locationKey(location);
+    if (key == _activeLocationKey) {
+      if (mounted) setState(() {});
+      return;
+    }
+
+    _activeLocationKey = key;
+    _showLocationSelector = false;
+    _loadWeather(forceRefresh: true);
+  }
+
   Future<void> _loadWeather({bool forceRefresh = false}) async {
+    final location = _locationController?.selectedLocation;
+    if (location == null) {
+      setState(() {
+        _loading = false;
+        _showLocationSelector = true;
+      });
+      return;
+    }
+
+    _activeLocationKey = _locationKey(location);
     setState(() {
       _loading = true;
       _error = null;
@@ -67,15 +141,22 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
     try {
       final weather = await _repository!.getWeather(
-        latitude: _latitude,
-        longitude: _longitude,
+        latitude: location.lat,
+        longitude: location.lon,
         forceRefresh: forceRefresh,
+        location: location,
       );
       if (!mounted) return;
 
+      final now = DateTime.now();
+      final observedAt = weather.current.lastUpdated;
+      final relativeNow =
+          now.difference(observedAt).abs() > const Duration(hours: 6)
+              ? observedAt.add(_sampleUpdatedOffset)
+              : now;
       setState(() {
         _weather = weather;
-        _relativeNow = weather.current.lastUpdated.add(_sampleUpdatedOffset);
+        _relativeNow = relativeNow;
       });
     } catch (error) {
       if (!mounted) return;
@@ -85,6 +166,10 @@ class _ForecastScreenState extends State<ForecastScreen> {
         setState(() => _loading = false);
       }
     }
+  }
+
+  static String _locationKey(LocationCandidate location) {
+    return '${location.lat.toStringAsFixed(4)},${location.lon.toStringAsFixed(4)}';
   }
 
   void _showNotificationsMessage() {
@@ -144,9 +229,19 @@ class _ForecastScreenState extends State<ForecastScreen> {
       return _ForecastStateMessage(
         icon: Icons.cloud_off_outlined,
         title: 'Forecast unavailable',
-        message: 'Pull to refresh or try again in a moment.',
+        message: _friendlyError(_error),
         actionLabel: 'Retry',
         onAction: () => _loadWeather(forceRefresh: true),
+      );
+    }
+
+    if (_weather == null || _showLocationSelector) {
+      return _LocationSelectionBody(
+        controller: _locationController!,
+        onLocationSelected: (_) {
+          setState(() => _showLocationSelector = false);
+          _loadWeather(forceRefresh: true);
+        },
       );
     }
 
@@ -187,7 +282,25 @@ class _ForecastScreenState extends State<ForecastScreen> {
                       ForecastHeader(
                         location: location,
                         onNotificationsPressed: _showNotificationsMessage,
+                        onChangeLocation: () {
+                          setState(() => _showLocationSelector = true);
+                        },
                       ),
+                      if (_error != null) ...[
+                        const SizedBox(height: DMSpacing.sm),
+                        _StaleWeatherBanner(message: _friendlyError(_error)),
+                      ],
+                      if (_showLocationSelector) ...[
+                        SizedBox(height: gap),
+                        WeatherLocationSelector(
+                          controller: _locationController!,
+                          title: 'Change location',
+                          onLocationSelected: (_) {
+                            setState(() => _showLocationSelector = false);
+                            _loadWeather(forceRefresh: true);
+                          },
+                        ),
+                      ],
                       SizedBox(height: gap),
                       _ForecastTopSection(
                         weather: weather,
@@ -204,6 +317,14 @@ class _ForecastScreenState extends State<ForecastScreen> {
                       ),
                       SizedBox(height: gap),
                       ForecastMetricChips(weather: snapshot),
+                      SizedBox(height: gap),
+                      ShortTermPrecipitationCard(
+                        minutes: weather.minutePrecipitation,
+                      ),
+                      if (weather.alerts.isNotEmpty) ...[
+                        SizedBox(height: gap),
+                        WeatherAlertsPanel(alerts: weather.alerts),
+                      ],
                       SizedBox(height: gap),
                       _ForecastLowerSection(
                         weather: weather,
@@ -227,6 +348,78 @@ class _ForecastScreenState extends State<ForecastScreen> {
     final trimmed = locationName.trim();
     if (trimmed.isEmpty) return 'San Francisco';
     return trimmed.split(',').first.trim();
+  }
+
+  static String _friendlyError(Object? error) {
+    final message = error?.toString() ?? '';
+    if (message.isEmpty) {
+      return 'Pull to refresh or try again in a moment.';
+    }
+    return message.replaceFirst('Exception: ', '');
+  }
+}
+
+class _LocationSelectionBody extends StatelessWidget {
+  const _LocationSelectionBody({
+    required this.controller,
+    required this.onLocationSelected,
+  });
+
+  final WeatherLocationController controller;
+  final ValueChanged<LocationCandidate> onLocationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          return ListView(
+            padding: DMSpacing.pagePaddingForWidth(width).copyWith(
+              bottom: DMSpacing.x2,
+            ),
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: WeatherLocationSelector(
+                    controller: controller,
+                    onLocationSelected: onLocationSelected,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _StaleWeatherBanner extends StatelessWidget {
+  const _StaleWeatherBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return DmGlassCard(
+      padding: const EdgeInsets.all(DMSpacing.sm),
+      borderColor: DMColors.sunriseYellow,
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: DMColors.sunriseYellow),
+          const SizedBox(width: DMSpacing.sm),
+          Expanded(
+            child: Text(
+              '$message Showing the last successful update.',
+              style: DMTypography.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -315,6 +508,225 @@ class _ForecastLowerSection extends StatelessWidget {
         Expanded(flex: 4, child: details),
       ],
     );
+  }
+}
+
+class ShortTermPrecipitationCard extends StatelessWidget {
+  const ShortTermPrecipitationCard({
+    super.key,
+    required this.minutes,
+  });
+
+  final List<MinutePrecipitation> minutes;
+
+  @override
+  Widget build(BuildContext context) {
+    final wetIndex = minutes.indexWhere((minute) => minute.isWet);
+    final hasPrecipitation = wetIndex >= 0;
+    final title = hasPrecipitation
+        ? 'Precipitation starts ${_relativeMinuteLabel(wetIndex)}'
+        : 'No precipitation expected in the next hour';
+    final visibleMinutes = hasPrecipitation
+        ? minutes.skip(wetIndex).take(12).toList()
+        : minutes.take(12).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const DmSectionHeader(title: 'Next hour'),
+        const SizedBox(height: DMSpacing.sm),
+        DmGlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    hasPrecipitation
+                        ? Icons.umbrella_outlined
+                        : Icons.check_circle_outline,
+                    color: hasPrecipitation
+                        ? DMColors.rainTeal
+                        : DMColors.mintGreen,
+                  ),
+                  const SizedBox(width: DMSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: DMTypography.title,
+                    ),
+                  ),
+                ],
+              ),
+              if (visibleMinutes.isNotEmpty) ...[
+                const SizedBox(height: DMSpacing.md),
+                SizedBox(
+                  height: 88,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (final minute in visibleMinutes)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 2,
+                            ),
+                            child: _MinuteBar(minute: minute),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _relativeMinuteLabel(int index) {
+    if (index <= 0) return 'now';
+    return 'in $index min';
+  }
+}
+
+class _MinuteBar extends StatelessWidget {
+  const _MinuteBar({required this.minute});
+
+  final MinutePrecipitation minute;
+
+  @override
+  Widget build(BuildContext context) {
+    final amount = minute.precipitation.clamp(0, 0.25);
+    final height = 8 + (amount / 0.25 * 58);
+    final color = minute.isWet ? DMColors.rainTeal : DMColors.glassStrong;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Tooltip(
+          message:
+              '${_formatTime(minute.time)}: ${minute.precipitation.toStringAsFixed(2)} in',
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            height: height,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+        ),
+        const SizedBox(height: DMSpacing.xxs),
+        Text(
+          _formatMinute(minute.time),
+          maxLines: 1,
+          overflow: TextOverflow.clip,
+          style: DMTypography.labelSmall.copyWith(
+            color: DMColors.textMuted,
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _formatMinute(DateTime time) {
+    return time.minute.toString().padLeft(2, '0');
+  }
+
+  static String _formatTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final suffix = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $suffix';
+  }
+}
+
+class WeatherAlertsPanel extends StatelessWidget {
+  const WeatherAlertsPanel({
+    super.key,
+    required this.alerts,
+  });
+
+  final List<WeatherAlert> alerts;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const DmSectionHeader(title: 'Alerts'),
+        const SizedBox(height: DMSpacing.sm),
+        for (var index = 0; index < alerts.length; index++) ...[
+          if (index > 0) const SizedBox(height: DMSpacing.sm),
+          _WeatherAlertTile(alert: alerts[index]),
+        ],
+      ],
+    );
+  }
+}
+
+class _WeatherAlertTile extends StatelessWidget {
+  const _WeatherAlertTile({required this.alert});
+
+  final WeatherAlert alert;
+
+  @override
+  Widget build(BuildContext context) {
+    return DmGlassCard(
+      borderColor: DMColors.alertOrange,
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        iconColor: DMColors.sunriseYellow,
+        collapsedIconColor: DMColors.textMuted,
+        leading: const Icon(
+          Icons.warning_amber_rounded,
+          color: DMColors.alertOrange,
+        ),
+        title: Text(
+          alert.event,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: DMTypography.title,
+        ),
+        subtitle: Text(
+          _subtitle(alert),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: DMTypography.bodySmall,
+        ),
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              alert.description.isEmpty
+                  ? 'No additional alert details were provided.'
+                  : alert.description,
+              style: DMTypography.body,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _subtitle(WeatherAlert alert) {
+    final times = [
+      if (alert.start != null) _formatDateTime(alert.start!),
+      if (alert.end != null) 'until ${_formatDateTime(alert.end!)}',
+    ].join(' ');
+    if (times.isEmpty) return alert.senderName;
+    return '${alert.senderName} · $times';
+  }
+
+  static String _formatDateTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final suffix = time.hour >= 12 ? 'PM' : 'AM';
+    return '${time.month}/${time.day} $hour:$minute $suffix';
   }
 }
 

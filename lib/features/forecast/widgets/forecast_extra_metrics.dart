@@ -29,6 +29,24 @@ class ForecastExtraMetrics extends StatelessWidget {
         color: DMColors.rainTeal,
       ),
       _MetricSpec(
+        icon: Icons.compress_rounded,
+        label: 'Pressure',
+        value: weather.pressureLabel,
+        color: DMColors.skyBlueSoft,
+      ),
+      _MetricSpec(
+        icon: Icons.visibility_outlined,
+        label: 'Visibility',
+        value: weather.visibilityLabel,
+        color: DMColors.frostCyan,
+      ),
+      _MetricSpec(
+        icon: Icons.grain_rounded,
+        label: 'Last hour',
+        value: weather.rainSnowLastHourLabel,
+        color: DMColors.lavenderGlass,
+      ),
+      _MetricSpec(
         icon: Icons.wb_twilight_rounded,
         label: 'Sunrise',
         value: _formatTime(weather.sunrise),

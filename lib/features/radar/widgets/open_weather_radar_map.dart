@@ -1,0 +1,163 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../../design/dm_colors.dart';
+import '../../../design/dm_spacing.dart';
+import '../../../models/weather_models.dart';
+import '../../../services/open_weather_backend_client.dart';
+
+class OpenWeatherRadarMap extends StatefulWidget {
+  const OpenWeatherRadarMap({
+    super.key,
+    required this.client,
+    required this.mapController,
+    required this.location,
+    required this.mode,
+    required this.timestamp,
+    this.onTileError,
+  });
+
+  final OpenWeatherBackendClient client;
+  final MapController mapController;
+  final LocationCandidate location;
+  final RadarMode mode;
+  final int timestamp;
+  final VoidCallback? onTileError;
+
+  @override
+  State<OpenWeatherRadarMap> createState() => _OpenWeatherRadarMapState();
+}
+
+class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
+  LatLng get _center => LatLng(widget.location.lat, widget.location.lon);
+
+  @override
+  void didUpdateWidget(covariant OpenWeatherRadarMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.location.lat != widget.location.lat ||
+        oldWidget.location.lon != widget.location.lon) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.mapController.move(_center, widget.mapController.camera.zoom);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final radarTemplate = widget.client.radarTileUrlTemplate(
+      mode: widget.mode,
+      timestamp: widget.timestamp,
+    );
+
+    return FlutterMap(
+      mapController: widget.mapController,
+      options: MapOptions(
+        initialCenter: _center,
+        initialZoom: 7,
+        minZoom: 3,
+        maxZoom: 12,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+        ),
+      ),
+      children: [
+        TileLayer(
+          urlTemplate:
+              'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.grumpy_skies',
+          subdomains: const ['a', 'b', 'c', 'd'],
+          maxNativeZoom: 19,
+        ),
+        TileLayer(
+          key: ValueKey('${widget.mode.pathSegment}-${widget.timestamp}'),
+          urlTemplate: radarTemplate,
+          userAgentPackageName: 'com.example.grumpy_skies',
+          minNativeZoom: 3,
+          maxNativeZoom: 7,
+          maxZoom: 12,
+          tileBuilder: (context, tileWidget, tile) {
+            return Opacity(opacity: 0.66, child: tileWidget);
+          },
+          errorTileCallback: (_, __, ___) {
+            widget.onTileError?.call();
+          },
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: _center,
+              width: 64,
+              height: 64,
+              child: const _LocationMarker(),
+            ),
+          ],
+        ),
+        const Positioned(
+          left: DMSpacing.md,
+          bottom: DMSpacing.md,
+          child: _MapAttribution(),
+        ),
+      ],
+    );
+  }
+}
+
+class _LocationMarker extends StatelessWidget {
+  const _LocationMarker();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: DMColors.opacity(DMColors.skyBlue, 0.22),
+          border: Border.all(
+            color: DMColors.opacity(DMColors.skyBlue, 0.46),
+            width: 2,
+          ),
+        ),
+        child: const SizedBox.square(
+          dimension: 34,
+          child: Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: DMColors.sunriseYellow,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox.square(dimension: 12),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapAttribution extends StatelessWidget {
+  const _MapAttribution();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: DMColors.opacity(DMColors.deepNavy, 0.72),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: DMSpacing.xs,
+          vertical: 4,
+        ),
+        child: Text(
+          '© OpenStreetMap contributors © CARTO · Radar © OpenWeather',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: DMColors.textSecondary,
+              ),
+        ),
+      ),
+    );
+  }
+}

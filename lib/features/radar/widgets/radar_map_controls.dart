@@ -15,6 +15,8 @@ class RadarMapControls extends StatelessWidget {
     required this.onZoomOut,
     required this.onLocate,
     required this.onLayers,
+    this.showLightningToggle = false,
+    this.futureCastAvailable = true,
   });
 
   final bool compact;
@@ -26,6 +28,8 @@ class RadarMapControls extends StatelessWidget {
   final VoidCallback onZoomOut;
   final VoidCallback onLocate;
   final VoidCallback onLayers;
+  final bool showLightningToggle;
+  final bool futureCastAvailable;
 
   @override
   Widget build(BuildContext context) {
@@ -54,24 +58,25 @@ class RadarMapControls extends StatelessWidget {
         tooltip: 'Layers',
         onPressed: onLayers,
       ),
-      DmPillButton(
-        label: compact
-            ? 'Lightning'
-            : lightningEnabled
-                ? 'Lightning On'
-                : 'Lightning Off',
-        semanticLabel: lightningEnabled
-            ? 'Turn lightning markers off'
-            : 'Turn lightning markers on',
-        leading: const Icon(Icons.bolt),
-        variant: DmPillButtonVariant.glass,
-        selected: lightningEnabled,
-        padding: const EdgeInsets.symmetric(
-          horizontal: DMSpacing.md,
-          vertical: DMSpacing.xs,
+      if (showLightningToggle)
+        DmPillButton(
+          label: compact
+              ? 'Lightning'
+              : lightningEnabled
+                  ? 'Lightning On'
+                  : 'Lightning Off',
+          semanticLabel: lightningEnabled
+              ? 'Turn lightning markers off'
+              : 'Turn lightning markers on',
+          leading: const Icon(Icons.bolt),
+          variant: DmPillButtonVariant.glass,
+          selected: lightningEnabled,
+          padding: const EdgeInsets.symmetric(
+            horizontal: DMSpacing.md,
+            vertical: DMSpacing.xs,
+          ),
+          onPressed: () => onLightningChanged(!lightningEnabled),
         ),
-        onPressed: () => onLightningChanged(!lightningEnabled),
-      ),
       DmPillButton(
         label: compact
             ? 'FutureCast'
@@ -79,8 +84,8 @@ class RadarMapControls extends StatelessWidget {
                 ? 'FutureCast On'
                 : 'FutureCast Off',
         semanticLabel: futureCastEnabled
-            ? 'Turn FutureCast overlay off'
-            : 'Turn FutureCast overlay on',
+            ? 'Turn FutureCast frames off'
+            : 'Turn FutureCast frames on',
         leading: const Icon(Icons.timeline),
         variant: DmPillButtonVariant.glass,
         selected: futureCastEnabled,
@@ -88,7 +93,9 @@ class RadarMapControls extends StatelessWidget {
           horizontal: DMSpacing.md,
           vertical: DMSpacing.xs,
         ),
-        onPressed: () => onFutureCastChanged(!futureCastEnabled),
+        onPressed: futureCastAvailable
+            ? () => onFutureCastChanged(!futureCastEnabled)
+            : null,
       ),
     ];
 

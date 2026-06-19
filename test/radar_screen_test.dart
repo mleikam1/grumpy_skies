@@ -25,17 +25,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Live Radar'), findsOneWidget);
-    expect(find.text('San Francisco, CA'), findsOneWidget);
-    expect(find.text('Moderate storm moving in'), findsOneWidget);
-    expect(find.text('Lightning'), findsOneWidget);
+    expect(find.text('Radar'), findsWidgets);
+    expect(find.text('San Francisco, CA, US'), findsWidgets);
+    expect(find.text('US forecast radar'), findsWidgets);
     expect(find.text('FutureCast'), findsOneWidget);
-    expect(find.text('Now'), findsOneWidget);
-    expect(find.text('+120m'), findsOneWidget);
-    expect(find.text('82% chance of drama'), findsOneWidget);
-    expect(find.text('within 8 miles'), findsOneWidget);
-    expect(find.text('in 24 min'), findsOneWidget);
-    expect(find.text('Provider-ready placeholder'), findsOneWidget);
+    expect(find.text('Latest'), findsWidgets);
+    expect(find.text('Radar product'), findsOneWidget);
+    expect(find.text('Selected frame'), findsOneWidget);
+    expect(find.text('Map center'), findsOneWidget);
   });
 
   testWidgets('RadarScreen keeps controls and alert panel available on web',
@@ -54,8 +51,8 @@ void main() {
     expect(find.bySemanticsLabel('Zoom in'), findsOneWidget);
     expect(find.bySemanticsLabel('Use current location'), findsOneWidget);
     expect(find.bySemanticsLabel('Radar layers'), findsOneWidget);
-    expect(find.text('Chaos Meter'), findsOneWidget);
-    expect(find.text('Lightning nearby'), findsOneWidget);
-    expect(find.text('Rain'), findsOneWidget);
+    expect(find.text('Radar product'), findsOneWidget);
+    expect(find.text('Selected frame'), findsOneWidget);
+    expect(find.text('Map center'), findsOneWidget);
   });
 }

@@ -16,39 +16,43 @@ class RadarAlertCards extends StatelessWidget {
   const RadarAlertCards({
     super.key,
     required this.layout,
+    required this.modeLabel,
+    required this.timeLabel,
+    required this.locationName,
   });
 
   final RadarAlertCardsLayout layout;
-
-  static const _alerts = [
-    _RadarAlertData(
-      icon: Icons.auto_graph,
-      title: 'Chaos Meter',
-      value: '82% chance of drama',
-      detail: 'Storm cell is getting theatrical.',
-      color: DMColors.alertOrange,
-      progress: 0.82,
-    ),
-    _RadarAlertData(
-      icon: Icons.bolt,
-      title: 'Lightning nearby',
-      value: 'within 8 miles',
-      detail: 'Outdoor plans are on thin ice.',
-      color: DMColors.sunriseYellow,
-    ),
-    _RadarAlertData(
-      icon: Icons.water_drop,
-      title: 'Rain',
-      value: 'in 24 min',
-      detail: 'Umbrella betrayal window opens soon.',
-      color: DMColors.rainTeal,
-    ),
-  ];
+  final String modeLabel;
+  final String timeLabel;
+  final String locationName;
 
   @override
   Widget build(BuildContext context) {
+    final alerts = [
+      _RadarAlertData(
+        icon: Icons.layers_outlined,
+        title: 'Radar product',
+        value: modeLabel,
+        detail: 'OpenWeather precipitation layer.',
+        color: DMColors.skyBlue,
+      ),
+      _RadarAlertData(
+        icon: Icons.schedule_rounded,
+        title: 'Selected frame',
+        value: timeLabel,
+        detail: '10-minute radar frame.',
+        color: DMColors.sunriseYellow,
+      ),
+      _RadarAlertData(
+        icon: Icons.place_outlined,
+        title: 'Map center',
+        value: locationName,
+        detail: 'Centered on selected location.',
+        color: DMColors.rainTeal,
+      ),
+    ];
     final children = [
-      for (final alert in _alerts) _RadarAlertCard(data: alert),
+      for (final alert in alerts) _RadarAlertCard(data: alert),
     ];
 
     return Column(
@@ -73,7 +77,6 @@ class _RadarAlertData {
     required this.value,
     required this.detail,
     required this.color,
-    this.progress,
   });
 
   final IconData icon;
@@ -81,7 +84,6 @@ class _RadarAlertData {
   final String value;
   final String detail;
   final Color color;
-  final double? progress;
 }
 
 class _RadarAlertCard extends StatelessWidget {
@@ -145,18 +147,6 @@ class _RadarAlertCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: DMTypography.bodySmall,
           ),
-          if (data.progress != null) ...[
-            const SizedBox(height: DMSpacing.sm),
-            ClipRRect(
-              borderRadius: DMRadius.full,
-              child: LinearProgressIndicator(
-                minHeight: 7,
-                value: data.progress,
-                backgroundColor: DMColors.glassStrong,
-                color: data.color,
-              ),
-            ),
-          ],
         ],
       ),
     );

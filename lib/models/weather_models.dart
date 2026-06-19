@@ -2,6 +2,207 @@ import 'daymaker_models.dart';
 
 export 'daymaker_models.dart';
 
+class LocationCandidate {
+  final String name;
+  final String? state;
+  final String country;
+  final double lat;
+  final double lon;
+  final String source;
+
+  const LocationCandidate({
+    required this.name,
+    this.state,
+    required this.country,
+    required this.lat,
+    required this.lon,
+    required this.source,
+  });
+
+  String get displayName {
+    final parts = [
+      name,
+      if (state != null && state!.trim().isNotEmpty) state!,
+      country,
+    ];
+    return parts.join(', ');
+  }
+
+  bool get isUs => country.toUpperCase() == 'US';
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        if (state != null) 'state': state,
+        'country': country,
+        'lat': lat,
+        'lon': lon,
+        'source': source,
+      };
+
+  factory LocationCandidate.fromJson(Map<String, dynamic> json) {
+    return LocationCandidate(
+      name: (json['name'] ?? 'Selected location') as String,
+      state: json['state'] as String?,
+      country: (json['country'] ?? 'US') as String,
+      lat: (json['lat'] as num).toDouble(),
+      lon: (json['lon'] as num).toDouble(),
+      source: (json['source'] ?? 'city') as String,
+    );
+  }
+}
+
+class MinutePrecipitation {
+  final DateTime time;
+  final double precipitation;
+
+  const MinutePrecipitation({
+    required this.time,
+    required this.precipitation,
+  });
+
+  bool get isWet => precipitation > 0;
+
+  Map<String, dynamic> toJson() => {
+        'time': time.toIso8601String(),
+        'precipitation': precipitation,
+      };
+
+  factory MinutePrecipitation.fromJson(Map<String, dynamic> json) {
+    return MinutePrecipitation(
+      time: _dateFromJson(json['time'] ?? json['dt']),
+      precipitation: ((json['precipitation'] ?? 0) as num).toDouble(),
+    );
+  }
+}
+
+class TimelineWeatherPoint {
+  final DateTime time;
+  final double? temperatureF;
+  final double? feelsLikeF;
+  final int? humidity;
+  final int precipitationChance;
+  final double precipitation;
+  final double? windMph;
+  final int? windDeg;
+  final String condition;
+  final String? icon;
+  final int? weatherId;
+  final List<String> alertIds;
+
+  const TimelineWeatherPoint({
+    required this.time,
+    this.temperatureF,
+    this.feelsLikeF,
+    this.humidity,
+    this.precipitationChance = 0,
+    this.precipitation = 0,
+    this.windMph,
+    this.windDeg,
+    this.condition = 'Unknown',
+    this.icon,
+    this.weatherId,
+    this.alertIds = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+        'time': time.toIso8601String(),
+        'temperatureF': temperatureF,
+        'feelsLikeF': feelsLikeF,
+        'humidity': humidity,
+        'precipitationChance': precipitationChance,
+        'precipitation': precipitation,
+        'windMph': windMph,
+        'windDeg': windDeg,
+        'condition': condition,
+        'icon': icon,
+        'weatherId': weatherId,
+        'alertIds': alertIds,
+      };
+
+  factory TimelineWeatherPoint.fromJson(Map<String, dynamic> json) {
+    final weather = (json['weather'] as Map?)?.cast<String, dynamic>();
+    final probability =
+        ((json['precipitationProbability'] ?? 0) as num).toDouble();
+    return TimelineWeatherPoint(
+      time: _dateFromJson(json['time'] ?? json['dt']),
+      temperatureF: (json['temperatureF'] ?? json['temp']) == null
+          ? null
+          : ((json['temperatureF'] ?? json['temp']) as num).toDouble(),
+      feelsLikeF: (json['feelsLikeF'] ?? json['feelsLike']) == null
+          ? null
+          : ((json['feelsLikeF'] ?? json['feelsLike']) as num).toDouble(),
+      humidity: (json['humidity'] as num?)?.round(),
+      precipitationChance:
+          probability <= 1 ? (probability * 100).round() : probability.round(),
+      precipitation: ((json['precipitation'] ?? 0) as num).toDouble(),
+      windMph: (json['windMph'] ?? json['windSpeed']) == null
+          ? null
+          : ((json['windMph'] ?? json['windSpeed']) as num).toDouble(),
+      windDeg: (json['windDeg'] as num?)?.round(),
+      condition:
+          (json['condition'] ?? weather?['description'] ?? 'Unknown') as String,
+      icon: (json['icon'] ?? weather?['icon']) as String?,
+      weatherId: (json['weatherId'] ?? weather?['id'] as num?)?.round(),
+      alertIds: ((json['alertIds'] as List?) ?? const [])
+          .map((id) => id.toString())
+          .toList(),
+    );
+  }
+}
+
+class WeatherAlert {
+  final String senderName;
+  final String event;
+  final DateTime? start;
+  final DateTime? end;
+  final String description;
+
+  const WeatherAlert({
+    required this.senderName,
+    required this.event,
+    this.start,
+    this.end,
+    required this.description,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'senderName': senderName,
+        'event': event,
+        'start': start?.toIso8601String(),
+        'end': end?.toIso8601String(),
+        'description': description,
+      };
+
+  factory WeatherAlert.fromJson(Map<String, dynamic> json) {
+    return WeatherAlert(
+      senderName: (json['senderName'] ??
+          json['sender_name'] ??
+          'Weather authority') as String,
+      event: (json['event'] ?? 'Weather alert') as String,
+      start: _nullableDateFromJson(json['start']),
+      end: _nullableDateFromJson(json['end']),
+      description: (json['description'] ?? '') as String,
+    );
+  }
+}
+
+enum RadarMode {
+  usForecast,
+  global,
+}
+
+extension RadarModeX on RadarMode {
+  String get pathSegment => switch (this) {
+        RadarMode.usForecast => 'us-forecast',
+        RadarMode.global => 'global',
+      };
+
+  String get label => switch (this) {
+        RadarMode.usForecast => 'US forecast radar',
+        RadarMode.global => 'Global precipitation radar',
+      };
+}
+
 class CurrentWeather {
   final String locationName;
   final double temperatureC;
@@ -21,6 +222,16 @@ class CurrentWeather {
   final String uvCategory;
   final int chaosMeterPercent;
   final DateTime lastUpdated;
+  final double? dewPointC;
+  final int? pressureHpa;
+  final int? visibilityMeters;
+  final double? windGustKph;
+  final double? rainLastHour;
+  final double? snowLastHour;
+  final String? weatherIcon;
+  final int? weatherId;
+  final List<String> alertIds;
+  final String? timezone;
 
   const CurrentWeather({
     this.locationName = '',
@@ -41,6 +252,16 @@ class CurrentWeather {
     this.uvCategory = '',
     this.chaosMeterPercent = 0,
     required this.lastUpdated,
+    this.dewPointC,
+    this.pressureHpa,
+    this.visibilityMeters,
+    this.windGustKph,
+    this.rainLastHour,
+    this.snowLastHour,
+    this.weatherIcon,
+    this.weatherId,
+    this.alertIds = const [],
+    this.timezone,
   });
 
   Map<String, dynamic> toJson() => {
@@ -62,6 +283,16 @@ class CurrentWeather {
         'uvCategory': uvCategory,
         'chaosMeterPercent': chaosMeterPercent,
         'lastUpdated': lastUpdated.toIso8601String(),
+        'dewPointC': dewPointC,
+        'pressureHpa': pressureHpa,
+        'visibilityMeters': visibilityMeters,
+        'windGustKph': windGustKph,
+        'rainLastHour': rainLastHour,
+        'snowLastHour': snowLastHour,
+        'weatherIcon': weatherIcon,
+        'weatherId': weatherId,
+        'alertIds': alertIds,
+        'timezone': timezone,
       };
 
   double get temperatureF => _cToF(temperatureC);
@@ -74,6 +305,14 @@ class CurrentWeather {
 
   double get windMph => windKph / 1.609344;
 
+  double? get dewPointF => dewPointC == null ? null : _cToF(dewPointC!);
+
+  double? get windGustMph =>
+      windGustKph == null ? null : windGustKph! / 1.609344;
+
+  double? get visibilityMiles =>
+      visibilityMeters == null ? null : visibilityMeters! / 1609.344;
+
   String get windLabel {
     final direction = windDirection.isEmpty ? '' : ' $windDirection';
     return '${windMph.toStringAsFixed(0)} mph$direction';
@@ -85,6 +324,24 @@ class CurrentWeather {
   String get uvLabel => uvCategory.isEmpty
       ? uvIndex.toStringAsFixed(0)
       : '${uvIndex.toStringAsFixed(0)} $uvCategory';
+
+  String get pressureLabel =>
+      pressureHpa == null ? 'Unavailable' : '$pressureHpa hPa';
+
+  String get visibilityLabel => visibilityMiles == null
+      ? 'Unavailable'
+      : '${visibilityMiles!.toStringAsFixed(1)} mi';
+
+  String get rainSnowLastHourLabel {
+    final values = <String>[];
+    if ((rainLastHour ?? 0) > 0) {
+      values.add('${rainLastHour!.toStringAsFixed(2)} in rain');
+    }
+    if ((snowLastHour ?? 0) > 0) {
+      values.add('${snowLastHour!.toStringAsFixed(2)} in snow');
+    }
+    return values.isEmpty ? 'None' : values.join(' / ');
+  }
 
   factory CurrentWeather.fromSnapshot(WeatherSnapshot snapshot) {
     final observedAt = snapshot.observedAt;
@@ -155,6 +412,18 @@ class CurrentWeather {
       uvCategory: (json['uvCategory'] ?? '') as String,
       chaosMeterPercent: ((json['chaosMeterPercent'] ?? 0) as num).toInt(),
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+      dewPointC: (json['dewPointC'] as num?)?.toDouble(),
+      pressureHpa: (json['pressureHpa'] as num?)?.round(),
+      visibilityMeters: (json['visibilityMeters'] as num?)?.round(),
+      windGustKph: (json['windGustKph'] as num?)?.toDouble(),
+      rainLastHour: (json['rainLastHour'] as num?)?.toDouble(),
+      snowLastHour: (json['snowLastHour'] as num?)?.toDouble(),
+      weatherIcon: json['weatherIcon'] as String?,
+      weatherId: (json['weatherId'] as num?)?.round(),
+      alertIds: ((json['alertIds'] as List?) ?? const [])
+          .map((id) => id.toString())
+          .toList(),
+      timezone: json['timezone'] as String?,
     );
   }
 }
@@ -254,12 +523,20 @@ class WeatherBundle {
   final List<HourlyForecast> hourly;
   final List<DailyForecast> daily;
   final WeatherSnapshot? snapshot;
+  final LocationCandidate? location;
+  final List<MinutePrecipitation> minutePrecipitation;
+  final List<TimelineWeatherPoint> timeline;
+  final List<WeatherAlert> alerts;
 
   const WeatherBundle({
     required this.current,
     required this.hourly,
     required this.daily,
     this.snapshot,
+    this.location,
+    this.minutePrecipitation = const [],
+    this.timeline = const [],
+    this.alerts = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -267,6 +544,11 @@ class WeatherBundle {
         'hourly': hourly.map((e) => e.toJson()).toList(),
         'daily': daily.map((e) => e.toJson()).toList(),
         if (snapshot != null) 'snapshot': snapshot!.toJson(),
+        if (location != null) 'location': location!.toJson(),
+        'minutePrecipitation':
+            minutePrecipitation.map((e) => e.toJson()).toList(),
+        'timeline': timeline.map((e) => e.toJson()).toList(),
+        'alerts': alerts.map((e) => e.toJson()).toList(),
       };
 
   factory WeatherBundle.fromSnapshot(WeatherSnapshot snapshot) {
@@ -294,11 +576,49 @@ class WeatherBundle {
       snapshot: json['snapshot'] == null
           ? null
           : WeatherSnapshot.fromJson(json['snapshot'] as Map<String, dynamic>),
+      location: json['location'] == null
+          ? null
+          : LocationCandidate.fromJson(
+              (json['location'] as Map).cast<String, dynamic>(),
+            ),
+      minutePrecipitation: ((json['minutePrecipitation'] as List?) ?? const [])
+          .map((e) => MinutePrecipitation.fromJson(
+                (e as Map).cast<String, dynamic>(),
+              ))
+          .toList(),
+      timeline: ((json['timeline'] as List?) ?? const [])
+          .map((e) => TimelineWeatherPoint.fromJson(
+                (e as Map).cast<String, dynamic>(),
+              ))
+          .toList(),
+      alerts: ((json['alerts'] as List?) ?? const [])
+          .map((e) => WeatherAlert.fromJson(
+                (e as Map).cast<String, dynamic>(),
+              ))
+          .toList(),
     );
   }
 }
 
 double _cToF(double tempC) => tempC * 9 / 5 + 32;
+
+DateTime _dateFromJson(dynamic value) {
+  final parsed = _nullableDateFromJson(value);
+  return parsed ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+}
+
+DateTime? _nullableDateFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(
+      (value * 1000).round(),
+      isUtc: true,
+    ).toLocal();
+  }
+  if (value is String) return DateTime.tryParse(value);
+  return null;
+}
 
 DateTime? _safeParseDate(dynamic value) {
   if (value == null) return null;

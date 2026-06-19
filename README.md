@@ -26,6 +26,18 @@ The app defaults for live weather/radar rollout live in
 `lib/config/weather_runtime_config.dart`. Production values can move to Firebase
 Remote Config after the Firebase project is selected.
 
+The Flutter app calls only the app backend. Web builds default to same-origin
+`/api`, which is routed to the Firebase `api` function by `firebase.json`.
+Mobile/native builds should provide the deployed function URL at build time:
+
+```sh
+flutter run --dart-define=WEATHER_API_BASE_URL=https://YOUR_REGION-YOUR_PROJECT.cloudfunctions.net/api
+```
+
+Copy `.env.example` when configuring local environments. The example documents
+`OPENWEATHER_API_KEY` and `OPENWEATHER_ENABLE_GLOBAL_FORECAST_RADAR`; do not
+commit real values.
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
