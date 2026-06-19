@@ -187,7 +187,9 @@ class OpenWeatherBackendClient {
     String path,
     Map<String, String> query,
   ) async {
-    final response = await _httpClient.get(_uri(path, query));
+    final uri = _uri(path, query);
+    _debugWeatherEndpoint(path, query);
+    final response = await _httpClient.get(uri);
     final decoded = _decodeBody(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final message = _errorMessage(decoded) ??
@@ -330,5 +332,18 @@ class OpenWeatherBackendClient {
     const labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     final index = ((degrees + 22.5) / 45).floor() % labels.length;
     return labels[index];
+  }
+
+  static void _debugWeatherEndpoint(
+    String path,
+    Map<String, String> query,
+  ) {
+    if (!kDebugMode || !path.startsWith('/weather/')) return;
+    final lat = double.tryParse(query['lat'] ?? '');
+    final lon = double.tryParse(query['lon'] ?? '');
+    final coordinateLabel = lat == null || lon == null
+        ? ''
+        : ' lat=${lat.toStringAsFixed(3)} lon=${lon.toStringAsFixed(3)}';
+    debugPrint('[GrumpySkies] weather endpoint $path$coordinateLabel');
   }
 }

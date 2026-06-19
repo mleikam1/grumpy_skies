@@ -202,7 +202,7 @@ async function handleReverse(request: Request, response: Response) {
     "location/reverse",
   );
   const first = Array.isArray(raw) ? raw[0] : raw;
-  const location = normalizeLocation(first, "browser", lat, lon);
+  const location = normalizeLocation(first, "device", lat, lon);
   if (location === null) {
     sendJson(response, 200, {
       location: {
@@ -210,7 +210,7 @@ async function handleReverse(request: Request, response: Response) {
         country: "US",
         lat,
         lon,
-        source: "browser",
+        source: "device",
       },
     });
     return;
@@ -534,7 +534,7 @@ function parseNumber(value: string, label: string): number {
 
 function normalizeLocation(
   raw: unknown,
-  source: "browser" | "city" | "zip",
+  source: "device" | "city" | "zip",
   fallbackLat?: number,
   fallbackLon?: number,
 ): JsonRecord | null {

@@ -13,6 +13,7 @@ import '../models/weather_models.dart';
 import '../repositories/weather_repository.dart';
 import '../services/persona_roast_service.dart';
 import '../services/settings_controller.dart';
+import '../services/weather_location_controller.dart';
 import '../shared/widgets/daymaker_components.dart';
 import '../widgets/daily_row.dart';
 import '../widgets/hourly_row.dart';
@@ -92,12 +93,22 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final repo = context.read<WeatherRepository>();
-      const lat = 37.7749;
-      const lon = -122.4194;
+      final location =
+          context.read<WeatherLocationController>().selectedLocation;
+      if (location == null) {
+        if (!mounted) return;
+        setState(() {
+          _weather = null;
+          _error = 'Choose a location to load your local forecast.';
+        });
+        return;
+      }
+
       final data = await repo.getWeather(
-        latitude: lat,
-        longitude: lon,
+        latitude: location.latitude,
+        longitude: location.longitude,
         forceRefresh: force,
+        location: location,
       );
       if (!mounted) return;
 

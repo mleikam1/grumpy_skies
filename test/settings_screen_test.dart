@@ -8,9 +8,13 @@ import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/settings/about_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
+import 'package:grumpy_skies/models/weather_models.dart';
+import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
 import 'package:grumpy_skies/repositories/settings_repository.dart';
+import 'package:grumpy_skies/repositories/weather_repository.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
+import 'package:grumpy_skies/services/weather_location_controller.dart';
 
 void main() {
   Future<SettingsController> createController(
@@ -26,9 +30,19 @@ void main() {
     required SettingsController controller,
     required Widget child,
   }) {
+    const weatherRepository = FakeWeatherRepository();
+    final locationController = WeatherLocationController(
+      repository: weatherRepository,
+      initialLocation: _buildSettingsTestLocation(),
+    );
+
     return MultiProvider(
       providers: [
+        Provider<WeatherRepository>.value(value: weatherRepository),
         Provider<SettingsRepository>.value(value: repository),
+        ChangeNotifierProvider<WeatherLocationController>.value(
+          value: locationController,
+        ),
         ChangeNotifierProvider<SettingsController>.value(value: controller),
       ],
       child: child,
@@ -90,6 +104,8 @@ void main() {
       findsWidgets,
     );
 
+    await tester.ensureVisible(find.text('Daily weather nudges'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Daily weather nudges'));
     await tester.pumpAndSettle();
 
@@ -177,4 +193,15 @@ void main() {
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
   });
+}
+
+WeatherLocation _buildSettingsTestLocation() {
+  return WeatherLocation(
+    name: 'Demo City',
+    country: 'US',
+    latitude: 41.8781,
+    longitude: -87.6298,
+    source: WeatherLocationSource.manual,
+    updatedAt: DateTime(2026, 6, 14, 9),
+  );
 }

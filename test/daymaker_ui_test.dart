@@ -52,7 +52,7 @@ void main() {
 
       expectNoFlutterExceptions(tester);
       expect(find.text('72°F'), findsOneWidget);
-      expect(find.text('San Francisco'), findsOneWidget);
+      expect(find.text('Demo City'), findsOneWidget);
     });
 
     testWidgets('roasts screen displays Karen', (tester) async {

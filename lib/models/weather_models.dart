@@ -19,11 +19,15 @@ class LocationCandidate {
     required this.source,
   });
 
+  double get latitude => lat;
+
+  double get longitude => lon;
+
   String get displayName {
     final parts = [
       name,
       if (state != null && state!.trim().isNotEmpty) state!,
-      country,
+      if (country.trim().isNotEmpty) country,
     ];
     return parts.join(', ');
   }
@@ -47,6 +51,109 @@ class LocationCandidate {
       lat: (json['lat'] as num).toDouble(),
       lon: (json['lon'] as num).toDouble(),
       source: (json['source'] ?? 'city') as String,
+    );
+  }
+}
+
+enum WeatherLocationSource {
+  device,
+  manual,
+  fallback,
+}
+
+extension WeatherLocationSourceX on WeatherLocationSource {
+  String get storageValue => switch (this) {
+        WeatherLocationSource.device => 'device',
+        WeatherLocationSource.manual => 'manual',
+        WeatherLocationSource.fallback => 'fallback',
+      };
+
+  static WeatherLocationSource parse(Object? value) {
+    final normalized = value?.toString().trim().toLowerCase();
+    return switch (normalized) {
+      'device' || 'browser' => WeatherLocationSource.device,
+      'fallback' => WeatherLocationSource.fallback,
+      _ => WeatherLocationSource.manual,
+    };
+  }
+}
+
+class WeatherLocation extends LocationCandidate {
+  const WeatherLocation({
+    required super.name,
+    super.state,
+    required super.country,
+    required double latitude,
+    required double longitude,
+    WeatherLocationSource source = WeatherLocationSource.manual,
+    required this.updatedAt,
+  })  : appSource = source,
+        super(
+          lat: latitude,
+          lon: longitude,
+          source: source == WeatherLocationSource.device
+              ? 'device'
+              : source == WeatherLocationSource.fallback
+                  ? 'fallback'
+                  : 'manual',
+        );
+
+  final WeatherLocationSource appSource;
+  final DateTime updatedAt;
+
+  WeatherLocation copyWith({
+    String? name,
+    String? state,
+    String? country,
+    double? latitude,
+    double? longitude,
+    WeatherLocationSource? source,
+    DateTime? updatedAt,
+  }) {
+    return WeatherLocation(
+      name: name ?? this.name,
+      state: state ?? this.state,
+      country: country ?? this.country,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      source: source ?? appSource,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory WeatherLocation.fromCandidate(
+    LocationCandidate candidate, {
+    WeatherLocationSource? source,
+    DateTime? updatedAt,
+  }) {
+    return WeatherLocation(
+      name: candidate.name,
+      state: candidate.state,
+      country: candidate.country,
+      latitude: candidate.latitude,
+      longitude: candidate.longitude,
+      source: source ?? WeatherLocationSourceX.parse(candidate.source),
+      updatedAt: updatedAt ?? DateTime.now(),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        ...super.toJson(),
+        'source': appSource.storageValue,
+        'updatedAt': updatedAt.toIso8601String(),
+      };
+
+  factory WeatherLocation.fromJson(Map<String, dynamic> json) {
+    return WeatherLocation(
+      name: (json['name'] ?? 'Selected location') as String,
+      state: json['state'] as String?,
+      country: (json['country'] ?? 'US') as String,
+      latitude: (json['lat'] as num).toDouble(),
+      longitude: (json['lon'] as num).toDouble(),
+      source: WeatherLocationSourceX.parse(json['source']),
+      updatedAt: DateTime.tryParse((json['updatedAt'] ?? '') as String) ??
+          DateTime.now(),
     );
   }
 }

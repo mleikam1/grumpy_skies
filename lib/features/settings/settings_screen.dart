@@ -11,9 +11,11 @@ import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../models/temperature_unit.dart';
 import '../../services/settings_controller.dart';
+import '../../services/weather_location_controller.dart';
 import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/dm_app_background.dart';
 import '../../shared/widgets/dm_asset_image.dart';
+import '../../shared/widgets/dm_buttons.dart';
 import '../../shared/widgets/dm_segmented_control.dart';
 import 'widgets/dm_settings_row.dart';
 
@@ -41,6 +43,7 @@ class SettingsScreenBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
+    final locationController = context.watch<WeatherLocationController>();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -71,9 +74,17 @@ class SettingsScreenBody extends StatelessWidget {
                     const _SettingsHeader(),
                     SizedBox(height: gap),
                     if (breakpoint.isExpanded)
-                      _ExpandedSettingsLayout(settings: settings, gap: gap)
+                      _ExpandedSettingsLayout(
+                        settings: settings,
+                        locationController: locationController,
+                        gap: gap,
+                      )
                     else
-                      _StackedSettingsLayout(settings: settings, gap: gap),
+                      _StackedSettingsLayout(
+                        settings: settings,
+                        locationController: locationController,
+                        gap: gap,
+                      ),
                   ],
                 ),
               ),
@@ -88,10 +99,12 @@ class SettingsScreenBody extends StatelessWidget {
 class _StackedSettingsLayout extends StatelessWidget {
   const _StackedSettingsLayout({
     required this.settings,
+    required this.locationController,
     required this.gap,
   });
 
   final SettingsController settings;
+  final WeatherLocationController locationController;
   final double gap;
 
   @override
@@ -99,7 +112,11 @@ class _StackedSettingsLayout extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _PreferencesColumn(settings: settings, gap: gap),
+        _PreferencesColumn(
+          settings: settings,
+          locationController: locationController,
+          gap: gap,
+        ),
         SizedBox(height: gap),
         _AppColumn(gap: gap),
       ],
@@ -110,10 +127,12 @@ class _StackedSettingsLayout extends StatelessWidget {
 class _ExpandedSettingsLayout extends StatelessWidget {
   const _ExpandedSettingsLayout({
     required this.settings,
+    required this.locationController,
     required this.gap,
   });
 
   final SettingsController settings;
+  final WeatherLocationController locationController;
   final double gap;
 
   @override
@@ -122,7 +141,11 @@ class _ExpandedSettingsLayout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: _PreferencesColumn(settings: settings, gap: gap),
+          child: _PreferencesColumn(
+            settings: settings,
+            locationController: locationController,
+            gap: gap,
+          ),
         ),
         SizedBox(width: gap),
         Expanded(
@@ -136,10 +159,12 @@ class _ExpandedSettingsLayout extends StatelessWidget {
 class _PreferencesColumn extends StatelessWidget {
   const _PreferencesColumn({
     required this.settings,
+    required this.locationController,
     required this.gap,
   });
 
   final SettingsController settings;
+  final WeatherLocationController locationController;
   final double gap;
 
   @override
@@ -147,6 +172,11 @@ class _PreferencesColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _SettingsSection(
+          title: 'Location',
+          child: _LocationSettingsRow(controller: locationController),
+        ),
+        SizedBox(height: gap),
         _SettingsSection(
           title: 'Temperature Units',
           child: DmSettingsRow(
@@ -216,6 +246,109 @@ class _PreferencesColumn extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _LocationSettingsRow extends StatelessWidget {
+  const _LocationSettingsRow({required this.controller});
+
+  final WeatherLocationController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = controller.selectedLocation;
+    final status = controller.status;
+    final loading = status == LocationSelectionStatus.loading;
+
+    return DmSettingsRow(
+      icon: Icons.location_on_outlined,
+      accentColor: DMColors.skyBlue,
+      title: 'Forecast location',
+      subtitle:
+          selected?.displayName ?? 'Choose a location for weather and radar.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 440;
+              final currentButton = DmPillButton(
+                label: 'Use current location',
+                semanticLabel: 'Use current location',
+                leading: const Icon(Icons.my_location_rounded),
+                loading: loading,
+                expand: true,
+                onPressed: () => _useCurrentLocation(context),
+              );
+              final changeButton = DmPillButton(
+                label: 'Change location',
+                semanticLabel: 'Change location',
+                leading: const Icon(Icons.edit_location_alt_outlined),
+                variant: DmPillButtonVariant.secondary,
+                expand: true,
+                onPressed: () => context.go(AppRoutes.forecast),
+              );
+
+              if (compact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    currentButton,
+                    const SizedBox(height: DMSpacing.sm),
+                    changeButton,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: currentButton),
+                  const SizedBox(width: DMSpacing.sm),
+                  Expanded(child: changeButton),
+                ],
+              );
+            },
+          ),
+          if (controller.message != null) ...[
+            const SizedBox(height: DMSpacing.sm),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                controller.message!,
+                style: DMTypography.bodySmall.copyWith(
+                  color: _statusColor(status),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _useCurrentLocation(BuildContext context) async {
+    await controller.useCurrentLocation();
+    if (!context.mounted) return;
+    final location = controller.selectedLocation;
+    if (location == null) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('Using ${location.displayName}.')),
+      );
+  }
+
+  static Color _statusColor(LocationSelectionStatus status) {
+    return switch (status) {
+      LocationSelectionStatus.success => DMColors.mintSoft,
+      LocationSelectionStatus.denied ||
+      LocationSelectionStatus.deniedForever ||
+      LocationSelectionStatus.unavailable ||
+      LocationSelectionStatus.timeout ||
+      LocationSelectionStatus.error =>
+        DMColors.sunriseYellow,
+      _ => DMColors.textMuted,
+    };
   }
 }
 

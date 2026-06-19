@@ -448,7 +448,7 @@ class _LocationPulse extends StatelessWidget {
     final glowColor = active ? DMColors.skyBlue : DMColors.textMuted;
 
     return Semantics(
-      label: 'Centered San Francisco location pulse',
+      label: 'Centered selected location pulse',
       child: SizedBox.square(
         dimension: 136,
         child: Stack(

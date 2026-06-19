@@ -1,47 +1,44 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/weather_models.dart';
 import '../repositories/weather_repository.dart';
+import 'location_service.dart';
 
 enum LocationSelectionStatus {
   idle,
   loading,
   success,
   denied,
+  deniedForever,
   unavailable,
+  timeout,
   error,
 }
 
 class WeatherLocationController extends ChangeNotifier {
   WeatherLocationController({
     required WeatherRepository repository,
+    LocationService locationService = const GeolocatorLocationService(),
     SharedPreferences? preferences,
-    LocationCandidate? initialLocation,
+    WeatherLocation? initialLocation,
   })  : _repository = repository,
+        _locationService = locationService,
         _preferences = preferences,
         _selectedLocation = initialLocation;
 
   static const _selectedLocationKey = 'weather_selected_location';
-  static const fallbackLocation = LocationCandidate(
-    name: 'San Francisco',
-    state: 'CA',
-    country: 'US',
-    lat: 37.7749,
-    lon: -122.4194,
-    source: 'city',
-  );
 
   static Future<WeatherLocationController> create({
     required WeatherRepository repository,
+    LocationService locationService = const GeolocatorLocationService(),
   }) async {
     final preferences = await SharedPreferences.getInstance();
     final controller = WeatherLocationController(
       repository: repository,
+      locationService: locationService,
       preferences: preferences,
     );
     await controller.restoreLastSelectedLocation();
@@ -49,13 +46,14 @@ class WeatherLocationController extends ChangeNotifier {
   }
 
   final WeatherRepository _repository;
+  final LocationService _locationService;
   final SharedPreferences? _preferences;
 
-  LocationCandidate? _selectedLocation;
+  WeatherLocation? _selectedLocation;
   LocationSelectionStatus _status = LocationSelectionStatus.idle;
   String? _message;
 
-  LocationCandidate? get selectedLocation => _selectedLocation;
+  WeatherLocation? get selectedLocation => _selectedLocation;
   LocationSelectionStatus get status => _status;
   String? get message => _message;
   bool get hasSelectedLocation => _selectedLocation != null;
@@ -66,7 +64,12 @@ class WeatherLocationController extends ChangeNotifier {
 
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;
-      _selectedLocation = LocationCandidate.fromJson(json);
+      if (_isLegacyBundledLocation(json)) {
+        await _preferences?.remove(_selectedLocationKey);
+        return;
+      }
+
+      _selectedLocation = WeatherLocation.fromJson(json);
       _status = LocationSelectionStatus.success;
       _message = 'Restored ${_selectedLocation!.displayName}.';
       notifyListeners();
@@ -81,55 +84,43 @@ class WeatherLocationController extends ChangeNotifier {
       'Checking location permission...',
     );
 
+    final result = await _locationService.getCurrentLocation();
+    final deviceLocation = result.location;
+    if (deviceLocation == null) {
+      final failure = result.failure ??
+          const DeviceLocationFailure(
+            type: DeviceLocationFailureType.unknown,
+            message: 'Location is unavailable right now. Search manually.',
+          );
+      _setStatus(_statusForFailure(failure.type), failure.message);
+      return;
+    }
+
+    _setStatus(
+        LocationSelectionStatus.loading, 'Getting your forecast spot...');
     try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        _setStatus(
-          LocationSelectionStatus.unavailable,
-          'Location services are unavailable. Search by city or ZIP instead.',
-        );
-        return;
-      }
-
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        _setStatus(
-          LocationSelectionStatus.denied,
-          'Location permission was denied. City or ZIP search still works.',
-        );
-        return;
-      }
-
-      _setStatus(LocationSelectionStatus.loading, 'Getting your location...');
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: _locationSettings(),
-      );
-      final location = await _repository.reverseGeocode(
-            latitude: position.latitude,
-            longitude: position.longitude,
+      final candidate = await _repository.reverseGeocode(
+            latitude: deviceLocation.latitude,
+            longitude: deviceLocation.longitude,
           ) ??
           LocationCandidate(
             name: 'Current location',
-            country: 'US',
-            lat: position.latitude,
-            lon: position.longitude,
-            source: 'browser',
+            country: '',
+            lat: deviceLocation.latitude,
+            lon: deviceLocation.longitude,
+            source: WeatherLocationSource.device.storageValue,
           );
-      await selectLocation(location);
-    } on TimeoutException {
-      _setStatus(
-        LocationSelectionStatus.unavailable,
-        'Location lookup timed out. Try city or ZIP search.',
-      );
+      await selectLocation(candidate, source: WeatherLocationSource.device);
     } catch (_) {
-      _setStatus(
-        LocationSelectionStatus.error,
-        'Location is unavailable right now. Try city or ZIP search.',
+      await selectLocation(
+        LocationCandidate(
+          name: 'Current location',
+          country: '',
+          lat: deviceLocation.latitude,
+          lon: deviceLocation.longitude,
+          source: WeatherLocationSource.device.storageValue,
+        ),
+        source: WeatherLocationSource.device,
       );
     }
   }
@@ -149,14 +140,24 @@ class WeatherLocationController extends ChangeNotifier {
     return _repository.lookupZip(zip: trimmed, country: country);
   }
 
-  Future<void> selectLocation(LocationCandidate location) async {
-    _selectedLocation = location;
+  Future<void> selectLocation(
+    LocationCandidate location, {
+    WeatherLocationSource source = WeatherLocationSource.manual,
+  }) async {
+    _selectedLocation = location is WeatherLocation
+        ? location.copyWith(updatedAt: DateTime.now())
+        : WeatherLocation.fromCandidate(
+            location,
+            source: source,
+            updatedAt: DateTime.now(),
+          );
     _status = LocationSelectionStatus.success;
-    _message = 'Using ${location.displayName}.';
+    _message = 'Using ${_selectedLocation!.displayName}.';
     await _preferences?.setString(
       _selectedLocationKey,
-      jsonEncode(location.toJson()),
+      jsonEncode(_selectedLocation!.toJson()),
     );
+    _debugSelectedLocation(_selectedLocation!);
     notifyListeners();
   }
 
@@ -174,19 +175,46 @@ class WeatherLocationController extends ChangeNotifier {
     notifyListeners();
   }
 
-  LocationSettings _locationSettings() {
-    const timeout = Duration(seconds: 10);
-    if (kIsWeb) {
-      return WebSettings(
-        accuracy: LocationAccuracy.low,
-        timeLimit: timeout,
-        maximumAge: const Duration(minutes: 10),
-      );
-    }
+  static LocationSelectionStatus _statusForFailure(
+    DeviceLocationFailureType type,
+  ) {
+    return switch (type) {
+      DeviceLocationFailureType.servicesDisabled =>
+        LocationSelectionStatus.unavailable,
+      DeviceLocationFailureType.permissionDenied =>
+        LocationSelectionStatus.denied,
+      DeviceLocationFailureType.permissionDeniedForever =>
+        LocationSelectionStatus.deniedForever,
+      DeviceLocationFailureType.timeout => LocationSelectionStatus.timeout,
+      DeviceLocationFailureType.unknown => LocationSelectionStatus.error,
+    };
+  }
 
-    return const LocationSettings(
-      accuracy: LocationAccuracy.low,
-      timeLimit: timeout,
+  static bool _isLegacyBundledLocation(Map<String, dynamic> json) {
+    if (json['updatedAt'] != null) return false;
+    final name = (json['name'] as String?)
+        ?.trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ');
+    final lat = (json['lat'] as num?)?.toDouble();
+    final lon = (json['lon'] as num?)?.toDouble();
+    final bundledName = ['san', 'francisco'].join(' ');
+    return name == bundledName &&
+        lat != null &&
+        lon != null &&
+        lat > 37.7 &&
+        lat < 37.8 &&
+        lon > -122.5 &&
+        lon < -122.3;
+  }
+
+  static void _debugSelectedLocation(WeatherLocation location) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] selected ${location.source} location '
+      'lat=${location.latitude.toStringAsFixed(3)} '
+      'lon=${location.longitude.toStringAsFixed(3)} '
+      'name=${location.displayName}',
     );
   }
 }

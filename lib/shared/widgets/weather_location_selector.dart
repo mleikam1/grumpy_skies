@@ -16,7 +16,7 @@ class WeatherLocationSelector extends StatefulWidget {
   const WeatherLocationSelector({
     super.key,
     required this.controller,
-    this.title = 'Choose your weather spot',
+    this.title = 'See your local forecast',
     this.onLocationSelected,
   });
 
@@ -33,6 +33,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
   final _cityController = TextEditingController();
   final _zipController = TextEditingController();
   final _countryController = TextEditingController(text: 'US');
+  final _cityFocusNode = FocusNode();
 
   Timer? _debounce;
   List<LocationCandidate> _cityResults = const [];
@@ -40,6 +41,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
   String? _zipError;
   var _cityLoading = false;
   var _zipLoading = false;
+  var _manualSearchVisible = false;
 
   @override
   void dispose() {
@@ -47,6 +49,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
     _cityController.dispose();
     _zipController.dispose();
     _countryController.dispose();
+    _cityFocusNode.dispose();
     super.dispose();
   }
 
@@ -55,7 +58,17 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
     final selected = widget.controller.selectedLocation;
     if (selected != null) {
       widget.onLocationSelected?.call(selected);
+    } else if (_shouldShowManualSearch(widget.controller.status)) {
+      setState(() => _manualSearchVisible = true);
     }
+  }
+
+  void _showManualSearch() {
+    setState(() => _manualSearchVisible = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _cityFocusNode.requestFocus();
+    });
   }
 
   void _onCityChanged(String value) {
@@ -146,6 +159,8 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
   @override
   Widget build(BuildContext context) {
     final statusMessage = widget.controller.message;
+    final showManualSearch = _manualSearchVisible ||
+        _shouldShowManualSearch(widget.controller.status);
 
     return DmGlassCard(
       gradient: DMGradients.glassNavy,
@@ -171,13 +186,47 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
             ],
           ),
           const SizedBox(height: DMSpacing.sm),
-          DmPillButton(
-            label: 'Use my current location',
-            semanticLabel: 'Use my current location',
-            leading: const Icon(Icons.my_location),
-            loading:
-                widget.controller.status == LocationSelectionStatus.loading,
-            onPressed: _useCurrentLocation,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 520;
+              final currentButton = DmPillButton(
+                label: 'Use my current location',
+                semanticLabel: 'Use my current location',
+                leading: const Icon(Icons.my_location),
+                expand: true,
+                loading:
+                    widget.controller.status == LocationSelectionStatus.loading,
+                onPressed: _useCurrentLocation,
+              );
+              final manualButton = DmPillButton(
+                label: 'Search manually',
+                semanticLabel: 'Search manually',
+                leading: const Icon(Icons.search),
+                variant: DmPillButtonVariant.secondary,
+                expand: true,
+                selected: showManualSearch,
+                onPressed: _showManualSearch,
+              );
+
+              if (compact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    currentButton,
+                    const SizedBox(height: DMSpacing.sm),
+                    manualButton,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: currentButton),
+                  const SizedBox(width: DMSpacing.sm),
+                  Expanded(child: manualButton),
+                ],
+              );
+            },
           ),
           if (statusMessage != null) ...[
             const SizedBox(height: DMSpacing.sm),
@@ -191,107 +240,124 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
               ),
             ),
           ],
-          const SizedBox(height: DMSpacing.lg),
-          _SearchField(
-            controller: _cityController,
-            label: 'City, state, or country',
-            hint: 'Austin, TX',
-            icon: Icons.search,
-            loading: _cityLoading,
-            onChanged: _onCityChanged,
-            onSubmitted: _searchCity,
-          ),
-          if (_cityError != null) _InlineMessage(message: _cityError!),
-          if (_cityResults.isNotEmpty) ...[
-            const SizedBox(height: DMSpacing.sm),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: DMColors.opacity(DMColors.cloudWhite, 0.07),
-                borderRadius: DMRadius.large,
-                border: Border.all(color: DMColors.outlineVariant),
-              ),
-              child: Column(
-                children: [
-                  for (var index = 0; index < _cityResults.length; index++)
-                    _LocationResultTile(
-                      location: _cityResults[index],
-                      showDivider: index < _cityResults.length - 1,
-                      onTap: () => _selectLocation(_cityResults[index]),
-                    ),
-                ],
-              ),
+          if (showManualSearch) ...[
+            const SizedBox(height: DMSpacing.lg),
+            _SearchField(
+              controller: _cityController,
+              focusNode: _cityFocusNode,
+              label: 'City, state, or country',
+              hint: 'Austin, TX',
+              icon: Icons.search,
+              loading: _cityLoading,
+              onChanged: _onCityChanged,
+              onSubmitted: _searchCity,
             ),
-          ],
-          const SizedBox(height: DMSpacing.lg),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 520;
-              final zipField = _SearchField(
-                controller: _zipController,
-                label: 'ZIP or postal code',
-                hint: '60601',
-                icon: Icons.local_post_office_outlined,
-                loading: _zipLoading,
-                onSubmitted: (_) => _searchZip(),
-              );
-              final countryField = SizedBox(
-                width: compact ? double.infinity : 96,
-                child: _SearchField(
-                  controller: _countryController,
-                  label: 'Country',
-                  hint: 'US',
-                  icon: Icons.flag_outlined,
-                  textCapitalization: TextCapitalization.characters,
-                  onSubmitted: (_) => _searchZip(),
+            if (_cityError != null) _InlineMessage(message: _cityError!),
+            if (_cityResults.isNotEmpty) ...[
+              const SizedBox(height: DMSpacing.sm),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: DMColors.opacity(DMColors.cloudWhite, 0.07),
+                  borderRadius: DMRadius.large,
+                  border: Border.all(color: DMColors.outlineVariant),
                 ),
-              );
-              final button = DmPillButton(
-                label: 'Find ZIP',
-                semanticLabel: 'Find ZIP or postal code location',
-                leading: const Icon(Icons.travel_explore),
-                loading: _zipLoading,
-                onPressed: _searchZip,
-              );
-
-              if (compact) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: Column(
                   children: [
-                    zipField,
-                    const SizedBox(height: DMSpacing.sm),
+                    for (var index = 0; index < _cityResults.length; index++)
+                      _LocationResultTile(
+                        location: _cityResults[index],
+                        showDivider: index < _cityResults.length - 1,
+                        onTap: () => _selectLocation(_cityResults[index]),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: DMSpacing.lg),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 520;
+                final zipField = _SearchField(
+                  controller: _zipController,
+                  label: 'ZIP or postal code',
+                  hint: '60601',
+                  icon: Icons.local_post_office_outlined,
+                  loading: _zipLoading,
+                  onSubmitted: (_) => _searchZip(),
+                );
+                final countryField = SizedBox(
+                  width: compact ? double.infinity : 96,
+                  child: _SearchField(
+                    controller: _countryController,
+                    label: 'Country',
+                    hint: 'US',
+                    icon: Icons.flag_outlined,
+                    textCapitalization: TextCapitalization.characters,
+                    onSubmitted: (_) => _searchZip(),
+                  ),
+                );
+                final button = DmPillButton(
+                  label: 'Find ZIP',
+                  semanticLabel: 'Find ZIP or postal code location',
+                  leading: const Icon(Icons.travel_explore),
+                  loading: _zipLoading,
+                  onPressed: _searchZip,
+                );
+
+                if (compact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      zipField,
+                      const SizedBox(height: DMSpacing.sm),
+                      countryField,
+                      const SizedBox(height: DMSpacing.sm),
+                      button,
+                    ],
+                  );
+                }
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: zipField),
+                    const SizedBox(width: DMSpacing.sm),
                     countryField,
-                    const SizedBox(height: DMSpacing.sm),
-                    button,
+                    const SizedBox(width: DMSpacing.sm),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: button,
+                    ),
                   ],
                 );
-              }
-
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: zipField),
-                  const SizedBox(width: DMSpacing.sm),
-                  countryField,
-                  const SizedBox(width: DMSpacing.sm),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: button,
-                  ),
-                ],
-              );
-            },
-          ),
-          if (_zipError != null) _InlineMessage(message: _zipError!),
+              },
+            ),
+            if (_zipError != null) _InlineMessage(message: _zipError!),
+          ],
         ],
       ),
     );
+  }
+
+  static bool _shouldShowManualSearch(LocationSelectionStatus status) {
+    return switch (status) {
+      LocationSelectionStatus.denied ||
+      LocationSelectionStatus.deniedForever ||
+      LocationSelectionStatus.unavailable ||
+      LocationSelectionStatus.timeout ||
+      LocationSelectionStatus.error =>
+        true,
+      _ => false,
+    };
   }
 
   static Color _statusColor(LocationSelectionStatus status) {
     return switch (status) {
       LocationSelectionStatus.success => DMColors.mintSoft,
       LocationSelectionStatus.denied ||
+      LocationSelectionStatus.deniedForever ||
       LocationSelectionStatus.unavailable ||
+      LocationSelectionStatus.timeout ||
       LocationSelectionStatus.error =>
         DMColors.sunriseYellow,
       _ => DMColors.textMuted,
@@ -305,6 +371,7 @@ class _SearchField extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.icon,
+    this.focusNode,
     this.loading = false,
     this.textCapitalization = TextCapitalization.words,
     this.onChanged,
@@ -315,6 +382,7 @@ class _SearchField extends StatelessWidget {
   final String label;
   final String hint;
   final IconData icon;
+  final FocusNode? focusNode;
   final bool loading;
   final TextCapitalization textCapitalization;
   final ValueChanged<String>? onChanged;
@@ -324,6 +392,7 @@ class _SearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       textInputAction: TextInputAction.search,
       textCapitalization: textCapitalization,
       style: DMTypography.body.copyWith(color: DMColors.textPrimary),

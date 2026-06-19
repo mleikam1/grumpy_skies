@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/weather_models.dart';
 import '../services/cache_service.dart';
 import '../services/open_weather_backend_client.dart';
@@ -127,6 +129,11 @@ class OpenWeatherRepository extends WeatherRepository {
     final displayLocation = location ??
         await _client.reverse(latitude: latitude, longitude: longitude);
     final locationName = displayLocation.displayName;
+    _debugWeatherLocation(
+      latitude: latitude,
+      longitude: longitude,
+      locationName: locationName,
+    );
 
     final currentFuture = _client.current(
       latitude: latitude,
@@ -305,4 +312,17 @@ class OpenWeatherRepository extends WeatherRepository {
   }
 
   static double _fToC(double tempF) => (tempF - 32) * 5 / 9;
+
+  static void _debugWeatherLocation({
+    required double latitude,
+    required double longitude,
+    required String locationName,
+  }) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] weather display location=$locationName '
+      'lat=${latitude.toStringAsFixed(3)} '
+      'lon=${longitude.toStringAsFixed(3)}',
+    );
+  }
 }

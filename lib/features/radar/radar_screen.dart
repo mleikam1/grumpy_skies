@@ -52,7 +52,6 @@ class _RadarScreenState extends State<RadarScreen> {
     _locationController = _readLocationController() ??
         WeatherLocationController(
           repository: _readWeatherRepository() ?? const FakeWeatherRepository(),
-          initialLocation: WeatherLocationController.fallbackLocation,
         );
     _client = _readClient() ?? OpenWeatherBackendClient();
     _locationController!.addListener(_handleLocationChanged);

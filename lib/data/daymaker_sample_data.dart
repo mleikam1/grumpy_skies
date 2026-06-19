@@ -6,8 +6,8 @@ abstract final class DayMakerSampleData {
   static final DateTime observedAt = DateTime(2026, 6, 14, 9);
 
   static final WeatherSnapshot weatherSnapshot = WeatherSnapshot(
-    id: 'sf-partly-cloudy-2026-06-14',
-    locationName: 'San Francisco, CA',
+    id: 'demo-partly-cloudy-2026-06-14',
+    locationName: 'Demo City, US',
     condition: 'Partly Cloudy',
     temperatureF: 72,
     feelsLikeF: 74,
@@ -204,7 +204,7 @@ abstract final class DayMakerSampleData {
   ]);
 
   static final Roast roast = Roast(
-    id: 'sf-karen-daily-roast',
+    id: 'demo-karen-daily-roast',
     personaId: persona.id,
     weatherSnapshotId: weatherSnapshot.id,
     text: 'It’s 72°F and somehow still making a scene.',
@@ -216,7 +216,7 @@ abstract final class DayMakerSampleData {
   static final List<Roast> dailyRoasts = List.unmodifiable([
     roast,
     Roast(
-      id: 'sf-frat-bro-daily-roast',
+      id: 'demo-frat-bro-daily-roast',
       personaId: 'frat-bro',
       weatherSnapshotId: weatherSnapshot.id,
       text:
@@ -226,7 +226,7 @@ abstract final class DayMakerSampleData {
       xpReward: 15,
     ),
     Roast(
-      id: 'sf-grandpa-daily-roast',
+      id: 'demo-grandpa-daily-roast',
       personaId: 'grandpa',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Back in my day, 8 mph wind was called walking to school uphill.',
@@ -235,7 +235,7 @@ abstract final class DayMakerSampleData {
       xpReward: 15,
     ),
     Roast(
-      id: 'sf-politician-daily-roast',
+      id: 'demo-politician-daily-roast',
       personaId: 'politician',
       weatherSnapshotId: weatherSnapshot.id,
       text:
@@ -245,7 +245,7 @@ abstract final class DayMakerSampleData {
       xpReward: 15,
     ),
     Roast(
-      id: 'sf-two-year-old-daily-roast',
+      id: 'demo-two-year-old-daily-roast',
       personaId: 'two-year-old',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Clouds said no nap, so now the whole sky is cranky.',
@@ -258,7 +258,7 @@ abstract final class DayMakerSampleData {
   static final List<Roast> roastHistory = List.unmodifiable([
     roast,
     Roast(
-      id: 'sf-karen-hourly-roast',
+      id: 'demo-karen-hourly-roast',
       personaId: persona.id,
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Partly cloudy with a 100% chance of asking for the manager.',
@@ -267,7 +267,7 @@ abstract final class DayMakerSampleData {
       xpReward: 10,
     ),
     Roast(
-      id: 'sf-frat-bro-hourly-roast',
+      id: 'demo-frat-bro-hourly-roast',
       personaId: 'frat-bro',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Wind at 8 mph: light breeze, heavy main-character energy.',
@@ -276,7 +276,7 @@ abstract final class DayMakerSampleData {
       xpReward: 10,
     ),
     Roast(
-      id: 'sf-grandpa-hourly-roast',
+      id: 'demo-grandpa-hourly-roast',
       personaId: 'grandpa',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Humidity at 56% and everyone acts like the sky invented problems.',
@@ -285,7 +285,7 @@ abstract final class DayMakerSampleData {
       xpReward: 10,
     ),
     Roast(
-      id: 'sf-politician-hourly-roast',
+      id: 'demo-politician-hourly-roast',
       personaId: 'politician',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'The forecast is committed to transparency, except for the sun.',
@@ -294,7 +294,7 @@ abstract final class DayMakerSampleData {
       xpReward: 10,
     ),
     Roast(
-      id: 'sf-two-year-old-hourly-roast',
+      id: 'demo-two-year-old-hourly-roast',
       personaId: 'two-year-old',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Rain chance is 38%, which is also the chance of sharing snacks.',
@@ -377,7 +377,7 @@ abstract final class DayMakerSampleData {
 
   static final List<RadarAlert> radarAlerts = List.unmodifiable([
     RadarAlert(
-      id: 'sf-light-rain-window',
+      id: 'demo-light-rain-window',
       locationName: weatherSnapshot.locationName,
       title: 'Light Rain Window',
       message: '38% chance of drizzle trying to become everyone’s problem.',

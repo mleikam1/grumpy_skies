@@ -1,11 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
+import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
+import 'package:grumpy_skies/repositories/weather_repository.dart';
+import 'package:grumpy_skies/services/weather_location_controller.dart';
+
+import 'helpers/daymaker_test_helpers.dart';
 
 void main() {
+  Widget buildSubject() {
+    const repository = FakeWeatherRepository();
+    final locationController = WeatherLocationController(
+      repository: repository,
+      initialLocation: buildTestWeatherLocation(),
+    );
+
+    return MultiProvider(
+      providers: [
+        Provider<WeatherRepository>.value(value: repository),
+        ChangeNotifierProvider<WeatherLocationController>.value(
+          value: locationController,
+        ),
+      ],
+      child: MaterialApp(
+        theme: DMTheme.light,
+        home: const ForecastScreen(
+          weatherRepository: repository,
+        ),
+      ),
+    );
+  }
+
   testWidgets('ForecastScreen renders DayMaker dashboard at 390x844',
       (tester) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -15,18 +44,11 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: DMTheme.light,
-        home: const ForecastScreen(
-          weatherRepository: FakeWeatherRepository(),
-        ),
-      ),
-    );
+    await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('San Francisco'), findsOneWidget);
+    expect(find.text('Demo City'), findsOneWidget);
     expect(find.text('Partly Cloudy'), findsWidgets);
     expect(find.text('72°F'), findsOneWidget);
     expect(find.text('Updated 10 min ago'), findsOneWidget);
@@ -56,19 +78,126 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Demo City'), findsOneWidget);
+    expect(find.text('Hourly'), findsOneWidget);
+    expect(find.text('Details'), findsOneWidget);
+  });
+
+  testWidgets('ForecastScreen passes selected coordinates to weather fetch',
+      (tester) async {
+    final repository = _RecordingWeatherRepository();
+    final location = WeatherLocation(
+      name: 'Actual Place',
+      state: 'IL',
+      country: 'US',
+      latitude: 12.3456,
+      longitude: -98.7654,
+      source: WeatherLocationSource.device,
+      updatedAt: DateTime(2026, 6, 19, 9),
+    );
+    final locationController = WeatherLocationController(
+      repository: repository,
+      initialLocation: location,
+    );
+
     await tester.pumpWidget(
-      MaterialApp(
-        theme: DMTheme.light,
-        home: const ForecastScreen(
-          weatherRepository: FakeWeatherRepository(),
+      MultiProvider(
+        providers: [
+          Provider<WeatherRepository>.value(value: repository),
+          ChangeNotifierProvider<WeatherLocationController>.value(
+            value: locationController,
+          ),
+        ],
+        child: MaterialApp(
+          theme: DMTheme.light,
+          home: ForecastScreen(weatherRepository: repository),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('San Francisco'), findsOneWidget);
-    expect(find.text('Hourly'), findsOneWidget);
-    expect(find.text('Details'), findsOneWidget);
+    expect(repository.lastLatitude, closeTo(12.3456, 0.0001));
+    expect(repository.lastLongitude, closeTo(-98.7654, 0.0001));
+    expect(find.text('Actual Place'), findsOneWidget);
   });
+}
+
+class _RecordingWeatherRepository extends WeatherRepository {
+  double? lastLatitude;
+  double? lastLongitude;
+
+  @override
+  Future<WeatherSnapshot> getSnapshot({
+    required double latitude,
+    required double longitude,
+    bool forceRefresh = false,
+  }) async {
+    return _snapshot('Actual Place, IL, US');
+  }
+
+  @override
+  Future<WeatherBundle> getWeather({
+    required double latitude,
+    required double longitude,
+    bool forceRefresh = false,
+    LocationCandidate? location,
+  }) async {
+    lastLatitude = latitude;
+    lastLongitude = longitude;
+    return WeatherBundle.fromSnapshot(
+      _snapshot(location?.displayName ?? 'Actual Place, IL, US'),
+    );
+  }
+
+  @override
+  Future<List<RadarAlert>> getRadarAlerts({
+    required double latitude,
+    required double longitude,
+  }) async {
+    return const [];
+  }
+
+  WeatherSnapshot _snapshot(String locationName) {
+    final observedAt = DateTime.now();
+    return WeatherSnapshot(
+      id: 'actual-place',
+      locationName: locationName,
+      condition: 'Clear',
+      temperatureF: 70,
+      feelsLikeF: 70,
+      windMph: 5,
+      windDirection: 'W',
+      humidityPercent: 45,
+      rainChancePercent: 10,
+      aqi: 12,
+      aqiCategory: 'Good',
+      uvIndex: 3,
+      uvCategory: 'Moderate',
+      chaosMeterPercent: 20,
+      observedAt: observedAt,
+      hourly: [
+        ForecastHour(
+          time: observedAt,
+          temperatureF: 70,
+          condition: 'Clear',
+          rainChancePercent: 10,
+        ),
+      ],
+      daily: [
+        ForecastDay(
+          date: observedAt,
+          lowF: 64,
+          highF: 72,
+          condition: 'Clear',
+          rainChancePercent: 10,
+        ),
+      ],
+      metrics: const [],
+    );
+  }
 }

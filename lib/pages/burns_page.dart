@@ -3,10 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../models/persona.dart';
 import '../models/weather_models.dart';
+import '../config/app_routes.dart';
 import '../repositories/weather_repository.dart';
 import '../services/persona_roast_service.dart';
+import '../services/weather_location_controller.dart';
 import '../widgets/persona_roast_bubble.dart';
-import '../config/app_routes.dart';
 
 class BurnsPage extends StatefulWidget {
   const BurnsPage({super.key});
@@ -18,6 +19,7 @@ class BurnsPage extends StatefulWidget {
 class _BurnsPageState extends State<BurnsPage> {
   WeatherBundle? _weather;
   bool _loading = false;
+  String? _error;
 
   @override
   void initState() {
@@ -26,15 +28,38 @@ class _BurnsPageState extends State<BurnsPage> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final repo = context.read<WeatherRepository>();
-    const lat = 37.7749;
-    const lon = -122.4194;
-    final data = await repo.getWeather(latitude: lat, longitude: lon);
     setState(() {
-      _weather = data;
-      _loading = false;
+      _loading = true;
+      _error = null;
     });
+
+    try {
+      final repo = context.read<WeatherRepository>();
+      final location =
+          context.read<WeatherLocationController>().selectedLocation;
+      if (location == null) {
+        setState(() {
+          _error = 'Choose a location to load weather roasts.';
+          _loading = false;
+        });
+        return;
+      }
+
+      final data = await repo.getWeather(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        location: location,
+      );
+      setState(() {
+        _weather = data;
+        _loading = false;
+      });
+    } catch (error) {
+      setState(() {
+        _error = 'Weather roasts are unavailable: $error';
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -43,23 +68,27 @@ class _BurnsPageState extends State<BurnsPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Burns')),
-      body: _loading || _weather == null
+      body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              children: [
-                const SizedBox(height: 8),
-                ...PersonaType.values.map((persona) {
-                  final roast = roastService.getRoast(
-                    persona: persona,
-                    weather: _weather!,
-                  );
-                  return PersonaRoastBubble(
-                    personaName: persona.displayName,
-                    roast: roast,
-                  );
-                }),
-              ],
-            ),
+          : _error != null
+              ? Center(child: Text(_error!))
+              : _weather == null
+                  ? const Center(child: Text('No weather loaded yet.'))
+                  : ListView(
+                      children: [
+                        const SizedBox(height: 8),
+                        ...PersonaType.values.map((persona) {
+                          final roast = roastService.getRoast(
+                            persona: persona,
+                            weather: _weather!,
+                          );
+                          return PersonaRoastBubble(
+                            personaName: persona.displayName,
+                            roast: roast,
+                          );
+                        }),
+                      ],
+                    ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
         onTap: (index) {

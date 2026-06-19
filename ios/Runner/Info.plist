@@ -25,7 +25,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Grumpy Skies uses your location only after you tap the location button to show local weather and radar.</string>
+	<string>Grumpy Skies uses your location to show local weather, radar, alerts, and forecasts.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>WeatherRadar</key>

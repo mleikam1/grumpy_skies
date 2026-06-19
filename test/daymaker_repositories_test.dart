@@ -5,20 +5,19 @@ import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
 
 void main() {
-  test('FakeWeatherRepository returns stable San Francisco sample data',
-      () async {
+  test('FakeWeatherRepository returns stable demo sample data', () async {
     const repo = FakeWeatherRepository();
 
     final snapshot = await repo.getSnapshot(
-      latitude: 37.7749,
-      longitude: -122.4194,
+      latitude: 41.8781,
+      longitude: -87.6298,
     );
     final bundle = await repo.getWeather(
-      latitude: 37.7749,
-      longitude: -122.4194,
+      latitude: 41.8781,
+      longitude: -87.6298,
     );
 
-    expect(snapshot.locationName, 'San Francisco, CA');
+    expect(snapshot.locationName, 'Demo City, US');
     expect(snapshot.condition, 'Partly Cloudy');
     expect(snapshot.temperatureF, 72);
     expect(snapshot.feelsLikeF, 74);

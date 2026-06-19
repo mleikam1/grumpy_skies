@@ -103,7 +103,7 @@ Compatibility redirects are also present for `/home`, `/burns`, `/meme-generator
 
 `lib/main.dart` currently injects `FakeWeatherRepository` and `FakeRoastRepository` through Provider. These implementations read from `DayMakerSampleData` and are intentionally stable for tests, screenshots, UI iteration, and generated asset previews.
 
-- `FakeWeatherRepository` returns a sample San Francisco weather snapshot and radar alerts.
+- `FakeWeatherRepository` returns a clearly labeled demo weather snapshot and radar alerts for tests/previews.
 - `FakeRoastRepository` returns sample personas, roasts, achievements, fun features, and meme templates.
 - `DummyWeatherService` implements the older `WeatherApiService` abstraction for randomized demo weather and should not be treated as production data.
 - Tests assert repository stability, so keep fake data deterministic unless the tests are updated with the intended behavior.

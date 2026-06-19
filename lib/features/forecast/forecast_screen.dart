@@ -54,7 +54,6 @@ class _ForecastScreenState extends State<ForecastScreen> {
     _locationController = _readLocationController() ??
         WeatherLocationController(
           repository: _repository!,
-          initialLocation: WeatherLocationController.fallbackLocation,
         );
     _locationController!.addListener(_handleLocationChanged);
     _loadedRepository = true;
@@ -240,16 +239,19 @@ class _ForecastScreenState extends State<ForecastScreen> {
         controller: _locationController!,
         onLocationSelected: (_) {
           setState(() => _showLocationSelector = false);
-          _loadWeather(forceRefresh: true);
         },
       );
     }
 
     final weather = _weather!;
-    final snapshot = weather.snapshot ?? DayMakerSampleData.weatherSnapshot;
+    final snapshot = _snapshotForWeather(weather);
     final now = _relativeNow ?? weather.current.lastUpdated;
     final roast = DayMakerSampleData.roastHistory[_roastIndex];
-    final location = _cityName(weather.current.locationName);
+    final location = _cityName(
+      weather.current.locationName.isNotEmpty
+          ? weather.current.locationName
+          : _locationController?.selectedLocation?.displayName ?? '',
+    );
 
     return RefreshIndicator(
       color: DMColors.deepNavy,
@@ -297,7 +299,6 @@ class _ForecastScreenState extends State<ForecastScreen> {
                           title: 'Change location',
                           onLocationSelected: (_) {
                             setState(() => _showLocationSelector = false);
-                            _loadWeather(forceRefresh: true);
                           },
                         ),
                       ],
@@ -346,8 +347,54 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
   static String _cityName(String locationName) {
     final trimmed = locationName.trim();
-    if (trimmed.isEmpty) return 'San Francisco';
+    if (trimmed.isEmpty) return 'Current location';
     return trimmed.split(',').first.trim();
+  }
+
+  static WeatherSnapshot _snapshotForWeather(WeatherBundle weather) {
+    final existing = weather.snapshot;
+    if (existing != null) return existing;
+
+    final current = weather.current;
+    return WeatherSnapshot(
+      id: 'current-${current.lastUpdated.millisecondsSinceEpoch}',
+      locationName: current.locationName,
+      condition: current.condition,
+      temperatureF: current.temperatureF.round(),
+      feelsLikeF: current.feelsLikeF.round(),
+      windMph: current.windMph,
+      windDirection: current.windDirection,
+      humidityPercent: current.humidity,
+      rainChancePercent: current.precipitationChance,
+      aqi: current.aqi,
+      aqiCategory: current.aqiCategory,
+      uvIndex: current.uvIndex,
+      uvCategory: current.uvCategory,
+      chaosMeterPercent: current.chaosMeterPercent,
+      observedAt: current.lastUpdated,
+      hourly: weather.hourly
+          .map(
+            (hour) => ForecastHour(
+              time: hour.time,
+              temperatureF: hour.temperatureF.round(),
+              condition: hour.condition,
+              rainChancePercent: hour.precipitationChance,
+            ),
+          )
+          .toList(),
+      daily: weather.daily
+          .map(
+            (day) => ForecastDay(
+              date: day.date,
+              lowF: day.minTempF.round(),
+              highF: day.maxTempF.round(),
+              condition: day.condition,
+              rainChancePercent: day.precipitationChance,
+            ),
+          )
+          .toList(),
+      metrics: const [],
+    );
   }
 
   static String _friendlyError(Object? error) {

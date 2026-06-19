@@ -16,6 +16,7 @@ import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
 import 'package:grumpy_skies/features/settings/about_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/features/splash/splash_screen.dart';
+import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_roast_repository.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
@@ -24,6 +25,7 @@ import 'package:grumpy_skies/repositories/settings_repository.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
 import 'package:grumpy_skies/services/persona_roast_service.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
+import 'package:grumpy_skies/services/weather_location_controller.dart';
 
 class DayMakerTestViewport {
   const DayMakerTestViewport({
@@ -114,22 +116,42 @@ extension DayMakerWidgetTester on WidgetTester {
 
 Future<Widget> buildDayMakerTestProviders({
   required Widget child,
+  WeatherLocation? initialWeatherLocation,
 }) async {
   final settingsRepository = InMemorySettingsRepository();
   final settingsController = SettingsController(repository: settingsRepository);
   await settingsController.loadSettings();
+  const weatherRepository = FakeWeatherRepository();
+  final locationController = WeatherLocationController(
+    repository: weatherRepository,
+    initialLocation: initialWeatherLocation ?? buildTestWeatherLocation(),
+  );
 
   return MultiProvider(
     providers: [
-      Provider<WeatherRepository>.value(value: const FakeWeatherRepository()),
+      Provider<WeatherRepository>.value(value: weatherRepository),
       Provider<RoastRepository>.value(value: const FakeRoastRepository()),
       Provider<SettingsRepository>.value(value: settingsRepository),
       Provider<PersonaRoastService>.value(value: PersonaRoastService()),
+      ChangeNotifierProvider<WeatherLocationController>.value(
+        value: locationController,
+      ),
       ChangeNotifierProvider<SettingsController>.value(
         value: settingsController,
       ),
     ],
     child: child,
+  );
+}
+
+WeatherLocation buildTestWeatherLocation() {
+  return WeatherLocation(
+    name: 'Demo City',
+    country: 'US',
+    latitude: 41.8781,
+    longitude: -87.6298,
+    source: WeatherLocationSource.manual,
+    updatedAt: DateTime(2026, 6, 14, 9),
   );
 }
 
