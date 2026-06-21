@@ -69,13 +69,15 @@ class OpenWeatherRepository extends WeatherRepository {
     LocationCandidate? location,
   }) async {
     _validateCoordinates(latitude, longitude);
+    final recentFailure = _recentFailure(latitude, longitude);
+    if (recentFailure != null &&
+        (!forceRefresh || _throttleForcedRefresh(recentFailure.error))) {
+      throw recentFailure.error;
+    }
+
     if (!forceRefresh) {
       final cached = _validCachedBundle(latitude, longitude);
       if (cached != null) return cached;
-      final recentFailure = _recentFailure(latitude, longitude);
-      if (recentFailure != null) {
-        throw recentFailure.error;
-      }
     }
 
     final cacheKey = _requestKey(latitude, longitude);
@@ -382,6 +384,11 @@ class OpenWeatherRepository extends WeatherRepository {
 
   static String _requestKey(double latitude, double longitude) {
     return '${latitude.toStringAsFixed(3)},${longitude.toStringAsFixed(3)}';
+  }
+
+  static bool _throttleForcedRefresh(Object error) {
+    return error is OpenWeatherBackendException &&
+        error.isProviderAuthorizationFailure;
   }
 
   static void _debugWeatherLocation({

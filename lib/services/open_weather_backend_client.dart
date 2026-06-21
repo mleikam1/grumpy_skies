@@ -9,8 +9,23 @@ import '../models/weather_models.dart';
 class OpenWeatherBackendException implements Exception {
   final String message;
   final int? statusCode;
+  final String? code;
 
-  const OpenWeatherBackendException(this.message, {this.statusCode});
+  const OpenWeatherBackendException(
+    this.message, {
+    this.statusCode,
+    this.code,
+  });
+
+  bool get isProviderAuthorizationFailure {
+    final safeCode = code ?? '';
+    return safeCode == 'openweather_key_rejected' ||
+        safeCode == 'openweather_one_call_access_denied' ||
+        safeCode == 'openweather_secret_missing' ||
+        safeCode == 'openweather_secret_not_bound' ||
+        message.contains('OpenWeather rejected the server key') ||
+        message.contains('One Call API 4.0');
+  }
 
   @override
   String toString() => message;
@@ -218,6 +233,7 @@ class OpenWeatherBackendClient {
       throw OpenWeatherBackendException(
         message,
         statusCode: response.statusCode,
+        code: _errorCode(decoded),
       );
     }
     return decoded;
@@ -248,6 +264,17 @@ class OpenWeatherBackendClient {
     }
     if (json['message'] is String) {
       return json['message'] as String;
+    }
+    return null;
+  }
+
+  static String? _errorCode(Map<String, dynamic> json) {
+    final error = json['error'];
+    if (error is Map && error['code'] is String) {
+      return error['code'] as String;
+    }
+    if (json['code'] is String) {
+      return json['code'] as String;
     }
     return null;
   }

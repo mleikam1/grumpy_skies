@@ -148,5 +148,39 @@ void main() {
         ),
       );
     });
+
+    test('preserves safe backend error codes', () async {
+      final client = OpenWeatherBackendClient(
+        baseUrl: 'https://example.test/api',
+        httpClient: MockClient((_) async {
+          return http.Response(
+            jsonEncode({
+              'error': {
+                'code': 'openweather_one_call_access_denied',
+                'message': 'OpenWeather rejected the server key.',
+              },
+            }),
+            502,
+          );
+        }),
+      );
+
+      await expectLater(
+        client.current(latitude: 38.974, longitude: -94.685),
+        throwsA(
+          isA<OpenWeatherBackendException>()
+              .having(
+                (error) => error.code,
+                'code',
+                'openweather_one_call_access_denied',
+              )
+              .having(
+                (error) => error.isProviderAuthorizationFailure,
+                'isProviderAuthorizationFailure',
+                isTrue,
+              ),
+        ),
+      );
+    });
   });
 }

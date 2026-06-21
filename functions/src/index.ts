@@ -18,8 +18,13 @@ const tenMinutesSeconds = 10 * 60;
 const fortyEightHoursSeconds = 48 * 60 * 60;
 const fiveHoursSeconds = 5 * 60 * 60;
 const weatherCacheControl = "public, max-age=300, stale-while-revalidate=300";
+const radarFallbackCacheControl = "public, max-age=60";
 const openWeatherTimeoutMs = 8000;
 const authFailureTtlMs = 5 * 60 * 1000;
+const transparentRadarTilePng = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
+  "base64",
+);
 
 type RadarMode = "us-forecast" | "global";
 
@@ -356,6 +361,15 @@ async function handleRadarTile(
     );
   }
 
+  const cachedAuthFailure = upstreamAuthFailures.get("maps");
+  if (
+    cachedAuthFailure !== undefined &&
+    cachedAuthFailure.expiresAtMs > Date.now()
+  ) {
+    sendTransparentRadarTile(response, cachedAuthFailure.error.safeCode);
+    return;
+  }
+
   const key = getOpenWeatherApiKey();
   const tilePath = mode === "us-forecast" ?
     `/maps/2.0/radar/us/forecast/${z}/${x}/${y}` :
@@ -364,30 +378,68 @@ async function handleRadarTile(
   url.searchParams.set("appid", key);
   url.searchParams.set("tm", String(tm));
 
-  const upstream = await fetch(url);
+  let upstream: globalThis.Response;
+  try {
+    upstream = await fetchWithTimeout(url);
+  } catch (error) {
+    logger.warn("OpenWeather radar tile fetch failed", {
+      mode,
+      z,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+    sendTransparentRadarTile(response, "openweather_unavailable");
+    return;
+  }
+
   if (!upstream.ok) {
+    const upstreamErrorBody = await safeUpstreamErrorBody(upstream);
+    const safeCode = safeUpstreamCode(upstream.status, upstreamErrorBody);
     logger.warn("OpenWeather radar tile error", {
       status: upstream.status,
+      code: safeCode,
       mode,
       z,
     });
-    sendJson(response, upstreamStatus(upstream.status), {
-      error: {
-        message: safeUpstreamMessage(upstream.status),
-      },
-    }, "public, max-age=60");
+    if (upstream.status === 401 || upstream.status === 403) {
+      upstreamAuthFailures.set("maps", {
+        expiresAtMs: Date.now() + authFailureTtlMs,
+        error: new PublicHttpError(
+          upstreamStatus(upstream.status),
+          safeUpstreamMessage(upstream.status, upstreamErrorBody),
+          safeCode,
+        ),
+      });
+    }
+    sendTransparentRadarTile(response, safeCode);
     return;
   }
 
   const contentType = upstream.headers.get("content-type") ?? "image/png";
+  if (!contentType.startsWith("image/")) {
+    logger.warn("OpenWeather radar tile returned non-image data", {
+      contentType,
+      mode,
+      z,
+    });
+    sendTransparentRadarTile(response, "openweather_tile_invalid_content");
+    return;
+  }
+
   const bytes = Buffer.from(await upstream.arrayBuffer());
   response
     .status(200)
     .set("Cache-Control", "public, max-age=300, stale-while-revalidate=300")
-    .set("Content-Type", contentType.startsWith("image/") ?
-      contentType :
-      "image/png")
+    .set("Content-Type", contentType)
     .send(bytes);
+}
+
+function sendTransparentRadarTile(response: Response, errorCode: string) {
+  response
+    .status(200)
+    .set("Cache-Control", radarFallbackCacheControl)
+    .set("Content-Type", "image/png")
+    .set("X-Grumpy-Skies-Tile-Fallback", errorCode)
+    .send(transparentRadarTilePng);
 }
 
 async function openWeatherJson(

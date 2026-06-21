@@ -139,6 +139,40 @@ void main() {
     expect(client.minuteCalls, 1);
     expect(client.hourlyCalls, 1);
   });
+
+  test('OpenWeatherRepository throttles forced auth retries', () async {
+    final client = _RecordingBackendClient(
+      currentError: const OpenWeatherBackendException(
+        'OpenWeather rejected the server key for One Call API 4.0.',
+        statusCode: 502,
+        code: 'openweather_one_call_access_denied',
+      ),
+    );
+    final repo = OpenWeatherRepository(client: client);
+
+    await expectLater(
+      repo.getWeather(
+        latitude: 38.974,
+        longitude: -94.685,
+        forceRefresh: true,
+        location: _testLocation,
+      ),
+      throwsA(isA<OpenWeatherBackendException>()),
+    );
+    await expectLater(
+      repo.getWeather(
+        latitude: 38.974,
+        longitude: -94.685,
+        forceRefresh: true,
+        location: _testLocation,
+      ),
+      throwsA(isA<OpenWeatherBackendException>()),
+    );
+
+    expect(client.currentCalls, 1);
+    expect(client.minuteCalls, 0);
+    expect(client.hourlyCalls, 0);
+  });
 }
 
 const _testLocation = LocationCandidate(
