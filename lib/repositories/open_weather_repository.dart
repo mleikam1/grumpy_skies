@@ -18,6 +18,8 @@ class OpenWeatherRepository extends WeatherRepository {
   final CacheService? _cacheService;
   final Duration _cacheDuration;
   final _inFlightBundles = <String, Future<WeatherBundle>>{};
+  final _recentFailures = <String, _WeatherRequestFailure>{};
+  static const _failureCooldown = Duration(minutes: 1);
 
   @override
   Future<List<LocationCandidate>> searchLocations({
@@ -70,6 +72,10 @@ class OpenWeatherRepository extends WeatherRepository {
     if (!forceRefresh) {
       final cached = _validCachedBundle(latitude, longitude);
       if (cached != null) return cached;
+      final recentFailure = _recentFailure(latitude, longitude);
+      if (recentFailure != null) {
+        throw recentFailure.error;
+      }
     }
 
     final cacheKey = _requestKey(latitude, longitude);
@@ -83,8 +89,14 @@ class OpenWeatherRepository extends WeatherRepository {
     );
     _inFlightBundles[cacheKey] = request;
     try {
-      return await request;
-    } catch (_) {
+      final bundle = await request;
+      _recentFailures.remove(cacheKey);
+      return bundle;
+    } catch (error) {
+      _recentFailures[cacheKey] = _WeatherRequestFailure(
+        error: error,
+        failedAt: DateTime.now(),
+      );
       final cached = _cacheService?.getWeatherBundle(latitude, longitude);
       if (cached != null) return cached;
       rethrow;
@@ -129,6 +141,16 @@ class OpenWeatherRepository extends WeatherRepository {
     return _cacheService?.getWeatherBundle(latitude, longitude);
   }
 
+  _WeatherRequestFailure? _recentFailure(double latitude, double longitude) {
+    final failure = _recentFailures[_requestKey(latitude, longitude)];
+    if (failure == null) return null;
+    if (DateTime.now().difference(failure.failedAt) <= _failureCooldown) {
+      return failure;
+    }
+    _recentFailures.remove(_requestKey(latitude, longitude));
+    return null;
+  }
+
   Future<WeatherBundle> _fetchAndCacheWeatherBundle({
     required double latitude,
     required double longitude,
@@ -161,25 +183,32 @@ class OpenWeatherRepository extends WeatherRepository {
       locationName: locationName,
     );
 
-    final weatherParts = await Future.wait<Object>([
-      _client.current(
-        latitude: latitude,
-        longitude: longitude,
-        locationName: locationName,
-      ),
-      _client.minute(
-        latitude: latitude,
-        longitude: longitude,
-      ),
-      _client.hourly(
-        latitude: latitude,
-        longitude: longitude,
-      ),
-    ]);
+    final current = await _client.current(
+      latitude: latitude,
+      longitude: longitude,
+      locationName: locationName,
+    );
+    final minutesFuture = _client
+        .minute(
+      latitude: latitude,
+      longitude: longitude,
+    )
+        .catchError((Object error) {
+      _debugOptionalWeatherFailure('minute', error);
+      return <MinutePrecipitation>[];
+    });
+    final timelineFuture = _client
+        .hourly(
+      latitude: latitude,
+      longitude: longitude,
+    )
+        .catchError((Object error) {
+      _debugOptionalWeatherFailure('hourly', error);
+      return <TimelineWeatherPoint>[];
+    });
 
-    final current = weatherParts[0] as CurrentWeather;
-    final minutes = weatherParts[1] as List<MinutePrecipitation>;
-    final timeline = weatherParts[2] as List<TimelineWeatherPoint>;
+    final minutes = await minutesFuture;
+    final timeline = await timelineFuture;
     final alerts = current.alertIds.isEmpty
         ? const <WeatherAlert>[]
         : await getWeatherAlerts(alertIds: current.alertIds);
@@ -367,4 +396,21 @@ class OpenWeatherRepository extends WeatherRepository {
       'lon=${longitude.toStringAsFixed(3)}',
     );
   }
+
+  static void _debugOptionalWeatherFailure(String endpoint, Object error) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] optional $endpoint weather failed: $error',
+    );
+  }
+}
+
+class _WeatherRequestFailure {
+  const _WeatherRequestFailure({
+    required this.error,
+    required this.failedAt,
+  });
+
+  final Object error;
+  final DateTime failedAt;
 }

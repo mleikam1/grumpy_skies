@@ -19,6 +19,7 @@ const fortyEightHoursSeconds = 48 * 60 * 60;
 const fiveHoursSeconds = 5 * 60 * 60;
 const weatherCacheControl = "public, max-age=300, stale-while-revalidate=300";
 const openWeatherTimeoutMs = 8000;
+const authFailureTtlMs = 5 * 60 * 1000;
 
 type RadarMode = "us-forecast" | "global";
 
@@ -27,14 +28,20 @@ type CacheEntry = {
   expiresAtMs: number;
   value: unknown;
 };
+type ErrorCacheEntry = {
+  expiresAtMs: number;
+  error: PublicHttpError;
+};
 
 const jsonCache = new Map<string, CacheEntry>();
 const jsonInflight = new Map<string, Promise<unknown>>();
+const upstreamAuthFailures = new Map<string, ErrorCacheEntry>();
 
 class PublicHttpError extends Error {
   constructor(
     readonly status: number,
     readonly safeMessage: string,
+    readonly safeCode = "weather_error",
   ) {
     super(safeMessage);
   }
@@ -42,6 +49,7 @@ class PublicHttpError extends Error {
 
 export const weatherBackendHealth = onRequest(
   {
+    region: "us-central1",
     secrets: [openWeatherApiKey],
   },
   (_request, response) => {
@@ -56,6 +64,7 @@ export const weatherBackendHealth = onRequest(
 
 export const api = onRequest(
   {
+    region: "us-central1",
     secrets: [openWeatherApiKey],
     cors: true,
     timeoutSeconds: 60,
@@ -386,6 +395,15 @@ async function openWeatherJson(
   params: Record<string, string | number | undefined>,
   routeLabel: string,
 ): Promise<unknown> {
+  const authScope = providerAuthFailureScope(pathname);
+  const cachedAuthFailure = upstreamAuthFailures.get(authScope);
+  if (
+    cachedAuthFailure !== undefined &&
+    cachedAuthFailure.expiresAtMs > Date.now()
+  ) {
+    throw cachedAuthFailure.error;
+  }
+
   const cacheKey = weatherCacheKey(pathname, params, routeLabel);
   const cached = jsonCache.get(cacheKey);
   if (cached !== undefined && cached.expiresAtMs > Date.now()) {
@@ -406,7 +424,7 @@ async function openWeatherJson(
   }
   url.searchParams.set("appid", key);
 
-  const request = fetchOpenWeatherJson(url, routeLabel);
+  const request = fetchOpenWeatherJson(url, routeLabel, authScope);
   jsonInflight.set(cacheKey, request);
   try {
     const json = await request;
@@ -423,6 +441,7 @@ async function openWeatherJson(
 async function fetchOpenWeatherJson(
   url: URL,
   routeLabel: string,
+  authScope: string,
 ): Promise<unknown> {
   const maxAttempts = 2;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -431,9 +450,12 @@ async function fetchOpenWeatherJson(
       return upstream.json();
     }
 
+    const upstreamErrorBody = await safeUpstreamErrorBody(upstream);
+    const safeCode = safeUpstreamCode(upstream.status, upstreamErrorBody);
     logger.warn("OpenWeather API error", {
       route: routeLabel,
       status: upstream.status,
+      code: safeCode,
     });
 
     if (shouldRetryUpstream(upstream.status) && attempt + 1 < maxAttempts) {
@@ -441,15 +463,24 @@ async function fetchOpenWeatherJson(
       continue;
     }
 
-    throw new PublicHttpError(
+    const error = new PublicHttpError(
       upstreamStatus(upstream.status),
-      safeUpstreamMessage(upstream.status),
+      safeUpstreamMessage(upstream.status, upstreamErrorBody),
+      safeCode,
     );
+    if (upstream.status === 401 || upstream.status === 403) {
+      upstreamAuthFailures.set(authScope, {
+        expiresAtMs: Date.now() + authFailureTtlMs,
+        error,
+      });
+    }
+    throw error;
   }
 
   throw new PublicHttpError(
     503,
     "Weather provider is temporarily unavailable.",
+    "openweather_unavailable",
   );
 }
 
@@ -463,15 +494,30 @@ async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
       throw new PublicHttpError(
         504,
         "Weather provider timed out. Try again soon.",
+        "openweather_timeout",
       );
     }
     throw new PublicHttpError(
       503,
       "Weather provider is temporarily unavailable.",
+      "openweather_unavailable",
     );
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function providerAuthFailureScope(pathname: string): string {
+  if (pathname.startsWith("/data/4.0/onecall/")) {
+    return "onecall";
+  }
+  if (pathname.startsWith("/geo/")) {
+    return "geo";
+  }
+  if (pathname.startsWith("/maps/")) {
+    return "maps";
+  }
+  return "openweather";
 }
 
 export function weatherCacheKey(
@@ -528,11 +574,25 @@ function normalizedApiPath(request: Request): string {
 }
 
 function getOpenWeatherApiKey(): string {
-  const key = openWeatherApiKey.value();
+  let key = "";
+  try {
+    key = openWeatherApiKey.value();
+  } catch (error) {
+    logger.error("OpenWeather secret is unavailable to this function", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw new PublicHttpError(
+      500,
+      "OpenWeather API key is not available to the weather function. Bind OPENWEATHER_API_KEY to the function and redeploy.",
+      "openweather_secret_not_bound",
+    );
+  }
+
   if (!key) {
     throw new PublicHttpError(
       500,
-      "OpenWeather is not configured yet. Add OPENWEATHER_API_KEY on the server.",
+      "OpenWeather API key is not configured on the server. Set OPENWEATHER_API_KEY and redeploy functions.",
+      "openweather_secret_missing",
     );
   }
   return key;
@@ -550,6 +610,7 @@ function handleRouteError(
   if (error instanceof PublicHttpError) {
     sendJson(response, error.status, {
       error: {
+        code: error.safeCode,
         message: error.safeMessage,
       },
     });
@@ -858,9 +919,50 @@ function sanitizeNext(value: unknown): string | null {
   }
 }
 
-function safeUpstreamMessage(status: number): string {
+async function safeUpstreamErrorBody(
+  response: globalThis.Response,
+): Promise<string> {
+  try {
+    return (await response.text()).slice(0, 1000);
+  } catch {
+    return "";
+  }
+}
+
+export function safeUpstreamCode(status: number, body = ""): string {
   if (status === 401 || status === 403) {
-    return "Weather provider authorization failed on the server.";
+    const normalized = body.toLowerCase();
+    if (
+      normalized.includes("subscription") ||
+      normalized.includes("one call") ||
+      normalized.includes("plan")
+    ) {
+      return "openweather_one_call_access_denied";
+    }
+    return "openweather_key_rejected";
+  }
+  if (status === 400) {
+    return "openweather_invalid_request";
+  }
+  if (status === 404) {
+    return "openweather_not_found";
+  }
+  if (status === 429) {
+    return "openweather_rate_limited";
+  }
+  if (status >= 500) {
+    return "openweather_unavailable";
+  }
+  return "openweather_request_failed";
+}
+
+export function safeUpstreamMessage(status: number, body = ""): string {
+  if (status === 401 || status === 403) {
+    const code = safeUpstreamCode(status, body);
+    if (code === "openweather_one_call_access_denied") {
+      return "OpenWeather rejected the server key for One Call API 4.0. Enable the One Call by Call subscription for OPENWEATHER_API_KEY, then redeploy functions.";
+    }
+    return "OpenWeather rejected the server key. Check OPENWEATHER_API_KEY, redeploy after secret changes, and confirm One Call API 4.0 access.";
   }
   if (status === 400) {
     return "The weather request had invalid parameters.";

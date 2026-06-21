@@ -6,6 +6,8 @@ import {
   parseLatitude,
   parseLongitude,
   parseUnits,
+  safeUpstreamCode,
+  safeUpstreamMessage,
   weatherCacheKey,
 } from "./index";
 
@@ -119,4 +121,27 @@ test("weather cache key rounds location and includes units", () => {
   assert.notEqual(first, metric);
   assert.match(first, /lat=38\.86/);
   assert.match(first, /lon=-94\.65/);
+});
+
+test("classifies OpenWeather One Call auth and subscription errors safely", () => {
+  const subscriptionBody = JSON.stringify({
+    cod: 401,
+    message: "One Call API 4.0 subscription required",
+  });
+  const invalidKeyBody = JSON.stringify({
+    cod: 401,
+    message: "Invalid API key",
+  });
+
+  assert.equal(
+    safeUpstreamCode(401, subscriptionBody),
+    "openweather_one_call_access_denied",
+  );
+  assert.match(
+    safeUpstreamMessage(401, subscriptionBody),
+    /One Call API 4\.0/,
+  );
+  assert.equal(safeUpstreamCode(401, invalidKeyBody), "openweather_key_rejected");
+  assert.match(safeUpstreamMessage(401, invalidKeyBody), /OPENWEATHER_API_KEY/);
+  assert.doesNotMatch(safeUpstreamMessage(401, invalidKeyBody), /appid/i);
 });
