@@ -112,7 +112,7 @@ class WeatherApiConfig {
       return productionOverride;
     }
 
-    return 'https://$projectId.web.app/api';
+    return 'https://$region-$projectId.cloudfunctions.net/api';
   }
 
   static String _platformLabel({

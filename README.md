@@ -40,7 +40,7 @@ FIREBASE_FUNCTIONS_REGION=us-central1
 Default runtime behavior:
 
 - Android/iOS/native default:
-  `https://wingman-interactive-live.web.app/api`
+  `https://us-central1-wingman-interactive-live.cloudfunctions.net/api`
 - Flutter web default: `/api`
 - Manual override, all platforms:
   `--dart-define=WEATHER_API_BASE_URL=<full_api_base_url>`

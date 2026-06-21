@@ -16,7 +16,10 @@ void main() {
         platform: TargetPlatform.android,
       );
 
-      expect(config.baseUrl, 'https://wingman-interactive-live.web.app/api');
+      expect(
+        config.baseUrl,
+        'https://us-central1-wingman-interactive-live.cloudfunctions.net/api',
+      );
       expect(config.baseUrl, isNot(contains('127.0.0.1')));
       expect(config.baseUrl, isNot(contains('grumpy-skies')));
     });
