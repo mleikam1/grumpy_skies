@@ -344,6 +344,9 @@ extension RadarModeX on RadarMode {
 
 class CurrentWeather {
   final String locationName;
+  final double? latitude;
+  final double? longitude;
+  final int? timezoneOffset;
   final double temperatureC;
   final String condition;
   final double feelsLikeC;
@@ -361,6 +364,8 @@ class CurrentWeather {
   final String uvCategory;
   final int chaosMeterPercent;
   final DateTime lastUpdated;
+  final DateTime? sourceUpdatedAt;
+  final DateTime? fetchedAt;
   final double? dewPointC;
   final int? pressureHpa;
   final int? visibilityMeters;
@@ -371,9 +376,13 @@ class CurrentWeather {
   final int? weatherId;
   final List<String> alertIds;
   final String? timezone;
+  final String units;
 
   const CurrentWeather({
     this.locationName = '',
+    this.latitude,
+    this.longitude,
+    this.timezoneOffset,
     required this.temperatureC,
     required this.condition,
     required this.feelsLikeC,
@@ -391,6 +400,8 @@ class CurrentWeather {
     this.uvCategory = '',
     this.chaosMeterPercent = 0,
     required this.lastUpdated,
+    this.sourceUpdatedAt,
+    this.fetchedAt,
     this.dewPointC,
     this.pressureHpa,
     this.visibilityMeters,
@@ -401,10 +412,14 @@ class CurrentWeather {
     this.weatherId,
     this.alertIds = const [],
     this.timezone,
+    this.units = 'imperial',
   });
 
   Map<String, dynamic> toJson() => {
         'locationName': locationName,
+        'latitude': latitude,
+        'longitude': longitude,
+        'timezoneOffset': timezoneOffset,
         'temperatureC': temperatureC,
         'condition': condition,
         'feelsLikeC': feelsLikeC,
@@ -422,6 +437,8 @@ class CurrentWeather {
         'uvCategory': uvCategory,
         'chaosMeterPercent': chaosMeterPercent,
         'lastUpdated': lastUpdated.toIso8601String(),
+        'sourceUpdatedAt': sourceUpdatedAt?.toIso8601String(),
+        'fetchedAt': fetchedAt?.toIso8601String(),
         'dewPointC': dewPointC,
         'pressureHpa': pressureHpa,
         'visibilityMeters': visibilityMeters,
@@ -432,6 +449,7 @@ class CurrentWeather {
         'weatherId': weatherId,
         'alertIds': alertIds,
         'timezone': timezone,
+        'units': units,
       };
 
   double get temperatureF => _cToF(temperatureC);
@@ -451,6 +469,8 @@ class CurrentWeather {
 
   double? get visibilityMiles =>
       visibilityMeters == null ? null : visibilityMeters! / 1609.344;
+
+  DateTime get displayUpdatedAt => fetchedAt ?? sourceUpdatedAt ?? lastUpdated;
 
   String get windLabel {
     final direction = windDirection.isEmpty ? '' : ' $windDirection';
@@ -472,12 +492,13 @@ class CurrentWeather {
       : '${visibilityMiles!.toStringAsFixed(1)} mi';
 
   String get rainSnowLastHourLabel {
+    final unit = units == 'imperial' ? 'in' : 'mm';
     final values = <String>[];
     if ((rainLastHour ?? 0) > 0) {
-      values.add('${rainLastHour!.toStringAsFixed(2)} in rain');
+      values.add('${rainLastHour!.toStringAsFixed(2)} $unit rain');
     }
     if ((snowLastHour ?? 0) > 0) {
-      values.add('${snowLastHour!.toStringAsFixed(2)} in snow');
+      values.add('${snowLastHour!.toStringAsFixed(2)} $unit snow');
     }
     return values.isEmpty ? 'None' : values.join(' / ');
   }
@@ -534,6 +555,9 @@ class CurrentWeather {
   factory CurrentWeather.fromJson(Map<String, dynamic> json) {
     return CurrentWeather(
       locationName: (json['locationName'] ?? '') as String,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      timezoneOffset: (json['timezoneOffset'] as num?)?.round(),
       temperatureC: (json['temperatureC'] as num).toDouble(),
       condition: json['condition'] as String,
       feelsLikeC: (json['feelsLikeC'] as num).toDouble(),
@@ -551,6 +575,8 @@ class CurrentWeather {
       uvCategory: (json['uvCategory'] ?? '') as String,
       chaosMeterPercent: ((json['chaosMeterPercent'] ?? 0) as num).toInt(),
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+      sourceUpdatedAt: _nullableDateFromJson(json['sourceUpdatedAt']),
+      fetchedAt: _nullableDateFromJson(json['fetchedAt']),
       dewPointC: (json['dewPointC'] as num?)?.toDouble(),
       pressureHpa: (json['pressureHpa'] as num?)?.round(),
       visibilityMeters: (json['visibilityMeters'] as num?)?.round(),
@@ -563,6 +589,7 @@ class CurrentWeather {
           .map((id) => id.toString())
           .toList(),
       timezone: json['timezone'] as String?,
+      units: (json['units'] ?? 'imperial') as String,
     );
   }
 }
@@ -760,8 +787,5 @@ DateTime? _nullableDateFromJson(dynamic value) {
 }
 
 DateTime? _safeParseDate(dynamic value) {
-  if (value == null) return null;
-  if (value is DateTime) return value;
-  if (value is String) return DateTime.tryParse(value);
-  return null;
+  return _nullableDateFromJson(value);
 }

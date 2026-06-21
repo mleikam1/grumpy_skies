@@ -17,10 +17,19 @@ const openWeatherMapBase = "https://maps.openweathermap.org";
 const tenMinutesSeconds = 10 * 60;
 const fortyEightHoursSeconds = 48 * 60 * 60;
 const fiveHoursSeconds = 5 * 60 * 60;
+const weatherCacheControl = "public, max-age=300, stale-while-revalidate=300";
+const openWeatherTimeoutMs = 8000;
 
 type RadarMode = "us-forecast" | "global";
 
 type JsonRecord = Record<string, unknown>;
+type CacheEntry = {
+  expiresAtMs: number;
+  value: unknown;
+};
+
+const jsonCache = new Map<string, CacheEntry>();
+const jsonInflight = new Map<string, Promise<unknown>>();
 
 class PublicHttpError extends Error {
   constructor(
@@ -230,22 +239,23 @@ async function handleCurrentWeather(request: Request, response: Response) {
   );
 
   sendJson(response, 200, {
-    current: normalizeCurrentWeather(raw),
-  });
+    current: normalizeCurrentWeather(raw, units),
+  }, weatherCacheControl);
 }
 
 async function handleMinuteWeather(request: Request, response: Response) {
   const lat = parseLatitude(requiredQuery(request, "lat"));
   const lon = parseLongitude(requiredQuery(request, "lon"));
+  const units = parseUnits(queryParam(request, "units"));
   const raw = await openWeatherJson(
     "/data/4.0/onecall/timeline/1min",
-    {lat, lon, units: "imperial", lang: "en"},
+    {lat, lon, units, lang: "en"},
     "weather/minute",
   );
 
   sendJson(response, 200, {
-    minutes: normalizeMinutePrecipitation(raw),
-  });
+    minutes: normalizeMinutePrecipitation(raw, units),
+  }, weatherCacheControl);
 }
 
 async function handleTimelineWeather(
@@ -262,11 +272,12 @@ async function handleTimelineWeather(
     `weather/timeline/${step}`,
   );
   const record = asRecord(raw);
+  const limit = step === "1h" ? 20 : 50;
 
   sendJson(response, 200, {
-    points: normalizeTimeline(raw),
+    points: normalizeTimeline(raw, limit),
     next: sanitizeNext(record.next),
-  });
+  }, weatherCacheControl);
 }
 
 async function handleAlert(alertId: string, response: Response) {
@@ -289,7 +300,7 @@ async function handleAlert(alertId: string, response: Response) {
       end: numberOrNull(record.end),
       description: stringOrNull(record.description),
     },
-  });
+  }, weatherCacheControl);
 }
 
 async function handleRadarTile(
@@ -375,6 +386,17 @@ async function openWeatherJson(
   params: Record<string, string | number | undefined>,
   routeLabel: string,
 ): Promise<unknown> {
+  const cacheKey = weatherCacheKey(pathname, params, routeLabel);
+  const cached = jsonCache.get(cacheKey);
+  if (cached !== undefined && cached.expiresAtMs > Date.now()) {
+    return cached.value;
+  }
+
+  const pending = jsonInflight.get(cacheKey);
+  if (pending !== undefined) {
+    return pending;
+  }
+
   const key = getOpenWeatherApiKey();
   const url = new URL(pathname, openWeatherApiBase);
   for (const [name, value] of Object.entries(params)) {
@@ -384,19 +406,119 @@ async function openWeatherJson(
   }
   url.searchParams.set("appid", key);
 
-  const upstream = await fetch(url);
-  if (!upstream.ok) {
+  const request = fetchOpenWeatherJson(url, routeLabel);
+  jsonInflight.set(cacheKey, request);
+  try {
+    const json = await request;
+    jsonCache.set(cacheKey, {
+      expiresAtMs: Date.now() + cacheTtlMs(routeLabel),
+      value: json,
+    });
+    return json;
+  } finally {
+    jsonInflight.delete(cacheKey);
+  }
+}
+
+async function fetchOpenWeatherJson(
+  url: URL,
+  routeLabel: string,
+): Promise<unknown> {
+  const maxAttempts = 2;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const upstream = await fetchWithTimeout(url);
+    if (upstream.ok) {
+      return upstream.json();
+    }
+
     logger.warn("OpenWeather API error", {
       route: routeLabel,
       status: upstream.status,
     });
+
+    if (shouldRetryUpstream(upstream.status) && attempt + 1 < maxAttempts) {
+      await sleep(backoffDelayMs());
+      continue;
+    }
+
     throw new PublicHttpError(
       upstreamStatus(upstream.status),
       safeUpstreamMessage(upstream.status),
     );
   }
 
-  return upstream.json();
+  throw new PublicHttpError(
+    503,
+    "Weather provider is temporarily unavailable.",
+  );
+}
+
+async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), openWeatherTimeoutMs);
+  try {
+    return await fetch(url, {signal: controller.signal});
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new PublicHttpError(
+        504,
+        "Weather provider timed out. Try again soon.",
+      );
+    }
+    throw new PublicHttpError(
+      503,
+      "Weather provider is temporarily unavailable.",
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export function weatherCacheKey(
+  pathname: string,
+  params: Record<string, string | number | undefined>,
+  routeLabel: string,
+): string {
+  const precision = coordinatePrecision(routeLabel);
+  const entries = Object.entries(params)
+    .filter((entry): entry is [string, string | number] =>
+      entry[1] !== undefined)
+    .map(([name, value]) => {
+      if ((name === "lat" || name === "lon") && typeof value === "number") {
+        return [name, value.toFixed(precision)] as const;
+      }
+      return [name, String(value).trim().toLowerCase()] as const;
+    })
+    .sort(([left], [right]) => left.localeCompare(right));
+  const query = entries.map(([name, value]) => `${name}=${value}`).join("&");
+  return `${routeLabel}:${pathname}:${query}`;
+}
+
+function coordinatePrecision(routeLabel: string): number {
+  return routeLabel.includes("minute") || routeLabel.includes("radar") ?
+    3 :
+    2;
+}
+
+function cacheTtlMs(routeLabel: string): number {
+  if (routeLabel.startsWith("location/")) {
+    return 7 * 24 * 60 * 60 * 1000;
+  }
+  return tenMinutesSeconds * 1000;
+}
+
+function shouldRetryUpstream(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+function backoffDelayMs(): number {
+  return 250 + Math.floor(Math.random() * 350);
+}
+
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
 }
 
 function normalizedApiPath(request: Request): string {
@@ -485,7 +607,7 @@ function parseLimit(value: string | undefined): number {
   return Math.min(Math.max(limit, 1), 5);
 }
 
-function parseLatitude(value: string): number {
+export function parseLatitude(value: string): number {
   const lat = parseNumber(value, "lat");
   if (lat < -90 || lat > 90) {
     throw new PublicHttpError(400, "Latitude must be between -90 and 90.");
@@ -493,7 +615,7 @@ function parseLatitude(value: string): number {
   return lat;
 }
 
-function parseLongitude(value: string): number {
+export function parseLongitude(value: string): number {
   const lon = parseNumber(value, "lon");
   if (lon < -180 || lon > 180) {
     throw new PublicHttpError(400, "Longitude must be between -180 and 180.");
@@ -501,7 +623,7 @@ function parseLongitude(value: string): number {
   return lon;
 }
 
-function parseUnits(value: string | undefined): "imperial" | "metric" |
+export function parseUnits(value: string | undefined): "imperial" | "metric" |
   "standard" {
   const units = value ?? "imperial";
   if (units !== "imperial" && units !== "metric" && units !== "standard") {
@@ -563,18 +685,38 @@ function normalizeLocation(
   return normalized;
 }
 
-function normalizeCurrentWeather(raw: unknown): JsonRecord {
+export function normalizeCurrentWeather(
+  raw: unknown,
+  units: "imperial" | "metric" | "standard" = "imperial",
+): JsonRecord {
   const root = asRecord(raw);
   const record = pickDataRecord(raw);
   const weather = pickWeather(record);
   const alerts = Array.isArray(record.alerts) ? record.alerts : root.alerts;
+  const weatherId = numberOrNull(weather.id);
+  const weatherMain = stringOrNull(weather.main);
+  const weatherDescription = stringOrNull(weather.description);
+  const weatherIcon = stringOrNull(weather.icon);
+  const observedAt = numberOrNull(record.dt);
 
   return {
+    latitude: numberOrNull(root.lat ?? record.lat),
+    longitude: numberOrNull(root.lon ?? record.lon),
+    timezone: stringOrNull(root.timezone ?? record.timezone),
+    timezoneOffset: numberOrNull(
+      root.timezone_offset ??
+      root.timezoneOffset ??
+      record.timezone_offset ??
+      record.timezoneOffset,
+    ),
+    observedAt,
+    sunrise: numberOrNull(record.sunrise),
+    sunset: numberOrNull(record.sunset),
     temp: numberOrNull(record.temp ?? record.temperature),
     feelsLike: numberOrNull(record.feels_like ?? record.feelsLike),
+    pressure: numberOrNull(record.pressure),
     humidity: numberOrNull(record.humidity),
     dewPoint: numberOrNull(record.dew_point ?? record.dewPoint),
-    pressure: numberOrNull(record.pressure),
     uvi: numberOrNull(record.uvi ?? record.uvIndex),
     clouds: numberOrNull(record.clouds),
     visibility: numberOrNull(record.visibility),
@@ -583,37 +725,48 @@ function normalizeCurrentWeather(raw: unknown): JsonRecord {
     windDeg: numberOrNull(record.wind_deg ?? record.windDeg),
     rain1h: numberOrNull(asRecord(record.rain)["1h"] ?? record.rain1h),
     snow1h: numberOrNull(asRecord(record.snow)["1h"] ?? record.snow1h),
+    weatherId,
+    weatherMain,
+    weatherDescription,
+    weatherIcon,
     weather: {
-      description: stringOrNull(weather.description),
-      icon: stringOrNull(weather.icon),
-      id: numberOrNull(weather.id),
+      id: weatherId,
+      main: weatherMain,
+      description: weatherDescription,
+      icon: weatherIcon,
     },
     alertIds: normalizeAlertIds(alerts),
-    timezone: stringOrNull(root.timezone ?? record.timezone),
-    dt: numberOrNull(record.dt),
-    sunrise: numberOrNull(record.sunrise),
-    sunset: numberOrNull(record.sunset),
+    sourceUpdatedAt: observedAt,
+    fetchedAt: new Date().toISOString(),
+    units,
+    dt: observedAt,
   };
 }
 
-function normalizeMinutePrecipitation(raw: unknown): JsonRecord[] {
+function normalizeMinutePrecipitation(
+  raw: unknown,
+  units: "imperial" | "metric" | "standard",
+): JsonRecord[] {
   const records = dataArray(raw);
   return records.slice(0, 60).map((item) => {
     const record = asRecord(item);
+    const precipitationMm = numberOrNull(
+      record.precipitation ??
+      record.precip ??
+      record.rain ??
+      record.rain1h,
+    ) ?? 0;
     return {
       dt: numberOrNull(record.dt),
-      precipitation: numberOrNull(
-        record.precipitation ??
-        record.precip ??
-        record.rain ??
-        record.rain1h,
-      ) ?? 0,
+      precipitation: units === "imperial" ?
+        precipitationMm / 25.4 :
+        precipitationMm,
     };
   });
 }
 
-function normalizeTimeline(raw: unknown): JsonRecord[] {
-  return dataArray(raw).map((item) => {
+function normalizeTimeline(raw: unknown, limit: number): JsonRecord[] {
+  return dataArray(raw).slice(0, limit).map((item) => {
     const record = asRecord(item);
     const weather = pickWeather(record);
     return {
@@ -707,22 +860,28 @@ function sanitizeNext(value: unknown): string | null {
 
 function safeUpstreamMessage(status: number): string {
   if (status === 401 || status === 403) {
-    return "OpenWeather rejected the server credentials or subscription for this weather product.";
+    return "Weather provider authorization failed on the server.";
+  }
+  if (status === 400) {
+    return "The weather request had invalid parameters.";
   }
   if (status === 429) {
-    return "OpenWeather rate limits are active. Try again shortly.";
+    return "Weather provider rate limits are active. Try again shortly.";
   }
   if (status >= 500) {
-    return "OpenWeather is temporarily unavailable. Try again soon.";
+    return "Weather provider is temporarily unavailable. Try again soon.";
   }
   if (status === 404) {
-    return "OpenWeather did not find data for that request.";
+    return "Weather provider did not find data for that request.";
   }
-  return "OpenWeather could not complete that request.";
+  return "Weather provider could not complete that request.";
 }
 
 function upstreamStatus(status: number): number {
-  if (status === 401 || status === 403 || status === 404 || status === 429) {
+  if (status === 401 || status === 403) {
+    return 502;
+  }
+  if (status === 400 || status === 404 || status === 429) {
     return status;
   }
   if (status >= 500) {

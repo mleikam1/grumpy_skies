@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/weather_repository.dart';
+import '../../services/open_weather_backend_client.dart';
 import '../../services/weather_location_controller.dart';
 import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/daymaker_components.dart';
@@ -403,11 +405,18 @@ class _ForecastScreenState extends State<ForecastScreen> {
   }
 
   static String _friendlyError(Object? error) {
-    final message = error?.toString() ?? '';
-    if (message.isEmpty) {
+    if (error is OpenWeatherBackendException) {
+      return error.message;
+    }
+
+    if (kDebugMode && error != null) {
+      debugPrint('[GrumpySkies] forecast error: $error');
+    }
+
+    if (error == null) {
       return 'Pull to refresh or try again in a moment.';
     }
-    return message.replaceFirst('Exception: ', '');
+    return 'Weather service is unavailable. Check your connection and try again.';
   }
 }
 

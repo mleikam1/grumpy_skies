@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -55,8 +56,12 @@ class _BurnsPageState extends State<BurnsPage> {
         _loading = false;
       });
     } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[GrumpySkies] burns weather load failed: $error');
+      }
       setState(() {
-        _error = 'Weather roasts are unavailable: $error';
+        _error =
+            'Weather roasts are unavailable. Check your connection and try again.';
         _loading = false;
       });
     }

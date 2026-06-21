@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -126,8 +127,12 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       if (!mounted) return;
 
+      if (kDebugMode) {
+        debugPrint('[GrumpySkies] home weather load failed: $e');
+      }
       setState(() {
-        _error = 'Failed to load weather: $e';
+        _error =
+            'Weather service is unavailable. Check your connection and try again.';
       });
     } finally {
       if (mounted) {

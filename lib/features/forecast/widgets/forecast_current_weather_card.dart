@@ -102,7 +102,7 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
               const SizedBox(width: DMSpacing.xs),
               Flexible(
                 child: Text(
-                  _formatUpdated(weather.lastUpdated, now),
+                  _formatUpdated(weather.displayUpdatedAt, now),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: DMTypography.bodySmall,
@@ -118,17 +118,17 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
   static String _formatUpdated(DateTime updatedAt, DateTime now) {
     final elapsed = now.difference(updatedAt);
     if (elapsed.inMinutes < 1) {
-      return 'Updated just now';
+      return 'Last updated just now';
     }
 
     if (elapsed.inHours < 1) {
       final minutes = elapsed.inMinutes;
-      return 'Updated $minutes min ago';
+      return 'Last updated $minutes min ago';
     }
 
     final hours = elapsed.inHours;
     final label = hours == 1 ? 'hour' : 'hours';
-    return 'Updated $hours $label ago';
+    return 'Last updated $hours $label ago';
   }
 }
 

@@ -6,7 +6,7 @@ import '../services/open_weather_backend_client.dart';
 import 'weather_repository.dart';
 
 class OpenWeatherRepository extends WeatherRepository {
-  const OpenWeatherRepository({
+  OpenWeatherRepository({
     required OpenWeatherBackendClient client,
     CacheService? cacheService,
     Duration cacheDuration = const Duration(minutes: 10),
@@ -17,6 +17,7 @@ class OpenWeatherRepository extends WeatherRepository {
   final OpenWeatherBackendClient _client;
   final CacheService? _cacheService;
   final Duration _cacheDuration;
+  final _inFlightBundles = <String, Future<WeatherBundle>>{};
 
   @override
   Future<List<LocationCandidate>> searchLocations({
@@ -71,22 +72,26 @@ class OpenWeatherRepository extends WeatherRepository {
       if (cached != null) return cached;
     }
 
+    final cacheKey = _requestKey(latitude, longitude);
+    final inFlight = _inFlightBundles[cacheKey];
+    if (inFlight != null) return inFlight;
+
+    final request = _fetchAndCacheWeatherBundle(
+      latitude: latitude,
+      longitude: longitude,
+      location: location,
+    );
+    _inFlightBundles[cacheKey] = request;
     try {
-      final bundle = await _fetchWeatherBundle(
-        latitude: latitude,
-        longitude: longitude,
-        location: location,
-      );
-      await _cacheService?.saveWeatherBundle(
-        lat: latitude,
-        lon: longitude,
-        bundle: bundle,
-      );
-      return bundle;
+      return await request;
     } catch (_) {
       final cached = _cacheService?.getWeatherBundle(latitude, longitude);
       if (cached != null) return cached;
       rethrow;
+    } finally {
+      if (identical(_inFlightBundles[cacheKey], request)) {
+        _inFlightBundles.remove(cacheKey);
+      }
     }
   }
 
@@ -122,6 +127,24 @@ class OpenWeatherRepository extends WeatherRepository {
     if (lastFetch == null) return null;
     if (DateTime.now().difference(lastFetch) > _cacheDuration) return null;
     return _cacheService?.getWeatherBundle(latitude, longitude);
+  }
+
+  Future<WeatherBundle> _fetchAndCacheWeatherBundle({
+    required double latitude,
+    required double longitude,
+    LocationCandidate? location,
+  }) async {
+    final bundle = await _fetchWeatherBundle(
+      latitude: latitude,
+      longitude: longitude,
+      location: location,
+    );
+    await _cacheService?.saveWeatherBundle(
+      lat: latitude,
+      lon: longitude,
+      bundle: bundle,
+    );
+    return bundle;
   }
 
   Future<WeatherBundle> _fetchWeatherBundle({
@@ -326,6 +349,10 @@ class OpenWeatherRepository extends WeatherRepository {
         'Weather requests require valid latitude and longitude.',
       );
     }
+  }
+
+  static String _requestKey(double latitude, double longitude) {
+    return '${latitude.toStringAsFixed(3)},${longitude.toStringAsFixed(3)}';
   }
 
   static void _debugWeatherLocation({

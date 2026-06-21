@@ -51,7 +51,7 @@ void main() {
     expect(find.text('Demo City'), findsOneWidget);
     expect(find.text('Partly Cloudy'), findsWidgets);
     expect(find.text('72°F'), findsOneWidget);
-    expect(find.text('Updated 10 min ago'), findsOneWidget);
+    expect(find.text('Last updated 10 min ago'), findsOneWidget);
     expect(find.text('Karen'), findsOneWidget);
     expect(find.text('ROAST QUEEN'), findsOneWidget);
     expect(
@@ -156,6 +156,39 @@ void main() {
     expect(find.text('Demo City'), findsNothing);
     expect(find.text('72°F'), findsNothing);
   });
+
+  testWidgets('ForecastScreen does not show raw socket errors', (tester) async {
+    const repository = _FailingWeatherRepository();
+    final locationController = WeatherLocationController(
+      repository: repository,
+      initialLocation: buildTestWeatherLocation(),
+    );
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<WeatherRepository>.value(value: repository),
+          ChangeNotifierProvider<WeatherLocationController>.value(
+            value: locationController,
+          ),
+        ],
+        child: MaterialApp(
+          theme: DMTheme.light,
+          home: const ForecastScreen(weatherRepository: repository),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Forecast unavailable'), findsOneWidget);
+    expect(
+      find.text(
+          'Weather service is unavailable. Check your connection and try again.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('SocketConnection'), findsNothing);
+    expect(find.textContaining('127.0.0.1'), findsNothing);
+  });
 }
 
 class _RecordingWeatherRepository extends WeatherRepository {
@@ -230,5 +263,40 @@ class _RecordingWeatherRepository extends WeatherRepository {
       ],
       metrics: const [],
     );
+  }
+}
+
+class _FailingWeatherRepository extends WeatherRepository {
+  const _FailingWeatherRepository();
+
+  @override
+  Future<WeatherSnapshot> getSnapshot({
+    required double latitude,
+    required double longitude,
+    bool forceRefresh = false,
+  }) async {
+    throw Exception(
+      'ClientException with SocketConnection refused, address = 127.0.0.1',
+    );
+  }
+
+  @override
+  Future<WeatherBundle> getWeather({
+    required double latitude,
+    required double longitude,
+    bool forceRefresh = false,
+    LocationCandidate? location,
+  }) async {
+    throw Exception(
+      'ClientException with SocketConnection refused, address = 127.0.0.1',
+    );
+  }
+
+  @override
+  Future<List<RadarAlert>> getRadarAlerts({
+    required double latitude,
+    required double longitude,
+  }) async {
+    return const [];
   }
 }

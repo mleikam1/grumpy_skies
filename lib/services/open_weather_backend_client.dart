@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/weather_api_config.dart';
 import '../models/weather_models.dart';
 
 class OpenWeatherBackendException implements Exception {
@@ -19,22 +20,22 @@ class OpenWeatherBackendClient {
   OpenWeatherBackendClient({
     http.Client? httpClient,
     String? baseUrl,
+    WeatherApiConfig? config,
   })  : _httpClient = httpClient ?? http.Client(),
-        baseUrl = _normalizeBaseUrl(baseUrl ?? resolvedDefaultBaseUrl);
+        baseUrl = _normalizeBaseUrl(
+          baseUrl ?? (config ?? WeatherApiConfig.current).baseUrl,
+        ) {
+    if (baseUrl == null) {
+      (config ?? WeatherApiConfig.current).debugLog();
+    } else {
+      WeatherApiConfig.debugLogOverride(baseUrl);
+    }
+  }
 
-  static const _configuredBaseUrl = String.fromEnvironment(
-    'WEATHER_API_BASE_URL',
-  );
+  static const _requestTimeout = Duration(seconds: 12);
 
   static String get resolvedDefaultBaseUrl {
-    if (_configuredBaseUrl.trim().isNotEmpty) {
-      return _configuredBaseUrl;
-    }
-    if (kIsWeb) {
-      return '${Uri.base.origin}/api';
-    }
-
-    return 'http://127.0.0.1:5001/grumpy-skies/us-central1/api';
+    return WeatherApiConfig.current.baseUrl;
   }
 
   final http.Client _httpClient;
@@ -114,12 +115,14 @@ class OpenWeatherBackendClient {
   Future<List<MinutePrecipitation>> minute({
     required double latitude,
     required double longitude,
+    String units = 'imperial',
   }) async {
     final json = await _getJson(
       '/weather/minute',
       {
         'lat': latitude.toString(),
         'lon': longitude.toString(),
+        'units': units,
       },
     );
     return ((json['minutes'] as List?) ?? const [])
@@ -189,8 +192,26 @@ class OpenWeatherBackendClient {
   ) async {
     final uri = _uri(path, query);
     _debugWeatherEndpoint(path, query);
-    final response = await _httpClient.get(uri);
-    final decoded = _decodeBody(response.body);
+    final http.Response response;
+    try {
+      response = await _httpClient.get(uri).timeout(_requestTimeout);
+    } catch (error) {
+      _debugWeatherFailure(uri, error);
+      throw const OpenWeatherBackendException(
+        "Couldn't reach the forecast server. Check your connection and try again.",
+      );
+    }
+
+    final Map<String, dynamic> decoded;
+    try {
+      decoded = _decodeBody(response.body);
+    } catch (error) {
+      _debugWeatherFailure(uri, error);
+      throw const OpenWeatherBackendException(
+        'Weather service is unavailable. Try again soon.',
+      );
+    }
+
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final message = _errorMessage(decoded) ??
           'Weather data is unavailable right now. Try again soon.';
@@ -236,54 +257,62 @@ class OpenWeatherBackendClient {
     required String locationName,
     required String units,
   }) {
+    final dtoUnits = (json['units'] as String?) ?? units;
     final weather = (json['weather'] as Map?)?.cast<String, dynamic>();
+    final weatherDescription =
+        (json['weatherDescription'] ?? weather?['description']) as String?;
+    final weatherMain = (json['weatherMain'] ?? weather?['main']) as String?;
+    final weatherIcon = (json['weatherIcon'] ?? weather?['icon']) as String?;
+    final weatherId = (json['weatherId'] ?? weather?['id'] as num?) as num?;
     final temp = (json['temp'] as num?)?.toDouble() ?? 0;
     final feelsLike = (json['feelsLike'] as num?)?.toDouble() ?? temp;
     final windSpeed = (json['windSpeed'] as num?)?.toDouble() ?? 0;
     final windGust = (json['windGust'] as num?)?.toDouble();
     final dewPoint = (json['dewPoint'] as num?)?.toDouble();
-    final dt = (json['dt'] as num?)?.toInt();
-    final sunrise = (json['sunrise'] as num?)?.toInt();
-    final sunset = (json['sunset'] as num?)?.toInt();
     final now = DateTime.now();
+    final observedAt = _dateFromJson(json['observedAt'] ?? json['dt']);
+    final sourceUpdatedAt = _dateFromJson(json['sourceUpdatedAt']);
+    final fetchedAt = _dateFromJson(json['fetchedAt']);
+    final sunrise = _dateFromJson(json['sunrise']);
+    final sunset = _dateFromJson(json['sunset']);
+    final rainLastHour = (json['rain1h'] as num?)?.toDouble();
+    final snowLastHour = (json['snow1h'] as num?)?.toDouble();
 
     return CurrentWeather(
       locationName: locationName,
-      temperatureC: units == 'metric' ? temp : _fToC(temp),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      timezoneOffset: (json['timezoneOffset'] as num?)?.round(),
+      sourceUpdatedAt: sourceUpdatedAt,
+      fetchedAt: fetchedAt,
+      units: dtoUnits,
+      temperatureC: _temperatureToC(temp, dtoUnits),
       condition: _titleCase(
-        (weather?['description'] ?? 'Current conditions') as String,
+        weatherDescription ?? weatherMain ?? 'Current conditions',
       ),
-      feelsLikeC: units == 'metric' ? feelsLike : _fToC(feelsLike),
-      windKph: units == 'metric' ? windSpeed * 3.6 : windSpeed * 1.609344,
+      feelsLikeC: _temperatureToC(feelsLike, dtoUnits),
+      windKph: _speedToKph(windSpeed, dtoUnits),
       windDirection: _windDirection((json['windDeg'] as num?)?.toDouble()),
       humidity: (json['humidity'] as num?)?.round() ?? 0,
       precipitationChance: 0,
       aqi: 0,
       aqiCategory: '',
-      sunrise: _fromUnix(sunrise) ?? DateTime(now.year, now.month, now.day, 6),
-      sunset: _fromUnix(sunset) ?? DateTime(now.year, now.month, now.day, 18),
+      sunrise: sunrise ?? DateTime(now.year, now.month, now.day, 6),
+      sunset: sunset ?? DateTime(now.year, now.month, now.day, 18),
       moonrise: DateTime(now.year, now.month, now.day, 21),
       moonset: DateTime(now.year, now.month, now.day + 1, 6),
       uvIndex: (json['uvi'] as num?)?.toDouble() ?? 0,
       uvCategory: _uvCategory((json['uvi'] as num?)?.toDouble() ?? 0),
-      chaosMeterPercent: _chaosMeter(weather?['id'] as num?),
-      lastUpdated: _fromUnix(dt) ?? now,
-      dewPointC: dewPoint == null
-          ? null
-          : units == 'metric'
-              ? dewPoint
-              : _fToC(dewPoint),
+      chaosMeterPercent: _chaosMeter(weatherId),
+      lastUpdated: observedAt ?? sourceUpdatedAt ?? now,
+      dewPointC: dewPoint == null ? null : _temperatureToC(dewPoint, dtoUnits),
       pressureHpa: (json['pressure'] as num?)?.round(),
       visibilityMeters: (json['visibility'] as num?)?.round(),
-      windGustKph: windGust == null
-          ? null
-          : units == 'metric'
-              ? windGust * 3.6
-              : windGust * 1.609344,
-      rainLastHour: (json['rain1h'] as num?)?.toDouble(),
-      snowLastHour: (json['snow1h'] as num?)?.toDouble(),
-      weatherIcon: weather?['icon'] as String?,
-      weatherId: (weather?['id'] as num?)?.round(),
+      windGustKph: windGust == null ? null : _speedToKph(windGust, dtoUnits),
+      rainLastHour: _precipitationToDisplayUnits(rainLastHour, dtoUnits),
+      snowLastHour: _precipitationToDisplayUnits(snowLastHour, dtoUnits),
+      weatherIcon: weatherIcon,
+      weatherId: weatherId?.round(),
       alertIds: ((json['alertIds'] as List?) ?? const [])
           .map((id) => id.toString())
           .toList(),
@@ -291,15 +320,41 @@ class OpenWeatherBackendClient {
     );
   }
 
-  static DateTime? _fromUnix(int? seconds) {
-    if (seconds == null) return null;
-    return DateTime.fromMillisecondsSinceEpoch(
-      seconds * 1000,
-      isUtc: true,
-    ).toLocal();
+  static DateTime? _dateFromJson(Object? value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is num) {
+      return DateTime.fromMillisecondsSinceEpoch(
+        (value * 1000).round(),
+        isUtc: true,
+      ).toLocal();
+    }
+    if (value is String) {
+      return DateTime.tryParse(value)?.toLocal();
+    }
+    return null;
   }
 
   static double _fToC(double tempF) => (tempF - 32) * 5 / 9;
+
+  static double _kToC(double tempK) => tempK - 273.15;
+
+  static double _temperatureToC(double value, String units) {
+    return switch (units) {
+      'metric' => value,
+      'standard' => _kToC(value),
+      _ => _fToC(value),
+    };
+  }
+
+  static double _speedToKph(double value, String units) {
+    return units == 'imperial' ? value * 1.609344 : value * 3.6;
+  }
+
+  static double? _precipitationToDisplayUnits(double? value, String units) {
+    if (value == null) return null;
+    return units == 'imperial' ? value / 25.4 : value;
+  }
 
   static String _titleCase(String value) {
     return value
@@ -345,5 +400,13 @@ class OpenWeatherBackendClient {
         ? ''
         : ' lat=${lat.toStringAsFixed(3)} lon=${lon.toStringAsFixed(3)}';
     debugPrint('[GrumpySkies] weather endpoint $path$coordinateLabel');
+  }
+
+  static void _debugWeatherFailure(Uri uri, Object error) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] weather request failed '
+      'host=${uri.host} path=${uri.path}: $error',
+    );
   }
 }
