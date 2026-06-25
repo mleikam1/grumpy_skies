@@ -1,10 +1,25 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/weather_api_config.dart';
 import '../models/weather_models.dart';
+
+class RadarTileHealth {
+  const RadarTileHealth({
+    required this.available,
+    this.statusCode,
+    this.contentType,
+    this.fallbackCode,
+  });
+
+  final bool available;
+  final int? statusCode;
+  final String? contentType;
+  final String? fallbackCode;
+}
 
 class OpenWeatherBackendException implements Exception {
   final String message;
@@ -21,6 +36,7 @@ class OpenWeatherBackendException implements Exception {
     final safeCode = code ?? '';
     return safeCode == 'openweather_key_rejected' ||
         safeCode == 'openweather_one_call_access_denied' ||
+        safeCode == 'openweather_radar_access_denied' ||
         safeCode == 'openweather_secret_missing' ||
         safeCode == 'openweather_secret_not_bound' ||
         safeCode == 'OPENWEATHER_API_KEY_MISSING' ||
@@ -203,6 +219,45 @@ class OpenWeatherBackendClient {
     return '$baseUrl/radar/tile/${mode.pathSegment}/{z}/{x}/{y}.png?tm=$timestamp';
   }
 
+  Future<RadarTileHealth> radarTileHealth({
+    required RadarMode mode,
+    required int timestamp,
+    required double latitude,
+    required double longitude,
+  }) async {
+    const zoom = 3;
+    final tile = _tileForLocation(
+      latitude: latitude,
+      longitude: longitude,
+      zoom: zoom,
+    );
+    final uri = _uri(
+      '/radar/tile/${mode.pathSegment}/$zoom/${tile.x}/${tile.y}.png',
+      {'tm': timestamp.toString()},
+    );
+
+    try {
+      final response = await _httpClient.get(uri).timeout(_requestTimeout);
+      final contentType = response.headers['content-type'];
+      final fallbackCode = response.headers['x-grumpy-skies-tile-fallback'];
+      return RadarTileHealth(
+        available: response.statusCode >= 200 &&
+            response.statusCode < 300 &&
+            fallbackCode == null &&
+            _isImageContentType(contentType ?? ''),
+        statusCode: response.statusCode,
+        contentType: contentType,
+        fallbackCode: fallbackCode,
+      );
+    } catch (error) {
+      _debugWeatherFailure(uri, error);
+      return const RadarTileHealth(
+        available: false,
+        fallbackCode: 'weather_backend_unreachable',
+      );
+    }
+  }
+
   Future<Map<String, dynamic>> _getJson(
     String path,
     Map<String, String> query,
@@ -299,6 +354,14 @@ class OpenWeatherBackendClient {
     final normalized = contentType.toLowerCase();
     return normalized.contains('application/json') ||
         normalized.contains('+json');
+  }
+
+  static bool _isImageContentType(String contentType) {
+    final normalized = contentType.toLowerCase();
+    return normalized.startsWith('image/png') ||
+        normalized.startsWith('image/jpeg') ||
+        normalized.startsWith('image/jpg') ||
+        normalized.startsWith('image/webp');
   }
 
   static String _nonJsonResponseMessage(Uri uri) {
@@ -497,4 +560,31 @@ class OpenWeatherBackendClient {
         .trim();
     return compact.length <= 240 ? compact : '${compact.substring(0, 240)}...';
   }
+
+  static _TileCoordinate _tileForLocation({
+    required double latitude,
+    required double longitude,
+    required int zoom,
+  }) {
+    final lat = latitude.clamp(-85.05112878, 85.05112878).toDouble();
+    final lon = longitude.clamp(-180.0, 180.0).toDouble();
+    final latRad = lat * math.pi / 180;
+    final scale = 1 << zoom;
+    final x = ((lon + 180) / 360 * scale).floor().clamp(0, scale - 1).toInt();
+    final y =
+        ((1 - math.log(math.tan(latRad) + 1 / math.cos(latRad)) / math.pi) /
+                2 *
+                scale)
+            .floor()
+            .clamp(0, scale - 1)
+            .toInt();
+    return _TileCoordinate(x: x, y: y);
+  }
+}
+
+class _TileCoordinate {
+  const _TileCoordinate({required this.x, required this.y});
+
+  final int x;
+  final int y;
 }

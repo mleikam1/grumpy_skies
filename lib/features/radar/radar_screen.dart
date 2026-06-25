@@ -43,6 +43,8 @@ class _RadarScreenState extends State<RadarScreen> {
   var _timelineIndex = 0;
   var _loadedDependencies = false;
   var _tileError = false;
+  var _tileErrorUpdateQueued = false;
+  var _tileErrorGeneration = 0;
 
   @override
   void didChangeDependencies() {
@@ -93,7 +95,7 @@ class _RadarScreenState extends State<RadarScreen> {
   }
 
   void _handleLocationChanged() {
-    _tileError = false;
+    _clearTileError();
     _rebuildTimeline(keepSelectedTimestamp: false);
     if (mounted) setState(() {});
   }
@@ -119,7 +121,7 @@ class _RadarScreenState extends State<RadarScreen> {
       if (!mounted || _timelineSteps.isEmpty) return;
       setState(() {
         _timelineIndex = (_timelineIndex + 1) % _timelineSteps.length;
-        _tileError = false;
+        _clearTileError();
       });
     });
   }
@@ -171,7 +173,7 @@ class _RadarScreenState extends State<RadarScreen> {
     final latest = roundToNearestPastTenMinuteUnix();
     setState(() {
       _timelineIndex = _nearestIndexFor(latest);
-      _tileError = false;
+      _clearTileError();
     });
   }
 
@@ -195,8 +197,22 @@ class _RadarScreenState extends State<RadarScreen> {
   }
 
   void _showTileError() {
-    if (_tileError || !mounted) return;
-    setState(() => _tileError = true);
+    if (_tileError || _tileErrorUpdateQueued || !mounted) return;
+
+    final generation = _tileErrorGeneration;
+    _tileErrorUpdateQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _tileErrorGeneration) return;
+      _tileErrorUpdateQueued = false;
+      if (_tileError) return;
+      setState(() => _tileError = true);
+    });
+  }
+
+  void _clearTileError() {
+    _tileError = false;
+    _tileErrorUpdateQueued = false;
+    _tileErrorGeneration++;
   }
 
   @override
@@ -264,6 +280,7 @@ class _RadarScreenState extends State<RadarScreen> {
                     onFutureCastChanged: (enabled) {
                       setState(() {
                         _futureCastEnabled = enabled;
+                        _clearTileError();
                         _rebuildTimeline(keepSelectedTimestamp: true);
                       });
                     },
@@ -292,6 +309,7 @@ class _RadarScreenState extends State<RadarScreen> {
                     onFutureCastChanged: (enabled) {
                       setState(() {
                         _futureCastEnabled = enabled;
+                        _clearTileError();
                         _rebuildTimeline(keepSelectedTimestamp: true);
                       });
                     },
@@ -311,7 +329,7 @@ class _RadarScreenState extends State<RadarScreen> {
   void _onTimelineChanged(double value) {
     setState(() {
       _timelineIndex = value.round().clamp(0, _timelineSteps.length - 1);
-      _tileError = false;
+      _clearTileError();
     });
   }
 }
@@ -609,7 +627,7 @@ class _RadarTileErrorBanner extends StatelessWidget {
           const SizedBox(width: DMSpacing.sm),
           Expanded(
             child: Text(
-              'Radar tiles are unavailable for this frame. Weather data can still refresh.',
+              'Radar temporarily unavailable. The base map is still usable.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: DMColors.textPrimary,
                   ),

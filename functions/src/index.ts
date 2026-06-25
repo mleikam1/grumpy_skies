@@ -256,11 +256,27 @@ async function handleCurrentWeather(request: Request, response: Response) {
   const lat = parseLatitude(requiredQuery(request, "lat"));
   const lon = parseLongitude(requiredQuery(request, "lon"));
   const units = parseUnits(queryParam(request, "units"));
-  const raw = await openWeatherJson(
-    "/data/2.5/weather",
-    {lat, lon, units, lang: "en"},
-    "weather/current",
-  );
+  let raw: unknown;
+  try {
+    raw = await openWeatherJson(
+      "/data/4.0/onecall/current",
+      {lat, lon, units, lang: "en"},
+      "weather/current",
+    );
+  } catch (error) {
+    if (!isOneCallAccessDenied(error)) {
+      throw error;
+    }
+
+    logger.warn("OpenWeather One Call current unavailable; using legacy current weather", {
+      code: (error as PublicHttpError).safeCode,
+    });
+    raw = await openWeatherJson(
+      "/data/2.5/weather",
+      {lat, lon, units, lang: "en"},
+      "weather/current/fallback",
+    );
+  }
 
   sendJson(response, 200, {
     current: normalizeCurrentWeather(raw, units),
@@ -335,40 +351,60 @@ async function handleRadarTile(
   xRaw: string,
   yRaw: string,
 ) {
-  const z = parseInteger(zRaw, "z");
-  const x = parseInteger(xRaw, "x");
-  const y = parseInteger(yRaw, "y");
+  let z: number;
+  let x: number;
+  let y: number;
+  let tm: number;
 
-  if (z < 3 || z > 7) {
-    throw new PublicHttpError(400, "Radar zoom must be between 3 and 7.");
-  }
+  try {
+    z = parseInteger(zRaw, "z");
+    x = parseInteger(xRaw, "x");
+    y = parseInteger(yRaw, "y");
 
-  const maxTile = 2 ** z;
-  if (x < 0 || y < 0 || x >= maxTile || y >= maxTile) {
-    throw new PublicHttpError(400, "Radar tile coordinates are invalid.");
-  }
+    if (z < 3 || z > 7) {
+      throw new PublicHttpError(400, "Radar zoom must be between 3 and 7.");
+    }
 
-  const tm = parseInteger(requiredQuery(request, "tm"), "tm");
-  if (tm % tenMinutesSeconds !== 0) {
-    throw new PublicHttpError(
-      400,
-      "Radar time must be snapped to a 10-minute UTC step.",
-    );
-  }
+    const maxTile = 2 ** z;
+    if (x < 0 || y < 0 || x >= maxTile || y >= maxTile) {
+      throw new PublicHttpError(400, "Radar tile coordinates are invalid.");
+    }
 
-  const latest = roundToNearestPastTenMinuteUnix();
-  const min = latest - fortyEightHoursSeconds;
-  const max = mode === "us-forecast" ?
-    latest + fiveHoursSeconds :
-    latest;
-  const globalForecastEnabled = globalForecastRadarEnabled();
-  if (tm < min || (tm > max && !(mode === "global" && globalForecastEnabled))) {
-    throw new PublicHttpError(
-      400,
-      mode === "us-forecast" ?
-        "US forecast radar supports 48 hours of history and 5 hours ahead." :
-        "Global radar supports current and past frames only.",
-    );
+    tm = parseInteger(requiredQuery(request, "tm"), "tm");
+    if (tm % tenMinutesSeconds !== 0) {
+      throw new PublicHttpError(
+        400,
+        "Radar time must be snapped to a 10-minute UTC step.",
+      );
+    }
+
+    const latest = roundToNearestPastTenMinuteUnix();
+    const min = latest - fortyEightHoursSeconds;
+    const max = mode === "us-forecast" ?
+      latest + fiveHoursSeconds :
+      latest;
+    const globalForecastEnabled = globalForecastRadarEnabled();
+    if (
+      tm < min ||
+      (tm > max && !(mode === "global" && globalForecastEnabled))
+    ) {
+      throw new PublicHttpError(
+        400,
+        mode === "us-forecast" ?
+          "US forecast radar supports 48 hours of history and 5 hours ahead." :
+          "Global radar supports current and past frames only.",
+      );
+    }
+  } catch (error) {
+    if (error instanceof PublicHttpError) {
+      logger.warn("OpenWeather radar tile request rejected", {
+        mode,
+        code: error.safeCode,
+      });
+      sendTransparentRadarTile(response, "openweather_invalid_request");
+      return;
+    }
+    throw error;
   }
 
   const cachedAuthFailure = upstreamAuthFailures.get("maps");
@@ -403,7 +439,7 @@ async function handleRadarTile(
 
   if (!upstream.ok) {
     const upstreamErrorBody = await safeUpstreamErrorBody(upstream);
-    const safeCode = safeUpstreamCode(upstream.status, upstreamErrorBody);
+    const safeCode = safeUpstreamCode(upstream.status, upstreamErrorBody, "maps");
     logger.warn("OpenWeather radar tile error", {
       status: upstream.status,
       code: safeCode,
@@ -415,7 +451,7 @@ async function handleRadarTile(
         expiresAtMs: Date.now() + authFailureTtlMs,
         error: new PublicHttpError(
           upstreamStatus(upstream.status),
-          safeUpstreamMessage(upstream.status, upstreamErrorBody),
+          safeUpstreamMessage(upstream.status, upstreamErrorBody, "maps"),
           safeCode,
         ),
       });
@@ -425,7 +461,7 @@ async function handleRadarTile(
   }
 
   const contentType = upstream.headers.get("content-type") ?? "image/png";
-  if (!contentType.startsWith("image/")) {
+  if (!isSupportedRadarImageContentType(contentType)) {
     logger.warn("OpenWeather radar tile returned non-image data", {
       contentType,
       mode,
@@ -436,6 +472,16 @@ async function handleRadarTile(
   }
 
   const bytes = Buffer.from(await upstream.arrayBuffer());
+  if (bytes.length === 0) {
+    logger.warn("OpenWeather radar tile returned empty image data", {
+      contentType,
+      mode,
+      z,
+    });
+    sendTransparentRadarTile(response, "openweather_tile_empty");
+    return;
+  }
+
   response
     .status(200)
     .set("Cache-Control", "public, max-age=300, stale-while-revalidate=300")
@@ -513,7 +559,11 @@ async function fetchOpenWeatherJson(
     }
 
     const upstreamErrorBody = await safeUpstreamErrorBody(upstream);
-    const safeCode = safeUpstreamCode(upstream.status, upstreamErrorBody);
+    const safeCode = safeUpstreamCode(
+      upstream.status,
+      upstreamErrorBody,
+      authScope,
+    );
     logger.warn("OpenWeather API error", {
       route: routeLabel,
       status: upstream.status,
@@ -527,7 +577,7 @@ async function fetchOpenWeatherJson(
 
     const error = new PublicHttpError(
       upstreamStatus(upstream.status),
-      safeUpstreamMessage(upstream.status, upstreamErrorBody),
+      safeUpstreamMessage(upstream.status, upstreamErrorBody, authScope),
       safeCode,
     );
     if (upstream.status === 401 || upstream.status === 403) {
@@ -662,6 +712,19 @@ function getOpenWeatherApiKey(): string {
 
 function globalForecastRadarEnabled(): boolean {
   return enableGlobalForecastRadar.value().toLowerCase() === "true";
+}
+
+function isOneCallAccessDenied(error: unknown): boolean {
+  return error instanceof PublicHttpError &&
+    error.safeCode === "openweather_one_call_access_denied";
+}
+
+function isSupportedRadarImageContentType(contentType: string): boolean {
+  const mime = contentType.split(";")[0].trim().toLowerCase();
+  return mime === "image/png" ||
+    mime === "image/jpeg" ||
+    mime === "image/jpg" ||
+    mime === "image/webp";
 }
 
 function handleRouteError(
@@ -1002,7 +1065,11 @@ async function safeUpstreamErrorBody(
   }
 }
 
-export function safeUpstreamCode(status: number, body = ""): string {
+export function safeUpstreamCode(
+  status: number,
+  body = "",
+  scope = "openweather",
+): string {
   if (status === 401 || status === 403) {
     const normalized = body.toLowerCase();
     if (
@@ -1010,6 +1077,9 @@ export function safeUpstreamCode(status: number, body = ""): string {
       normalized.includes("one call") ||
       normalized.includes("plan")
     ) {
+      if (scope === "maps") {
+        return "openweather_radar_access_denied";
+      }
       return "openweather_one_call_access_denied";
     }
     return "openweather_key_rejected";
@@ -1029,9 +1099,16 @@ export function safeUpstreamCode(status: number, body = ""): string {
   return "openweather_request_failed";
 }
 
-export function safeUpstreamMessage(status: number, body = ""): string {
+export function safeUpstreamMessage(
+  status: number,
+  body = "",
+  scope = "openweather",
+): string {
   if (status === 401 || status === 403) {
-    const code = safeUpstreamCode(status, body);
+    const code = safeUpstreamCode(status, body, scope);
+    if (code === "openweather_radar_access_denied") {
+      return "OpenWeather rejected the server key for radar maps. Enable OpenWeather Maps/radar access for OPENWEATHER_API_KEY, then redeploy functions.";
+    }
     if (code === "openweather_one_call_access_denied") {
       return "OpenWeather rejected the server key for One Call API 4.0. Enable the One Call by Call subscription for OPENWEATHER_API_KEY, then redeploy functions.";
     }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
@@ -12,7 +14,7 @@ import 'package:grumpy_skies/services/weather_location_controller.dart';
 import 'helpers/daymaker_test_helpers.dart';
 
 void main() {
-  Widget buildSubject() {
+  Widget buildSubject({http.Client? httpClient}) {
     const repository = FakeWeatherRepository();
     final locationController = WeatherLocationController(
       repository: repository,
@@ -23,7 +25,10 @@ void main() {
       providers: [
         Provider<WeatherRepository>.value(value: repository),
         Provider<OpenWeatherBackendClient>.value(
-          value: OpenWeatherBackendClient(baseUrl: 'https://example.com/api'),
+          value: OpenWeatherBackendClient(
+            baseUrl: 'https://example.com/api',
+            httpClient: httpClient ?? _healthyRadarClient(),
+          ),
         ),
         ChangeNotifierProvider<WeatherLocationController>.value(
           value: locationController,
@@ -78,5 +83,44 @@ void main() {
     expect(find.text('Radar product'), findsOneWidget);
     expect(find.text('Selected frame'), findsOneWidget);
     expect(find.text('Map center'), findsOneWidget);
+  });
+
+  testWidgets('RadarScreen shows one clean unavailable state for tile fallback',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      buildSubject(
+        httpClient: MockClient((_) async {
+          return http.Response(
+            '',
+            200,
+            headers: {
+              'content-type': 'image/png',
+              'x-grumpy-skies-tile-fallback': 'openweather_radar_access_denied',
+            },
+          );
+        }),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.text('Radar temporarily unavailable. The base map is still usable.'),
+      findsOneWidget,
+    );
+  });
+}
+
+http.Client _healthyRadarClient() {
+  return MockClient((_) async {
+    return http.Response('', 200, headers: {'content-type': 'image/png'});
   });
 }

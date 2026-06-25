@@ -30,7 +30,17 @@ class OpenWeatherRadarMap extends StatefulWidget {
 }
 
 class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
+  var _healthCheckSerial = 0;
+  var _radarOverlayAvailable = false;
+  String? _lastHealthCheckKey;
+
   LatLng get _center => LatLng(widget.location.lat, widget.location.lon);
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRadarTileHealth();
+  }
 
   @override
   void didUpdateWidget(covariant OpenWeatherRadarMap oldWidget) {
@@ -42,6 +52,50 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
         widget.mapController.move(_center, widget.mapController.camera.zoom);
       });
     }
+
+    if (oldWidget.location.lat != widget.location.lat ||
+        oldWidget.location.lon != widget.location.lon ||
+        oldWidget.mode != widget.mode ||
+        oldWidget.timestamp != widget.timestamp) {
+      _checkRadarTileHealth();
+    }
+  }
+
+  void _checkRadarTileHealth() {
+    final key = '${widget.mode.pathSegment}:'
+        '${widget.timestamp}:'
+        '${widget.location.lat.toStringAsFixed(3)}:'
+        '${widget.location.lon.toStringAsFixed(3)}';
+    if (_lastHealthCheckKey == key) return;
+
+    _lastHealthCheckKey = key;
+    _setRadarOverlayAvailable(false);
+    final serial = ++_healthCheckSerial;
+    widget.client
+        .radarTileHealth(
+      mode: widget.mode,
+      timestamp: widget.timestamp,
+      latitude: widget.location.lat,
+      longitude: widget.location.lon,
+    )
+        .then((health) {
+      if (!mounted || serial != _healthCheckSerial) return;
+      if (health.available) {
+        _setRadarOverlayAvailable(true);
+        return;
+      }
+      _setRadarOverlayAvailable(false);
+      widget.onTileError?.call();
+    });
+  }
+
+  void _setRadarOverlayAvailable(bool available) {
+    if (_radarOverlayAvailable == available) return;
+    if (!mounted) {
+      _radarOverlayAvailable = available;
+      return;
+    }
+    setState(() => _radarOverlayAvailable = available);
   }
 
   @override
@@ -70,20 +124,21 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
           subdomains: const ['a', 'b', 'c', 'd'],
           maxNativeZoom: 19,
         ),
-        TileLayer(
-          key: ValueKey('${widget.mode.pathSegment}-${widget.timestamp}'),
-          urlTemplate: radarTemplate,
-          userAgentPackageName: 'com.example.grumpy_skies',
-          minNativeZoom: 3,
-          maxNativeZoom: 7,
-          maxZoom: 12,
-          tileBuilder: (context, tileWidget, tile) {
-            return Opacity(opacity: 0.66, child: tileWidget);
-          },
-          errorTileCallback: (_, __, ___) {
-            widget.onTileError?.call();
-          },
-        ),
+        if (_radarOverlayAvailable)
+          TileLayer(
+            key: ValueKey('${widget.mode.pathSegment}-${widget.timestamp}'),
+            urlTemplate: radarTemplate,
+            userAgentPackageName: 'com.example.grumpy_skies',
+            minNativeZoom: 3,
+            maxNativeZoom: 7,
+            maxZoom: 12,
+            tileBuilder: (context, tileWidget, tile) {
+              return Opacity(opacity: 0.66, child: tileWidget);
+            },
+            errorTileCallback: (_, __, ___) {
+              widget.onTileError?.call();
+            },
+          ),
         MarkerLayer(
           markers: [
             Marker(

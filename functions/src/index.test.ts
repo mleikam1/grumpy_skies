@@ -203,3 +203,23 @@ test("classifies OpenWeather One Call auth and subscription errors safely", () =
   assert.match(safeUpstreamMessage(401, invalidKeyBody), /OPENWEATHER_API_KEY/);
   assert.doesNotMatch(safeUpstreamMessage(401, invalidKeyBody), /appid/i);
 });
+
+test("classifies OpenWeather radar access errors separately", () => {
+  const subscriptionBody = JSON.stringify({
+    cod: 403,
+    message: "Your plan does not include this map layer",
+  });
+
+  assert.equal(
+    safeUpstreamCode(403, subscriptionBody, "maps"),
+    "openweather_radar_access_denied",
+  );
+  assert.match(
+    safeUpstreamMessage(403, subscriptionBody, "maps"),
+    /radar maps/,
+  );
+  assert.doesNotMatch(
+    safeUpstreamMessage(403, subscriptionBody, "maps"),
+    /appid/i,
+  );
+});
