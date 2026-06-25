@@ -8,16 +8,23 @@ OpenWeather credentials must stay out of the Flutter app and this repository.
 The Flutter app calls only the Firebase Functions backend; it never sends the
 OpenWeather key to Dart, Android, iOS, or web clients.
 
-The backend currently uses OpenWeather One Call API 4.0 endpoints, including:
+The production Firebase backend currently lives in the `wingman-interactive-live`
+Firebase project. The `grumpy-skies` Firebase project ID is not currently
+available to this Firebase account, so `https://us-central1-grumpy-skies.cloudfunctions.net/api`
+returns Google HTML 404 pages instead of this app's JSON API.
 
-- `/data/4.0/onecall/current`
+The backend currently uses OpenWeather endpoints including:
+
+- `/data/2.5/weather` for required current conditions
 - `/data/4.0/onecall/timeline/1min`
 - `/data/4.0/onecall/timeline/15min`
 - `/data/4.0/onecall/timeline/1h`
 
-Your OpenWeather account/key must have One Call API 4.0 access enabled for live
-current, minute, and timeline forecasts. Radar tiles also require the matching
-OpenWeather Maps access for the configured key.
+The Forecast tab can show current weather with a standard OpenWeather key that
+can access Current Weather API 2.5. Minute and timeline forecast enrichments
+require One Call API 4.0 access. Radar tiles require the matching OpenWeather
+Maps access. If those optional products are unavailable, the backend returns
+safe JSON errors or transparent fallback radar tiles rather than HTML.
 
 ### Local OpenWeather key
 
@@ -28,18 +35,19 @@ That file is gitignored.
 printf "OPENWEATHER_API_KEY=your_openweather_api_key_here\n" > functions/.secret.local
 ```
 
-Optional non-secret Functions params can use `functions/.env.grumpy-skies`:
+Optional non-secret Functions params can use
+`functions/.env.wingman-interactive-live`:
 
 ```sh
-printf "OPENWEATHER_ENABLE_GLOBAL_FORECAST_RADAR=false\n" > functions/.env.grumpy-skies
+printf "OPENWEATHER_ENABLE_GLOBAL_FORECAST_RADAR=false\n" > functions/.env.wingman-interactive-live
 ```
 
 Safe placeholders are provided in `functions/.secret.local.example` and
 `functions/.env.example`.
 
 If `OPENWEATHER_API_KEY` is missing locally, the Functions backend returns a
-clear JSON error with code `openweather_secret_missing` instead of exposing any
-provider secret details.
+clear JSON error with code `OPENWEATHER_API_KEY_MISSING` instead of exposing
+any provider secret details.
 
 ### Backend URL selection
 
@@ -49,36 +57,36 @@ radar rollout flags live in `lib/config/weather_runtime_config.dart`.
 Default Firebase project and region:
 
 ```sh
-FIREBASE_PROJECT_ID=grumpy-skies
+FIREBASE_PROJECT_ID=wingman-interactive-live
 FIREBASE_FUNCTIONS_REGION=us-central1
 ```
 
 Default runtime behavior:
 
 - Android/iOS/native default:
-  `https://us-central1-grumpy-skies.cloudfunctions.net/api`
+  `https://us-central1-wingman-interactive-live.cloudfunctions.net/api`
 - Flutter web default: `/api`
 - Manual override, all platforms:
   `--dart-define=WEATHER_API_BASE_URL=<full_api_base_url>`
 - Local Functions emulator is used only when explicitly enabled:
   `--dart-define=USE_FUNCTIONS_EMULATOR=true`
 
-In emulator mode, Android uses `http://10.0.2.2:5001/grumpy-skies/us-central1/api`
+In emulator mode, Android uses `http://10.0.2.2:5001/wingman-interactive-live/us-central1/api`
 because `127.0.0.1` points to the Android emulator itself. iOS simulator,
-desktop, and local web use `http://127.0.0.1:5001/grumpy-skies/us-central1/api`.
+desktop, and local web use `http://127.0.0.1:5001/wingman-interactive-live/us-central1/api`.
 
 ### Local emulator
 
 Start the Functions emulator from the repo root:
 
 ```sh
-firebase emulators:start --only functions --project grumpy-skies
+firebase emulators:start --only functions --project wingman-interactive-live
 ```
 
 Verify the local endpoint from the host machine:
 
 ```sh
-curl "http://127.0.0.1:5001/grumpy-skies/us-central1/api/weather/current?lat=38.8672283&lon=-94.6520357&units=imperial"
+curl "http://127.0.0.1:5001/wingman-interactive-live/us-central1/api/weather/current?lat=38.8672283&lon=-94.6520357&units=imperial"
 ```
 
 Run the Flutter app on an Android emulator against local Functions:
@@ -99,7 +107,7 @@ macOS firewall prompt if it appears:
 
 ```sh
 ipconfig getifaddr en0
-flutter run --dart-define=WEATHER_API_BASE_URL=http://<computer-lan-ip>:5001/grumpy-skies/us-central1/api
+flutter run --dart-define=WEATHER_API_BASE_URL=http://<computer-lan-ip>:5001/wingman-interactive-live/us-central1/api
 ```
 
 ### Production
@@ -107,20 +115,20 @@ flutter run --dart-define=WEATHER_API_BASE_URL=http://<computer-lan-ip>:5001/gru
 Run against the deployed Functions backend:
 
 ```sh
-flutter run --dart-define=WEATHER_API_BASE_URL=https://us-central1-grumpy-skies.cloudfunctions.net/api
+flutter run --dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api
 ```
 
 Set the deployed Firebase Functions secret only when you are ready to deploy:
 
 ```sh
-firebase functions:secrets:set OPENWEATHER_API_KEY --project grumpy-skies
+firebase functions:secrets:set OPENWEATHER_API_KEY --project wingman-interactive-live
 ```
 
 Deploy only after explicit approval:
 
 ```sh
-firebase deploy --only functions --project grumpy-skies
-firebase deploy --only functions,hosting --project grumpy-skies
+firebase deploy --only functions:api --project wingman-interactive-live
+firebase deploy --only functions,hosting --project wingman-interactive-live
 ```
 
 ## Getting Started

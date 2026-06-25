@@ -80,6 +80,64 @@ test("maps One Call 4.0 current data[0] into normalized DTO", () => {
   assert.equal(typeof dto.fetchedAt, "string");
 });
 
+test("maps Current Weather API 2.5 response into normalized DTO", () => {
+  const dto = normalizeCurrentWeather(
+    {
+      coord: {
+        lat: 38.8672283,
+        lon: -94.6520357,
+      },
+      weather: [
+        {
+          id: 800,
+          main: "Clear",
+          description: "clear sky",
+          icon: "01d",
+        },
+      ],
+      main: {
+        temp: 82.4,
+        feels_like: 84.1,
+        pressure: 1012,
+        humidity: 58,
+      },
+      visibility: 10000,
+      wind: {
+        speed: 7.5,
+        deg: 190,
+        gust: 12.1,
+      },
+      rain: {"1h": 0.2},
+      dt: 1782043200,
+      sys: {
+        sunrise: 1782030000,
+        sunset: 1782085200,
+      },
+      timezone: -18000,
+    },
+    "imperial",
+  );
+
+  assert.equal(dto.latitude, 38.8672283);
+  assert.equal(dto.longitude, -94.6520357);
+  assert.equal(dto.timezoneOffset, -18000);
+  assert.equal(dto.observedAt, 1782043200);
+  assert.equal(dto.sunrise, 1782030000);
+  assert.equal(dto.sunset, 1782085200);
+  assert.equal(dto.temp, 82.4);
+  assert.equal(dto.feelsLike, 84.1);
+  assert.equal(dto.pressure, 1012);
+  assert.equal(dto.humidity, 58);
+  assert.equal(dto.windSpeed, 7.5);
+  assert.equal(dto.windGust, 12.1);
+  assert.equal(dto.windDeg, 190);
+  assert.equal(dto.rain1h, 0.2);
+  assert.equal(dto.weatherId, 800);
+  assert.equal(dto.weatherMain, "Clear");
+  assert.equal(dto.weatherDescription, "clear sky");
+  assert.equal(dto.weatherIcon, "01d");
+});
+
 test("handles missing optional current weather fields safely", () => {
   const dto = normalizeCurrentWeather({
     lat: 1,
@@ -102,17 +160,17 @@ test("handles missing optional current weather fields safely", () => {
 
 test("weather cache key rounds location and includes units", () => {
   const first = weatherCacheKey(
-    "/data/4.0/onecall/current",
+    "/data/2.5/weather",
     {lat: 38.861, lon: -94.652, units: "imperial", lang: "en"},
     "weather/current",
   );
   const sameBucket = weatherCacheKey(
-    "/data/4.0/onecall/current",
+    "/data/2.5/weather",
     {lat: 38.864, lon: -94.654, units: "imperial", lang: "en"},
     "weather/current",
   );
   const metric = weatherCacheKey(
-    "/data/4.0/onecall/current",
+    "/data/2.5/weather",
     {lat: 38.861, lon: -94.652, units: "metric", lang: "en"},
     "weather/current",
   );

@@ -20,7 +20,7 @@ class WeatherApiConfig {
   );
   static const _firebaseProjectId = String.fromEnvironment(
     'FIREBASE_PROJECT_ID',
-    defaultValue: 'grumpy-skies',
+    defaultValue: 'wingman-interactive-live',
   );
   static const _functionsRegion = String.fromEnvironment(
     'FIREBASE_FUNCTIONS_REGION',

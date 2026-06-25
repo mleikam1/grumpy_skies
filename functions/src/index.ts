@@ -92,6 +92,15 @@ export const api = onRequest(
     const path = normalizedApiPath(request);
 
     try {
+      if (path === "/health") {
+        sendJson(response, 200, {
+          ok: true,
+          service: "grumpy-skies-api",
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
       if (path === "/location/geocode") {
         await handleGeocode(request, response);
         return;
@@ -150,6 +159,7 @@ export const api = onRequest(
 
       sendJson(response, 404, {
         error: {
+          code: "ROUTE_NOT_FOUND",
           message: "Weather endpoint not found.",
         },
       });
@@ -247,7 +257,7 @@ async function handleCurrentWeather(request: Request, response: Response) {
   const lon = parseLongitude(requiredQuery(request, "lon"));
   const units = parseUnits(queryParam(request, "units"));
   const raw = await openWeatherJson(
-    "/data/4.0/onecall/current",
+    "/data/2.5/weather",
     {lat, lon, units, lang: "en"},
     "weather/current",
   );
@@ -636,7 +646,7 @@ function getOpenWeatherApiKey(): string {
     throw new PublicHttpError(
       500,
       "OpenWeather API key is not available to the weather function. Provide OPENWEATHER_API_KEY in functions/.secret.local for the emulator or bind it to the deployed function.",
-      "openweather_secret_not_bound",
+      "OPENWEATHER_API_KEY_UNAVAILABLE",
     );
   }
 
@@ -644,7 +654,7 @@ function getOpenWeatherApiKey(): string {
     throw new PublicHttpError(
       500,
       "OpenWeather API key is not configured on the server. Set OPENWEATHER_API_KEY in functions/.secret.local for the emulator or Firebase Secret Manager for deployed functions.",
-      "openweather_secret_missing",
+      "OPENWEATHER_API_KEY_MISSING",
     );
   }
   return key;
@@ -675,6 +685,7 @@ function handleRouteError(
   });
   sendJson(response, 500, {
     error: {
+      code: "WEATHER_RUNTIME_ERROR",
       message: "Weather data is temporarily unavailable. Try again soon.",
     },
   });
@@ -804,6 +815,10 @@ export function normalizeCurrentWeather(
 ): JsonRecord {
   const root = asRecord(raw);
   const record = pickDataRecord(raw);
+  const coord = asRecord(root.coord);
+  const main = asRecord(record.main);
+  const wind = asRecord(record.wind);
+  const sys = asRecord(record.sys);
   const weather = pickWeather(record);
   const alerts = Array.isArray(record.alerts) ? record.alerts : root.alerts;
   const weatherId = numberOrNull(weather.id);
@@ -813,29 +828,35 @@ export function normalizeCurrentWeather(
   const observedAt = numberOrNull(record.dt);
 
   return {
-    latitude: numberOrNull(root.lat ?? record.lat),
-    longitude: numberOrNull(root.lon ?? record.lon),
+    latitude: numberOrNull(root.lat ?? record.lat ?? coord.lat),
+    longitude: numberOrNull(root.lon ?? record.lon ?? coord.lon),
     timezone: stringOrNull(root.timezone ?? record.timezone),
     timezoneOffset: numberOrNull(
       root.timezone_offset ??
       root.timezoneOffset ??
       record.timezone_offset ??
-      record.timezoneOffset,
+      record.timezoneOffset ??
+      (typeof root.timezone === "number" ? root.timezone : undefined),
     ),
     observedAt,
-    sunrise: numberOrNull(record.sunrise),
-    sunset: numberOrNull(record.sunset),
-    temp: numberOrNull(record.temp ?? record.temperature),
-    feelsLike: numberOrNull(record.feels_like ?? record.feelsLike),
-    pressure: numberOrNull(record.pressure),
-    humidity: numberOrNull(record.humidity),
+    sunrise: numberOrNull(record.sunrise ?? sys.sunrise),
+    sunset: numberOrNull(record.sunset ?? sys.sunset),
+    temp: numberOrNull(record.temp ?? record.temperature ?? main.temp),
+    feelsLike: numberOrNull(
+      record.feels_like ??
+      record.feelsLike ??
+      main.feels_like ??
+      main.feelsLike,
+    ),
+    pressure: numberOrNull(record.pressure ?? main.pressure),
+    humidity: numberOrNull(record.humidity ?? main.humidity),
     dewPoint: numberOrNull(record.dew_point ?? record.dewPoint),
     uvi: numberOrNull(record.uvi ?? record.uvIndex),
     clouds: numberOrNull(record.clouds),
     visibility: numberOrNull(record.visibility),
-    windSpeed: numberOrNull(record.wind_speed ?? record.windSpeed),
-    windGust: numberOrNull(record.wind_gust ?? record.windGust),
-    windDeg: numberOrNull(record.wind_deg ?? record.windDeg),
+    windSpeed: numberOrNull(record.wind_speed ?? record.windSpeed ?? wind.speed),
+    windGust: numberOrNull(record.wind_gust ?? record.windGust ?? wind.gust),
+    windDeg: numberOrNull(record.wind_deg ?? record.windDeg ?? wind.deg),
     rain1h: numberOrNull(asRecord(record.rain)["1h"] ?? record.rain1h),
     snow1h: numberOrNull(asRecord(record.snow)["1h"] ?? record.snow1h),
     weatherId,
@@ -1014,7 +1035,7 @@ export function safeUpstreamMessage(status: number, body = ""): string {
     if (code === "openweather_one_call_access_denied") {
       return "OpenWeather rejected the server key for One Call API 4.0. Enable the One Call by Call subscription for OPENWEATHER_API_KEY, then redeploy functions.";
     }
-    return "OpenWeather rejected the server key. Check OPENWEATHER_API_KEY, redeploy after secret changes, and confirm One Call API 4.0 access.";
+    return "OpenWeather rejected the server key. Check OPENWEATHER_API_KEY and redeploy after secret changes.";
   }
   if (status === 400) {
     return "The weather request had invalid parameters.";

@@ -18,7 +18,7 @@ void main() {
 
       expect(
         config.baseUrl,
-        'https://us-central1-grumpy-skies.cloudfunctions.net/api',
+        'https://us-central1-wingman-interactive-live.cloudfunctions.net/api',
       );
       expect(config.baseUrl, isNot(contains('127.0.0.1')));
     });
@@ -32,7 +32,7 @@ void main() {
 
       expect(
         config.baseUrl,
-        'http://10.0.2.2:5001/grumpy-skies/us-central1/api',
+        'http://10.0.2.2:5001/wingman-interactive-live/us-central1/api',
       );
     });
 
@@ -45,7 +45,7 @@ void main() {
 
       expect(
         config.baseUrl,
-        'http://127.0.0.1:5001/grumpy-skies/us-central1/api',
+        'http://127.0.0.1:5001/wingman-interactive-live/us-central1/api',
       );
     });
 
@@ -107,6 +107,7 @@ void main() {
               },
             }),
             200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
           );
         }),
       );
@@ -137,7 +138,8 @@ void main() {
 
     test('does not expose raw socket exceptions to callers', () async {
       final client = OpenWeatherBackendClient(
-        baseUrl: 'http://10.0.2.2:5001/grumpy-skies/us-central1/api',
+        baseUrl:
+            'http://10.0.2.2:5001/wingman-interactive-live/us-central1/api',
         httpClient: MockClient((_) async {
           throw http.ClientException(
             'SocketConnection refused, address = 127.0.0.1, port = 5001',
@@ -174,6 +176,7 @@ void main() {
               },
             }),
             502,
+            headers: {'content-type': 'application/json; charset=utf-8'},
           );
         }),
       );
@@ -192,6 +195,36 @@ void main() {
                 'isProviderAuthorizationFailure',
                 isTrue,
               ),
+        ),
+      );
+    });
+
+    test('does not decode HTML backend responses as JSON', () async {
+      final client = OpenWeatherBackendClient(
+        baseUrl: 'https://us-central1-grumpy-skies.cloudfunctions.net/api',
+        httpClient: MockClient((_) async {
+          return http.Response(
+            '<html><head><title>404 Page not found</title></head></html>',
+            404,
+            headers: {'content-type': 'text/html; charset=UTF-8'},
+          );
+        }),
+      );
+
+      await expectLater(
+        client.current(latitude: 38.974, longitude: -94.685),
+        throwsA(
+          isA<OpenWeatherBackendException>()
+              .having(
+                (error) => error.message,
+                'message',
+                allOf(
+                  contains('unexpected response'),
+                  isNot(contains('<html>')),
+                  isNot(contains('FormatException')),
+                ),
+              )
+              .having((error) => error.statusCode, 'statusCode', 404),
         ),
       );
     });

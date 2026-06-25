@@ -23,6 +23,8 @@ class OpenWeatherBackendException implements Exception {
         safeCode == 'openweather_one_call_access_denied' ||
         safeCode == 'openweather_secret_missing' ||
         safeCode == 'openweather_secret_not_bound' ||
+        safeCode == 'OPENWEATHER_API_KEY_MISSING' ||
+        safeCode == 'OPENWEATHER_API_KEY_UNAVAILABLE' ||
         message.contains('OpenWeather rejected the server key') ||
         message.contains('One Call API 4.0');
   }
@@ -215,11 +217,20 @@ class OpenWeatherBackendClient {
       throw OpenWeatherBackendException(_connectionFailureMessage(uri));
     }
 
+    final contentType = response.headers['content-type'] ?? '';
+    if (!_isJsonContentType(contentType)) {
+      _debugNonJsonResponse(uri, response);
+      throw OpenWeatherBackendException(
+        _nonJsonResponseMessage(uri),
+        statusCode: response.statusCode,
+      );
+    }
+
     final Map<String, dynamic> decoded;
     try {
       decoded = _decodeBody(response.body);
     } catch (error) {
-      _debugWeatherFailure(uri, error);
+      _debugInvalidJsonResponse(uri, response, error);
       throw const OpenWeatherBackendException(
         'Weather service is unavailable. Try again soon.',
       );
@@ -282,6 +293,19 @@ class OpenWeatherBackendClient {
       return 'Could not reach the local weather service. Make sure the Firebase emulator is running.';
     }
     return "Couldn't reach the forecast server. Check your connection and try again.";
+  }
+
+  static bool _isJsonContentType(String contentType) {
+    final normalized = contentType.toLowerCase();
+    return normalized.contains('application/json') ||
+        normalized.contains('+json');
+  }
+
+  static String _nonJsonResponseMessage(Uri uri) {
+    if (uri.host.contains('cloudfunctions.net')) {
+      return 'Weather backend returned an unexpected response. Check the configured Firebase Functions project and API route.';
+    }
+    return 'Weather service is unavailable. Try again soon.';
   }
 
   static CurrentWeather _currentFromBackend(
@@ -440,5 +464,37 @@ class OpenWeatherBackendClient {
       '[GrumpySkies] weather request failed '
       'host=${uri.host} path=${uri.path}: $error',
     );
+  }
+
+  static void _debugNonJsonResponse(Uri uri, http.Response response) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] weather backend returned non-JSON '
+      'url=$uri status=${response.statusCode} '
+      'contentType=${response.headers['content-type'] ?? 'unknown'} '
+      'bodyPreview=${_safeBodyPreview(response.body)}',
+    );
+  }
+
+  static void _debugInvalidJsonResponse(
+    Uri uri,
+    http.Response response,
+    Object error,
+  ) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] weather backend returned invalid JSON '
+      'url=$uri status=${response.statusCode} '
+      'contentType=${response.headers['content-type'] ?? 'unknown'} '
+      'bodyPreview=${_safeBodyPreview(response.body)} error=$error',
+    );
+  }
+
+  static String _safeBodyPreview(String body) {
+    final compact = body
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '')
+        .trim();
+    return compact.length <= 240 ? compact : '${compact.substring(0, 240)}...';
   }
 }
