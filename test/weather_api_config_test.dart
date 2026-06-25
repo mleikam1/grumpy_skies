@@ -18,10 +18,9 @@ void main() {
 
       expect(
         config.baseUrl,
-        'https://us-central1-wingman-interactive-live.cloudfunctions.net/api',
+        'https://us-central1-grumpy-skies.cloudfunctions.net/api',
       );
       expect(config.baseUrl, isNot(contains('127.0.0.1')));
-      expect(config.baseUrl, isNot(contains('grumpy-skies')));
     });
 
     test('uses Android emulator host only when emulator mode is explicit', () {
@@ -33,7 +32,20 @@ void main() {
 
       expect(
         config.baseUrl,
-        'http://10.0.2.2:5001/wingman-interactive-live/us-central1/api',
+        'http://10.0.2.2:5001/grumpy-skies/us-central1/api',
+      );
+    });
+
+    test('uses loopback host for non-Android emulator platforms', () {
+      final config = WeatherApiConfig.resolve(
+        useFunctionsEmulator: true,
+        isWeb: false,
+        platform: TargetPlatform.iOS,
+      );
+
+      expect(
+        config.baseUrl,
+        'http://127.0.0.1:5001/grumpy-skies/us-central1/api',
       );
     });
 
@@ -125,7 +137,7 @@ void main() {
 
     test('does not expose raw socket exceptions to callers', () async {
       final client = OpenWeatherBackendClient(
-        baseUrl: 'https://example.test/api',
+        baseUrl: 'http://10.0.2.2:5001/grumpy-skies/us-central1/api',
         httpClient: MockClient((_) async {
           throw http.ClientException(
             'SocketConnection refused, address = 127.0.0.1, port = 5001',
@@ -140,7 +152,8 @@ void main() {
             (error) => error.message,
             'message',
             allOf(
-              contains("Couldn't reach the forecast server"),
+              contains('Could not reach the local weather service'),
+              contains('Firebase emulator'),
               isNot(contains('127.0.0.1')),
               isNot(contains('SocketConnection')),
             ),

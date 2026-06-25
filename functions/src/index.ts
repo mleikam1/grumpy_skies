@@ -635,7 +635,7 @@ function getOpenWeatherApiKey(): string {
     });
     throw new PublicHttpError(
       500,
-      "OpenWeather API key is not available to the weather function. Bind OPENWEATHER_API_KEY to the function and redeploy.",
+      "OpenWeather API key is not available to the weather function. Provide OPENWEATHER_API_KEY in functions/.secret.local for the emulator or bind it to the deployed function.",
       "openweather_secret_not_bound",
     );
   }
@@ -643,7 +643,7 @@ function getOpenWeatherApiKey(): string {
   if (!key) {
     throw new PublicHttpError(
       500,
-      "OpenWeather API key is not configured on the server. Set OPENWEATHER_API_KEY and redeploy functions.",
+      "OpenWeather API key is not configured on the server. Set OPENWEATHER_API_KEY in functions/.secret.local for the emulator or Firebase Secret Manager for deployed functions.",
       "openweather_secret_missing",
     );
   }

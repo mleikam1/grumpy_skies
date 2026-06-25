@@ -212,9 +212,7 @@ class OpenWeatherBackendClient {
       response = await _httpClient.get(uri).timeout(_requestTimeout);
     } catch (error) {
       _debugWeatherFailure(uri, error);
-      throw const OpenWeatherBackendException(
-        "Couldn't reach the forecast server. Check your connection and try again.",
-      );
+      throw OpenWeatherBackendException(_connectionFailureMessage(uri));
     }
 
     final Map<String, dynamic> decoded;
@@ -277,6 +275,13 @@ class OpenWeatherBackendClient {
       return json['code'] as String;
     }
     return null;
+  }
+
+  static String _connectionFailureMessage(Uri uri) {
+    if (uri.port == 5001) {
+      return 'Could not reach the local weather service. Make sure the Firebase emulator is running.';
+    }
+    return "Couldn't reach the forecast server. Check your connection and try again.";
   }
 
   static CurrentWeather _currentFromBackend(

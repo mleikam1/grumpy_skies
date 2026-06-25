@@ -48,6 +48,9 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+!**/.env.example
+.env.local
+**/.env.local
 .secret.local
 **/.secret.local
 firebase-debug.log

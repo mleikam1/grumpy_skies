@@ -20,7 +20,7 @@ class WeatherApiConfig {
   );
   static const _firebaseProjectId = String.fromEnvironment(
     'FIREBASE_PROJECT_ID',
-    defaultValue: 'wingman-interactive-live',
+    defaultValue: 'grumpy-skies',
   );
   static const _functionsRegion = String.fromEnvironment(
     'FIREBASE_FUNCTIONS_REGION',
@@ -98,6 +98,8 @@ class WeatherApiConfig {
     required String productionBaseUrlOverride,
   }) {
     if (emulator) {
+      // Android emulator loopback points at the emulator itself. Use the
+      // Android host alias so local Functions requests reach this computer.
       final host =
           !web && platform == TargetPlatform.android ? '10.0.2.2' : '127.0.0.1';
       return 'http://$host:5001/$projectId/$region/api';

@@ -7,6 +7,7 @@ import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
+import 'package:grumpy_skies/services/open_weather_backend_client.dart';
 import 'package:grumpy_skies/services/weather_location_controller.dart';
 
 import 'helpers/daymaker_test_helpers.dart';
@@ -183,7 +184,7 @@ void main() {
     expect(find.text('Forecast unavailable'), findsOneWidget);
     expect(
       find.text(
-          'Weather service is unavailable. Check your connection and try again.'),
+          'Could not reach the local weather service. Make sure the Firebase emulator is running.'),
       findsOneWidget,
     );
     expect(find.textContaining('SocketConnection'), findsNothing);
@@ -275,8 +276,8 @@ class _FailingWeatherRepository extends WeatherRepository {
     required double longitude,
     bool forceRefresh = false,
   }) async {
-    throw Exception(
-      'ClientException with SocketConnection refused, address = 127.0.0.1',
+    throw const OpenWeatherBackendException(
+      'Could not reach the local weather service. Make sure the Firebase emulator is running.',
     );
   }
 
@@ -287,8 +288,8 @@ class _FailingWeatherRepository extends WeatherRepository {
     bool forceRefresh = false,
     LocationCandidate? location,
   }) async {
-    throw Exception(
-      'ClientException with SocketConnection refused, address = 127.0.0.1',
+    throw const OpenWeatherBackendException(
+      'Could not reach the local weather service. Make sure the Firebase emulator is running.',
     );
   }
 
