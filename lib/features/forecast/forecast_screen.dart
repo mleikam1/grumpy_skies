@@ -11,6 +11,9 @@ import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
+import '../../features/roasts/content/roast_pack_repository.dart';
+import '../../features/roasts/content/roast_selector.dart';
+import '../../features/roasts/content/weather_roast_models.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/weather_repository.dart';
 import '../../services/open_weather_backend_client.dart';
@@ -36,16 +39,21 @@ class _ForecastScreenState extends State<ForecastScreen> {
   static const _sampleUpdatedOffset = Duration(minutes: 10);
 
   WeatherRepository? _repository;
+  RoastPackRepository? _roastPackRepository;
   WeatherLocationController? _locationController;
   WeatherBundle? _weather;
+  RoastPack? _roastPack;
   DateTime? _relativeNow;
   Object? _error;
   Timer? _autoRefreshTimer;
   String? _activeLocationKey;
   var _loading = true;
+  var _loadingRoastPack = false;
   var _roastIndex = 0;
   var _loadedRepository = false;
   var _showLocationSelector = false;
+  final _recentRoastIds = <String>[];
+  final _roastSelector = const RoastSelector();
 
   @override
   void didChangeDependencies() {
@@ -53,6 +61,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
     if (_loadedRepository) return;
 
     _repository = widget.weatherRepository ?? context.read<WeatherRepository>();
+    _roastPackRepository = _readRoastPackRepository() ?? RoastPackRepository();
     _locationController = _readLocationController() ??
         WeatherLocationController(
           repository: _repository!,
@@ -60,12 +69,21 @@ class _ForecastScreenState extends State<ForecastScreen> {
     _locationController!.addListener(_handleLocationChanged);
     _loadedRepository = true;
     _startAutoRefresh();
+    unawaited(_loadRoastPack());
     if (_locationController!.selectedLocation == null) {
       setState(() => _loading = false);
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _loadWeather();
       });
+    }
+  }
+
+  RoastPackRepository? _readRoastPackRepository() {
+    try {
+      return context.read<RoastPackRepository>();
+    } catch (_) {
+      return null;
     }
   }
 
@@ -91,6 +109,22 @@ class _ForecastScreenState extends State<ForecastScreen> {
       return context.read<WeatherLocationController>();
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<void> _loadRoastPack() async {
+    if (_loadingRoastPack || _roastPack != null) return;
+    _loadingRoastPack = true;
+    try {
+      final pack = await _roastPackRepository!.loadPack();
+      if (!mounted) return;
+      setState(() => _roastPack = pack);
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[GrumpySkies] roast pack load error: $error');
+      }
+    } finally {
+      _loadingRoastPack = false;
     }
   }
 
@@ -187,17 +221,28 @@ class _ForecastScreenState extends State<ForecastScreen> {
   }
 
   void _showNextRoast() {
-    final history = DayMakerSampleData.roastHistory;
-    if (history.isEmpty) return;
+    final weather = _weather;
+    final pack = _roastPack;
+    if (weather != null && pack != null) {
+      final snapshot = _snapshotForWeather(weather);
+      final selection = _selectWeatherRoast(pack, weather, snapshot);
+      _recentRoastIds.add(selection.line.id);
+      if (_recentRoastIds.length > 8) {
+        _recentRoastIds.removeRange(0, _recentRoastIds.length - 8);
+      }
+    }
 
-    // TODO(haptics): Use light selection feedback when cycling roasts.
     setState(() {
-      _roastIndex = (_roastIndex + 1) % history.length;
+      _roastIndex++;
     });
   }
 
   Future<void> _shareRoast() async {
-    final roast = DayMakerSampleData.roastHistory[_roastIndex];
+    final weather = _weather;
+    final roast = weather == null
+        ? DayMakerSampleData
+            .roastHistory[_roastIndex % DayMakerSampleData.roastHistory.length]
+        : _roastForWeather(weather, _snapshotForWeather(weather));
     await Clipboard.setData(ClipboardData(text: roast.text));
     if (!mounted) return;
 
@@ -253,7 +298,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
     final weather = _weather!;
     final snapshot = _snapshotForWeather(weather);
     final now = _relativeNow ?? weather.current.lastUpdated;
-    final roast = DayMakerSampleData.roastHistory[_roastIndex];
+    final roast = _roastForWeather(weather, snapshot);
     final location = _cityName(
       weather.current.locationName.isNotEmpty
           ? weather.current.locationName
@@ -356,6 +401,45 @@ class _ForecastScreenState extends State<ForecastScreen> {
     final trimmed = locationName.trim();
     if (trimmed.isEmpty) return 'Current location';
     return trimmed.split(',').first.trim();
+  }
+
+  Roast _roastForWeather(WeatherBundle weather, WeatherSnapshot snapshot) {
+    final pack = _roastPack;
+    if (pack == null) {
+      return DayMakerSampleData
+          .roastHistory[_roastIndex % DayMakerSampleData.roastHistory.length];
+    }
+
+    final selection = _selectWeatherRoast(pack, weather, snapshot);
+    return Roast(
+      id: selection.line.id,
+      personaId: selection.line.persona,
+      weatherSnapshotId: snapshot.id,
+      text: selection.renderedText,
+      category: selection.line.type.name,
+      createdAt: weather.current.displayUpdatedAt,
+      xpReward: 15,
+    );
+  }
+
+  RoastSelection _selectWeatherRoast(
+    RoastPack pack,
+    WeatherBundle weather,
+    WeatherSnapshot snapshot,
+  ) {
+    final context = WeatherRoastContext.fromWeatherBundle(
+      weather,
+      now: _relativeNow ?? weather.current.displayUpdatedAt,
+    );
+    return _roastSelector.select(
+      pack: pack,
+      context: context,
+      persona: DayMakerSampleData.persona.id,
+      type: RoastType.today,
+      maxLevel: RoastLevel.medium,
+      recentRoastIds: _recentRoastIds,
+      seed: '${snapshot.id}|${weather.current.displayUpdatedAt}|$_roastIndex',
+    );
   }
 
   static WeatherSnapshot _snapshotForWeather(WeatherBundle weather) {

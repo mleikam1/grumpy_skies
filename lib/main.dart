@@ -3,6 +3,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'features/roasts/content/roast_pack_repository.dart';
 import 'repositories/open_weather_repository.dart';
 import 'repositories/fake_roast_repository.dart';
 import 'repositories/roast_repository.dart';
@@ -23,10 +24,12 @@ void main() async {
 
   final weatherClient = OpenWeatherBackendClient();
   final weatherCache = await CacheService.create();
+  final roastPackCache = await SharedPreferencesRoastPackCache.create();
   final weatherRepository = OpenWeatherRepository(
     client: weatherClient,
     cacheService: weatherCache,
   );
+  final roastPackRepository = RoastPackRepository(cache: roastPackCache);
   const roastRepository = FakeRoastRepository();
   final settingsRepository = await SharedPreferencesSettingsRepository.create();
   final settingsController = SettingsController(repository: settingsRepository);
@@ -43,6 +46,7 @@ void main() async {
       providers: [
         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
         Provider<WeatherRepository>.value(value: weatherRepository),
+        Provider<RoastPackRepository>.value(value: roastPackRepository),
         Provider<RoastRepository>.value(value: roastRepository),
         Provider<SettingsRepository>.value(value: settingsRepository),
         Provider<PersonaRoastService>.value(value: roastService),

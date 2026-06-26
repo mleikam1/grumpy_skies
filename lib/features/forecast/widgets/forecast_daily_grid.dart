@@ -61,7 +61,7 @@ class ForecastDailyGrid extends StatelessWidget {
                 crossAxisCount: columns,
                 crossAxisSpacing: DMSpacing.sm,
                 mainAxisSpacing: DMSpacing.sm,
-                childAspectRatio: columns == 7 ? 0.86 : 1.18,
+                childAspectRatio: columns == 7 ? 0.86 : 1.12,
               ),
               itemCount: days.length,
               itemBuilder: (context, index) {

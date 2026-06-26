@@ -1,0 +1,733 @@
+{
+  "schema_version": 1,
+  "pack_version": "2026.06.26.1",
+  "generated_at": "2026-06-26T00:00:00Z",
+  "personas": [
+    "karen",
+    "frat_bro",
+    "old_grandpa",
+    "politician",
+    "toddler"
+  ],
+  "roasts": [
+    {
+      "id": "karen_partly_cloudy_today_001",
+      "persona": "karen",
+      "type": "today",
+      "tags": [
+        "partly_cloudy",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "medium",
+      "weight": 3.0,
+      "text": "It’s {temp}{temp_unit} and somehow still making a scene.",
+      "condition_codes": [
+        801
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_cloudy_hourly_001",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "cloudy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Cloud cover is {condition}. I would like to speak to the sky's manager.",
+      "condition_codes": [
+        802,
+        803,
+        804
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_light_rain_commute_001",
+      "persona": "karen",
+      "type": "commute",
+      "tags": [
+        "light_rain",
+        "commute_risk"
+      ],
+      "dayparts": [
+        "morning",
+        "evening"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "{precip_chance}% rain chance. Your commute has filed a formal complaint.",
+      "condition_codes": [
+        500,
+        501
+      ],
+      "precip_min_percent": 50,
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_weekend_good_001",
+      "persona": "karen",
+      "type": "weekend",
+      "tags": [
+        "weekend_good",
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "{city} gets nice weather and suddenly everyone owns patio furniture.",
+      "condition_codes": [
+        800
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_high_uv_mood_001",
+      "persona": "karen",
+      "type": "mood",
+      "tags": [
+        "high_uv",
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "UV is high and the sun is acting like it has a reservation.",
+      "temp_min_f": 85,
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_fallback_today_001",
+      "persona": "karen",
+      "type": "today",
+      "tags": [
+        "fallback"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "The weather is vague, but I remain deeply inconvenienced.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_severe_today_001",
+      "persona": "karen",
+      "type": "today",
+      "tags": [
+        "severe",
+        "storm"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Severe weather is possible in {city}. Check alerts, stay inside if told, and keep devices charged.",
+      "condition_codes": [
+        200,
+        201,
+        202,
+        210,
+        211,
+        212,
+        221,
+        230,
+        231,
+        232
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_hot_humid_today_001",
+      "persona": "frat_bro",
+      "type": "today",
+      "tags": [
+        "hot",
+        "humid",
+        "gross"
+      ],
+      "dayparts": [
+        "afternoon",
+        "any"
+      ],
+      "level": "medium",
+      "weight": 2.0,
+      "text": "It's {temp}{temp_unit} and humid. The air is doing burpees, bro.",
+      "temp_min_f": 90,
+      "humidity_min": 65,
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_windy_hourly_001",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Wind at {wind_mph} mph. Nature just turned on the pregame fan.",
+      "wind_min_mph": 20.0,
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_heavy_rain_commute_001",
+      "persona": "frat_bro",
+      "type": "commute",
+      "tags": [
+        "heavy_rain",
+        "commute_risk",
+        "gross"
+      ],
+      "dayparts": [
+        "morning",
+        "evening"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "Heavy rain odds are up. Leave early unless your car can swim, champ.",
+      "condition_codes": [
+        502,
+        503,
+        504,
+        522
+      ],
+      "precip_min_percent": 75,
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_clear_weekend_001",
+      "persona": "frat_bro",
+      "type": "weekend",
+      "tags": [
+        "clear",
+        "weekend_good",
+        "nice"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Clear skies. Grill confidence is at dangerously legal levels.",
+      "condition_codes": [
+        800
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_dry_mood_001",
+      "persona": "frat_bro",
+      "type": "mood",
+      "tags": [
+        "dry"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "The air is dry enough to need a water break between thoughts.",
+      "temp_max_f": 30,
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_fallback_today_001",
+      "persona": "frat_bro",
+      "type": "today",
+      "tags": [
+        "fallback"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Forecast is mid, vibes are salvageable.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_severe_today_001",
+      "persona": "frat_bro",
+      "type": "today",
+      "tags": [
+        "severe",
+        "storm"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Severe weather setup, bro. Skip the hero routine, follow alerts, and get somewhere safe.",
+      "condition_codes": [
+        200,
+        201,
+        202,
+        210,
+        211,
+        212,
+        221,
+        230,
+        231,
+        232
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_cold_today_001",
+      "persona": "old_grandpa",
+      "type": "today",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning",
+        "night"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "{temp}{temp_unit}? Back in my day we called this a character-building morning.",
+      "temp_max_f": 32,
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_snow_hourly_001",
+      "persona": "old_grandpa",
+      "type": "hourly",
+      "tags": [
+        "snow"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Snow is in the mix. Walk slow and quit pretending sneakers are boots.",
+      "condition_codes": [
+        600,
+        601,
+        602,
+        611,
+        612,
+        613,
+        615,
+        616,
+        620,
+        621,
+        622
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_fog_commute_001",
+      "persona": "old_grandpa",
+      "type": "commute",
+      "tags": [
+        "fog",
+        "commute_risk"
+      ],
+      "dayparts": [
+        "morning",
+        "evening"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Fog out there. Headlights on, patience up, nonsense down.",
+      "condition_codes": [
+        701,
+        711,
+        721,
+        741
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_cloudy_weekend_001",
+      "persona": "old_grandpa",
+      "type": "weekend",
+      "tags": [
+        "cloudy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Cloudy weekend. Fine by me. Less squinting, more sitting.",
+      "condition_codes": [
+        802,
+        803,
+        804
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_bad_air_mood_001",
+      "persona": "old_grandpa",
+      "type": "mood",
+      "tags": [
+        "bad_air",
+        "gross"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Air quality is rough. Maybe do the old-fashioned thing and stay inside.",
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_fallback_today_001",
+      "persona": "old_grandpa",
+      "type": "today",
+      "tags": [
+        "fallback"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "The forecast is mumbling again. Bring a layer and don't argue.",
+      "locale": "en-US"
+    },
+    {
+      "id": "old_grandpa_severe_today_001",
+      "persona": "old_grandpa",
+      "type": "today",
+      "tags": [
+        "severe",
+        "snow"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Severe winter weather can turn fast. Stay off roads if officials say so and keep warm supplies nearby.",
+      "condition_codes": [
+        600,
+        601,
+        602,
+        611,
+        612,
+        613,
+        615,
+        616,
+        620,
+        621,
+        622
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_clear_today_001",
+      "persona": "politician",
+      "type": "today",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Clear skies over {city}. We take full credit for this bipartisan sunshine.",
+      "condition_codes": [
+        800
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_heavy_rain_hourly_001",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "heavy_rain",
+        "gross"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "Heavy rain is polling strongly. Umbrellas have my full endorsement.",
+      "condition_codes": [
+        502,
+        503,
+        504,
+        522
+      ],
+      "precip_min_percent": 75,
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_windy_commute_001",
+      "persona": "politician",
+      "type": "commute",
+      "tags": [
+        "windy",
+        "commute_risk"
+      ],
+      "dayparts": [
+        "morning",
+        "evening"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "Wind at {wind_mph} mph. We are forming a committee to hold your hair in place.",
+      "wind_min_mph": 20.0,
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_weekend_good_001",
+      "persona": "politician",
+      "type": "weekend",
+      "tags": [
+        "weekend_good",
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "A nice weekend has been approved by the committee, pending sunscreen compliance.",
+      "condition_codes": [
+        800
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_humid_mood_001",
+      "persona": "politician",
+      "type": "mood",
+      "tags": [
+        "humid",
+        "gross"
+      ],
+      "dayparts": [
+        "afternoon",
+        "evening"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "Humidity is {humidity}%. I will answer no further questions about the air.",
+      "temp_min_f": 75,
+      "humidity_min": 65,
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_fallback_today_001",
+      "persona": "politician",
+      "type": "today",
+      "tags": [
+        "fallback"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "The forecast remains under review and probably your fault.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_severe_today_001",
+      "persona": "politician",
+      "type": "today",
+      "tags": [
+        "severe",
+        "storm"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Severe weather risk is real. Monitor official alerts, shelter promptly, and save the spin for later.",
+      "condition_codes": [
+        200,
+        201,
+        202,
+        210,
+        211,
+        212,
+        221,
+        230,
+        231,
+        232
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_light_rain_today_001",
+      "persona": "toddler",
+      "type": "today",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Rain maybe. Boots yes. Puddles also yes.",
+      "condition_codes": [
+        500,
+        501
+      ],
+      "precip_min_percent": 50,
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_hot_hourly_001",
+      "persona": "toddler",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "medium",
+      "weight": 1.0,
+      "text": "{temp}{temp_unit}. Too hot. I am a noodle now.",
+      "temp_min_f": 90,
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_snow_commute_001",
+      "persona": "toddler",
+      "type": "commute",
+      "tags": [
+        "snow",
+        "commute_risk"
+      ],
+      "dayparts": [
+        "morning",
+        "evening"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Snow road. Go slow. I bring snack.",
+      "condition_codes": [
+        600,
+        601,
+        602,
+        611,
+        612,
+        613,
+        615,
+        616,
+        620,
+        621,
+        622
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_fog_weekend_001",
+      "persona": "toddler",
+      "type": "weekend",
+      "tags": [
+        "fog",
+        "gross"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Fog made the outside blurry. I did not approve.",
+      "condition_codes": [
+        701,
+        711,
+        721,
+        741
+      ],
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_nice_mood_001",
+      "persona": "toddler",
+      "type": "mood",
+      "tags": [
+        "nice"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Sky nice. Mood still tiny thunder.",
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_fallback_today_001",
+      "persona": "toddler",
+      "type": "today",
+      "tags": [
+        "fallback"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 1.0,
+      "text": "Weather doing things. I need snack.",
+      "locale": "en-US"
+    },
+    {
+      "id": "toddler_severe_today_001",
+      "persona": "toddler",
+      "type": "today",
+      "tags": [
+        "severe",
+        "storm"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Big weather can be dangerous. Stay with grown-ups, follow alerts, and go to the safe room if told.",
+      "condition_codes": [
+        200,
+        201,
+        202,
+        210,
+        211,
+        212,
+        221,
+        230,
+        231,
+        232
+      ],
+      "locale": "en-US"
+    }
+  ]
+}
