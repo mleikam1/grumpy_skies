@@ -180,6 +180,27 @@ class OpenWeatherBackendClient {
     );
   }
 
+  Future<WeatherBundle> forecast({
+    required double latitude,
+    required double longitude,
+    String units = 'imperial',
+    String locationName = '',
+  }) async {
+    final json = await _getJson(
+      '/weather/forecast',
+      {
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+        'units': units,
+      },
+    );
+    return _forecastBundleFromBackend(
+      json,
+      locationName: locationName,
+      units: units,
+    );
+  }
+
   Future<List<MinutePrecipitation>> minute({
     required double latitude,
     required double longitude,
@@ -495,6 +516,168 @@ class OpenWeatherBackendClient {
           .toList(),
       timezone: json['timezone'] as String?,
     );
+  }
+
+  static WeatherBundle _forecastBundleFromBackend(
+    Map<String, dynamic> json, {
+    required String locationName,
+    required String units,
+  }) {
+    final dtoUnits = (json['units'] as String?) ?? units;
+    final current = _currentFromBackend(
+      ((json['current'] as Map?) ?? json).cast<String, dynamic>(),
+      locationName: locationName,
+      units: dtoUnits,
+    );
+    final timezoneOffset =
+        current.timezoneOffset ?? (json['timezoneOffset'] as num?)?.round();
+    final hourly = ((json['hourly'] as List?) ?? const [])
+        .map(
+          (item) => _hourlyForecastFromBackend(
+            (item as Map).cast<String, dynamic>(),
+            current: current,
+            units: dtoUnits,
+          ),
+        )
+        .toList(growable: false);
+    final daily = ((json['daily'] as List?) ?? const [])
+        .map(
+          (item) => _dailyForecastFromBackend(
+            (item as Map).cast<String, dynamic>(),
+            current: current,
+            units: dtoUnits,
+            timezoneOffset: timezoneOffset,
+          ),
+        )
+        .toList(growable: false);
+    final minutes = ((json['minutes'] as List?) ?? const [])
+        .map((item) => MinutePrecipitation.fromJson(
+              (item as Map).cast<String, dynamic>(),
+            ))
+        .toList(growable: false);
+    final timeline = ((json['hourly'] as List?) ?? const [])
+        .map((item) => TimelineWeatherPoint.fromJson(
+              (item as Map).cast<String, dynamic>(),
+            ))
+        .toList(growable: false);
+    final alerts = ((json['alerts'] as List?) ?? const [])
+        .map((item) => WeatherAlert.fromJson(
+              (item as Map).cast<String, dynamic>(),
+            ))
+        .toList(growable: false);
+
+    return WeatherBundle(
+      current: current,
+      hourly: hourly,
+      daily: daily,
+      minutePrecipitation: minutes,
+      timeline: timeline,
+      alerts: alerts,
+    );
+  }
+
+  static HourlyForecast _hourlyForecastFromBackend(
+    Map<String, dynamic> json, {
+    required CurrentWeather current,
+    required String units,
+  }) {
+    final weather = _primaryWeatherCondition(json['weather']);
+    final rawTemp = json['temp'] ?? json['temperature'] ?? json['temperatureF'];
+    final rawTime = _dateFromJson(json['time'] ?? json['dt']);
+    return HourlyForecast(
+      time: rawTime ?? current.lastUpdated,
+      temperatureC: rawTemp == null
+          ? current.temperatureC
+          : _temperatureToC((rawTemp as num).toDouble(), units),
+      condition: _titleCase(
+        (json['condition'] ??
+                weather?['description'] ??
+                weather?['main'] ??
+                current.condition)
+            .toString(),
+      ),
+      precipitationChance: _precipitationChance(
+        json['precipitationProbability'] ??
+            json['pop'] ??
+            json['precipitationChance'],
+        fallback: current.precipitationChance,
+      ),
+      weatherIcon: (json['icon'] ?? weather?['icon']) as String?,
+      weatherMain: (json['weatherMain'] ?? weather?['main']) as String?,
+      weatherId: (json['weatherId'] ?? weather?['id'] as num?)?.round(),
+    );
+  }
+
+  static DailyForecast _dailyForecastFromBackend(
+    Map<String, dynamic> json, {
+    required CurrentWeather current,
+    required String units,
+    required int? timezoneOffset,
+  }) {
+    final weather = _primaryWeatherCondition(json['weather']);
+    final temp = (json['temp'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final rawMin = json['minTemp'] ?? json['minTempF'] ?? temp['min'];
+    final rawMax = json['maxTemp'] ?? json['maxTempF'] ?? temp['max'];
+    return DailyForecast(
+      date: _forecastDate(
+        json['date'],
+        json['dt'],
+        timezoneOffset,
+        current.lastUpdated,
+      ),
+      minTempC: rawMin == null
+          ? current.temperatureC
+          : _temperatureToC((rawMin as num).toDouble(), units),
+      maxTempC: rawMax == null
+          ? current.temperatureC
+          : _temperatureToC((rawMax as num).toDouble(), units),
+      condition: _titleCase(
+        (json['condition'] ??
+                weather?['description'] ??
+                weather?['main'] ??
+                current.condition)
+            .toString(),
+      ),
+      precipitationChance: _precipitationChance(
+        json['precipitationProbability'] ??
+            json['pop'] ??
+            json['precipitationChance'],
+        fallback: current.precipitationChance,
+      ),
+      weatherIcon: (json['icon'] ?? weather?['icon']) as String?,
+      weatherMain: (json['weatherMain'] ?? weather?['main']) as String?,
+      weatherId: (json['weatherId'] ?? weather?['id'] as num?)?.round(),
+    );
+  }
+
+  static int _precipitationChance(Object? value, {int fallback = 0}) {
+    if (value is! num) return fallback;
+    final probability = value.toDouble();
+    return probability <= 1 ? (probability * 100).round() : probability.round();
+  }
+
+  static DateTime _forecastDate(
+    Object? date,
+    Object? dt,
+    int? timezoneOffset,
+    DateTime fallback,
+  ) {
+    if (date is String) {
+      final parsed = DateTime.tryParse(date);
+      if (parsed != null) {
+        return DateTime(parsed.year, parsed.month, parsed.day);
+      }
+    }
+
+    if (dt is num) {
+      final local = DateTime.fromMillisecondsSinceEpoch(
+        (dt * 1000).round() + (timezoneOffset ?? 0) * 1000,
+        isUtc: true,
+      );
+      return DateTime(local.year, local.month, local.day);
+    }
+
+    return DateTime(fallback.year, fallback.month, fallback.day);
   }
 
   static DateTime? _dateFromJson(Object? value) {

@@ -3,6 +3,7 @@ import {test} from "node:test";
 
 import {
   normalizeCurrentWeather,
+  normalizeForecastWeather,
   parseLatitude,
   parseLongitude,
   parseUnits,
@@ -158,6 +159,85 @@ test("handles missing optional current weather fields safely", () => {
   assert.equal(dto.rain1h, null);
   assert.equal(dto.snow1h, null);
   assert.deepEqual(dto.alertIds, []);
+});
+
+test("maps One Call bundled forecast arrays without truncating daily data", () => {
+  const dto = normalizeForecastWeather(
+    {
+      lat: 38.8672283,
+      lon: -94.6520357,
+      timezone: "America/Chicago",
+      timezone_offset: -18000,
+      current: {
+        dt: 1782043200,
+        sunrise: 1782030000,
+        sunset: 1782085200,
+        temp: 76,
+        feels_like: 78,
+        humidity: 64,
+        weather: [
+          {
+            id: 500,
+            main: "Rain",
+            description: "light rain",
+            icon: "10d",
+          },
+        ],
+      },
+      minutely: [
+        {
+          dt: 1782043260,
+          precipitation: 1.27,
+        },
+      ],
+      hourly: Array.from({length: 12}, (_, index) => ({
+        dt: 1782043200 + index * 3600,
+        temp: 76 + index,
+        feels_like: 78 + index,
+        humidity: 64,
+        pop: index / 20,
+        weather: [
+          {
+            id: 801,
+            main: "Clouds",
+            description: "few clouds",
+            icon: "02d",
+          },
+        ],
+      })),
+      daily: Array.from({length: 7}, (_, index) => ({
+        dt: 1782043200 + index * 86400,
+        temp: {
+          min: 60 + index,
+          max: 80 + index,
+        },
+        pop: index / 10,
+        weather: [
+          {
+            id: 803,
+            main: "Clouds",
+            description: "broken clouds",
+            icon: "04d",
+          },
+        ],
+      })),
+    },
+    "imperial",
+  );
+  const hourly = dto.hourly as Record<string, unknown>[];
+  const daily = dto.daily as Record<string, unknown>[];
+  const firstDailyTemp = daily[0].temp as Record<string, unknown>;
+
+  assert.equal(dto.timezone, "America/Chicago");
+  assert.equal(dto.timezoneOffset, -18000);
+  assert.equal(hourly.length, 12);
+  assert.equal(daily.length, 7);
+  assert.equal(hourly[0].temp, 76);
+  assert.equal(hourly[11].temp, 87);
+  assert.equal(daily[0].date, "2026-06-21T00:00:00.000");
+  assert.equal(firstDailyTemp.min, 60);
+  assert.equal(firstDailyTemp.max, 80);
+  assert.equal(daily[0].condition, "broken clouds");
 });
 
 test("weather cache key rounds location and includes units", () => {

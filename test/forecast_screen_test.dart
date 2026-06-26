@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
@@ -86,6 +88,76 @@ void main() {
     expect(find.text('Demo City'), findsOneWidget);
     expect(find.text('Hourly'), findsOneWidget);
     expect(find.text('Details'), findsOneWidget);
+  });
+
+  testWidgets('forecast carousels render 12 hourly and 7 daily cards',
+      (tester) async {
+    tester.view.physicalSize = const Size(2200, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final reference = DateTime(2026, 6, 21, 12, 30);
+    final hourly = List.generate(
+      12,
+      (index) => HourlyForecast(
+        time: DateTime(2026, 6, 21, 12 + index),
+        temperatureC: (76 + index - 32) * 5 / 9,
+        condition: 'Clear',
+        precipitationChance: index * 3,
+        weatherIcon: '01d',
+        weatherMain: 'Clear',
+        weatherId: 800,
+      ),
+    );
+    final daily = List.generate(
+      7,
+      (index) => DailyForecast(
+        date: DateTime(2026, 6, 21 + index),
+        minTempC: (60 + index - 32) * 5 / 9,
+        maxTempC: (80 + index - 32) * 5 / 9,
+        condition: 'Broken Clouds',
+        precipitationChance: index * 5,
+        weatherIcon: '04d',
+        weatherMain: 'Clouds',
+        weatherId: 803,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: DMTheme.light,
+        home: Scaffold(
+          body: SizedBox(
+            width: 1800,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ForecastHourlyStrip(
+                    hourly: hourly,
+                    referenceTime: reference,
+                  ),
+                  ForecastDailyGrid(
+                    daily: daily,
+                    referenceTime: reference,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Now'), findsOneWidget);
+    expect(find.text('1 PM'), findsOneWidget);
+    expect(find.textContaining('rain'), findsNWidgets(12));
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Tomorrow'), findsOneWidget);
+    expect(find.textContaining('° / '), findsNWidgets(7));
   });
 
   testWidgets('ForecastScreen passes selected coordinates to weather fetch',

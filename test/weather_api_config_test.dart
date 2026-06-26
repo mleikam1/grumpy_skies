@@ -137,6 +137,102 @@ void main() {
           weather.displayUpdatedAt.toUtc(), DateTime.utc(2026, 6, 21, 12, 3));
     });
 
+    test('maps bundled forecast hourly and daily DTO arrays', () async {
+      final client = OpenWeatherBackendClient(
+        baseUrl: 'https://example.test/api',
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/api/weather/forecast');
+          return http.Response(
+            jsonEncode({
+              'timezone': 'America/Chicago',
+              'timezoneOffset': -18000,
+              'units': 'imperial',
+              'current': {
+                'latitude': 38.8672283,
+                'longitude': -94.6520357,
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'observedAt': 1782043200,
+                'sourceUpdatedAt': 1782043200,
+                'fetchedAt': '2026-06-21T12:03:00Z',
+                'sunrise': 1782030000,
+                'sunset': 1782085200,
+                'temp': 76,
+                'feelsLike': 78,
+                'humidity': 64,
+                'windSpeed': 12,
+                'windDeg': 225,
+                'weatherId': 500,
+                'weatherMain': 'Rain',
+                'weatherDescription': 'light rain',
+                'weatherIcon': '10d',
+                'units': 'imperial',
+              },
+              'minutes': [
+                {
+                  'dt': 1782043260,
+                  'precipitation': 0.05,
+                },
+              ],
+              'hourly': List.generate(
+                12,
+                (index) => {
+                  'dt': 1782043200 + index * 3600,
+                  'temp': 76 + index,
+                  'precipitationProbability': index / 20,
+                  'weather': {
+                    'id': 801,
+                    'main': 'Clouds',
+                    'description': 'few clouds',
+                    'icon': '02d',
+                  },
+                },
+              ),
+              'daily': List.generate(
+                7,
+                (index) => {
+                  'dt': 1782043200 + index * 86400,
+                  'date':
+                      '2026-06-${(21 + index).toString().padLeft(2, '0')}T00:00:00.000',
+                  'temp': {
+                    'min': 60 + index,
+                    'max': 80 + index,
+                  },
+                  'precipitationProbability': index / 10,
+                  'weather': {
+                    'id': 803,
+                    'main': 'Clouds',
+                    'description': 'broken clouds',
+                    'icon': '04d',
+                  },
+                },
+              ),
+            }),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }),
+      );
+
+      final bundle = await client.forecast(
+        latitude: 38.8672283,
+        longitude: -94.6520357,
+        locationName: 'Overland Park, KS, US',
+      );
+
+      expect(bundle.current.locationName, 'Overland Park, KS, US');
+      expect(bundle.current.timezoneOffset, -18000);
+      expect(bundle.hourly, hasLength(12));
+      expect(bundle.daily, hasLength(7));
+      expect(bundle.minutePrecipitation, hasLength(1));
+      expect(bundle.timeline, hasLength(12));
+      expect(bundle.hourly.first.temperatureF.round(), 76);
+      expect(bundle.hourly.last.temperatureF.round(), 87);
+      expect(bundle.daily.first.maxTempF.round(), 80);
+      expect(bundle.daily.first.minTempF.round(), 60);
+      expect(bundle.daily.first.condition, 'Broken Clouds');
+    });
+
     test('does not expose raw socket exceptions to callers', () async {
       final client = OpenWeatherBackendClient(
         baseUrl:

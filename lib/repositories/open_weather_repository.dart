@@ -185,37 +185,18 @@ class OpenWeatherRepository extends WeatherRepository {
       locationName: locationName,
     );
 
-    final current = await _client.current(
+    final liveWeather = await _client.forecast(
       latitude: latitude,
       longitude: longitude,
       locationName: locationName,
     );
-    final minutesFuture = _client
-        .minute(
-      latitude: latitude,
-      longitude: longitude,
-    )
-        .catchError((Object error) {
-      _debugOptionalWeatherFailure('minute', error);
-      return <MinutePrecipitation>[];
-    });
-    final timelineFuture = _client
-        .hourly(
-      latitude: latitude,
-      longitude: longitude,
-    )
-        .catchError((Object error) {
-      _debugOptionalWeatherFailure('hourly', error);
-      return <TimelineWeatherPoint>[];
-    });
-
-    final minutes = await minutesFuture;
-    final timeline = await timelineFuture;
-    final alerts = current.alertIds.isEmpty
-        ? const <WeatherAlert>[]
-        : await getWeatherAlerts(alertIds: current.alertIds);
-    final hourly = _hourlyFromTimeline(timeline, current);
-    final daily = _dailyFromHourly(hourly, current);
+    final current = liveWeather.current;
+    final hourly = liveWeather.hourly.isEmpty
+        ? _hourlyFromTimeline(liveWeather.timeline, current)
+        : liveWeather.hourly;
+    final daily = liveWeather.daily.isEmpty
+        ? _dailyFromHourly(hourly, current)
+        : liveWeather.daily;
     final bundle = WeatherBundle(
       current: current,
       hourly: hourly,
@@ -226,9 +207,9 @@ class OpenWeatherRepository extends WeatherRepository {
         daily: daily,
       ),
       location: displayLocation,
-      minutePrecipitation: minutes,
-      timeline: timeline,
-      alerts: alerts,
+      minutePrecipitation: liveWeather.minutePrecipitation,
+      timeline: liveWeather.timeline,
+      alerts: liveWeather.alerts,
     );
     return bundle;
   }
@@ -428,13 +409,6 @@ class OpenWeatherRepository extends WeatherRepository {
       '[GrumpySkies] weather display location=$locationName '
       'lat=${latitude.toStringAsFixed(3)} '
       'lon=${longitude.toStringAsFixed(3)}',
-    );
-  }
-
-  static void _debugOptionalWeatherFailure(String endpoint, Object error) {
-    if (!kDebugMode) return;
-    debugPrint(
-      '[GrumpySkies] optional $endpoint weather failed: $error',
     );
   }
 }

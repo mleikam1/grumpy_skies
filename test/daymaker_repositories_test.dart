@@ -82,10 +82,11 @@ void main() {
     );
   });
 
-  test('OpenWeatherRepository skips minute and hourly when current fails',
+  test(
+      'OpenWeatherRepository skips legacy endpoints when forecast bundle fails',
       () async {
     final client = _RecordingBackendClient(
-      currentError: const OpenWeatherBackendException(
+      forecastError: const OpenWeatherBackendException(
         'OpenWeather rejected the server key.',
         statusCode: 502,
       ),
@@ -101,7 +102,8 @@ void main() {
       throwsA(isA<OpenWeatherBackendException>()),
     );
 
-    expect(client.currentCalls, 1);
+    expect(client.forecastCalls, 1);
+    expect(client.currentCalls, 0);
     expect(client.minuteCalls, 0);
     expect(client.hourlyCalls, 0);
 
@@ -113,15 +115,13 @@ void main() {
       ),
       throwsA(isA<OpenWeatherBackendException>()),
     );
-    expect(client.currentCalls, 1);
+    expect(client.forecastCalls, 1);
+    expect(client.currentCalls, 0);
   });
 
-  test('OpenWeatherRepository still displays current if optional feeds fail',
+  test('OpenWeatherRepository uses bundled hourly and daily forecast arrays',
       () async {
-    final client = _RecordingBackendClient(
-      minuteError: const OpenWeatherBackendException('Minute unavailable'),
-      hourlyError: const OpenWeatherBackendException('Hourly unavailable'),
-    );
+    final client = _RecordingBackendClient();
     final repo = OpenWeatherRepository(client: client);
 
     final bundle = await repo.getWeather(
@@ -132,17 +132,21 @@ void main() {
 
     expect(bundle.current.locationName, 'Overland Park, Kansas, US');
     expect(bundle.current.temperatureF.round(), 76);
-    expect(bundle.minutePrecipitation, isEmpty);
-    expect(bundle.timeline, isEmpty);
-    expect(bundle.hourly, hasLength(1));
-    expect(client.currentCalls, 1);
-    expect(client.minuteCalls, 1);
-    expect(client.hourlyCalls, 1);
+    expect(bundle.minutePrecipitation, hasLength(1));
+    expect(bundle.timeline, hasLength(12));
+    expect(bundle.hourly, hasLength(12));
+    expect(bundle.daily, hasLength(7));
+    expect(bundle.daily.first.maxTempF.round(), 80);
+    expect(bundle.daily.first.minTempF.round(), 60);
+    expect(client.forecastCalls, 1);
+    expect(client.currentCalls, 0);
+    expect(client.minuteCalls, 0);
+    expect(client.hourlyCalls, 0);
   });
 
   test('OpenWeatherRepository throttles forced auth retries', () async {
     final client = _RecordingBackendClient(
-      currentError: const OpenWeatherBackendException(
+      forecastError: const OpenWeatherBackendException(
         'OpenWeather rejected the server key for One Call API 4.0.',
         statusCode: 502,
         code: 'openweather_one_call_access_denied',
@@ -169,7 +173,8 @@ void main() {
       throwsA(isA<OpenWeatherBackendException>()),
     );
 
-    expect(client.currentCalls, 1);
+    expect(client.forecastCalls, 1);
+    expect(client.currentCalls, 0);
     expect(client.minuteCalls, 0);
     expect(client.hourlyCalls, 0);
   });
@@ -186,17 +191,74 @@ const _testLocation = LocationCandidate(
 
 class _RecordingBackendClient extends OpenWeatherBackendClient {
   _RecordingBackendClient({
-    this.currentError,
-    this.minuteError,
-    this.hourlyError,
+    this.forecastError,
   }) : super(baseUrl: 'https://example.com/api');
 
-  final Object? currentError;
-  final Object? minuteError;
-  final Object? hourlyError;
+  final Object? forecastError;
+  int forecastCalls = 0;
   int currentCalls = 0;
   int minuteCalls = 0;
   int hourlyCalls = 0;
+
+  @override
+  Future<WeatherBundle> forecast({
+    required double latitude,
+    required double longitude,
+    String units = 'imperial',
+    String locationName = '',
+  }) async {
+    forecastCalls++;
+    final error = forecastError;
+    if (error != null) throw error;
+    final current = _currentWeather(
+      latitude: latitude,
+      longitude: longitude,
+      units: units,
+      locationName: locationName,
+    );
+    return WeatherBundle(
+      current: current,
+      hourly: List.generate(
+        12,
+        (index) => HourlyForecast(
+          time: DateTime(2026, 6, 21, 12 + index),
+          temperatureC: (76 + index - 32) * 5 / 9,
+          condition: 'Clear',
+          precipitationChance: index * 2,
+          weatherIcon: '01d',
+          weatherMain: 'Clear',
+          weatherId: 800,
+        ),
+      ),
+      daily: List.generate(
+        7,
+        (index) => DailyForecast(
+          date: DateTime(2026, 6, 21 + index),
+          minTempC: (60 + index - 32) * 5 / 9,
+          maxTempC: (80 + index - 32) * 5 / 9,
+          condition: 'Clear',
+          precipitationChance: index * 5,
+          weatherIcon: '01d',
+          weatherMain: 'Clear',
+          weatherId: 800,
+        ),
+      ),
+      minutePrecipitation: [
+        MinutePrecipitation(
+          time: DateTime(2026, 6, 21, 12, 1),
+          precipitation: 0,
+        ),
+      ],
+      timeline: List.generate(
+        12,
+        (index) => TimelineWeatherPoint(
+          time: DateTime(2026, 6, 21, 12 + index),
+          temperatureF: (76 + index).toDouble(),
+          condition: 'Clear',
+        ),
+      ),
+    );
+  }
 
   @override
   Future<CurrentWeather> current({
@@ -206,8 +268,20 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
     String locationName = '',
   }) async {
     currentCalls++;
-    final error = currentError;
-    if (error != null) throw error;
+    return _currentWeather(
+      latitude: latitude,
+      longitude: longitude,
+      units: units,
+      locationName: locationName,
+    );
+  }
+
+  CurrentWeather _currentWeather({
+    required double latitude,
+    required double longitude,
+    required String units,
+    required String locationName,
+  }) {
     return CurrentWeather(
       locationName: locationName,
       latitude: latitude,
@@ -243,8 +317,6 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
     String units = 'imperial',
   }) async {
     minuteCalls++;
-    final error = minuteError;
-    if (error != null) throw error;
     return [
       MinutePrecipitation(
         time: DateTime(2026, 6, 21, 12, 1),
@@ -260,8 +332,6 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
     String units = 'imperial',
   }) async {
     hourlyCalls++;
-    final error = hourlyError;
-    if (error != null) throw error;
     return [
       TimelineWeatherPoint(
         time: DateTime(2026, 6, 21, 13),

@@ -12,11 +12,15 @@ class ForecastDailyGrid extends StatelessWidget {
     required this.daily,
     this.sunrise,
     this.sunset,
+    this.referenceTime,
+    this.timezoneOffset,
   });
 
   final List<DailyForecast> daily;
   final DateTime? sunrise;
   final DateTime? sunset;
+  final DateTime? referenceTime;
+  final int? timezoneOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -27,69 +31,82 @@ class ForecastDailyGrid extends StatelessWidget {
       children: [
         const DmSectionHeader(title: '7-day forecast'),
         const SizedBox(height: DMSpacing.sm),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < 560) {
+        SizedBox(
+          height: 184,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            clipBehavior: Clip.none,
+            itemCount: days.length,
+            separatorBuilder: (_, __) => const SizedBox(width: DMSpacing.sm),
+            itemBuilder: (context, index) {
               return SizedBox(
-                height: 152,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: days.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: DMSpacing.sm),
-                  itemBuilder: (context, index) {
-                    return SizedBox(
-                      width: 118,
-                      child: _DailyTile(
-                        day: days[index],
-                        index: index,
-                        sunrise: sunrise,
-                        sunset: sunset,
-                      ),
-                    );
-                  },
-                ),
-              );
-            }
-
-            final columns = constraints.maxWidth >= 960 ? 7 : 4;
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                crossAxisSpacing: DMSpacing.sm,
-                mainAxisSpacing: DMSpacing.sm,
-                childAspectRatio: columns == 7 ? 0.86 : 1.12,
-              ),
-              itemCount: days.length,
-              itemBuilder: (context, index) {
-                return _DailyTile(
+                width: 128,
+                child: _DailyTile(
                   day: days[index],
-                  index: index,
+                  label: _dayLabel(
+                    days[index].date,
+                    referenceTime ?? DateTime.now(),
+                    timezoneOffset,
+                  ),
                   sunrise: sunrise,
                   sunset: sunset,
-                );
-              },
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
+  }
+
+  static String _dayLabel(
+    DateTime date,
+    DateTime referenceTime,
+    int? timezoneOffset,
+  ) {
+    final today = _forecastDate(referenceTime, timezoneOffset);
+    final forecastDate = DateTime(date.year, date.month, date.day);
+    final dayOffset = forecastDate.difference(today).inDays;
+    if (dayOffset == 0) return 'Today';
+    if (dayOffset == 1) return 'Tomorrow';
+    return _weekday(forecastDate);
+  }
+
+  static DateTime _forecastDate(DateTime time, int? timezoneOffset) {
+    final local = timezoneOffset == null
+        ? time.toLocal()
+        : DateTime.fromMillisecondsSinceEpoch(
+            time.toUtc().millisecondsSinceEpoch + timezoneOffset * 1000,
+            isUtc: true,
+          );
+    return DateTime(local.year, local.month, local.day);
+  }
+
+  static String _weekday(DateTime date) {
+    const labels = [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ];
+    return labels[date.weekday - 1];
   }
 }
 
 class _DailyTile extends StatelessWidget {
   const _DailyTile({
     required this.day,
-    required this.index,
+    required this.label,
     this.sunrise,
     this.sunset,
   });
 
   final DailyForecast day;
-  final int index;
+  final String label;
   final DateTime? sunrise;
   final DateTime? sunset;
 
@@ -100,15 +117,17 @@ class _DailyTile extends StatelessWidget {
       borderRadius: DMRadius.large,
       shadows: const [],
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            index == 0 ? 'Today' : _weekday(day.date),
+            label,
+            textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: DMTypography.labelLarge,
           ),
-          const Spacer(),
+          const SizedBox(height: DMSpacing.sm),
           DaymakerWeatherIcon(
             conditionId: day.weatherId,
             openWeatherIconCode: day.weatherIcon,
@@ -124,6 +143,7 @@ class _DailyTile extends StatelessWidget {
           const SizedBox(height: DMSpacing.xs),
           Text(
             '${day.maxTempF.round()}° / ${day.minTempF.round()}°',
+            textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: DMTypography.labelLarge,
@@ -131,25 +151,13 @@ class _DailyTile extends StatelessWidget {
           const SizedBox(height: DMSpacing.xxs),
           Text(
             day.condition,
-            maxLines: 1,
+            textAlign: TextAlign.center,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: DMTypography.bodySmall,
           ),
         ],
       ),
     );
-  }
-
-  static String _weekday(DateTime date) {
-    const labels = [
-      'Mon',
-      'Tue',
-      'Wed',
-      'Thu',
-      'Fri',
-      'Sat',
-      'Sun',
-    ];
-    return labels[date.weekday - 1];
   }
 }

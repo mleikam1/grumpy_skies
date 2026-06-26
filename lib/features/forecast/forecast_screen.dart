@@ -631,12 +631,16 @@ class _ForecastLowerSection extends StatelessWidget {
           hourly: weather.hourly,
           sunrise: weather.current.sunrise,
           sunset: weather.current.sunset,
+          referenceTime: weather.current.lastUpdated,
+          timezoneOffset: weather.current.timezoneOffset,
         ),
         SizedBox(height: gap),
         ForecastDailyGrid(
           daily: weather.daily,
           sunrise: weather.current.sunrise,
           sunset: weather.current.sunset,
+          referenceTime: weather.current.lastUpdated,
+          timezoneOffset: weather.current.timezoneOffset,
         ),
       ],
     );

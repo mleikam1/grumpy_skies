@@ -16,15 +16,16 @@ returns Google HTML 404 pages instead of this app's JSON API.
 The backend currently uses OpenWeather endpoints including:
 
 - `/data/2.5/weather` for required current conditions
+- `/data/3.0/onecall` for bundled current, minute, hourly, daily, and alert data
 - `/data/4.0/onecall/timeline/1min`
 - `/data/4.0/onecall/timeline/15min`
 - `/data/4.0/onecall/timeline/1h`
 
-The Forecast tab can show current weather with a standard OpenWeather key that
-can access Current Weather API 2.5. Minute and timeline forecast enrichments
-require One Call API 4.0 access. Radar tiles require the matching OpenWeather
-Maps access. If those optional products are unavailable, the backend returns
-safe JSON errors or transparent fallback radar tiles rather than HTML.
+The Forecast tab uses the bundled One Call response for current, hourly, and
+daily forecast cards so one refresh/location renders from one weather payload.
+Radar tiles require the matching OpenWeather Maps access. If those optional
+products are unavailable, the backend returns safe JSON errors or transparent
+fallback radar tiles rather than HTML.
 
 ### Local OpenWeather key
 
