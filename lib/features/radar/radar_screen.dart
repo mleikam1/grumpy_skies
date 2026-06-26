@@ -36,14 +36,22 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   OpenWeatherBackendClient? _client;
   Timer? _playTimer;
   Timer? _boundaryTimer;
+  RadarMode _mode = RadarMode.usForecast;
+  RadarFrame? _previousFrame;
   List<RadarFrame> _frames = const [];
   var _playing = false;
   var _sheetExpanded = false;
   var _timelineIndex = 0;
   var _loadedDependencies = false;
+  var _loadingFrames = false;
+  var _checkingFutureCast = false;
+  var _futureCastAvailable = false;
+  var _frameLoadSerial = 0;
   var _tileIssue = false;
   var _tileIssueUpdateQueued = false;
   var _tileIssueGeneration = 0;
+  String? _frameLoadMessage;
+  String? _futureCastMessage;
   String? _tileIssueCode;
 
   @override
@@ -58,7 +66,10 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
         );
     _client = _readClient() ?? OpenWeatherBackendClient();
     _locationController!.addListener(_handleLocationChanged);
-    _rebuildTimeline(keepSelectedTimestamp: false);
+    final location = _locationController!.selectedLocation;
+    _mode = _defaultModeFor(location);
+    _loadFrames(keepSelectedTimestamp: false);
+    _refreshFutureCastAvailability();
     _startBoundaryTimer();
     _loadedDependencies = true;
   }
@@ -111,7 +122,10 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
   void _handleLocationChanged() {
     _clearTileIssue();
-    _rebuildTimeline(keepSelectedTimestamp: false);
+    _mode = _defaultModeFor(_locationController?.selectedLocation);
+    _previousFrame = null;
+    _loadFrames(keepSelectedTimestamp: false);
+    _refreshFutureCastAvailability();
     _recenter();
     if (mounted) setState(() {});
   }
@@ -120,13 +134,8 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     _boundaryTimer?.cancel();
     _boundaryTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (!mounted || _frames.isEmpty) return;
-      final selectedTimestamp = _selectedFrame.timestamp;
-      final latest = roundToNearestPastRadarUnix(
-        mode: _modeFor(_locationController?.selectedLocation),
-      );
-      final wasLatest = selectedTimestamp == latest;
-      _rebuildTimeline(keepSelectedTimestamp: !wasLatest);
-      if (wasLatest) _jumpToLatest();
+      final wasLatest = _selectedFrame.isLatest;
+      _loadFrames(keepSelectedTimestamp: !wasLatest);
     });
   }
 
@@ -146,28 +155,64 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
     _playTimer = Timer.periodic(const Duration(milliseconds: 900), (_) {
       if (!mounted || _frames.isEmpty) return;
-      setState(() {
-        _timelineIndex = (_timelineIndex + 1) % _frames.length;
-        _clearTileIssue();
-      });
+      final next = _nextRenderableIndex(_timelineIndex);
+      if (next == _timelineIndex) return;
+      _selectTimelineIndex(next);
     });
   }
 
-  void _rebuildTimeline({required bool keepSelectedTimestamp}) {
-    final previous = keepSelectedTimestamp && _frames.isNotEmpty
+  Future<void> _loadFrames({required bool keepSelectedTimestamp}) async {
+    final location = _locationController?.selectedLocation;
+    final client = _client;
+    if (location == null || client == null) return;
+
+    final mode = _effectiveModeFor(location);
+    final previousTimestamp = keepSelectedTimestamp && _frames.isNotEmpty
         ? _selectedFrame.timestamp
         : null;
-    final location = _locationController?.selectedLocation;
-    final mode = _modeFor(location);
-    final frames = generateRadarFrames(
-      mode: mode,
-      includeForecast: false,
-    );
+    final serial = ++_frameLoadSerial;
+    setState(() {
+      _loadingFrames = true;
+      _frameLoadMessage = null;
+      _tileIssue = false;
+      _tileIssueCode = null;
+      _tileIssueUpdateQueued = false;
+      _tileIssueGeneration++;
+    });
 
-    _frames = frames;
-    final latest = roundToNearestPastRadarUnix(mode: mode);
-    final target = previous ?? latest;
-    _timelineIndex = _nearestIndexFor(target);
+    try {
+      final frameSet = await client.radarFrames(
+        mode: mode,
+        latitude: location.lat,
+        longitude: location.lon,
+        hours: 6,
+      );
+      if (!mounted || serial != _frameLoadSerial) return;
+      final frames = frameSet.frames
+          .where((frame) => frame.renderable)
+          .toList(growable: false);
+      final target = previousTimestamp ?? _preferredLatestTimestamp(frames);
+      setState(() {
+        _mode = mode;
+        _frames = frames;
+        _timelineIndex = frames.isEmpty ? 0 : _nearestIndexFor(target);
+        _loadingFrames = false;
+        _frameLoadMessage = frames.isEmpty
+            ? frameSet.diagnosticMessage ??
+                'Radar source temporarily unavailable.'
+            : frameSet.diagnosticMessage;
+        if (frameSet.futureCastAvailable) _futureCastAvailable = true;
+      });
+      _preloadUpcomingFrames();
+    } on OpenWeatherBackendException catch (error) {
+      if (!mounted || serial != _frameLoadSerial) return;
+      setState(() {
+        _loadingFrames = false;
+        _frameLoadMessage = error.message;
+        _frames = const [];
+        _timelineIndex = 0;
+      });
+    }
   }
 
   int _nearestIndexFor(int timestamp) {
@@ -187,19 +232,20 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   RadarFrame get _selectedFrame {
     if (_frames.isEmpty) {
       final latest = roundToNearestPastRadarUnix(
-        mode: _modeFor(_locationController?.selectedLocation),
+        mode: _mode,
       );
       return RadarFrame(
         timestamp: latest,
-        label: 'Latest',
+        label: _mode == RadarMode.futureCast ? 'Now' : 'Latest',
         type: RadarFrameType.latest,
         isLatest: true,
+        source: _mode.sourceParam,
       );
     }
     return _frames[_timelineIndex.clamp(0, _frames.length - 1)];
   }
 
-  RadarMode _modeFor(LocationCandidate? location) {
+  RadarMode _defaultModeFor(LocationCandidate? location) {
     if (location == null) return RadarMode.usForecast;
     if (location.isUs || _coordinateLooksUs(location.lat, location.lon)) {
       return RadarMode.usForecast;
@@ -207,14 +253,129 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     return RadarMode.global;
   }
 
+  RadarMode _effectiveModeFor(LocationCandidate location) {
+    if (!(location.isUs || _coordinateLooksUs(location.lat, location.lon))) {
+      return RadarMode.global;
+    }
+    return _mode == RadarMode.global ? RadarMode.usForecast : _mode;
+  }
+
   void _jumpToLatest() {
-    final latest = roundToNearestPastRadarUnix(
-      mode: _modeFor(_locationController?.selectedLocation),
-    );
+    if (_frames.isEmpty) return;
+    _selectTimelineIndex(_latestIndexForMode());
+  }
+
+  void _selectTimelineIndex(int index) {
+    if (_frames.isEmpty) return;
+    final nextIndex = index.clamp(0, _frames.length - 1);
+    final nextFrame = _frames[nextIndex];
     setState(() {
-      _timelineIndex = _nearestIndexFor(latest);
+      _previousFrame = _selectedFrame;
+      _timelineIndex = nextIndex;
       _clearTileIssue();
+      if (!nextFrame.renderable) {
+        _tileIssue = true;
+        _tileIssueCode = 'radar_frame_unavailable';
+      }
     });
+    _preloadUpcomingFrames();
+  }
+
+  int _latestIndexForMode() {
+    if (_frames.isEmpty) return 0;
+    final latestIndex = _frames.indexWhere((frame) => frame.isLatest);
+    if (latestIndex >= 0) return latestIndex;
+    return _mode == RadarMode.futureCast ? 0 : _frames.length - 1;
+  }
+
+  int _nextRenderableIndex(int startIndex) {
+    if (_frames.length < 2) return startIndex;
+    for (var step = 1; step <= _frames.length; step++) {
+      final index = (startIndex + step) % _frames.length;
+      if (_frames[index].renderable) return index;
+    }
+    return startIndex;
+  }
+
+  int _preferredLatestTimestamp(List<RadarFrame> frames) {
+    if (frames.isEmpty) {
+      return roundToNearestPastRadarUnix(mode: _mode);
+    }
+    for (final frame in frames) {
+      if (frame.isLatest) return frame.timestamp;
+    }
+    return _mode == RadarMode.futureCast
+        ? frames.first.timestamp
+        : frames.last.timestamp;
+  }
+
+  void _setMode(RadarMode mode) {
+    if (mode == _mode) return;
+    if (mode == RadarMode.futureCast && !_futureCastAvailable) {
+      setState(() {
+        _tileIssue = true;
+        _tileIssueCode = 'futurecast_unavailable';
+      });
+      return;
+    }
+    _setPlayback(false);
+    _previousFrame = null;
+    setState(() => _mode = mode);
+    _loadFrames(keepSelectedTimestamp: false);
+  }
+
+  Future<void> _refreshFutureCastAvailability() async {
+    final location = _locationController?.selectedLocation;
+    final client = _client;
+    if (location == null || client == null) return;
+    if (!(location.isUs || _coordinateLooksUs(location.lat, location.lon))) {
+      setState(() {
+        _futureCastAvailable = false;
+        _futureCastMessage = 'FutureCast is available for US locations.';
+      });
+      return;
+    }
+    if (_checkingFutureCast) return;
+    _checkingFutureCast = true;
+    try {
+      final frameSet = await client.radarFrames(
+        mode: RadarMode.futureCast,
+        latitude: location.lat,
+        longitude: location.lon,
+        hours: 1,
+      );
+      if (!mounted) return;
+      setState(() {
+        _futureCastAvailable =
+            frameSet.frames.isNotEmpty || frameSet.futureCastAvailable;
+        _futureCastMessage = frameSet.diagnosticMessage;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _futureCastAvailable = false;
+        _futureCastMessage =
+            'FutureCast requires OpenWeather precipitation forecast map access.';
+      });
+    } finally {
+      _checkingFutureCast = false;
+    }
+  }
+
+  void _preloadUpcomingFrames() {
+    final location = _locationController?.selectedLocation;
+    final client = _client;
+    if (location == null || client == null || _frames.length < 2) return;
+    for (var step = 1; step <= math.min(2, _frames.length - 1); step++) {
+      final frame = _frames[(_timelineIndex + step) % _frames.length];
+      client.radarTileHealth(
+        mode: _mode,
+        timestamp: frame.timestamp,
+        latitude: location.lat,
+        longitude: location.lon,
+        source: frame.source,
+      );
+    }
   }
 
   void _zoomBy(double delta) {
@@ -299,7 +460,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
               );
             }
 
-            final mode = _modeFor(location);
+            final mode = _effectiveModeFor(location);
             final frame = _selectedFrame;
             final bottomInset = MediaQuery.paddingOf(context).bottom;
             final horizontal = width < 600 ? DMSpacing.sm : DMSpacing.xl;
@@ -319,7 +480,8 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                   mapController: _mapController,
                   location: location,
                   mode: mode,
-                  timestamp: frame.timestamp,
+                  frame: frame,
+                  previousFrame: _previousFrame,
                   onTileIssue: _handleTileIssue,
                 ),
                 Positioned(
@@ -329,6 +491,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                   child: _RadarStatusStack(
                     locationName: _locationLabel(location),
                     frameLabel: frame.label,
+                    modeLabel: mode.modeChipLabel,
                   ),
                 ),
                 Positioned(
@@ -345,13 +508,17 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                     onInfo: _toggleInfoSheet,
                   ),
                 ),
-                if (_tileIssue)
+                if (_tileIssue || _frameLoadMessage != null || _loadingFrames)
                   Positioned(
                     left: horizontal,
                     right: horizontal,
                     bottom: sheetHeight + bottomInset + DMSpacing.x2,
                     child: _RadarNoticeBanner(
-                      message: _tileIssueMessage(_tileIssueCode),
+                      message: _loadingFrames
+                          ? 'Loading radar frames...'
+                          : _tileIssue
+                              ? _tileIssueMessage(_tileIssueCode)
+                              : _frameLoadMessage!,
                     ),
                   ),
                 Positioned(
@@ -370,6 +537,9 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                         playing: _playing,
                         mode: mode,
                         locationName: _locationLabel(location),
+                        futureCastAvailable: _futureCastAvailable,
+                        futureCastMessage: _futureCastMessage,
+                        onModeChanged: _setMode,
                         onTimelineChanged: _onTimelineChanged,
                         onPlayPause: _togglePlayback,
                         onLatest: _jumpToLatest,
@@ -387,10 +557,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   }
 
   void _onTimelineChanged(double value) {
-    setState(() {
-      _timelineIndex = value.round().clamp(0, _frames.length - 1);
-      _clearTileIssue();
-    });
+    _selectTimelineIndex(value.round());
   }
 }
 
@@ -430,10 +597,12 @@ class _RadarStatusStack extends StatelessWidget {
   const _RadarStatusStack({
     required this.locationName,
     required this.frameLabel,
+    required this.modeLabel,
   });
 
   final String locationName;
   final String frameLabel;
+  final String modeLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -442,6 +611,7 @@ class _RadarStatusStack extends StatelessWidget {
       child: _RadarStatusPill(
         locationName: locationName,
         frameLabel: frameLabel,
+        modeLabel: modeLabel,
       ),
     );
   }
@@ -451,10 +621,12 @@ class _RadarStatusPill extends StatelessWidget {
   const _RadarStatusPill({
     required this.locationName,
     required this.frameLabel,
+    required this.modeLabel,
   });
 
   final String locationName;
   final String frameLabel;
+  final String modeLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -467,9 +639,9 @@ class _RadarStatusPill extends StatelessWidget {
       gradient: DMGradients.glassNavy,
       borderColor: DMColors.glassBorderStrong,
       shadows: DMShadows.floating,
-      semanticLabel: 'Radar, $locationName, $frameLabel',
+      semanticLabel: 'Radar, $locationName, $modeLabel, $frameLabel',
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
+        constraints: const BoxConstraints(maxWidth: 430),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
@@ -501,7 +673,42 @@ class _RadarStatusPill extends StatelessWidget {
             Flexible(
               child: _RadarFrameBadge(label: frameLabel),
             ),
+            const SizedBox(width: DMSpacing.xs),
+            Flexible(
+              child: _RadarModeBadge(label: modeLabel),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RadarModeBadge extends StatelessWidget {
+  const _RadarModeBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: DMColors.opacity(DMColors.skyBlue, 0.18),
+        borderRadius: DMRadius.full,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: DMSpacing.xs,
+          vertical: DMSpacing.xxs,
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: DMTypography.labelSmall.copyWith(
+            color: DMColors.skyBlueSoft,
+          ),
         ),
       ),
     );
@@ -636,6 +843,9 @@ class _RadarBottomSheet extends StatelessWidget {
     required this.playing,
     required this.mode,
     required this.locationName,
+    required this.futureCastAvailable,
+    required this.futureCastMessage,
+    required this.onModeChanged,
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
@@ -650,6 +860,9 @@ class _RadarBottomSheet extends StatelessWidget {
   final bool playing;
   final RadarMode mode;
   final String locationName;
+  final bool futureCastAvailable;
+  final String? futureCastMessage;
+  final ValueChanged<RadarMode> onModeChanged;
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
@@ -686,6 +899,9 @@ class _RadarBottomSheet extends StatelessWidget {
                       playing: playing,
                       mode: mode,
                       locationName: locationName,
+                      futureCastAvailable: futureCastAvailable,
+                      futureCastMessage: futureCastMessage,
+                      onModeChanged: onModeChanged,
                       onTimelineChanged: onTimelineChanged,
                       onPlayPause: onPlayPause,
                       onLatest: onLatest,
@@ -754,6 +970,9 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
     required this.playing,
     required this.mode,
     required this.locationName,
+    required this.futureCastAvailable,
+    required this.futureCastMessage,
+    required this.onModeChanged,
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
@@ -765,6 +984,9 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
   final bool playing;
   final RadarMode mode;
   final String locationName;
+  final bool futureCastAvailable;
+  final String? futureCastMessage;
+  final ValueChanged<RadarMode> onModeChanged;
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
@@ -774,6 +996,13 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
+        _RadarModeSelector(
+          mode: mode,
+          futureCastAvailable: futureCastAvailable,
+          futureCastMessage: futureCastMessage,
+          onModeChanged: onModeChanged,
+        ),
+        const SizedBox(height: DMSpacing.sm),
         _CompactRadarTimeline(
           frame: frame,
           frames: frames,
@@ -798,6 +1027,7 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
               label: _formatRadarTime(
                 frame.timestamp,
                 isLatest: frame.isLatest,
+                latestLabel: frame.label == 'Now' ? 'Now' : 'Latest',
               ),
             ),
             _RadarInfoChip(
@@ -817,6 +1047,71 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
             color: DMColors.textMuted,
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _RadarModeSelector extends StatelessWidget {
+  const _RadarModeSelector({
+    required this.mode,
+    required this.futureCastAvailable,
+    required this.futureCastMessage,
+    required this.onModeChanged,
+  });
+
+  final RadarMode mode;
+  final bool futureCastAvailable;
+  final String? futureCastMessage;
+  final ValueChanged<RadarMode> onModeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: DMSpacing.xs,
+      runSpacing: DMSpacing.xs,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        DmPillButton(
+          label: 'Live Radar',
+          semanticLabel: 'Show Live Radar',
+          leading: const Icon(Icons.radar),
+          variant: DmPillButtonVariant.glass,
+          selected: mode == RadarMode.usForecast,
+          padding: const EdgeInsets.symmetric(
+            horizontal: DMSpacing.sm,
+            vertical: DMSpacing.xs,
+          ),
+          onPressed: () => onModeChanged(RadarMode.usForecast),
+        ),
+        DmPillButton(
+          label: 'FutureCast',
+          semanticLabel: futureCastAvailable
+              ? 'Show FutureCast'
+              : 'FutureCast requires OpenWeather precipitation forecast map access',
+          leading: const Icon(Icons.timeline),
+          variant: DmPillButtonVariant.glass,
+          selected: mode == RadarMode.futureCast,
+          padding: const EdgeInsets.symmetric(
+            horizontal: DMSpacing.sm,
+            vertical: DMSpacing.xs,
+          ),
+          onPressed: futureCastAvailable
+              ? () => onModeChanged(RadarMode.futureCast)
+              : null,
+        ),
+        if (!futureCastAvailable && futureCastMessage != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Text(
+              futureCastMessage!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: DMTypography.labelSmall.copyWith(
+                color: DMColors.textMuted,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -849,9 +1144,14 @@ class _CompactRadarTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final max = math.max(frames.length - 1, 1).toDouble();
     final divisions = math.max(frames.length - 1, 1);
-    final historyLabel = mode == RadarMode.usForecast ? '-90 min' : '-2h';
+    final historyLabel = switch (mode) {
+      RadarMode.usForecast => '-90 min',
+      RadarMode.futureCast => 'Now',
+      RadarMode.global => '-2h',
+    };
     final stepLabel =
-        mode == RadarMode.usForecast ? '5 min frames' : '10 min frames';
+        mode == RadarMode.usForecast ? 'MRMS frames' : '10 min frames';
+    final endLabel = mode == RadarMode.futureCast ? '+6h' : 'Latest';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -883,6 +1183,7 @@ class _CompactRadarTimeline extends StatelessWidget {
                     _formatRadarTime(
                       frame.timestamp,
                       isLatest: frame.isLatest,
+                      latestLabel: frame.label == 'Now' ? 'Now' : 'Latest',
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -958,7 +1259,7 @@ class _CompactRadarTimeline extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  'Latest',
+                  endLabel,
                   textAlign: TextAlign.right,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1147,14 +1448,15 @@ String _tileIssueMessage(String? code) {
     'OPENWEATHER_API_KEY_UNAVAILABLE' ||
     'OPENWEATHER_API_KEY_MISSING' =>
       'Radar product/API access issue. Check OpenWeather Maps access on the server key.',
-    'openweather_invalid_request' =>
-      'Invalid radar frame. Jump to Latest and try again.',
+    'futurecast_unavailable' =>
+      'FutureCast requires OpenWeather precipitation forecast map access.',
+    'radar_frame_unavailable' => 'Radar frame unavailable.',
+    'openweather_invalid_request' => 'Radar frame unavailable.',
     'openweather_not_found' ||
     'openweather_tile_empty' =>
       'No precipitation nearby right now. Try zooming out.',
     'noaa_tile_empty' => 'No precipitation nearby right now. Try zooming out.',
-    'noaa_invalid_request' =>
-      'Invalid radar frame. Jump to Latest and try again.',
+    'noaa_invalid_request' => 'Radar frame unavailable.',
     'noaa_timeout' ||
     'noaa_unavailable' ||
     'noaa_rate_limited' ||
@@ -1170,9 +1472,13 @@ String _tileIssueMessage(String? code) {
   };
 }
 
-String _formatRadarTime(int timestamp, {bool isLatest = false}) {
+String _formatRadarTime(
+  int timestamp, {
+  bool isLatest = false,
+  String latestLabel = 'Latest',
+}) {
   final time = dateTimeFromUnixSeconds(timestamp);
-  if (isLatest) return 'Latest';
+  if (isLatest) return latestLabel;
 
   final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
   final minute = time.minute.toString().padLeft(2, '0');

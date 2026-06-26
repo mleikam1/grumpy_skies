@@ -20,7 +20,9 @@ const tenMinutesSeconds = 10 * 60;
 const fiveMinutesSeconds = 5 * 60;
 const noaaRadarHistorySeconds = 90 * 60;
 const openWeatherRadarHistorySeconds = 120 * 60;
-const fiveHoursSeconds = 5 * 60 * 60;
+const sixHoursSeconds = 6 * 60 * 60;
+const noaaFrameQueryRecordCount = 240;
+const noaaFrameClusterSeconds = 120;
 const weatherCacheControl = "public, max-age=300, stale-while-revalidate=300";
 const radarFallbackCacheControl = "public, max-age=30";
 const openWeatherTimeoutMs = 8000;
@@ -30,9 +32,12 @@ const transparentRadarTilePng = Buffer.from(
   "base64",
 );
 
-type RadarMode = "us-forecast" | "global";
+type RadarMode = "us-forecast" | "futurecast" | "global";
 type RadarProduct = "us" | "global";
-type RadarSource = "noaa_mrms" | "openweather_global";
+type RadarSource =
+  "noaa_mrms" |
+  "openweather_futurecast" |
+  "openweather_global";
 
 type JsonRecord = Record<string, unknown>;
 type CacheEntry = {
@@ -66,6 +71,25 @@ type RadarImageDiagnostics = {
 type NoaaRadarMetadata = {
   latestFrameTimestamp: number;
   availableFrameCount: number;
+  availableFrom: number;
+  availableTo: number;
+  updateIntervalSeconds: number | null;
+  availableTimestamps: number[];
+  diagnosticMessage: string | null;
+};
+type RadarFrameProbe = {
+  source: RadarSource;
+  frameTimestamp: number;
+  z: number;
+  x: number;
+  y: number;
+  renderable: boolean;
+  validImageResponses: number;
+  transparentFallbackTileResponses: number;
+  upstreamErrors: number;
+  fallbackCode: string | null;
+  humanReadableMessage: string | null;
+  diagnostics: RadarImageDiagnostics | null;
 };
 
 const jsonCache = new Map<string, CacheEntry>();
@@ -184,6 +208,21 @@ export const api = onRequest(
         return;
       }
 
+      if (path === "/radar/noaaFrames") {
+        await handleNoaaFrames(request, response);
+        return;
+      }
+
+      if (path === "/radar/futureFrames") {
+        await handleFutureFrames(request, response);
+        return;
+      }
+
+      if (path === "/radar/tile") {
+        await handleUnifiedRadarTile(request, response);
+        return;
+      }
+
       if (path === "/radarHealth") {
         await handleRadarHealth(request, response);
         return;
@@ -196,7 +235,7 @@ export const api = onRequest(
       }
 
       const tileMatch = path.match(
-        /^\/radar\/tile\/(us-forecast|global)\/(\d+)\/(\d+)\/(\d+)\.png$/,
+        /^\/radar\/tile\/(us-forecast|futurecast|global)\/(\d+)\/(\d+)\/(\d+)\.png$/,
       );
       if (tileMatch) {
         await handleRadarTile(
@@ -410,33 +449,171 @@ async function handleRadarFrames(request: Request, response: Response) {
     lon,
   );
   const mode = radarModeForProduct(product);
-  const latest = mode === "us-forecast" ?
-    (await getNoaaRadarMetadata().catch((): NoaaRadarMetadata => ({
-      latestFrameTimestamp: roundToNearestPastFiveMinuteUnix(),
-      availableFrameCount: 0,
-    }))).latestFrameTimestamp :
-    roundToNearestPastTenMinuteUnix();
+  if (mode === "us-forecast") {
+    await handleNoaaFrames(request, response);
+    return;
+  }
+
+  const latest = roundToNearestPastTenMinuteUnix();
   const forecastAvailable = false;
   const frames = buildRadarFrames(
     latest,
     forecastAvailable,
-    mode === "us-forecast" ? fiveMinutesSeconds : tenMinutesSeconds,
-    mode === "us-forecast" ?
-      noaaRadarHistorySeconds :
-      openWeatherRadarHistorySeconds,
+    tenMinutesSeconds,
+    openWeatherRadarHistorySeconds,
   );
   sendJson(response, 200, {
     product,
     mode,
     source: radarSourceForMode(mode),
-    productLabel: mode === "us-forecast" ?
-      "NOAA MRMS radar" :
-      "Global precipitation radar",
+    productLabel: "Global precipitation radar",
     latestTimestamp: latest,
     minTimestamp: frames[0]?.timestamp ?? latest,
     maxTimestamp: frames[frames.length - 1]?.timestamp ?? latest,
     forecastAvailable,
     frames,
+  }, "public, max-age=60");
+}
+
+async function handleNoaaFrames(request: Request, response: Response) {
+  const lat = parseLatitude(requiredQuery(request, "lat"));
+  const lon = parseLongitude(requiredQuery(request, "lon"));
+  const metadata = await getNoaaRadarMetadata().catch((error): NoaaRadarMetadata => {
+    logger.warn("NOAA radar metadata unavailable", {
+      source: "noaa_mrms",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+    const latestFrameTimestamp = roundToNearestPastFiveMinuteUnix();
+    return {
+      latestFrameTimestamp,
+      availableFrameCount: 0,
+      availableFrom: latestFrameTimestamp - noaaRadarHistorySeconds,
+      availableTo: latestFrameTimestamp,
+      updateIntervalSeconds: fiveMinutesSeconds,
+      availableTimestamps: [],
+      diagnosticMessage:
+        "NOAA metadata could not be loaded. Radar source temporarily unavailable.",
+    };
+  });
+  const latest = metadata.latestFrameTimestamp;
+  const timestamps = metadata.availableTimestamps.filter((timestamp) =>
+    timestamp >= latest - noaaRadarHistorySeconds && timestamp <= latest);
+  const frames = await buildValidatedRadarFrames({
+    source: "noaa_mrms",
+    lat,
+    lon,
+    latest,
+    timestamps,
+    nowLabel: "Latest",
+  });
+  const renderableFrames = frames.filter((frame) =>
+    frame.renderable === true);
+
+  sendJson(response, 200, {
+    source: "noaa_mrms",
+    mode: "us-forecast",
+    product: "noaa_mrms_observed",
+    productLabel: "NOAA MRMS radar",
+    latestTimestamp:
+      (renderableFrames[renderableFrames.length - 1]?.timestamp as number | undefined) ??
+      latest,
+    availableFrom: metadata.availableFrom,
+    availableTo: metadata.availableTo,
+    updateIntervalSeconds: metadata.updateIntervalSeconds,
+    availableFrameCount: metadata.availableFrameCount,
+    attribution: "Radar © NOAA/NWS MRMS",
+    diagnosticMessage: metadata.diagnosticMessage,
+    frames: renderableFrames,
+    skippedFrames: frames.filter((frame) => frame.renderable !== true),
+  }, "public, max-age=60");
+}
+
+async function handleFutureFrames(request: Request, response: Response) {
+  const lat = parseLatitude(requiredQuery(request, "lat"));
+  const lon = parseLongitude(requiredQuery(request, "lon"));
+  const hours = parseFutureHours(queryParam(request, "hours"));
+  const latest = roundToNearestPastTenMinuteUnix();
+  const max = latest + hours * 60 * 60;
+  const timestamps: number[] = [];
+  for (let timestamp = latest; timestamp <= max; timestamp += tenMinutesSeconds) {
+    timestamps.push(timestamp);
+  }
+
+  const firstProbe = await probeRadarFrame({
+    source: "openweather_futurecast",
+    lat,
+    lon,
+    timestamp: latest,
+  });
+  if (!firstProbe.renderable && isOpenWeatherRadarAccessFailure(firstProbe)) {
+    logRadarFrameDiagnostics(radarFrameRecord({
+      source: "openweather_futurecast",
+      timestamp: latest,
+      latest,
+      nowLabel: "Now",
+      probe: firstProbe,
+    }));
+    sendJson(response, 200, {
+      source: "openweather_futurecast",
+      mode: "futurecast",
+      product: "openweather_radar_forecast",
+      productLabel: "FutureCast precipitation",
+      latestTimestamp: latest,
+      maxTimestamp: max,
+      futureCastAvailable: false,
+      attribution: "Radar © OpenWeather",
+      diagnosticMessage:
+        "FutureCast requires OpenWeather precipitation forecast map access.",
+      frames: [],
+      skippedFrames: [
+        radarFrameRecord({
+          source: "openweather_futurecast",
+          timestamp: latest,
+          latest,
+          nowLabel: "Now",
+          probe: firstProbe,
+        }),
+      ],
+    }, "public, max-age=60");
+    return;
+  }
+
+  const remainingTimestamps = timestamps.slice(1);
+  const remainingFrames = await buildValidatedRadarFrames({
+    source: "openweather_futurecast",
+    lat,
+    lon,
+    latest,
+    timestamps: remainingTimestamps,
+    nowLabel: "Now",
+  });
+  const frames = [
+    radarFrameRecord({
+      source: "openweather_futurecast",
+      timestamp: latest,
+      latest,
+      nowLabel: "Now",
+      probe: firstProbe,
+    }),
+    ...remainingFrames,
+  ];
+  const renderableFrames = frames.filter((frame) =>
+    frame.renderable === true);
+
+  sendJson(response, 200, {
+    source: "openweather_futurecast",
+    mode: "futurecast",
+    product: "openweather_radar_forecast",
+    productLabel: "FutureCast precipitation",
+    latestTimestamp: latest,
+    maxTimestamp: max,
+    futureCastAvailable: renderableFrames.length > 0,
+    attribution: "Radar © OpenWeather",
+    diagnosticMessage: renderableFrames.length > 0 ?
+      null :
+      "FutureCast requires OpenWeather precipitation forecast map access.",
+    frames: renderableFrames,
+    skippedFrames: frames.filter((frame) => frame.renderable !== true),
   }, "public, max-age=60");
 }
 
@@ -452,6 +629,31 @@ async function handleRadarTile(
     await handleNoaaRadarTile(request, response, zRaw, xRaw, yRaw);
     return;
   }
+
+  await handleOpenWeatherRadarTile(request, response, mode, zRaw, xRaw, yRaw);
+}
+
+async function handleUnifiedRadarTile(request: Request, response: Response) {
+  const source = parseRadarSource(requiredQuery(request, "source"));
+  await handleRadarTile(
+    request,
+    response,
+    radarModeForSource(source),
+    requiredQuery(request, "z"),
+    requiredQuery(request, "x"),
+    requiredQuery(request, "y"),
+  );
+}
+
+async function handleOpenWeatherRadarTile(
+  request: Request,
+  response: Response,
+  mode: Exclude<RadarMode, "us-forecast">,
+  zRaw: string,
+  xRaw: string,
+  yRaw: string,
+) {
+  const source = radarSourceForMode(mode);
 
   let z: number;
   let x: number;
@@ -472,7 +674,7 @@ async function handleRadarTile(
       throw new PublicHttpError(400, "Radar tile coordinates are invalid.");
     }
 
-    tm = parseInteger(requiredQuery(request, "tm"), "tm");
+    tm = parseRadarTileTime(request);
     if (tm % tenMinutesSeconds !== 0) {
       throw new PublicHttpError(
         400,
@@ -481,13 +683,19 @@ async function handleRadarTile(
     }
 
     const latest = roundToNearestPastTenMinuteUnix();
-    const min = latest - openWeatherRadarHistorySeconds;
+    const min = mode === "futurecast" ?
+      latest - tenMinutesSeconds :
+      latest - openWeatherRadarHistorySeconds;
     const globalForecastEnabled = globalForecastRadarEnabled();
-    const max = globalForecastEnabled ? latest + fiveHoursSeconds : latest;
+    const max = mode === "futurecast" || globalForecastEnabled ?
+      latest + sixHoursSeconds :
+      latest;
     if (tm < min || tm > max) {
       throw new PublicHttpError(
         400,
-        "Global radar supports 2 hours of history and configured future frames.",
+        mode === "futurecast" ?
+          "FutureCast supports precipitation forecast frames up to 6 hours." :
+          "Global radar supports 2 hours of history and configured future frames.",
       );
     }
   } catch (error) {
@@ -512,10 +720,7 @@ async function handleRadarTile(
   }
 
   const key = getOpenWeatherApiKey();
-  const tilePath = `/maps/2.0/radar/forecast/${z}/${x}/${y}`;
-  const url = new URL(tilePath, openWeatherMapBase);
-  url.searchParams.set("appid", key);
-  url.searchParams.set("tm", String(tm));
+  const url = openWeatherRadarTileUrl(z, x, y, tm, key);
 
   let upstream: globalThis.Response;
   try {
@@ -533,7 +738,7 @@ async function handleRadarTile(
   const contentType = upstream.headers.get("content-type");
   const bytes = Buffer.from(await upstream.arrayBuffer());
   const diagnostics = radarImageDiagnostics({
-    source: radarSourceForMode(mode),
+    source,
     z,
     x,
     y,
@@ -614,17 +819,13 @@ async function handleNoaaRadarTile(
       throw new PublicHttpError(400, "Radar tile coordinates are invalid.");
     }
 
-    tm = parseInteger(requiredQuery(request, "tm"), "tm");
-    if (tm % fiveMinutesSeconds !== 0) {
-      throw new PublicHttpError(
-        400,
-        "NOAA radar time must be snapped to a 5-minute UTC step.",
-      );
-    }
-
-    const latest = roundToNearestPastFiveMinuteUnix();
+    tm = parseRadarTileTime(request);
+    const latest = Math.max(
+      roundToNearestPastFiveMinuteUnix(),
+      Math.floor(Date.now() / 1000) - fiveMinutesSeconds,
+    );
     const min = latest - 4 * 60 * 60;
-    if (tm < min || tm > latest + fiveMinutesSeconds) {
+    if (tm < min || tm > latest + 15 * 60) {
       throw new PublicHttpError(
         400,
         "NOAA radar supports recent history only.",
@@ -701,98 +902,64 @@ async function handleNoaaRadarTile(
 async function handleRadarHealth(request: Request, response: Response) {
   const lat = parseLatitude(requiredQuery(request, "lat"));
   const lon = parseLongitude(requiredQuery(request, "lon"));
-  const mode = coordinateLooksUs(lat, lon) ? "us-forecast" : "global";
-  const source = radarSourceForMode(mode);
-  const latestMetadata = mode === "us-forecast" ?
-    await getNoaaRadarMetadata().catch((): NoaaRadarMetadata => ({
-      latestFrameTimestamp: roundToNearestPastFiveMinuteUnix(),
-      availableFrameCount: 0,
-    })) :
+  const source = queryParam(request, "source") === undefined ?
+    radarSourceForMode(coordinateLooksUs(lat, lon) ? "us-forecast" : "global") :
+    parseRadarSource(requiredQuery(request, "source"));
+  const mode = radarModeForSource(source);
+  const metadata = source === "noaa_mrms" ?
+    await getNoaaRadarMetadata().catch((): NoaaRadarMetadata => {
+      const latestFrameTimestamp = roundToNearestPastFiveMinuteUnix();
+      return {
+        latestFrameTimestamp,
+        availableFrameCount: 0,
+        availableFrom: latestFrameTimestamp - noaaRadarHistorySeconds,
+        availableTo: latestFrameTimestamp,
+        updateIntervalSeconds: fiveMinutesSeconds,
+        availableTimestamps: [],
+        diagnosticMessage:
+          "NOAA metadata could not be loaded; rounded fallback was used.",
+      };
+    }) :
     {
       latestFrameTimestamp: roundToNearestPastTenMinuteUnix(),
-      availableFrameCount:
-        buildRadarFrames(
-          roundToNearestPastTenMinuteUnix(),
-          false,
-          tenMinutesSeconds,
-          openWeatherRadarHistorySeconds,
-        ).length,
+      availableFrameCount: 0,
+      availableFrom: roundToNearestPastTenMinuteUnix() -
+        openWeatherRadarHistorySeconds,
+      availableTo: roundToNearestPastTenMinuteUnix(),
+      updateIntervalSeconds: tenMinutesSeconds,
+      availableTimestamps: [],
+      diagnosticMessage: null,
     };
-  const latestFrameTimestamp = latestMetadata.latestFrameTimestamp;
-  const probeZoom = mode === "us-forecast" ? 6 : 3;
-  const probeTile = tileForLocation(lat, lon, probeZoom);
-
-  let upstream: globalThis.Response;
-  let bytes = Buffer.alloc(0);
-  try {
-    if (mode === "us-forecast") {
-      upstream = await fetchWithTimeout(
-        noaaRadarExportImageUrl(
-          probeZoom,
-          probeTile.x,
-          probeTile.y,
-          latestFrameTimestamp * 1000,
-        ),
-      );
-    } else {
-      const key = getOpenWeatherApiKey();
-      const url = new URL(
-        `/maps/2.0/radar/forecast/${probeZoom}/${probeTile.x}/${probeTile.y}`,
-        openWeatherMapBase,
-      );
-      url.searchParams.set("appid", key);
-      url.searchParams.set("tm", String(latestFrameTimestamp));
-      upstream = await fetchWithTimeout(url);
-    }
-    bytes = Buffer.from(await upstream.arrayBuffer());
-  } catch (error) {
-    const message = error instanceof PublicHttpError ?
-      error.safeMessage :
-      "Radar source unavailable; base map still usable.";
-    sendJson(response, 200, {
-      source,
-      mode,
-      ok: false,
-      upstreamStatus: error instanceof PublicHttpError ? error.status : null,
-      upstreamContentType: null,
-      firstBytesHex: "",
-      isImage: false,
-      fallbackCode: error instanceof PublicHttpError ?
-        error.safeCode :
-        "radar_source_unavailable",
-      humanReadableMessage: message,
-      latestFrameTimestamp,
-      availableFrameCount: latestMetadata.availableFrameCount,
-    });
-    return;
-  }
-
-  const diagnostics = radarImageDiagnostics({
+  const explicitTime = queryParam(request, "time") ?? queryParam(request, "tm");
+  const latestFrameTimestamp = explicitTime === undefined ?
+    metadata.latestFrameTimestamp :
+    parseInteger(explicitTime, "time");
+  const probe = await probeRadarFrame({
     source,
-    z: probeZoom,
-    x: probeTile.x,
-    y: probeTile.y,
-    frameTimestamp: latestFrameTimestamp,
-    upstream,
-    bytes,
+    lat,
+    lon,
+    timestamp: latestFrameTimestamp,
   });
-  logRadarTileDiagnostics("Radar health probe completed", diagnostics);
+  if (probe.diagnostics !== null) {
+    logRadarTileDiagnostics("Radar health probe completed", probe.diagnostics);
+  }
 
   sendJson(response, 200, {
     source,
     mode,
-    ok: upstream.ok && diagnostics.isImage,
-    upstreamStatus: upstream.status,
-    upstreamContentType: diagnostics.upstreamContentType,
-    upstreamContentLength: diagnostics.upstreamContentLength,
-    firstBytesHex: diagnostics.firstBytesHex,
-    isImage: diagnostics.isImage,
-    fallbackCode: upstream.ok && diagnostics.isImage ?
-      null :
-      radarHealthFallbackCode(source, upstream, diagnostics),
-    humanReadableMessage: radarHealthMessage(source, upstream, diagnostics),
+    ok: probe.renderable,
+    upstreamStatus: probe.diagnostics?.upstreamStatus ?? null,
+    upstreamContentType: probe.diagnostics?.upstreamContentType ?? null,
+    upstreamContentLength: probe.diagnostics?.upstreamContentLength ?? null,
+    firstBytesHex: probe.diagnostics?.firstBytesHex ?? "",
+    isImage: probe.diagnostics?.isImage ?? false,
+    fallbackCode: probe.fallbackCode,
+    humanReadableMessage: probe.humanReadableMessage ??
+      (probe.renderable ?
+        radarAvailableMessage(source) :
+        "Radar source unavailable; base map still usable."),
     latestFrameTimestamp,
-    availableFrameCount: latestMetadata.availableFrameCount,
+    availableFrameCount: metadata.availableFrameCount,
   }, "public, max-age=60");
 }
 
@@ -927,7 +1094,15 @@ async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
 }
 
 function radarSourceForMode(mode: RadarMode): RadarSource {
-  return mode === "us-forecast" ? "noaa_mrms" : "openweather_global";
+  if (mode === "us-forecast") return "noaa_mrms";
+  if (mode === "futurecast") return "openweather_futurecast";
+  return "openweather_global";
+}
+
+function radarModeForSource(source: RadarSource): RadarMode {
+  if (source === "noaa_mrms") return "us-forecast";
+  if (source === "openweather_futurecast") return "futurecast";
+  return "global";
 }
 
 function noaaRadarExportImageUrl(
@@ -987,9 +1162,9 @@ function tileForLocation(
 }
 
 async function getNoaaRadarMetadata(): Promise<NoaaRadarMetadata> {
-  const url = new URL(noaaRadarImageServerBase);
-  url.searchParams.set("f", "json");
-  const upstream = await fetchWithTimeout(url);
+  const metadataUrl = new URL(noaaRadarImageServerBase);
+  metadataUrl.searchParams.set("f", "json");
+  const upstream = await fetchWithTimeout(metadataUrl);
   if (!upstream.ok) {
     throw new PublicHttpError(
       upstreamStatus(upstream.status),
@@ -1005,23 +1180,348 @@ async function getNoaaRadarMetadata(): Promise<NoaaRadarMetadata> {
     [];
   const latestMs = numberOrNull(extent[1]);
   const startMs = numberOrNull(extent[0]);
-  const latestFrameTimestamp = latestMs === null ?
+  const extentLatestTimestamp = latestMs === null ?
     roundToNearestPastFiveMinuteUnix() :
-    Math.floor(latestMs / 1000 / fiveMinutesSeconds) * fiveMinutesSeconds;
-  const startTimestamp = startMs === null ?
-    latestFrameTimestamp - noaaRadarHistorySeconds :
-    Math.floor(startMs / 1000 / fiveMinutesSeconds) * fiveMinutesSeconds;
-  const windowSeconds = Math.max(
-    0,
-    latestFrameTimestamp - Math.max(
-      startTimestamp,
-      latestFrameTimestamp - noaaRadarHistorySeconds,
-    ),
+    Math.floor(latestMs / 1000);
+  const extentStartTimestamp = startMs === null ?
+    extentLatestTimestamp - noaaRadarHistorySeconds :
+    Math.floor(startMs / 1000);
+  let diagnosticMessage: string | null = null;
+  const availableTimestamps = await getNoaaAvailableRadarTimestamps()
+    .catch((error): number[] => {
+      diagnosticMessage =
+        "NOAA available frame records could not be loaded.";
+      logger.warn("NOAA radar available time query failed", {
+        source: "noaa_mrms",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+      return [];
+    });
+  const clusteredTimestamps = clusterNoaaFrameTimestamps(availableTimestamps)
+    .filter((timestamp) =>
+      timestamp >= extentStartTimestamp && timestamp <= extentLatestTimestamp);
+  const latestFrameTimestamp = clusteredTimestamps[0] ?? extentLatestTimestamp;
+  const windowStart = Math.max(
+    extentStartTimestamp,
+    latestFrameTimestamp - noaaRadarHistorySeconds,
   );
+  const windowTimestamps = clusteredTimestamps
+    .filter((timestamp) => timestamp >= windowStart &&
+      timestamp <= latestFrameTimestamp)
+    .sort((left, right) => left - right);
   return {
     latestFrameTimestamp,
-    availableFrameCount: Math.floor(windowSeconds / fiveMinutesSeconds) + 1,
+    availableFrameCount: windowTimestamps.length,
+    availableFrom: windowTimestamps[0] ?? windowStart,
+    availableTo: latestFrameTimestamp,
+    updateIntervalSeconds: medianTimestampIntervalSeconds(windowTimestamps),
+    availableTimestamps: windowTimestamps,
+    diagnosticMessage,
   };
+}
+
+async function getNoaaAvailableRadarTimestamps(): Promise<number[]> {
+  const url = new URL(`${noaaRadarImageServerBase}/query`);
+  url.searchParams.set("f", "json");
+  url.searchParams.set("where", "1=1");
+  url.searchParams.set("outFields", "idp_validtime");
+  url.searchParams.set("returnGeometry", "false");
+  url.searchParams.set("returnDistinctValues", "true");
+  url.searchParams.set("orderByFields", "idp_validtime desc");
+  url.searchParams.set("resultRecordCount", String(noaaFrameQueryRecordCount));
+  const upstream = await fetchWithTimeout(url);
+  if (!upstream.ok) {
+    throw new PublicHttpError(
+      upstreamStatus(upstream.status),
+      "NOAA radar source unavailable; base map still usable.",
+      safeNoaaTileErrorCode(upstream.status),
+    );
+  }
+
+  const raw = asRecord(await upstream.json());
+  const features = Array.isArray(raw.features) ? raw.features : [];
+  return features
+    .map((feature) => {
+      const attributes = asRecord(asRecord(feature).attributes);
+      const validTimeMs = numberOrNull(attributes.idp_validtime);
+      return validTimeMs === null ? null : Math.floor(validTimeMs / 1000);
+    })
+    .filter((timestamp): timestamp is number => timestamp !== null)
+    .sort((left, right) => right - left);
+}
+
+function clusterNoaaFrameTimestamps(timestamps: number[]): number[] {
+  const unique = [...new Set(timestamps)].sort((left, right) => right - left);
+  const clustered: number[] = [];
+  for (const timestamp of unique) {
+    const currentClusterHead = clustered[clustered.length - 1];
+    if (
+      currentClusterHead === undefined ||
+      currentClusterHead - timestamp > noaaFrameClusterSeconds
+    ) {
+      clustered.push(timestamp);
+    }
+  }
+  return clustered;
+}
+
+function medianTimestampIntervalSeconds(timestamps: number[]): number | null {
+  if (timestamps.length < 2) return null;
+  const intervals: number[] = [];
+  for (let index = 1; index < timestamps.length; index++) {
+    intervals.push(timestamps[index] - timestamps[index - 1]);
+  }
+  intervals.sort((left, right) => left - right);
+  return intervals[Math.floor(intervals.length / 2)];
+}
+
+async function buildValidatedRadarFrames({
+  source,
+  lat,
+  lon,
+  latest,
+  timestamps,
+  nowLabel,
+}: {
+  source: RadarSource;
+  lat: number;
+  lon: number;
+  latest: number;
+  timestamps: number[];
+  nowLabel: string;
+}): Promise<JsonRecord[]> {
+  const frames = await mapWithConcurrency(timestamps, 4, async (timestamp) => {
+    const probe = await probeRadarFrame({source, lat, lon, timestamp});
+    return radarFrameRecord({source, timestamp, latest, nowLabel, probe});
+  });
+  for (const frame of frames) {
+    logRadarFrameDiagnostics(frame);
+  }
+  return frames;
+}
+
+async function probeRadarFrame({
+  source,
+  lat,
+  lon,
+  timestamp,
+}: {
+  source: RadarSource;
+  lat: number;
+  lon: number;
+  timestamp: number;
+}): Promise<RadarFrameProbe> {
+  const z = source === "openweather_global" ? 3 : 6;
+  const tile = tileForLocation(lat, lon, z);
+  let upstream: globalThis.Response;
+  let bytes = Buffer.alloc(0);
+
+  try {
+    const url = radarProbeUrl(source, z, tile.x, tile.y, timestamp);
+    upstream = await fetchWithTimeout(url);
+    bytes = Buffer.from(await upstream.arrayBuffer());
+  } catch (error) {
+    return {
+      source,
+      frameTimestamp: timestamp,
+      z,
+      x: tile.x,
+      y: tile.y,
+      renderable: false,
+      validImageResponses: 0,
+      transparentFallbackTileResponses: 1,
+      upstreamErrors: 1,
+      fallbackCode: source === "noaa_mrms" ?
+        noaaProbeFallbackCode(error) :
+        openWeatherProbeFallbackCode(error),
+      humanReadableMessage: source === "openweather_futurecast" ?
+        "FutureCast requires OpenWeather precipitation forecast map access." :
+        "Radar source unavailable; base map still usable.",
+      diagnostics: null,
+    };
+  }
+
+  const diagnostics = radarImageDiagnostics({
+    source,
+    z,
+    x: tile.x,
+    y: tile.y,
+    frameTimestamp: timestamp,
+    upstream,
+    bytes,
+  });
+  const renderable = upstream.ok && diagnostics.isImage;
+  return {
+    source,
+    frameTimestamp: timestamp,
+    z,
+    x: tile.x,
+    y: tile.y,
+    renderable,
+    validImageResponses: renderable ? 1 : 0,
+    transparentFallbackTileResponses: renderable ? 0 : 1,
+    upstreamErrors: renderable ? 0 : 1,
+    fallbackCode: renderable ?
+      null :
+      radarProbeFallbackCode(source, upstream, diagnostics, bytes),
+    humanReadableMessage: renderable ?
+      radarAvailableMessage(source) :
+      "Radar source unavailable; base map still usable.",
+    diagnostics,
+  };
+}
+
+function radarProbeUrl(
+  source: RadarSource,
+  z: number,
+  x: number,
+  y: number,
+  timestamp: number,
+): URL {
+  if (source === "noaa_mrms") {
+    return noaaRadarExportImageUrl(z, x, y, timestamp * 1000);
+  }
+  return openWeatherRadarTileUrl(z, x, y, timestamp, getOpenWeatherApiKey());
+}
+
+function openWeatherRadarTileUrl(
+  z: number,
+  x: number,
+  y: number,
+  timestamp: number,
+  apiKey: string,
+): URL {
+  const tilePath = `/maps/2.0/radar/forecast/${z}/${x}/${y}`;
+  const url = new URL(tilePath, openWeatherMapBase);
+  url.searchParams.set("appid", apiKey);
+  url.searchParams.set("tm", String(timestamp));
+  return url;
+}
+
+function radarFrameRecord({
+  source,
+  timestamp,
+  latest,
+  nowLabel,
+  probe,
+}: {
+  source: RadarSource;
+  timestamp: number;
+  latest: number;
+  nowLabel: string;
+  probe: RadarFrameProbe;
+}): JsonRecord {
+  const offsetSeconds = timestamp - latest;
+  const isLatest = offsetSeconds === 0;
+  const label = isLatest ? nowLabel : radarFrameOffsetLabel(offsetSeconds);
+  const renderable = probe.renderable;
+  return {
+    source,
+    timestamp,
+    label,
+    displayLabel: label,
+    type: offsetSeconds < 0 ?
+      "history" :
+      offsetSeconds > 0 ? "forecast" : "latest",
+    isLatest,
+    renderable,
+    fallbackCode: probe.fallbackCode,
+    diagnosticMessage: probe.humanReadableMessage,
+    diagnostics: {
+      source,
+      frameTimestamp: timestamp,
+      displayLabel: label,
+      tileRequests: 1,
+      validImageResponses: probe.validImageResponses,
+      transparentFallbackTileResponses:
+        probe.transparentFallbackTileResponses,
+      upstreamErrors: probe.upstreamErrors,
+      renderable,
+      skippedDuringPlayback: !renderable,
+    },
+  };
+}
+
+function logRadarFrameDiagnostics(frame: JsonRecord) {
+  const diagnostics = asRecord(frame.diagnostics);
+  logger.info("Radar frame diagnostics", {
+    source: diagnostics.source,
+    frameTimestamp: diagnostics.frameTimestamp,
+    displayLabel: diagnostics.displayLabel,
+    tileRequests: diagnostics.tileRequests,
+    validImageResponses: diagnostics.validImageResponses,
+    transparentFallbackTileResponses:
+      diagnostics.transparentFallbackTileResponses,
+    upstreamErrors: diagnostics.upstreamErrors,
+    renderable: diagnostics.renderable,
+    skippedDuringPlayback: diagnostics.skippedDuringPlayback,
+  });
+}
+
+function radarProbeFallbackCode(
+  source: RadarSource,
+  upstream: globalThis.Response,
+  diagnostics: RadarImageDiagnostics,
+  bytes: Buffer,
+): string {
+  if (source === "noaa_mrms") {
+    if (upstream.ok && !diagnostics.isImage) return "noaa_tile_invalid_content";
+    return safeNoaaTileErrorCode(upstream.status);
+  }
+  if (upstream.ok && !diagnostics.isImage) {
+    return isSupportedRadarImageContentType(
+      diagnostics.upstreamContentType ?? "",
+    ) || bytes.length > 0 ?
+      "openweather_tile_invalid_image" :
+      "openweather_tile_invalid_content";
+  }
+  return safeUpstreamCode(upstream.status, bytes.toString("utf8", 0, 1000), "maps");
+}
+
+function noaaProbeFallbackCode(error: unknown): string {
+  if (error instanceof PublicHttpError && error.safeCode.includes("timeout")) {
+    return "noaa_timeout";
+  }
+  if (error instanceof PublicHttpError && error.safeCode.includes("rate")) {
+    return "noaa_rate_limited";
+  }
+  return "noaa_unavailable";
+}
+
+function openWeatherProbeFallbackCode(error: unknown): string {
+  if (error instanceof PublicHttpError) return error.safeCode;
+  return "openweather_unavailable";
+}
+
+function radarAvailableMessage(source: RadarSource): string {
+  return source === "noaa_mrms" ?
+    "NOAA MRMS radar is available." :
+    "OpenWeather radar is available.";
+}
+
+function isOpenWeatherRadarAccessFailure(probe: RadarFrameProbe): boolean {
+  return probe.fallbackCode === "openweather_radar_access_denied" ||
+    probe.fallbackCode === "openweather_key_rejected" ||
+    probe.fallbackCode === "OPENWEATHER_API_KEY_UNAVAILABLE" ||
+    probe.fallbackCode === "OPENWEATHER_API_KEY_MISSING";
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = [];
+  let nextIndex = 0;
+  const workerCount = Math.min(concurrency, Math.max(items.length, 1));
+  await Promise.all(Array.from({length: workerCount}, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex++;
+      results[index] = await mapper(items[index]);
+    }
+  }));
+  return results;
 }
 
 function radarImageDiagnostics({
@@ -1114,37 +1614,6 @@ function radarImageContentType(
   return isSupportedRadarImageContentType(upstreamContentType ?? "") ?
     upstreamContentType ?? "image/png" :
     "image/png";
-}
-
-function radarHealthMessage(
-  source: RadarSource,
-  upstream: globalThis.Response,
-  diagnostics: RadarImageDiagnostics,
-): string {
-  if (upstream.ok && diagnostics.isImage) {
-    return source === "noaa_mrms" ?
-      "NOAA MRMS radar is available." :
-      "OpenWeather radar is available.";
-  }
-  if (upstream.ok && !diagnostics.isImage) {
-    return "Radar source returned non-image data; base map still usable.";
-  }
-  return "Radar source unavailable; base map still usable.";
-}
-
-function radarHealthFallbackCode(
-  source: RadarSource,
-  upstream: globalThis.Response,
-  diagnostics: RadarImageDiagnostics,
-): string {
-  if (upstream.ok && !diagnostics.isImage) {
-    return source === "noaa_mrms" ?
-      "noaa_tile_invalid_content" :
-      "openweather_tile_invalid_content";
-  }
-  return source === "noaa_mrms" ?
-    safeNoaaTileErrorCode(upstream.status) :
-    safeUpstreamCode(upstream.status, "", "maps");
 }
 
 function safeNoaaTileErrorCode(status: number): string {
@@ -1391,6 +1860,34 @@ function radarModeForProduct(product: RadarProduct): RadarMode {
   return product === "us" ? "us-forecast" : "global";
 }
 
+function parseRadarSource(value: string): RadarSource {
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized === "noaa_mrms" ||
+    normalized === "openweather_futurecast" ||
+    normalized === "openweather_global"
+  ) {
+    return normalized;
+  }
+  throw new PublicHttpError(
+    400,
+    "Radar source must be noaa_mrms, openweather_futurecast, or openweather_global.",
+    "radar_invalid_request",
+  );
+}
+
+function parseRadarTileTime(request: Request): number {
+  return parseInteger(
+    queryParam(request, "time") ?? requiredQuery(request, "tm"),
+    "time",
+  );
+}
+
+function parseFutureHours(value: string | undefined): number {
+  if (value === undefined || value.trim() === "") return 6;
+  return Math.min(Math.max(parseInteger(value, "hours"), 1), 6);
+}
+
 function coordinateLooksUs(lat: number, lon: number): boolean {
   return lat >= 18 && lat <= 72 && lon >= -170 && lon <= -64;
 }
@@ -1403,7 +1900,7 @@ function buildRadarFrames(
 ): JsonRecord[] {
   const frames: JsonRecord[] = [];
   const min = latest - historySeconds;
-  const max = forecastAvailable ? latest + fiveHoursSeconds : latest;
+  const max = forecastAvailable ? latest + sixHoursSeconds : latest;
   for (let timestamp = min; timestamp <= max; timestamp += stepSeconds) {
     const offsetSeconds = timestamp - latest;
     frames.push({

@@ -4,7 +4,7 @@ const radarStepSeconds = 10 * 60;
 const radarNoaaStepSeconds = 5 * 60;
 const radarHistorySeconds = 90 * 60;
 const radarGlobalHistorySeconds = 120 * 60;
-const radarUsForecastSeconds = 5 * 60 * 60;
+const radarUsForecastSeconds = 6 * 60 * 60;
 
 int roundToNearestPastTenMinuteUnix([DateTime? date]) {
   final value = date ?? DateTime.now();
@@ -46,11 +46,15 @@ List<RadarFrame> generateRadarFrames({
   final latest = roundToNearestPastRadarUnix(mode: mode, date: now);
   final step =
       mode == RadarMode.usForecast ? radarNoaaStepSeconds : radarStepSeconds;
-  final history = mode == RadarMode.usForecast
-      ? radarHistorySeconds
-      : radarGlobalHistorySeconds;
+  final history = switch (mode) {
+    RadarMode.usForecast => radarHistorySeconds,
+    RadarMode.futureCast => 0,
+    RadarMode.global => radarGlobalHistorySeconds,
+  };
   final min = latest - history;
-  final max = includeForecast ? latest + radarUsForecastSeconds : latest;
+  final max = mode == RadarMode.futureCast || includeForecast
+      ? latest + radarUsForecastSeconds
+      : latest;
   final frames = <RadarFrame>[];
 
   for (var timestamp = min; timestamp <= max; timestamp += step) {

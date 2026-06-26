@@ -327,24 +327,42 @@ class WeatherAlert {
 
 enum RadarMode {
   usForecast,
+  futureCast,
   global,
 }
 
 extension RadarModeX on RadarMode {
   String get pathSegment => switch (this) {
         RadarMode.usForecast => 'us-forecast',
+        RadarMode.futureCast => 'futurecast',
         RadarMode.global => 'global',
       };
 
   String get label => switch (this) {
         RadarMode.usForecast => 'NOAA MRMS radar',
+        RadarMode.futureCast => 'FutureCast precipitation',
         RadarMode.global => 'Global precipitation radar',
+      };
+
+  String get modeChipLabel => switch (this) {
+        RadarMode.usForecast => 'Live Radar',
+        RadarMode.futureCast => 'FutureCast',
+        RadarMode.global => 'Global Radar',
       };
 
   String get productParam => switch (this) {
         RadarMode.usForecast => 'us',
+        RadarMode.futureCast => 'futurecast',
         RadarMode.global => 'global',
       };
+
+  String get sourceParam => switch (this) {
+        RadarMode.usForecast => 'noaa_mrms',
+        RadarMode.futureCast => 'openweather_futurecast',
+        RadarMode.global => 'openweather_global',
+      };
+
+  bool get isFutureCast => this == RadarMode.futureCast;
 }
 
 enum RadarFrameType {
@@ -359,19 +377,98 @@ class RadarFrame {
     required this.label,
     required this.type,
     required this.isLatest,
+    this.source = 'noaa_mrms',
+    this.renderable = true,
+    this.fallbackCode,
+    this.diagnosticMessage,
   });
 
   final int timestamp;
   final String label;
   final RadarFrameType type;
   final bool isLatest;
+  final String source;
+  final bool renderable;
+  final String? fallbackCode;
+  final String? diagnosticMessage;
 
   Map<String, dynamic> toJson() => {
         'timestamp': timestamp,
         'label': label,
         'type': type.name,
         'isLatest': isLatest,
+        'source': source,
+        'renderable': renderable,
+        if (fallbackCode != null) 'fallbackCode': fallbackCode,
+        if (diagnosticMessage != null) 'diagnosticMessage': diagnosticMessage,
       };
+
+  factory RadarFrame.fromJson(Map<String, dynamic> json) {
+    return RadarFrame(
+      timestamp: (json['timestamp'] as num).round(),
+      label: (json['label'] as String?) ?? 'Latest',
+      type: RadarFrameType.values.firstWhere(
+        (type) => type.name == json['type'],
+        orElse: () => RadarFrameType.latest,
+      ),
+      isLatest: json['isLatest'] == true,
+      source: (json['source'] as String?) ?? 'noaa_mrms',
+      renderable: json['renderable'] != false,
+      fallbackCode: json['fallbackCode'] as String?,
+      diagnosticMessage: json['diagnosticMessage'] as String?,
+    );
+  }
+}
+
+class RadarFrameSet {
+  const RadarFrameSet({
+    required this.source,
+    required this.latestTimestamp,
+    required this.frames,
+    this.mode,
+    this.productLabel,
+    this.attribution,
+    this.diagnosticMessage,
+    this.futureCastAvailable = false,
+    this.availableFrom,
+    this.availableTo,
+    this.updateIntervalSeconds,
+  });
+
+  final String source;
+  final String? mode;
+  final String? productLabel;
+  final int latestTimestamp;
+  final List<RadarFrame> frames;
+  final String? attribution;
+  final String? diagnosticMessage;
+  final bool futureCastAvailable;
+  final int? availableFrom;
+  final int? availableTo;
+  final int? updateIntervalSeconds;
+
+  factory RadarFrameSet.fromJson(Map<String, dynamic> json) {
+    final latest = (json['latestTimestamp'] as num?)?.round() ??
+        (json['maxTimestamp'] as num?)?.round() ??
+        0;
+    return RadarFrameSet(
+      source: (json['source'] as String?) ?? 'unknown',
+      mode: json['mode'] as String?,
+      productLabel: json['productLabel'] as String?,
+      latestTimestamp: latest,
+      frames: ((json['frames'] as List?) ?? const [])
+          .map((item) => RadarFrame.fromJson(
+                (item as Map).cast<String, dynamic>(),
+              ))
+          .toList(growable: false),
+      attribution: json['attribution'] as String?,
+      diagnosticMessage: json['diagnosticMessage'] as String?,
+      futureCastAvailable: json['futureCastAvailable'] == true,
+      availableFrom: (json['availableFrom'] as num?)?.round(),
+      availableTo: (json['availableTo'] as num?)?.round(),
+      updateIntervalSeconds: (json['updateIntervalSeconds'] as num?)?.round(),
+    );
+  }
 }
 
 class CurrentWeather {

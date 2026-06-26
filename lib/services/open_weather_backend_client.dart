@@ -250,9 +250,32 @@ class OpenWeatherBackendClient {
   String radarTileUrlTemplate({
     required RadarMode mode,
     required int timestamp,
+    String? source,
   }) {
-    return '$baseUrl/radar/tile/${mode.pathSegment}/{z}/{x}/{y}.png'
-        '?tm=$timestamp';
+    final radarSource = source ?? mode.sourceParam;
+    return '$baseUrl/radar/tile?source=$radarSource'
+        '&z={z}&x={x}&y={y}&time=$timestamp';
+  }
+
+  Future<RadarFrameSet> radarFrames({
+    required RadarMode mode,
+    required double latitude,
+    required double longitude,
+    int hours = 6,
+  }) async {
+    final path = switch (mode) {
+      RadarMode.usForecast => '/radar/noaaFrames',
+      RadarMode.futureCast => '/radar/futureFrames',
+      RadarMode.global => '/radarFrames',
+    };
+    final query = <String, String>{
+      'lat': latitude.toString(),
+      'lon': longitude.toString(),
+      if (mode == RadarMode.futureCast) 'hours': hours.toString(),
+      if (mode == RadarMode.global) 'product': 'global',
+    };
+    final json = await _getJson(path, query);
+    return RadarFrameSet.fromJson(json);
   }
 
   Future<RadarHealth> radarHealth({
@@ -260,6 +283,7 @@ class OpenWeatherBackendClient {
     required int timestamp,
     required double latitude,
     required double longitude,
+    String? source,
   }) async {
     try {
       final json = await _getJson(
@@ -267,14 +291,15 @@ class OpenWeatherBackendClient {
         {
           'lat': latitude.toString(),
           'lon': longitude.toString(),
+          'source': source ?? mode.sourceParam,
+          'time': timestamp.toString(),
         },
       );
       return RadarHealth.fromJson(json);
     } catch (error) {
       return RadarHealth(
         ok: false,
-        source:
-            mode == RadarMode.usForecast ? 'noaa_mrms' : 'openweather_global',
+        source: source ?? mode.sourceParam,
         humanReadableMessage:
             "Couldn't reach the radar service. The base map is still usable.",
         fallbackCode: 'weather_backend_unreachable',
@@ -287,12 +312,14 @@ class OpenWeatherBackendClient {
     required int timestamp,
     required double latitude,
     required double longitude,
+    String? source,
   }) {
     return radarHealth(
       mode: mode,
       timestamp: timestamp,
       latitude: latitude,
       longitude: longitude,
+      source: source,
     );
   }
 

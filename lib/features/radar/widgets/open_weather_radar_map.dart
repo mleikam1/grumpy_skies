@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -16,7 +17,8 @@ class OpenWeatherRadarMap extends StatefulWidget {
     required this.mapController,
     required this.location,
     required this.mode,
-    required this.timestamp,
+    required this.frame,
+    this.previousFrame,
     this.onTileIssue,
   });
 
@@ -24,7 +26,8 @@ class OpenWeatherRadarMap extends StatefulWidget {
   final MapController mapController;
   final LocationCandidate location;
   final RadarMode mode;
-  final int timestamp;
+  final RadarFrame frame;
+  final RadarFrame? previousFrame;
   final ValueChanged<String?>? onTileIssue;
 
   @override
@@ -32,6 +35,13 @@ class OpenWeatherRadarMap extends StatefulWidget {
 }
 
 class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
+  static final _transparentTileErrorImage = MemoryImage(
+    base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ'
+      'AAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    ),
+  );
+
   var _healthCheckSerial = 0;
   String? _lastHealthCheckKey;
   Timer? _healthDebounce;
@@ -64,14 +74,16 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
     if (oldWidget.location.lat != widget.location.lat ||
         oldWidget.location.lon != widget.location.lon ||
         oldWidget.mode != widget.mode ||
-        oldWidget.timestamp != widget.timestamp) {
+        oldWidget.frame.timestamp != widget.frame.timestamp ||
+        oldWidget.frame.source != widget.frame.source) {
       _checkRadarTileHealth();
     }
   }
 
   void _checkRadarTileHealth() {
     final key = '${widget.mode.pathSegment}:'
-        '${widget.timestamp}:'
+        '${widget.frame.source}:'
+        '${widget.frame.timestamp}:'
         '${widget.location.lat.toStringAsFixed(3)}:'
         '${widget.location.lon.toStringAsFixed(3)}';
     if (_lastHealthCheckKey == key) return;
@@ -83,9 +95,10 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
       widget.client
           .radarTileHealth(
         mode: widget.mode,
-        timestamp: widget.timestamp,
+        timestamp: widget.frame.timestamp,
         latitude: widget.location.lat,
         longitude: widget.location.lon,
+        source: widget.frame.source,
       )
           .then((health) {
         if (!mounted || serial != _healthCheckSerial) return;
@@ -98,11 +111,7 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
 
   @override
   Widget build(BuildContext context) {
-    final radarTemplate = widget.client.radarTileUrlTemplate(
-      mode: widget.mode,
-      timestamp: widget.timestamp,
-    );
-    final attribution = widget.mode == RadarMode.usForecast
+    final attribution = widget.frame.source == 'noaa_mrms'
         ? 'Map © OpenStreetMap contributors © CARTO · Radar © NOAA/NWS MRMS'
         : 'Map © OpenStreetMap contributors © CARTO · Radar © OpenWeather';
 
@@ -125,18 +134,27 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
           subdomains: const ['a', 'b', 'c', 'd'],
           maxNativeZoom: 19,
         ),
-        TileLayer(
-          key: ValueKey('${widget.mode.pathSegment}-${widget.timestamp}'),
-          urlTemplate: radarTemplate,
-          userAgentPackageName: 'com.example.grumpy_skies',
-          minNativeZoom: 3,
-          maxNativeZoom: 7,
-          maxZoom: 12,
-          tileBuilder: (context, tileWidget, tile) {
-            return Opacity(opacity: 0.7, child: tileWidget);
-          },
-          errorTileCallback: (_, __, ___) {
-            widget.onTileIssue?.call('radar_tile_network_error');
+        if (widget.previousFrame != null &&
+            (widget.previousFrame!.timestamp != widget.frame.timestamp ||
+                widget.previousFrame!.source != widget.frame.source))
+          _radarTileLayer(
+            frame: widget.previousFrame!,
+            opacity: 0.48,
+            reportErrors: false,
+          ),
+        TweenAnimationBuilder<double>(
+          key: ValueKey(
+            'radar-fade-${widget.frame.source}-${widget.frame.timestamp}',
+          ),
+          tween: Tween(begin: 0, end: 0.72),
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          builder: (context, opacity, _) {
+            return _radarTileLayer(
+              frame: widget.frame,
+              opacity: opacity,
+              reportErrors: true,
+            );
           },
         ),
         MarkerLayer(
@@ -155,6 +173,37 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
           child: _MapAttribution(text: attribution),
         ),
       ],
+    );
+  }
+
+  Widget _radarTileLayer({
+    required RadarFrame frame,
+    required double opacity,
+    required bool reportErrors,
+  }) {
+    final radarTemplate = widget.client.radarTileUrlTemplate(
+      mode: widget.mode,
+      timestamp: frame.timestamp,
+      source: frame.source,
+    );
+    final nativeMaxZoom = frame.source == 'noaa_mrms' ? 12 : 7;
+
+    return TileLayer(
+      key: ValueKey('radar-${frame.source}-${frame.timestamp}'),
+      urlTemplate: radarTemplate,
+      userAgentPackageName: 'com.example.grumpy_skies',
+      minNativeZoom: 3,
+      maxNativeZoom: nativeMaxZoom,
+      maxZoom: 12,
+      errorImage: _transparentTileErrorImage,
+      tileBuilder: (context, tileWidget, tile) {
+        return Opacity(opacity: opacity, child: tileWidget);
+      },
+      errorTileCallback: reportErrors
+          ? (_, __, ___) {
+              widget.onTileIssue?.call('radar_tile_network_error');
+            }
+          : null,
     );
   }
 }
