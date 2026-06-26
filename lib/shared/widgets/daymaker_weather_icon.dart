@@ -62,9 +62,10 @@ class DaymakerWeatherIcon extends StatelessWidget {
     }
 
     return Semantics(
+      container: true,
       image: true,
       label: label,
-      child: child,
+      child: ExcludeSemantics(child: child),
     );
   }
 }
