@@ -37,7 +37,6 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   Timer? _playTimer;
   Timer? _boundaryTimer;
   List<RadarFrame> _frames = const [];
-  var _futureCastEnabled = true;
   var _playing = false;
   var _sheetExpanded = false;
   var _timelineIndex = 0;
@@ -71,6 +70,13 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     _boundaryTimer?.cancel();
     _locationController?.removeListener(_handleLocationChanged);
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    _playTimer?.cancel();
+    _playing = false;
+    super.deactivate();
   }
 
   @override
@@ -115,7 +121,9 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     _boundaryTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (!mounted || _frames.isEmpty) return;
       final selectedTimestamp = _selectedFrame.timestamp;
-      final latest = roundToNearestPastTenMinuteUnix();
+      final latest = roundToNearestPastRadarUnix(
+        mode: _modeFor(_locationController?.selectedLocation),
+      );
       final wasLatest = selectedTimestamp == latest;
       _rebuildTimeline(keepSelectedTimestamp: !wasLatest);
       if (wasLatest) _jumpToLatest();
@@ -151,14 +159,13 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
         : null;
     final location = _locationController?.selectedLocation;
     final mode = _modeFor(location);
-    final forecastEnabled = _futureCastEnabled && _futureAvailableFor(mode);
     final frames = generateRadarFrames(
       mode: mode,
-      includeForecast: forecastEnabled,
+      includeForecast: false,
     );
 
     _frames = frames;
-    final latest = roundToNearestPastTenMinuteUnix();
+    final latest = roundToNearestPastRadarUnix(mode: mode);
     final target = previous ?? latest;
     _timelineIndex = _nearestIndexFor(target);
   }
@@ -179,7 +186,9 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
   RadarFrame get _selectedFrame {
     if (_frames.isEmpty) {
-      final latest = roundToNearestPastTenMinuteUnix();
+      final latest = roundToNearestPastRadarUnix(
+        mode: _modeFor(_locationController?.selectedLocation),
+      );
       return RadarFrame(
         timestamp: latest,
         label: 'Latest',
@@ -198,12 +207,10 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     return RadarMode.global;
   }
 
-  bool _futureAvailableFor(RadarMode mode) {
-    return mode == RadarMode.usForecast;
-  }
-
   void _jumpToLatest() {
-    final latest = roundToNearestPastTenMinuteUnix();
+    final latest = roundToNearestPastRadarUnix(
+      mode: _modeFor(_locationController?.selectedLocation),
+    );
     setState(() {
       _timelineIndex = _nearestIndexFor(latest);
       _clearTileIssue();
@@ -229,14 +236,6 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
   void _toggleInfoSheet() {
     setState(() => _sheetExpanded = !_sheetExpanded);
-  }
-
-  void _toggleFutureCast() {
-    setState(() {
-      _futureCastEnabled = !_futureCastEnabled;
-      _clearTileIssue();
-      _rebuildTimeline(keepSelectedTimestamp: true);
-    });
   }
 
   void _handleTileIssue(String? code) {
@@ -302,10 +301,9 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
             final mode = _modeFor(location);
             final frame = _selectedFrame;
-            final futureAvailable = _futureAvailableFor(mode);
             final bottomInset = MediaQuery.paddingOf(context).bottom;
             final horizontal = width < 600 ? DMSpacing.sm : DMSpacing.xl;
-            const collapsedSheetHeight = 128.0;
+            const collapsedSheetHeight = 112.0;
             final expandedSheetHeight = math.min(
               constraints.maxHeight * (width < 700 ? 0.48 : 0.44),
               width < 700 ? 360.0 : 340.0,
@@ -331,10 +329,6 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                   child: _RadarStatusStack(
                     locationName: _locationLabel(location),
                     frameLabel: frame.label,
-                    futureAvailable: futureAvailable,
-                    futureCastEnabled: _futureCastEnabled,
-                    onFutureCastChanged:
-                        futureAvailable ? _toggleFutureCast : null,
                   ),
                 ),
                 Positioned(
@@ -376,8 +370,6 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                         playing: _playing,
                         mode: mode,
                         locationName: _locationLabel(location),
-                        futureCastEnabled: _futureCastEnabled,
-                        futureCastAvailable: futureAvailable,
                         onTimelineChanged: _onTimelineChanged,
                         onPlayPause: _togglePlayback,
                         onLatest: _jumpToLatest,
@@ -438,37 +430,18 @@ class _RadarStatusStack extends StatelessWidget {
   const _RadarStatusStack({
     required this.locationName,
     required this.frameLabel,
-    required this.futureAvailable,
-    required this.futureCastEnabled,
-    required this.onFutureCastChanged,
   });
 
   final String locationName;
   final String frameLabel;
-  final bool futureAvailable;
-  final bool futureCastEnabled;
-  final VoidCallback? onFutureCastChanged;
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.topLeft,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _RadarStatusPill(
-            locationName: locationName,
-            frameLabel: frameLabel,
-          ),
-          if (futureAvailable) ...[
-            const SizedBox(height: DMSpacing.xs),
-            _RadarFutureCastChip(
-              enabled: futureCastEnabled,
-              onPressed: onFutureCastChanged,
-            ),
-          ],
-        ],
+      child: _RadarStatusPill(
+        locationName: locationName,
+        frameLabel: frameLabel,
       ),
     );
   }
@@ -562,34 +535,6 @@ class _RadarFrameBadge extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _RadarFutureCastChip extends StatelessWidget {
-  const _RadarFutureCastChip({
-    required this.enabled,
-    required this.onPressed,
-  });
-
-  final bool enabled;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return DmPillButton(
-      label: 'FutureCast',
-      semanticLabel:
-          enabled ? 'Turn FutureCast frames off' : 'Turn FutureCast frames on',
-      leading: const Icon(Icons.timeline),
-      variant:
-          enabled ? DmPillButtonVariant.secondary : DmPillButtonVariant.glass,
-      selected: enabled,
-      padding: const EdgeInsets.symmetric(
-        horizontal: DMSpacing.sm,
-        vertical: DMSpacing.xxs,
-      ),
-      onPressed: onPressed,
     );
   }
 }
@@ -691,8 +636,6 @@ class _RadarBottomSheet extends StatelessWidget {
     required this.playing,
     required this.mode,
     required this.locationName,
-    required this.futureCastEnabled,
-    required this.futureCastAvailable,
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
@@ -707,8 +650,6 @@ class _RadarBottomSheet extends StatelessWidget {
   final bool playing;
   final RadarMode mode;
   final String locationName;
-  final bool futureCastEnabled;
-  final bool futureCastAvailable;
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
@@ -745,8 +686,6 @@ class _RadarBottomSheet extends StatelessWidget {
                       playing: playing,
                       mode: mode,
                       locationName: locationName,
-                      futureCastEnabled: futureCastEnabled,
-                      futureCastAvailable: futureCastAvailable,
                       onTimelineChanged: onTimelineChanged,
                       onPlayPause: onPlayPause,
                       onLatest: onLatest,
@@ -756,8 +695,7 @@ class _RadarBottomSheet extends StatelessWidget {
                       frames: frames,
                       timelineIndex: timelineIndex,
                       playing: playing,
-                      futureCastEnabled: futureCastEnabled,
-                      futureCastAvailable: futureCastAvailable,
+                      mode: mode,
                       showRangeLabels: false,
                       onTimelineChanged: onTimelineChanged,
                       onPlayPause: onPlayPause,
@@ -816,8 +754,6 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
     required this.playing,
     required this.mode,
     required this.locationName,
-    required this.futureCastEnabled,
-    required this.futureCastAvailable,
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
@@ -829,8 +765,6 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
   final bool playing;
   final RadarMode mode;
   final String locationName;
-  final bool futureCastEnabled;
-  final bool futureCastAvailable;
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
@@ -845,8 +779,7 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
           frames: frames,
           timelineIndex: timelineIndex,
           playing: playing,
-          futureCastEnabled: futureCastEnabled,
-          futureCastAvailable: futureCastAvailable,
+          mode: mode,
           onTimelineChanged: onTimelineChanged,
           onPlayPause: onPlayPause,
           onLatest: onLatest,
@@ -862,17 +795,14 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
             ),
             _RadarInfoChip(
               icon: Icons.schedule_rounded,
-              label: _formatRadarTime(frame.timestamp),
+              label: _formatRadarTime(
+                frame.timestamp,
+                isLatest: frame.isLatest,
+              ),
             ),
             _RadarInfoChip(
               icon: Icons.place_outlined,
               label: locationName,
-            ),
-            _RadarInfoChip(
-              icon: Icons.timeline,
-              label: futureCastAvailable
-                  ? 'FutureCast ${futureCastEnabled ? 'on' : 'off'}'
-                  : 'FutureCast unavailable',
             ),
           ],
         ),
@@ -880,7 +810,9 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
         const _RadarLegend(),
         const SizedBox(height: DMSpacing.xs),
         Text(
-          'Weather data © OpenWeather',
+          mode == RadarMode.usForecast
+              ? 'Radar © NOAA/NWS MRMS'
+              : 'Radar © OpenWeather',
           style: DMTypography.labelSmall.copyWith(
             color: DMColors.textMuted,
           ),
@@ -896,8 +828,7 @@ class _CompactRadarTimeline extends StatelessWidget {
     required this.frames,
     required this.timelineIndex,
     required this.playing,
-    required this.futureCastEnabled,
-    required this.futureCastAvailable,
+    required this.mode,
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
@@ -908,8 +839,7 @@ class _CompactRadarTimeline extends StatelessWidget {
   final List<RadarFrame> frames;
   final int timelineIndex;
   final bool playing;
-  final bool futureCastEnabled;
-  final bool futureCastAvailable;
+  final RadarMode mode;
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
@@ -919,6 +849,9 @@ class _CompactRadarTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final max = math.max(frames.length - 1, 1).toDouble();
     final divisions = math.max(frames.length - 1, 1);
+    final historyLabel = mode == RadarMode.usForecast ? '-90 min' : '-2h';
+    final stepLabel =
+        mode == RadarMode.usForecast ? '5 min frames' : '10 min frames';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -947,7 +880,10 @@ class _CompactRadarTimeline extends StatelessWidget {
                   ),
                   const SizedBox(height: DMSpacing.xxs),
                   Text(
-                    _formatRadarTime(frame.timestamp),
+                    _formatRadarTime(
+                      frame.timestamp,
+                      isLatest: frame.isLatest,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: DMTypography.labelSmall.copyWith(
@@ -980,16 +916,20 @@ class _CompactRadarTimeline extends StatelessWidget {
             valueIndicatorColor: DMColors.surfaceRaised,
             tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 0),
           ),
-          child: Slider(
-            value: timelineIndex.clamp(0, max.toInt()).toDouble(),
-            min: 0,
-            max: max,
-            divisions: divisions,
-            label: frame.label,
-            semanticFormatterCallback: (value) {
-              return 'Radar timeline ${_frameLabelFor(frames, value.round())}';
-            },
-            onChanged: onTimelineChanged,
+          child: SizedBox(
+            height: 32,
+            child: Slider(
+              value: timelineIndex.clamp(0, max.toInt()).toDouble(),
+              min: 0,
+              max: max,
+              divisions: divisions,
+              label: frame.label,
+              semanticFormatterCallback: (value) {
+                return 'Radar timeline '
+                    '${_frameLabelFor(frames, value.round())}';
+              },
+              onChanged: onTimelineChanged,
+            ),
           ),
         ),
         if (showRangeLabels)
@@ -997,7 +937,7 @@ class _CompactRadarTimeline extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '-2h',
+                  historyLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: DMTypography.labelSmall.copyWith(
@@ -1007,7 +947,7 @@ class _CompactRadarTimeline extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  '10 min frames',
+                  stepLabel,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1018,7 +958,7 @@ class _CompactRadarTimeline extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  futureCastAvailable && futureCastEnabled ? '+5h' : 'Latest',
+                  'Latest',
                   textAlign: TextAlign.right,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1211,7 +1151,16 @@ String _tileIssueMessage(String? code) {
       'Invalid radar frame. Jump to Latest and try again.',
     'openweather_not_found' ||
     'openweather_tile_empty' =>
-      'No precipitation nearby right now. Try zooming out or scrub FutureCast.',
+      'No precipitation nearby right now. Try zooming out.',
+    'noaa_tile_empty' => 'No precipitation nearby right now. Try zooming out.',
+    'noaa_invalid_request' =>
+      'Invalid radar frame. Jump to Latest and try again.',
+    'noaa_timeout' ||
+    'noaa_unavailable' ||
+    'noaa_rate_limited' ||
+    'noaa_request_failed' ||
+    'noaa_tile_invalid_content' =>
+      'Radar source unavailable; base map still usable.',
     'openweather_timeout' ||
     'openweather_unavailable' ||
     'radar_tile_network_error' ||
@@ -1221,10 +1170,9 @@ String _tileIssueMessage(String? code) {
   };
 }
 
-String _formatRadarTime(int timestamp) {
+String _formatRadarTime(int timestamp, {bool isLatest = false}) {
   final time = dateTimeFromUnixSeconds(timestamp);
-  final now = roundToNearestPastTenMinuteUnix();
-  if (timestamp == now) return 'Latest';
+  if (isLatest) return 'Latest';
 
   final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
   final minute = time.minute.toString().padLeft(2, '0');

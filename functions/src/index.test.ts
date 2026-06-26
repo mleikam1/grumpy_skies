@@ -6,8 +6,10 @@ import {
   parseLatitude,
   parseLongitude,
   parseUnits,
+  roundToNearestPastFiveMinuteUnix,
   safeUpstreamCode,
   safeUpstreamMessage,
+  webMercatorTileBbox,
   weatherCacheKey,
 } from "./index";
 
@@ -179,6 +181,19 @@ test("weather cache key rounds location and includes units", () => {
   assert.notEqual(first, metric);
   assert.match(first, /lat=38\.86/);
   assert.match(first, /lon=-94\.65/);
+});
+
+test("NOAA radar helpers snap to 5 minutes and build Web Mercator bboxes", () => {
+  assert.equal(
+    roundToNearestPastFiveMinuteUnix(new Date("2026-06-26T17:07:59Z")),
+    1782493500,
+  );
+
+  const bbox = webMercatorTileBbox(6, 15, 24);
+  assert.equal(Math.round(bbox.xmin), -10644926);
+  assert.equal(Math.round(bbox.ymin), 4383205);
+  assert.equal(Math.round(bbox.xmax), -10018754);
+  assert.equal(Math.round(bbox.ymax), 5009377);
 });
 
 test("classifies OpenWeather One Call auth and subscription errors safely", () => {

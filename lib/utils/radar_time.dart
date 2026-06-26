@@ -1,7 +1,9 @@
 import '../models/weather_models.dart';
 
 const radarStepSeconds = 10 * 60;
-const radarHistorySeconds = 120 * 60;
+const radarNoaaStepSeconds = 5 * 60;
+const radarHistorySeconds = 90 * 60;
+const radarGlobalHistorySeconds = 120 * 60;
 const radarUsForecastSeconds = 5 * 60 * 60;
 
 int roundToNearestPastTenMinuteUnix([DateTime? date]) {
@@ -10,6 +12,23 @@ int roundToNearestPastTenMinuteUnix([DateTime? date]) {
       1000 ~/
       radarStepSeconds *
       radarStepSeconds;
+}
+
+int roundToNearestPastFiveMinuteUnix([DateTime? date]) {
+  final value = date ?? DateTime.now();
+  return value.millisecondsSinceEpoch ~/
+      1000 ~/
+      radarNoaaStepSeconds *
+      radarNoaaStepSeconds;
+}
+
+int roundToNearestPastRadarUnix({
+  required RadarMode mode,
+  DateTime? date,
+}) {
+  return mode == RadarMode.usForecast
+      ? roundToNearestPastFiveMinuteUnix(date)
+      : roundToNearestPastTenMinuteUnix(date);
 }
 
 DateTime dateTimeFromUnixSeconds(int seconds) {
@@ -24,12 +43,17 @@ List<RadarFrame> generateRadarFrames({
   bool includeForecast = true,
   DateTime? now,
 }) {
-  final latest = roundToNearestPastTenMinuteUnix(now);
-  final min = latest - radarHistorySeconds;
+  final latest = roundToNearestPastRadarUnix(mode: mode, date: now);
+  final step =
+      mode == RadarMode.usForecast ? radarNoaaStepSeconds : radarStepSeconds;
+  final history = mode == RadarMode.usForecast
+      ? radarHistorySeconds
+      : radarGlobalHistorySeconds;
+  final min = latest - history;
   final max = includeForecast ? latest + radarUsForecastSeconds : latest;
   final frames = <RadarFrame>[];
 
-  for (var timestamp = min; timestamp <= max; timestamp += radarStepSeconds) {
+  for (var timestamp = min; timestamp <= max; timestamp += step) {
     final offsetSeconds = timestamp - latest;
     final isLatest = offsetSeconds == 0;
     frames.add(

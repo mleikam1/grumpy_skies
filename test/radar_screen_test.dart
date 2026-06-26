@@ -56,7 +56,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Radar'), findsWidgets);
     expect(find.text('Demo City, US'), findsWidgets);
-    expect(find.text('FutureCast'), findsOneWidget);
+    expect(find.text('FutureCast'), findsNothing);
     expect(find.text('Latest'), findsWidgets);
     expect(find.bySemanticsLabel('Radar legend and info'), findsOneWidget);
     expect(find.text('Radar product'), findsNothing);
@@ -85,9 +85,9 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Radar legend and info'));
     await tester.pumpAndSettle();
 
-    expect(find.text('US forecast radar'), findsOneWidget);
+    expect(find.text('NOAA MRMS radar'), findsOneWidget);
     expect(find.text('Precipitation legend'), findsOneWidget);
-    expect(find.text('Weather data © OpenWeather'), findsOneWidget);
+    expect(find.text('Radar © NOAA/NWS MRMS'), findsOneWidget);
   });
 
   testWidgets('RadarScreen shows one clean unavailable state for tile fallback',
@@ -103,12 +103,11 @@ void main() {
       buildSubject(
         httpClient: MockClient((_) async {
           return http.Response(
-            '',
+            '{"ok":false,"source":"noaa_mrms",'
+            '"humanReadableMessage":"Radar source unavailable; base map still usable.",'
+            '"fallbackCode":"noaa_unavailable"}',
             200,
-            headers: {
-              'content-type': 'image/png',
-              'x-grumpy-skies-tile-fallback': 'openweather_radar_access_denied',
-            },
+            headers: {'content-type': 'application/json'},
           );
         }),
       ),
@@ -119,7 +118,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(
       find.text(
-        'Radar product/API access issue. Check OpenWeather Maps access on the server key.',
+        'Radar source unavailable; base map still usable.',
       ),
       findsOneWidget,
     );
@@ -128,6 +127,14 @@ void main() {
 
 http.Client _healthyRadarClient() {
   return MockClient((_) async {
-    return http.Response('', 200, headers: {'content-type': 'image/png'});
+    return http.Response(
+      '{"ok":true,"source":"noaa_mrms",'
+      '"humanReadableMessage":"NOAA MRMS radar is available.",'
+      '"upstreamStatus":200,"upstreamContentType":"image/png",'
+      '"firstBytesHex":"89504E470D0A1A0A","isImage":true,'
+      '"latestFrameTimestamp":1782492600,"availableFrameCount":19}',
+      200,
+      headers: {'content-type': 'application/json'},
+    );
   });
 }

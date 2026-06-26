@@ -102,6 +102,9 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
       mode: widget.mode,
       timestamp: widget.timestamp,
     );
+    final attribution = widget.mode == RadarMode.usForecast
+        ? 'Map © OpenStreetMap contributors © CARTO · Radar © NOAA/NWS MRMS'
+        : 'Map © OpenStreetMap contributors © CARTO · Radar © OpenWeather';
 
     return FlutterMap(
       mapController: widget.mapController,
@@ -146,10 +149,10 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
             ),
           ],
         ),
-        const Positioned(
+        Positioned(
           left: DMSpacing.md,
           bottom: 132,
-          child: _MapAttribution(),
+          child: _MapAttribution(text: attribution),
         ),
       ],
     );
@@ -189,7 +192,9 @@ class _LocationMarker extends StatelessWidget {
 }
 
 class _MapAttribution extends StatelessWidget {
-  const _MapAttribution();
+  const _MapAttribution({required this.text});
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +209,7 @@ class _MapAttribution extends StatelessWidget {
           vertical: 4,
         ),
         child: Text(
-          '© OpenStreetMap contributors © CARTO · Radar © OpenWeather',
+          text,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: DMColors.textSecondary,
               ),

@@ -337,7 +337,7 @@ extension RadarModeX on RadarMode {
       };
 
   String get label => switch (this) {
-        RadarMode.usForecast => 'US forecast radar',
+        RadarMode.usForecast => 'NOAA MRMS radar',
         RadarMode.global => 'Global precipitation radar',
       };
 

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -7,18 +6,54 @@ import 'package:http/http.dart' as http;
 import '../config/weather_api_config.dart';
 import '../models/weather_models.dart';
 
-class RadarTileHealth {
-  const RadarTileHealth({
-    required this.available,
+class RadarHealth {
+  const RadarHealth({
+    required this.ok,
+    required this.source,
+    required this.humanReadableMessage,
+    this.upstreamStatus,
+    this.upstreamContentType,
+    this.upstreamContentLength,
+    this.firstBytesHex,
+    this.isImage = false,
+    this.latestFrameTimestamp,
+    this.availableFrameCount,
     this.statusCode,
-    this.contentType,
     this.fallbackCode,
   });
 
-  final bool available;
+  final bool ok;
+  final String source;
+  final String humanReadableMessage;
+  final int? upstreamStatus;
+  final String? upstreamContentType;
+  final int? upstreamContentLength;
+  final String? firstBytesHex;
+  final bool isImage;
+  final int? latestFrameTimestamp;
+  final int? availableFrameCount;
   final int? statusCode;
-  final String? contentType;
   final String? fallbackCode;
+
+  bool get available => ok;
+
+  factory RadarHealth.fromJson(Map<String, dynamic> json) {
+    return RadarHealth(
+      ok: json['ok'] == true,
+      source: (json['source'] as String?) ?? 'unknown',
+      humanReadableMessage: (json['humanReadableMessage'] as String?) ??
+          'Radar temporarily unavailable.',
+      upstreamStatus: (json['upstreamStatus'] as num?)?.round(),
+      upstreamContentType: json['upstreamContentType'] as String?,
+      upstreamContentLength: (json['upstreamContentLength'] as num?)?.round(),
+      firstBytesHex: json['firstBytesHex'] as String?,
+      isImage: json['isImage'] == true,
+      latestFrameTimestamp: (json['latestFrameTimestamp'] as num?)?.round(),
+      availableFrameCount: (json['availableFrameCount'] as num?)?.round(),
+      statusCode: (json['upstreamStatus'] as num?)?.round(),
+      fallbackCode: json['fallbackCode'] as String?,
+    );
+  }
 }
 
 class OpenWeatherBackendException implements Exception {
@@ -220,43 +255,45 @@ class OpenWeatherBackendClient {
         '?tm=$timestamp';
   }
 
-  Future<RadarTileHealth> radarTileHealth({
+  Future<RadarHealth> radarHealth({
     required RadarMode mode,
     required int timestamp,
     required double latitude,
     required double longitude,
   }) async {
-    const zoom = 3;
-    final tile = _tileForLocation(
-      latitude: latitude,
-      longitude: longitude,
-      zoom: zoom,
-    );
-    final uri = _uri(
-      '/radar/tile/${mode.pathSegment}/$zoom/${tile.x}/${tile.y}.png',
-      {'tm': timestamp.toString()},
-    );
-
     try {
-      final response = await _httpClient.get(uri).timeout(_requestTimeout);
-      final contentType = response.headers['content-type'];
-      final fallbackCode = response.headers['x-grumpy-skies-tile-fallback'];
-      return RadarTileHealth(
-        available: response.statusCode >= 200 &&
-            response.statusCode < 300 &&
-            fallbackCode == null &&
-            _isImageContentType(contentType ?? ''),
-        statusCode: response.statusCode,
-        contentType: contentType,
-        fallbackCode: fallbackCode,
+      final json = await _getJson(
+        '/radarHealth',
+        {
+          'lat': latitude.toString(),
+          'lon': longitude.toString(),
+        },
       );
+      return RadarHealth.fromJson(json);
     } catch (error) {
-      _debugWeatherFailure(uri, error);
-      return const RadarTileHealth(
-        available: false,
+      return RadarHealth(
+        ok: false,
+        source:
+            mode == RadarMode.usForecast ? 'noaa_mrms' : 'openweather_global',
+        humanReadableMessage:
+            "Couldn't reach the radar service. The base map is still usable.",
         fallbackCode: 'weather_backend_unreachable',
       );
     }
+  }
+
+  Future<RadarHealth> radarTileHealth({
+    required RadarMode mode,
+    required int timestamp,
+    required double latitude,
+    required double longitude,
+  }) {
+    return radarHealth(
+      mode: mode,
+      timestamp: timestamp,
+      latitude: latitude,
+      longitude: longitude,
+    );
   }
 
   Future<Map<String, dynamic>> _getJson(
@@ -355,14 +392,6 @@ class OpenWeatherBackendClient {
     final normalized = contentType.toLowerCase();
     return normalized.contains('application/json') ||
         normalized.contains('+json');
-  }
-
-  static bool _isImageContentType(String contentType) {
-    final normalized = contentType.toLowerCase();
-    return normalized.startsWith('image/png') ||
-        normalized.startsWith('image/jpeg') ||
-        normalized.startsWith('image/jpg') ||
-        normalized.startsWith('image/webp');
   }
 
   static String _nonJsonResponseMessage(Uri uri) {
@@ -561,31 +590,4 @@ class OpenWeatherBackendClient {
         .trim();
     return compact.length <= 240 ? compact : '${compact.substring(0, 240)}...';
   }
-
-  static _TileCoordinate _tileForLocation({
-    required double latitude,
-    required double longitude,
-    required int zoom,
-  }) {
-    final lat = latitude.clamp(-85.05112878, 85.05112878).toDouble();
-    final lon = longitude.clamp(-180.0, 180.0).toDouble();
-    final latRad = lat * math.pi / 180;
-    final scale = 1 << zoom;
-    final x = ((lon + 180) / 360 * scale).floor().clamp(0, scale - 1).toInt();
-    final y =
-        ((1 - math.log(math.tan(latRad) + 1 / math.cos(latRad)) / math.pi) /
-                2 *
-                scale)
-            .floor()
-            .clamp(0, scale - 1)
-            .toInt();
-    return _TileCoordinate(x: x, y: y);
-  }
-}
-
-class _TileCoordinate {
-  const _TileCoordinate({required this.x, required this.y});
-
-  final int x;
-  final int y;
 }
