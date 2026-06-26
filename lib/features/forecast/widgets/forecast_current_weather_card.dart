@@ -62,9 +62,19 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.wb_cloudy_rounded,
-                  color: DMColors.deepNavy,
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: DaymakerWeatherIcon(
+                    conditionId: weather.weatherId,
+                    openWeatherIconCode: weather.weatherIcon,
+                    conditionMain: weather.weatherMain,
+                    conditionDescription: weather.condition,
+                    forecastTime: weather.lastUpdated,
+                    sunrise: weather.sunrise,
+                    sunset: weather.sunset,
+                    size: 42,
+                    semanticLabel: weather.condition,
+                  ),
                 ),
               ),
             ],

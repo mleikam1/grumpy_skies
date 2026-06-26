@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/weather_models.dart';
 import '../models/temperature_unit.dart';
 import '../services/settings_controller.dart';
+import '../shared/widgets/daymaker_weather_icon.dart';
 
 class WeatherSummaryCard extends StatelessWidget {
   final WeatherBundle weather;
@@ -14,7 +15,6 @@ class WeatherSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
     final current = weather.current;
-    final iconData = _iconForCondition(current.condition);
     final unit = settings.temperatureUnit;
     final tempString = _formatTemp(
       unit == TemperatureUnit.fahrenheit
@@ -39,8 +39,17 @@ class WeatherSummaryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(iconData,
-                    size: 48, color: Theme.of(context).colorScheme.primary),
+                DaymakerWeatherIcon(
+                  conditionId: current.weatherId,
+                  openWeatherIconCode: current.weatherIcon,
+                  conditionMain: current.weatherMain,
+                  conditionDescription: current.condition,
+                  forecastTime: current.lastUpdated,
+                  sunrise: current.sunrise,
+                  sunset: current.sunset,
+                  size: 54,
+                  semanticLabel: current.condition,
+                ),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,30 +104,5 @@ class WeatherSummaryCard extends StatelessWidget {
 
   String _formatTemp(double temp, TemperatureUnit unit) {
     return '${temp.toStringAsFixed(0)}°${unit.suffix}';
-  }
-
-  IconData _iconForCondition(String condition) {
-    final description = condition.toLowerCase();
-
-    if (description.contains('storm') || description.contains('thunder')) {
-      return Icons.thunderstorm;
-    }
-    if (description.contains('rain') || description.contains('drizzle')) {
-      return Icons.water_drop;
-    }
-    if (description.contains('snow') || description.contains('sleet')) {
-      return Icons.ac_unit;
-    }
-    if (description.contains('fog') || description.contains('mist')) {
-      return Icons.blur_on;
-    }
-    if (description.contains('cloud')) {
-      return Icons.cloud;
-    }
-    if (description.contains('sun') || description.contains('clear')) {
-      return Icons.wb_sunny;
-    }
-
-    return Icons.cloud_queue;
   }
 }

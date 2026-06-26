@@ -543,9 +543,17 @@ class _ForecastLowerSection extends StatelessWidget {
     final forecast = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ForecastHourlyStrip(hourly: weather.hourly),
+        ForecastHourlyStrip(
+          hourly: weather.hourly,
+          sunrise: weather.current.sunrise,
+          sunset: weather.current.sunset,
+        ),
         SizedBox(height: gap),
-        ForecastDailyGrid(daily: weather.daily),
+        ForecastDailyGrid(
+          daily: weather.daily,
+          sunrise: weather.current.sunrise,
+          sunset: weather.current.sunset,
+        ),
       ],
     );
     final details = ForecastExtraMetrics(weather: weather.current);

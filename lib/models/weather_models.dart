@@ -225,6 +225,7 @@ class TimelineWeatherPoint {
   final int? windDeg;
   final String condition;
   final String? icon;
+  final String? weatherMain;
   final int? weatherId;
   final List<String> alertIds;
 
@@ -239,6 +240,7 @@ class TimelineWeatherPoint {
     this.windDeg,
     this.condition = 'Unknown',
     this.icon,
+    this.weatherMain,
     this.weatherId,
     this.alertIds = const [],
   });
@@ -254,12 +256,13 @@ class TimelineWeatherPoint {
         'windDeg': windDeg,
         'condition': condition,
         'icon': icon,
+        'weatherMain': weatherMain,
         'weatherId': weatherId,
         'alertIds': alertIds,
       };
 
   factory TimelineWeatherPoint.fromJson(Map<String, dynamic> json) {
-    final weather = (json['weather'] as Map?)?.cast<String, dynamic>();
+    final weather = _primaryWeatherCondition(json['weather']);
     final probability =
         ((json['precipitationProbability'] ?? 0) as num).toDouble();
     return TimelineWeatherPoint(
@@ -281,6 +284,7 @@ class TimelineWeatherPoint {
       condition:
           (json['condition'] ?? weather?['description'] ?? 'Unknown') as String,
       icon: (json['icon'] ?? weather?['icon']) as String?,
+      weatherMain: (json['weatherMain'] ?? weather?['main']) as String?,
       weatherId: (json['weatherId'] ?? weather?['id'] as num?)?.round(),
       alertIds: ((json['alertIds'] as List?) ?? const [])
           .map((id) => id.toString())
@@ -502,6 +506,7 @@ class CurrentWeather {
   final double? rainLastHour;
   final double? snowLastHour;
   final String? weatherIcon;
+  final String? weatherMain;
   final int? weatherId;
   final List<String> alertIds;
   final String? timezone;
@@ -538,6 +543,7 @@ class CurrentWeather {
     this.rainLastHour,
     this.snowLastHour,
     this.weatherIcon,
+    this.weatherMain,
     this.weatherId,
     this.alertIds = const [],
     this.timezone,
@@ -575,6 +581,7 @@ class CurrentWeather {
         'rainLastHour': rainLastHour,
         'snowLastHour': snowLastHour,
         'weatherIcon': weatherIcon,
+        'weatherMain': weatherMain,
         'weatherId': weatherId,
         'alertIds': alertIds,
         'timezone': timezone,
@@ -713,6 +720,7 @@ class CurrentWeather {
       rainLastHour: (json['rainLastHour'] as num?)?.toDouble(),
       snowLastHour: (json['snowLastHour'] as num?)?.toDouble(),
       weatherIcon: json['weatherIcon'] as String?,
+      weatherMain: json['weatherMain'] as String?,
       weatherId: (json['weatherId'] as num?)?.round(),
       alertIds: ((json['alertIds'] as List?) ?? const [])
           .map((id) => id.toString())
@@ -728,12 +736,18 @@ class HourlyForecast {
   final double temperatureC;
   final String condition;
   final int precipitationChance;
+  final String? weatherIcon;
+  final String? weatherMain;
+  final int? weatherId;
 
   const HourlyForecast({
     required this.time,
     required this.temperatureC,
     required this.condition,
     this.precipitationChance = 0,
+    this.weatherIcon,
+    this.weatherMain,
+    this.weatherId,
   });
 
   double get temperatureF => _cToF(temperatureC);
@@ -752,6 +766,9 @@ class HourlyForecast {
         'temperatureC': temperatureC,
         'condition': condition,
         'precipitationChance': precipitationChance,
+        'weatherIcon': weatherIcon,
+        'weatherMain': weatherMain,
+        'weatherId': weatherId,
       };
 
   factory HourlyForecast.fromJson(Map<String, dynamic> json) {
@@ -760,6 +777,9 @@ class HourlyForecast {
       temperatureC: (json['temperatureC'] as num).toDouble(),
       condition: json['condition'] as String,
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
+      weatherIcon: json['weatherIcon'] as String?,
+      weatherMain: json['weatherMain'] as String?,
+      weatherId: (json['weatherId'] as num?)?.round(),
     );
   }
 }
@@ -770,6 +790,9 @@ class DailyForecast {
   final double maxTempC;
   final String condition;
   final int precipitationChance;
+  final String? weatherIcon;
+  final String? weatherMain;
+  final int? weatherId;
 
   const DailyForecast({
     required this.date,
@@ -777,6 +800,9 @@ class DailyForecast {
     required this.maxTempC,
     required this.condition,
     this.precipitationChance = 0,
+    this.weatherIcon,
+    this.weatherMain,
+    this.weatherId,
   });
 
   double get minTempF => _cToF(minTempC);
@@ -799,6 +825,9 @@ class DailyForecast {
         'maxTempC': maxTempC,
         'condition': condition,
         'precipitationChance': precipitationChance,
+        'weatherIcon': weatherIcon,
+        'weatherMain': weatherMain,
+        'weatherId': weatherId,
       };
 
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
@@ -808,6 +837,9 @@ class DailyForecast {
       maxTempC: (json['maxTempC'] as num).toDouble(),
       condition: json['condition'] as String,
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
+      weatherIcon: json['weatherIcon'] as String?,
+      weatherMain: json['weatherMain'] as String?,
+      weatherId: (json['weatherId'] as num?)?.round(),
     );
   }
 }
@@ -917,4 +949,14 @@ DateTime? _nullableDateFromJson(dynamic value) {
 
 DateTime? _safeParseDate(dynamic value) {
   return _nullableDateFromJson(value);
+}
+
+Map<String, dynamic>? _primaryWeatherCondition(Object? value) {
+  if (value is Map) {
+    return value.cast<String, dynamic>();
+  }
+  if (value is List && value.isNotEmpty && value.first is Map) {
+    return (value.first as Map).cast<String, dynamic>();
+  }
+  return null;
 }

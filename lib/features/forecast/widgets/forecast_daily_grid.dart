@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../design/dm_colors.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
@@ -11,9 +10,13 @@ class ForecastDailyGrid extends StatelessWidget {
   const ForecastDailyGrid({
     super.key,
     required this.daily,
+    this.sunrise,
+    this.sunset,
   });
 
   final List<DailyForecast> daily;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +41,12 @@ class ForecastDailyGrid extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return SizedBox(
                       width: 118,
-                      child: _DailyTile(day: days[index], index: index),
+                      child: _DailyTile(
+                        day: days[index],
+                        index: index,
+                        sunrise: sunrise,
+                        sunset: sunset,
+                      ),
                     );
                   },
                 ),
@@ -57,7 +65,12 @@ class ForecastDailyGrid extends StatelessWidget {
               ),
               itemCount: days.length,
               itemBuilder: (context, index) {
-                return _DailyTile(day: days[index], index: index);
+                return _DailyTile(
+                  day: days[index],
+                  index: index,
+                  sunrise: sunrise,
+                  sunset: sunset,
+                );
               },
             );
           },
@@ -71,10 +84,14 @@ class _DailyTile extends StatelessWidget {
   const _DailyTile({
     required this.day,
     required this.index,
+    this.sunrise,
+    this.sunset,
   });
 
   final DailyForecast day;
   final int index;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +109,17 @@ class _DailyTile extends StatelessWidget {
             style: DMTypography.labelLarge,
           ),
           const Spacer(),
-          Icon(
-            _iconForCondition(day.condition),
-            color: DMColors.skyBlueSoft,
-            size: 28,
+          DaymakerWeatherIcon(
+            conditionId: day.weatherId,
+            openWeatherIconCode: day.weatherIcon,
+            conditionMain: day.weatherMain,
+            conditionDescription: day.condition,
+            forecastTime:
+                DateTime(day.date.year, day.date.month, day.date.day, 12),
+            sunrise: sunrise,
+            sunset: sunset,
+            size: 30,
+            semanticLabel: day.condition,
           ),
           const SizedBox(height: DMSpacing.xs),
           Text(
@@ -127,19 +151,5 @@ class _DailyTile extends StatelessWidget {
       'Sun',
     ];
     return labels[date.weekday - 1];
-  }
-
-  static IconData _iconForCondition(String condition) {
-    final normalized = condition.toLowerCase();
-    if (normalized.contains('drizzle') || normalized.contains('rain')) {
-      return Icons.grain_rounded;
-    }
-    if (normalized.contains('sun')) {
-      return Icons.wb_sunny_rounded;
-    }
-    if (normalized.contains('cloud')) {
-      return Icons.cloud_queue_rounded;
-    }
-    return Icons.wb_twilight_rounded;
   }
 }

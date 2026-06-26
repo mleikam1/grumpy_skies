@@ -434,7 +434,7 @@ class OpenWeatherBackendClient {
     required String units,
   }) {
     final dtoUnits = (json['units'] as String?) ?? units;
-    final weather = (json['weather'] as Map?)?.cast<String, dynamic>();
+    final weather = _primaryWeatherCondition(json['weather']);
     final weatherDescription =
         (json['weatherDescription'] ?? weather?['description']) as String?;
     final weatherMain = (json['weatherMain'] ?? weather?['main']) as String?;
@@ -488,6 +488,7 @@ class OpenWeatherBackendClient {
       rainLastHour: _precipitationToDisplayUnits(rainLastHour, dtoUnits),
       snowLastHour: _precipitationToDisplayUnits(snowLastHour, dtoUnits),
       weatherIcon: weatherIcon,
+      weatherMain: weatherMain,
       weatherId: weatherId?.round(),
       alertIds: ((json['alertIds'] as List?) ?? const [])
           .map((id) => id.toString())
@@ -507,6 +508,16 @@ class OpenWeatherBackendClient {
     }
     if (value is String) {
       return DateTime.tryParse(value)?.toLocal();
+    }
+    return null;
+  }
+
+  static Map<String, dynamic>? _primaryWeatherCondition(Object? value) {
+    if (value is Map) {
+      return value.cast<String, dynamic>();
+    }
+    if (value is List && value.isNotEmpty && value.first is Map) {
+      return (value.first as Map).cast<String, dynamic>();
     }
     return null;
   }

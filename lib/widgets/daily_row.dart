@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../models/weather_models.dart';
+import '../shared/widgets/daymaker_weather_icon.dart';
 
 class DailyRow extends StatelessWidget {
   final List<DailyForecast> daily;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
-  const DailyRow({super.key, required this.daily});
+  const DailyRow({
+    super.key,
+    required this.daily,
+    this.sunrise,
+    this.sunset,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +66,22 @@ class DailyRow extends StatelessWidget {
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    DaymakerWeatherIcon(
+                      conditionId: forecast.weatherId,
+                      openWeatherIconCode: forecast.weatherIcon,
+                      conditionMain: forecast.weatherMain,
+                      conditionDescription: forecast.condition,
+                      forecastTime: DateTime(
+                        forecast.date.year,
+                        forecast.date.month,
+                        forecast.date.day,
+                        12,
+                      ),
+                      sunrise: sunrise,
+                      sunset: sunset,
+                      size: 30,
+                      semanticLabel: forecast.condition,
                     ),
                     Text(
                       forecast.condition,

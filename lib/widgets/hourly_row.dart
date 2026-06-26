@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../models/weather_models.dart';
+import '../shared/widgets/daymaker_weather_icon.dart';
 
 class HourlyRow extends StatelessWidget {
   final List<HourlyForecast> hourly;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
-  const HourlyRow({super.key, required this.hourly});
+  const HourlyRow({
+    super.key,
+    required this.hourly,
+    this.sunrise,
+    this.sunset,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +66,17 @@ class HourlyRow extends StatelessWidget {
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    DaymakerWeatherIcon(
+                      conditionId: hour.weatherId,
+                      openWeatherIconCode: hour.weatherIcon,
+                      conditionMain: hour.weatherMain,
+                      conditionDescription: hour.condition,
+                      forecastTime: hour.time,
+                      sunrise: sunrise,
+                      sunset: sunset,
+                      size: 30,
+                      semanticLabel: hour.condition,
                     ),
                     Text(
                       '${hour.temperatureF.toStringAsFixed(0)}°',

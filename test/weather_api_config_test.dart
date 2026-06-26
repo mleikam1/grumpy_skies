@@ -128,6 +128,7 @@ void main() {
       expect(weather.visibilityMiles, closeTo(6.21, 0.01));
       expect(weather.rainLastHour, closeTo(0.05, 0.001));
       expect(weather.weatherId, 500);
+      expect(weather.weatherMain, 'Rain');
       expect(weather.weatherIcon, '10d');
       expect(weather.alertIds, ['alert-1']);
       expect(weather.timezone, 'America/Chicago');

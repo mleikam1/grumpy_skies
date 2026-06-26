@@ -244,6 +244,9 @@ class OpenWeatherRepository extends WeatherRepository {
           temperatureC: current.temperatureC,
           condition: current.condition,
           precipitationChance: current.precipitationChance,
+          weatherIcon: current.weatherIcon,
+          weatherMain: current.weatherMain,
+          weatherId: current.weatherId,
         ),
       ];
     }
@@ -256,6 +259,9 @@ class OpenWeatherRepository extends WeatherRepository {
             : _fToC(point.temperatureF!),
         condition: point.condition,
         precipitationChance: point.precipitationChance,
+        weatherIcon: point.icon,
+        weatherMain: point.weatherMain,
+        weatherId: point.weatherId,
       );
     }).toList();
   }
@@ -278,11 +284,15 @@ class OpenWeatherRepository extends WeatherRepository {
           maxTempC: current.temperatureC,
           condition: current.condition,
           precipitationChance: current.precipitationChance,
+          weatherIcon: current.weatherIcon,
+          weatherMain: current.weatherMain,
+          weatherId: current.weatherId,
         ),
       ];
     }
 
     return byDate.entries.take(7).map((entry) {
+      final representative = _representativeDailyHour(entry.value);
       final temps = entry.value.map((hour) => hour.temperatureC).toList();
       final rainChance = entry.value
           .map((hour) => hour.precipitationChance)
@@ -291,10 +301,27 @@ class OpenWeatherRepository extends WeatherRepository {
         date: entry.key,
         minTempC: temps.reduce((a, b) => a < b ? a : b),
         maxTempC: temps.reduce((a, b) => a > b ? a : b),
-        condition: entry.value.first.condition,
+        condition: representative.condition,
         precipitationChance: rainChance,
+        weatherIcon: representative.weatherIcon,
+        weatherMain: representative.weatherMain,
+        weatherId: representative.weatherId,
       );
     }).toList();
+  }
+
+  static HourlyForecast _representativeDailyHour(List<HourlyForecast> hours) {
+    return hours.reduce((best, next) {
+      final bestScore = _daytimeScore(best.time);
+      final nextScore = _daytimeScore(next.time);
+      return nextScore < bestScore ? next : best;
+    });
+  }
+
+  static int _daytimeScore(DateTime time) {
+    final middayDistance = (time.hour - 12).abs() * 60 + time.minute.abs();
+    final daylightPenalty = time.hour >= 6 && time.hour < 20 ? 0 : 10000;
+    return daylightPenalty + middayDistance;
   }
 
   static WeatherSnapshot _snapshotFromBundle(WeatherBundle bundle) {

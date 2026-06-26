@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
+import 'package:grumpy_skies/shared/widgets/daymaker_weather_icon.dart';
 import 'package:grumpy_skies/widgets/weather_summary_card.dart';
 
 void main() {
@@ -42,31 +43,34 @@ void main() {
     );
   }
 
-  testWidgets('displays sunny icon for clear conditions', (tester) async {
+  testWidgets('displays animated icon for clear conditions', (tester) async {
     final weather = buildWeatherBundle('Sunny');
 
     await tester.pumpWidget(buildSubject(weather));
 
-    expect(find.byIcon(Icons.wb_sunny), findsOneWidget);
+    expect(find.byType(DaymakerWeatherIcon), findsOneWidget);
+    expect(find.bySemanticsLabel('Sunny'), findsOneWidget);
     expect(find.textContaining('Sunny'), findsOneWidget);
   });
 
-  testWidgets('displays rain icon for rainy conditions', (tester) async {
+  testWidgets('displays animated icon for rainy conditions', (tester) async {
     final weather = buildWeatherBundle('Heavy rain');
 
     await tester.pumpWidget(buildSubject(weather));
 
-    expect(find.byIcon(Icons.water_drop), findsOneWidget);
+    expect(find.byType(DaymakerWeatherIcon), findsOneWidget);
+    expect(find.bySemanticsLabel('Heavy rain'), findsOneWidget);
     expect(find.textContaining('Heavy rain'), findsOneWidget);
   });
 
-  testWidgets('falls back to cloud icon for unknown conditions',
+  testWidgets('keeps unknown conditions renderable with a fallback icon',
       (tester) async {
     final weather = buildWeatherBundle('Mystery weather');
 
     await tester.pumpWidget(buildSubject(weather));
 
-    expect(find.byIcon(Icons.cloud_queue), findsOneWidget);
+    expect(find.byType(DaymakerWeatherIcon), findsOneWidget);
+    expect(find.bySemanticsLabel('Mystery weather'), findsOneWidget);
     expect(find.textContaining('Mystery weather'), findsOneWidget);
   });
 }

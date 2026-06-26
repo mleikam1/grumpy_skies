@@ -10,3 +10,4 @@ export 'dm_responsive_scaffold.dart';
 export 'dm_section_header.dart';
 export 'dm_segmented_control.dart';
 export 'dm_svg_icon.dart';
+export 'daymaker_weather_icon.dart';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../design/dm_colors.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
@@ -11,9 +10,13 @@ class ForecastHourlyStrip extends StatelessWidget {
   const ForecastHourlyStrip({
     super.key,
     required this.hourly,
+    this.sunrise,
+    this.sunset,
   });
 
   final List<HourlyForecast> hourly;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +38,8 @@ class ForecastHourlyStrip extends StatelessWidget {
               return _HourlyTile(
                 hour: items[index],
                 label: index == 0 ? 'Now' : _formatHour(items[index].time),
+                sunrise: sunrise,
+                sunset: sunset,
               );
             },
           ),
@@ -54,10 +59,14 @@ class _HourlyTile extends StatelessWidget {
   const _HourlyTile({
     required this.hour,
     required this.label,
+    this.sunrise,
+    this.sunset,
   });
 
   final HourlyForecast hour;
   final String label;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +86,16 @@ class _HourlyTile extends StatelessWidget {
               style: DMTypography.label,
             ),
             const Spacer(),
-            Icon(
-              _iconForCondition(hour.condition),
-              color: DMColors.sunriseYellow,
-              size: 30,
+            DaymakerWeatherIcon(
+              conditionId: hour.weatherId,
+              openWeatherIconCode: hour.weatherIcon,
+              conditionMain: hour.weatherMain,
+              conditionDescription: hour.condition,
+              forecastTime: hour.time,
+              sunrise: sunrise,
+              sunset: sunset,
+              size: 32,
+              semanticLabel: hour.condition,
             ),
             const SizedBox(height: DMSpacing.xs),
             Text(
@@ -100,19 +115,5 @@ class _HourlyTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static IconData _iconForCondition(String condition) {
-    final normalized = condition.toLowerCase();
-    if (normalized.contains('drizzle') || normalized.contains('rain')) {
-      return Icons.grain_rounded;
-    }
-    if (normalized.contains('sun')) {
-      return Icons.wb_sunny_rounded;
-    }
-    if (normalized.contains('cloud')) {
-      return Icons.wb_cloudy_rounded;
-    }
-    return Icons.wb_twilight_rounded;
   }
 }
