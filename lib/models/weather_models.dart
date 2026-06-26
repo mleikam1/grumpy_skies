@@ -340,6 +340,38 @@ extension RadarModeX on RadarMode {
         RadarMode.usForecast => 'US forecast radar',
         RadarMode.global => 'Global precipitation radar',
       };
+
+  String get productParam => switch (this) {
+        RadarMode.usForecast => 'us',
+        RadarMode.global => 'global',
+      };
+}
+
+enum RadarFrameType {
+  history,
+  latest,
+  forecast,
+}
+
+class RadarFrame {
+  const RadarFrame({
+    required this.timestamp,
+    required this.label,
+    required this.type,
+    required this.isLatest,
+  });
+
+  final int timestamp;
+  final String label;
+  final RadarFrameType type;
+  final bool isLatest;
+
+  Map<String, dynamic> toJson() => {
+        'timestamp': timestamp,
+        'label': label,
+        'type': type.name,
+        'isLatest': isLatest,
+      };
 }
 
 class CurrentWeather {

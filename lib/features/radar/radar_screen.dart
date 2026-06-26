@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
+import '../../design/dm_radius.dart';
+import '../../design/dm_shadows.dart';
 import '../../design/dm_spacing.dart';
+import '../../design/dm_typography.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/fake_weather_repository.dart';
 import '../../repositories/weather_repository.dart';
@@ -17,10 +21,6 @@ import '../../shared/widgets/daymaker_components.dart';
 import '../../shared/widgets/weather_location_selector.dart';
 import '../../utils/radar_time.dart';
 import 'widgets/open_weather_radar_map.dart';
-import 'widgets/radar_alert_cards.dart';
-import 'widgets/radar_header_card.dart';
-import 'widgets/radar_map_controls.dart';
-import 'widgets/radar_timeline_scrubber.dart';
 
 class RadarScreen extends StatefulWidget {
   const RadarScreen({super.key});
@@ -29,28 +29,30 @@ class RadarScreen extends StatefulWidget {
   State<RadarScreen> createState() => _RadarScreenState();
 }
 
-class _RadarScreenState extends State<RadarScreen> {
+class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   final _mapController = MapController();
 
   WeatherLocationController? _locationController;
   OpenWeatherBackendClient? _client;
   Timer? _playTimer;
   Timer? _boundaryTimer;
-  List<int> _timelineSteps = const [];
-  var _lightningEnabled = false;
+  List<RadarFrame> _frames = const [];
   var _futureCastEnabled = true;
   var _playing = false;
+  var _sheetExpanded = false;
   var _timelineIndex = 0;
   var _loadedDependencies = false;
-  var _tileError = false;
-  var _tileErrorUpdateQueued = false;
-  var _tileErrorGeneration = 0;
+  var _tileIssue = false;
+  var _tileIssueUpdateQueued = false;
+  var _tileIssueGeneration = 0;
+  String? _tileIssueCode;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_loadedDependencies) return;
 
+    WidgetsBinding.instance.addObserver(this);
     _locationController = _readLocationController() ??
         WeatherLocationController(
           repository: _readWeatherRepository() ?? const FakeWeatherRepository(),
@@ -64,10 +66,17 @@ class _RadarScreenState extends State<RadarScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _playTimer?.cancel();
     _boundaryTimer?.cancel();
     _locationController?.removeListener(_handleLocationChanged);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) return;
+    if (_playing) _setPlayback(false);
   }
 
   WeatherLocationController? _readLocationController() {
@@ -95,16 +104,17 @@ class _RadarScreenState extends State<RadarScreen> {
   }
 
   void _handleLocationChanged() {
-    _clearTileError();
+    _clearTileIssue();
     _rebuildTimeline(keepSelectedTimestamp: false);
+    _recenter();
     if (mounted) setState(() {});
   }
 
   void _startBoundaryTimer() {
     _boundaryTimer?.cancel();
     _boundaryTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (!mounted || _timelineSteps.isEmpty) return;
-      final selectedTimestamp = _selectedTimestamp;
+      if (!mounted || _frames.isEmpty) return;
+      final selectedTimestamp = _selectedFrame.timestamp;
       final latest = roundToNearestPastTenMinuteUnix();
       final wasLatest = selectedTimestamp == latest;
       _rebuildTimeline(keepSelectedTimestamp: !wasLatest);
@@ -113,45 +123,52 @@ class _RadarScreenState extends State<RadarScreen> {
   }
 
   void _togglePlayback() {
-    setState(() => _playing = !_playing);
+    _setPlayback(!_playing);
+  }
+
+  void _setPlayback(bool playing) {
     _playTimer?.cancel();
-    if (!_playing) return;
+    if (!mounted) {
+      _playing = playing;
+      return;
+    }
+
+    setState(() => _playing = playing);
+    if (!playing || _frames.isEmpty) return;
 
     _playTimer = Timer.periodic(const Duration(milliseconds: 900), (_) {
-      if (!mounted || _timelineSteps.isEmpty) return;
+      if (!mounted || _frames.isEmpty) return;
       setState(() {
-        _timelineIndex = (_timelineIndex + 1) % _timelineSteps.length;
-        _clearTileError();
+        _timelineIndex = (_timelineIndex + 1) % _frames.length;
+        _clearTileIssue();
       });
     });
   }
 
   void _rebuildTimeline({required bool keepSelectedTimestamp}) {
-    final previous = keepSelectedTimestamp ? _selectedTimestamp : null;
+    final previous = keepSelectedTimestamp && _frames.isNotEmpty
+        ? _selectedFrame.timestamp
+        : null;
     final location = _locationController?.selectedLocation;
     final mode = _modeFor(location);
+    final forecastEnabled = _futureCastEnabled && _futureAvailableFor(mode);
+    final frames = generateRadarFrames(
+      mode: mode,
+      includeForecast: forecastEnabled,
+    );
+
+    _frames = frames;
     final latest = roundToNearestPastTenMinuteUnix();
-    final min = latest - radarHistorySeconds;
-    final max = mode == RadarMode.usForecast && _futureCastEnabled
-        ? latest + radarUsForecastSeconds
-        : latest;
-
-    final steps = <int>[];
-    for (var value = min; value <= max; value += radarStepSeconds) {
-      steps.add(value);
-    }
-
-    _timelineSteps = steps;
     final target = previous ?? latest;
     _timelineIndex = _nearestIndexFor(target);
   }
 
   int _nearestIndexFor(int timestamp) {
-    if (_timelineSteps.isEmpty) return 0;
+    if (_frames.isEmpty) return 0;
     var bestIndex = 0;
-    var bestDistance = (timestamp - _timelineSteps.first).abs();
-    for (var index = 1; index < _timelineSteps.length; index++) {
-      final distance = (timestamp - _timelineSteps[index]).abs();
+    var bestDistance = (timestamp - _frames.first.timestamp).abs();
+    for (var index = 1; index < _frames.length; index++) {
+      final distance = (timestamp - _frames[index].timestamp).abs();
       if (distance < bestDistance) {
         bestDistance = distance;
         bestIndex = index;
@@ -160,20 +177,36 @@ class _RadarScreenState extends State<RadarScreen> {
     return bestIndex;
   }
 
-  int get _selectedTimestamp {
-    if (_timelineSteps.isEmpty) return roundToNearestPastTenMinuteUnix();
-    return _timelineSteps[_timelineIndex.clamp(0, _timelineSteps.length - 1)];
+  RadarFrame get _selectedFrame {
+    if (_frames.isEmpty) {
+      final latest = roundToNearestPastTenMinuteUnix();
+      return RadarFrame(
+        timestamp: latest,
+        label: 'Latest',
+        type: RadarFrameType.latest,
+        isLatest: true,
+      );
+    }
+    return _frames[_timelineIndex.clamp(0, _frames.length - 1)];
   }
 
   RadarMode _modeFor(LocationCandidate? location) {
-    return (location?.isUs ?? true) ? RadarMode.usForecast : RadarMode.global;
+    if (location == null) return RadarMode.usForecast;
+    if (location.isUs || _coordinateLooksUs(location.lat, location.lon)) {
+      return RadarMode.usForecast;
+    }
+    return RadarMode.global;
+  }
+
+  bool _futureAvailableFor(RadarMode mode) {
+    return mode == RadarMode.usForecast;
   }
 
   void _jumpToLatest() {
     final latest = roundToNearestPastTenMinuteUnix();
     setState(() {
       _timelineIndex = _nearestIndexFor(latest);
-      _clearTileError();
+      _clearTileIssue();
     });
   }
 
@@ -182,37 +215,66 @@ class _RadarScreenState extends State<RadarScreen> {
     _mapController.move(camera.center, (camera.zoom + delta).clamp(3, 12));
   }
 
-  Future<void> _locate() async {
-    await _locationController?.useCurrentLocation();
+  void _recenter() {
+    final location = _locationController?.selectedLocation;
+    if (location == null) return;
+    final camera = _mapController.camera;
+    final zoom = math.max(5.0, camera.zoom.clamp(3.0, 12.0));
+    _mapController.move(LatLng(location.lat, location.lon), zoom);
   }
 
-  void _showLayersMessage() {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Precipitation radar layer is active.'),
-        ),
-      );
+  void _openInfoSheet() {
+    setState(() => _sheetExpanded = true);
   }
 
-  void _showTileError() {
-    if (_tileError || _tileErrorUpdateQueued || !mounted) return;
+  void _toggleInfoSheet() {
+    setState(() => _sheetExpanded = !_sheetExpanded);
+  }
 
-    final generation = _tileErrorGeneration;
-    _tileErrorUpdateQueued = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || generation != _tileErrorGeneration) return;
-      _tileErrorUpdateQueued = false;
-      if (_tileError) return;
-      setState(() => _tileError = true);
+  void _toggleFutureCast() {
+    setState(() {
+      _futureCastEnabled = !_futureCastEnabled;
+      _clearTileIssue();
+      _rebuildTimeline(keepSelectedTimestamp: true);
     });
   }
 
-  void _clearTileError() {
-    _tileError = false;
-    _tileErrorUpdateQueued = false;
-    _tileErrorGeneration++;
+  void _handleTileIssue(String? code) {
+    if (code == null) {
+      if (!_tileIssue && _tileIssueCode == null) return;
+      setState(() {
+        _tileIssue = false;
+        _tileIssueCode = null;
+        _tileIssueUpdateQueued = false;
+        _tileIssueGeneration++;
+      });
+      return;
+    }
+    _showTileIssue(code);
+  }
+
+  void _showTileIssue(String code) {
+    if (_tileIssueUpdateQueued || !mounted) return;
+    if (_tileIssue && _tileIssueCode == code) return;
+
+    final generation = _tileIssueGeneration;
+    _tileIssueUpdateQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _tileIssueGeneration) return;
+      _tileIssueUpdateQueued = false;
+      if (_tileIssue && _tileIssueCode == code) return;
+      setState(() {
+        _tileIssue = true;
+        _tileIssueCode = code;
+      });
+    });
+  }
+
+  void _clearTileIssue() {
+    _tileIssue = false;
+    _tileIssueCode = null;
+    _tileIssueUpdateQueued = false;
+    _tileIssueGeneration++;
   }
 
   @override
@@ -230,7 +292,6 @@ class _RadarScreenState extends State<RadarScreen> {
             final width = constraints.maxWidth.isFinite
                 ? constraints.maxWidth
                 : MediaQuery.sizeOf(context).width;
-            final breakpoint = DMBreakpoints.fromWidth(width);
 
             if (location == null || client == null) {
               return _RadarLocationPrompt(
@@ -240,7 +301,17 @@ class _RadarScreenState extends State<RadarScreen> {
             }
 
             final mode = _modeFor(location);
-            final futureAvailable = mode == RadarMode.usForecast;
+            final frame = _selectedFrame;
+            final futureAvailable = _futureAvailableFor(mode);
+            final bottomInset = MediaQuery.paddingOf(context).bottom;
+            final horizontal = width < 600 ? DMSpacing.sm : DMSpacing.xl;
+            const collapsedSheetHeight = 128.0;
+            final expandedSheetHeight = math.min(
+              constraints.maxHeight * (width < 700 ? 0.48 : 0.44),
+              width < 700 ? 360.0 : 340.0,
+            );
+            final sheetHeight =
+                _sheetExpanded ? expandedSheetHeight : collapsedSheetHeight;
 
             return Stack(
               fit: StackFit.expand,
@@ -250,74 +321,71 @@ class _RadarScreenState extends State<RadarScreen> {
                   mapController: _mapController,
                   location: location,
                   mode: mode,
-                  timestamp: _selectedTimestamp,
-                  onTileError: _showTileError,
+                  timestamp: frame.timestamp,
+                  onTileIssue: _handleTileIssue,
                 ),
-                if (_tileError)
-                  const Positioned(
-                    left: DMSpacing.md,
-                    right: DMSpacing.md,
-                    bottom: 104,
-                    child: _RadarTileErrorBanner(),
-                  ),
-                if (breakpoint.isExpanded)
-                  _ExpandedRadarChrome(
-                    location: location,
-                    mode: mode,
-                    selectedTimestamp: _selectedTimestamp,
-                    timelineIndex: _timelineIndex,
-                    timelineCount: _timelineSteps.length,
-                    lightningEnabled: _lightningEnabled,
+                Positioned(
+                  top: MediaQuery.paddingOf(context).top + DMSpacing.sm,
+                  left: horizontal,
+                  right: 88,
+                  child: _RadarStatusStack(
+                    locationName: _locationLabel(location),
+                    frameLabel: frame.label,
+                    futureAvailable: futureAvailable,
                     futureCastEnabled: _futureCastEnabled,
-                    futureCastAvailable: futureAvailable,
+                    onFutureCastChanged:
+                        futureAvailable ? _toggleFutureCast : null,
+                  ),
+                ),
+                Positioned(
+                  top: MediaQuery.paddingOf(context).top + DMSpacing.sm,
+                  right: horizontal,
+                  child: _RadarFloatingControls(
                     playing: _playing,
-                    onTimelineChanged: _onTimelineChanged,
                     onPlayPause: _togglePlayback,
                     onLatest: _jumpToLatest,
-                    onLightningChanged: (enabled) {
-                      setState(() => _lightningEnabled = enabled);
-                    },
-                    onFutureCastChanged: (enabled) {
-                      setState(() {
-                        _futureCastEnabled = enabled;
-                        _clearTileError();
-                        _rebuildTimeline(keepSelectedTimestamp: true);
-                      });
-                    },
+                    onRecenter: _recenter,
                     onZoomIn: () => _zoomBy(1),
                     onZoomOut: () => _zoomBy(-1),
-                    onLocate: _locate,
-                    onLayers: _showLayersMessage,
-                  )
-                else
-                  _CompactRadarChrome(
-                    location: location,
-                    mode: mode,
-                    selectedTimestamp: _selectedTimestamp,
-                    timelineIndex: _timelineIndex,
-                    timelineCount: _timelineSteps.length,
-                    lightningEnabled: _lightningEnabled,
-                    futureCastEnabled: _futureCastEnabled,
-                    futureCastAvailable: futureAvailable,
-                    playing: _playing,
-                    onTimelineChanged: _onTimelineChanged,
-                    onPlayPause: _togglePlayback,
-                    onLatest: _jumpToLatest,
-                    onLightningChanged: (enabled) {
-                      setState(() => _lightningEnabled = enabled);
-                    },
-                    onFutureCastChanged: (enabled) {
-                      setState(() {
-                        _futureCastEnabled = enabled;
-                        _clearTileError();
-                        _rebuildTimeline(keepSelectedTimestamp: true);
-                      });
-                    },
-                    onZoomIn: () => _zoomBy(1),
-                    onZoomOut: () => _zoomBy(-1),
-                    onLocate: _locate,
-                    onLayers: _showLayersMessage,
+                    onLayers: _openInfoSheet,
+                    onInfo: _toggleInfoSheet,
                   ),
+                ),
+                if (_tileIssue)
+                  Positioned(
+                    left: horizontal,
+                    right: horizontal,
+                    bottom: sheetHeight + bottomInset + DMSpacing.x2,
+                    child: _RadarNoticeBanner(
+                      message: _tileIssueMessage(_tileIssueCode),
+                    ),
+                  ),
+                Positioned(
+                  left: horizontal,
+                  right: horizontal,
+                  bottom: bottomInset + DMSpacing.sm,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 900),
+                      child: _RadarBottomSheet(
+                        expanded: _sheetExpanded,
+                        height: sheetHeight,
+                        frame: frame,
+                        frames: _frames,
+                        timelineIndex: _timelineIndex,
+                        playing: _playing,
+                        mode: mode,
+                        locationName: _locationLabel(location),
+                        futureCastEnabled: _futureCastEnabled,
+                        futureCastAvailable: futureAvailable,
+                        onTimelineChanged: _onTimelineChanged,
+                        onPlayPause: _togglePlayback,
+                        onLatest: _jumpToLatest,
+                        onToggleExpanded: _toggleInfoSheet,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             );
           },
@@ -328,8 +396,8 @@ class _RadarScreenState extends State<RadarScreen> {
 
   void _onTimelineChanged(double value) {
     setState(() {
-      _timelineIndex = value.round().clamp(0, _timelineSteps.length - 1);
-      _clearTileError();
+      _timelineIndex = value.round().clamp(0, _frames.length - 1);
+      _clearTileIssue();
     });
   }
 }
@@ -366,244 +434,372 @@ class _RadarLocationPrompt extends StatelessWidget {
   }
 }
 
-class _CompactRadarChrome extends StatelessWidget {
-  const _CompactRadarChrome({
-    required this.location,
-    required this.mode,
-    required this.selectedTimestamp,
-    required this.timelineIndex,
-    required this.timelineCount,
-    required this.lightningEnabled,
+class _RadarStatusStack extends StatelessWidget {
+  const _RadarStatusStack({
+    required this.locationName,
+    required this.frameLabel,
+    required this.futureAvailable,
     required this.futureCastEnabled,
-    required this.futureCastAvailable,
-    required this.playing,
-    required this.onTimelineChanged,
-    required this.onPlayPause,
-    required this.onLatest,
-    required this.onLightningChanged,
     required this.onFutureCastChanged,
-    required this.onZoomIn,
-    required this.onZoomOut,
-    required this.onLocate,
-    required this.onLayers,
   });
 
-  final LocationCandidate location;
-  final RadarMode mode;
-  final int selectedTimestamp;
-  final int timelineIndex;
-  final int timelineCount;
-  final bool lightningEnabled;
+  final String locationName;
+  final String frameLabel;
+  final bool futureAvailable;
   final bool futureCastEnabled;
-  final bool futureCastAvailable;
-  final bool playing;
-  final ValueChanged<double> onTimelineChanged;
-  final VoidCallback onPlayPause;
-  final VoidCallback onLatest;
-  final ValueChanged<bool> onLightningChanged;
-  final ValueChanged<bool> onFutureCastChanged;
-  final VoidCallback onZoomIn;
-  final VoidCallback onZoomOut;
-  final VoidCallback onLocate;
-  final VoidCallback onLayers;
+  final VoidCallback? onFutureCastChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final mapBreathingRoom =
-              (constraints.maxHeight * 0.16).clamp(84.0, 156.0).toDouble();
-
-          return SingleChildScrollView(
-            padding: DMSpacing.pagePaddingForWidth(constraints.maxWidth)
-                .copyWith(bottom: DMSpacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                RadarHeaderCard(
-                  locationName: location.displayName,
-                  modeLabel: mode.label,
-                  timeLabel: _formatRadarTime(selectedTimestamp),
-                  lastUpdatedLabel:
-                      'Updated ${_formatRadarTime(roundToNearestPastTenMinuteUnix())}',
-                ),
-                const SizedBox(height: DMSpacing.sm),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: RadarMapControls(
-                    compact: true,
-                    lightningEnabled: lightningEnabled,
-                    futureCastEnabled: futureCastAvailable && futureCastEnabled,
-                    futureCastAvailable: futureCastAvailable,
-                    onLightningChanged: onLightningChanged,
-                    onFutureCastChanged: onFutureCastChanged,
-                    onZoomIn: onZoomIn,
-                    onZoomOut: onZoomOut,
-                    onLocate: onLocate,
-                    onLayers: onLayers,
-                  ),
-                ),
-                SizedBox(height: mapBreathingRoom),
-                RadarTimelineScrubber(
-                  playing: playing,
-                  value: timelineIndex.toDouble(),
-                  max: (timelineCount - 1).toDouble(),
-                  divisions: timelineCount - 1,
-                  timeLabel: _formatRadarTime(selectedTimestamp),
-                  startLabel: '-48h',
-                  endLabel: futureCastAvailable && futureCastEnabled
-                      ? '+5h'
-                      : 'Latest',
-                  onChanged: onTimelineChanged,
-                  onPlayPause: onPlayPause,
-                  onLatest: onLatest,
-                ),
-                const SizedBox(height: DMSpacing.sm),
-                RadarAlertCards(
-                  layout: RadarAlertCardsLayout.compact,
-                  modeLabel: mode.label,
-                  timeLabel: _formatRadarTime(selectedTimestamp),
-                  locationName: location.displayName,
-                ),
-              ],
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _RadarStatusPill(
+            locationName: locationName,
+            frameLabel: frameLabel,
+          ),
+          if (futureAvailable) ...[
+            const SizedBox(height: DMSpacing.xs),
+            _RadarFutureCastChip(
+              enabled: futureCastEnabled,
+              onPressed: onFutureCastChanged,
             ),
-          );
-        },
+          ],
+        ],
       ),
     );
   }
 }
 
-class _ExpandedRadarChrome extends StatelessWidget {
-  const _ExpandedRadarChrome({
-    required this.location,
-    required this.mode,
-    required this.selectedTimestamp,
-    required this.timelineIndex,
-    required this.timelineCount,
-    required this.lightningEnabled,
-    required this.futureCastEnabled,
-    required this.futureCastAvailable,
-    required this.playing,
-    required this.onTimelineChanged,
-    required this.onPlayPause,
-    required this.onLatest,
-    required this.onLightningChanged,
-    required this.onFutureCastChanged,
-    required this.onZoomIn,
-    required this.onZoomOut,
-    required this.onLocate,
-    required this.onLayers,
+class _RadarStatusPill extends StatelessWidget {
+  const _RadarStatusPill({
+    required this.locationName,
+    required this.frameLabel,
   });
 
-  final LocationCandidate location;
-  final RadarMode mode;
-  final int selectedTimestamp;
-  final int timelineIndex;
-  final int timelineCount;
-  final bool lightningEnabled;
-  final bool futureCastEnabled;
-  final bool futureCastAvailable;
-  final bool playing;
-  final ValueChanged<double> onTimelineChanged;
-  final VoidCallback onPlayPause;
-  final VoidCallback onLatest;
-  final ValueChanged<bool> onLightningChanged;
-  final ValueChanged<bool> onFutureCastChanged;
-  final VoidCallback onZoomIn;
-  final VoidCallback onZoomOut;
-  final VoidCallback onLocate;
-  final VoidCallback onLayers;
+  final String locationName;
+  final String frameLabel;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: DMSpacing.pagePaddingForWidth(MediaQuery.sizeOf(context).width)
-            .copyWith(bottom: DMSpacing.lg),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1280),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final controlsBelowHeader = constraints.maxWidth < 780;
+    return DmGlassCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: DMSpacing.sm,
+        vertical: DMSpacing.xs,
+      ),
+      borderRadius: DMRadius.full,
+      gradient: DMGradients.glassNavy,
+      borderColor: DMColors.glassBorderStrong,
+      shadows: DMShadows.floating,
+      semanticLabel: 'Radar, $locationName, $frameLabel',
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Icon(
+              Icons.radar,
+              color: DMColors.skyBlue,
+              size: DMSpacing.iconMd,
+            ),
+            const SizedBox(width: DMSpacing.xs),
+            const Text(
+              'Radar',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: DMTypography.labelLarge,
+            ),
+            const SizedBox(width: DMSpacing.xs),
+            Expanded(
+              flex: 2,
+              child: Text(
+                locationName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.label.copyWith(
+                  color: DMColors.skyBlueSoft,
+                ),
+              ),
+            ),
+            const SizedBox(width: DMSpacing.xs),
+            Flexible(
+              child: _RadarFrameBadge(label: frameLabel),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                      return Stack(
-                        children: [
-                          Positioned(
-                            top: 0,
-                            left: 0,
-                            child: SizedBox(
-                              width: 386,
-                              child: RadarHeaderCard(
-                                locationName: location.displayName,
-                                modeLabel: mode.label,
-                                timeLabel: _formatRadarTime(selectedTimestamp),
-                                lastUpdatedLabel:
-                                    'Updated ${_formatRadarTime(roundToNearestPastTenMinuteUnix())}',
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: controlsBelowHeader ? 152 : 0,
-                            right: 0,
-                            child: RadarMapControls(
-                              compact: false,
-                              lightningEnabled: lightningEnabled,
-                              futureCastEnabled:
-                                  futureCastAvailable && futureCastEnabled,
-                              futureCastAvailable: futureCastAvailable,
-                              onLightningChanged: onLightningChanged,
-                              onFutureCastChanged: onFutureCastChanged,
-                              onZoomIn: onZoomIn,
-                              onZoomOut: onZoomOut,
-                              onLocate: onLocate,
-                              onLayers: onLayers,
-                            ),
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            left: 0,
-                            child: RadarTimelineScrubber(
-                              playing: playing,
-                              value: timelineIndex.toDouble(),
-                              max: (timelineCount - 1).toDouble(),
-                              divisions: timelineCount - 1,
-                              timeLabel: _formatRadarTime(selectedTimestamp),
-                              startLabel: '-48h',
-                              endLabel: futureCastAvailable && futureCastEnabled
-                                  ? '+5h'
-                                  : 'Latest',
-                              onChanged: onTimelineChanged,
-                              onPlayPause: onPlayPause,
-                              onLatest: onLatest,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+class _RadarFrameBadge extends StatelessWidget {
+  const _RadarFrameBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: DMColors.opacity(DMColors.sunriseYellow, 0.18),
+        borderRadius: DMRadius.full,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: DMSpacing.xs,
+          vertical: DMSpacing.xxs,
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: DMTypography.labelSmall.copyWith(
+            color: DMColors.sunriseYellow,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RadarFutureCastChip extends StatelessWidget {
+  const _RadarFutureCastChip({
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final bool enabled;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return DmPillButton(
+      label: 'FutureCast',
+      semanticLabel:
+          enabled ? 'Turn FutureCast frames off' : 'Turn FutureCast frames on',
+      leading: const Icon(Icons.timeline),
+      variant:
+          enabled ? DmPillButtonVariant.secondary : DmPillButtonVariant.glass,
+      selected: enabled,
+      padding: const EdgeInsets.symmetric(
+        horizontal: DMSpacing.sm,
+        vertical: DMSpacing.xxs,
+      ),
+      onPressed: onPressed,
+    );
+  }
+}
+
+class _RadarFloatingControls extends StatelessWidget {
+  const _RadarFloatingControls({
+    required this.playing,
+    required this.onPlayPause,
+    required this.onLatest,
+    required this.onRecenter,
+    required this.onZoomIn,
+    required this.onZoomOut,
+    required this.onLayers,
+    required this.onInfo,
+  });
+
+  final bool playing;
+  final VoidCallback onPlayPause;
+  final VoidCallback onLatest;
+  final VoidCallback onRecenter;
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+  final VoidCallback onLayers;
+  final VoidCallback onInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        DmIconButton(
+          icon: Icon(playing ? Icons.pause : Icons.play_arrow),
+          semanticLabel:
+              playing ? 'Pause radar timeline' : 'Play radar timeline',
+          tooltip: playing ? 'Pause' : 'Play',
+          variant: DmIconButtonVariant.filled,
+          onPressed: onPlayPause,
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        DmIconButton(
+          icon: const Icon(Icons.update),
+          semanticLabel: 'Show latest radar frame',
+          tooltip: 'Latest',
+          selected: true,
+          onPressed: onLatest,
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        DmIconButton(
+          icon: const Icon(Icons.my_location),
+          semanticLabel: 'Recenter radar map',
+          tooltip: 'Recenter',
+          selected: true,
+          onPressed: onRecenter,
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        DmIconButton(
+          icon: const Icon(Icons.add),
+          semanticLabel: 'Zoom in',
+          tooltip: 'Zoom in',
+          selected: true,
+          onPressed: onZoomIn,
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        DmIconButton(
+          icon: const Icon(Icons.remove),
+          semanticLabel: 'Zoom out',
+          tooltip: 'Zoom out',
+          selected: true,
+          onPressed: onZoomOut,
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        DmIconButton(
+          icon: const Icon(Icons.layers_outlined),
+          semanticLabel: 'Radar layers',
+          tooltip: 'Layers',
+          selected: true,
+          onPressed: onLayers,
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        DmIconButton(
+          icon: const Icon(Icons.info_outline),
+          semanticLabel: 'Radar legend and info',
+          tooltip: 'Info',
+          selected: true,
+          onPressed: onInfo,
+        ),
+      ],
+    );
+  }
+}
+
+class _RadarBottomSheet extends StatelessWidget {
+  const _RadarBottomSheet({
+    required this.expanded,
+    required this.height,
+    required this.frame,
+    required this.frames,
+    required this.timelineIndex,
+    required this.playing,
+    required this.mode,
+    required this.locationName,
+    required this.futureCastEnabled,
+    required this.futureCastAvailable,
+    required this.onTimelineChanged,
+    required this.onPlayPause,
+    required this.onLatest,
+    required this.onToggleExpanded,
+  });
+
+  final bool expanded;
+  final double height;
+  final RadarFrame frame;
+  final List<RadarFrame> frames;
+  final int timelineIndex;
+  final bool playing;
+  final RadarMode mode;
+  final String locationName;
+  final bool futureCastEnabled;
+  final bool futureCastAvailable;
+  final ValueChanged<double> onTimelineChanged;
+  final VoidCallback onPlayPause;
+  final VoidCallback onLatest;
+  final VoidCallback onToggleExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      height: height,
+      child: DmGlassCard(
+        padding: const EdgeInsets.symmetric(
+          horizontal: DMSpacing.sm,
+          vertical: DMSpacing.xs,
+        ),
+        borderRadius: DMRadius.large,
+        gradient: DMGradients.glassNavy,
+        borderColor: DMColors.glassBorderStrong,
+        shadows: DMShadows.floating,
+        semanticLabel: 'Radar timeline and information',
+        child: Column(
+          children: [
+            _SheetHandle(
+              expanded: expanded,
+              onTap: onToggleExpanded,
+            ),
+            Expanded(
+              child: expanded
+                  ? _ExpandedRadarSheetBody(
+                      frame: frame,
+                      frames: frames,
+                      timelineIndex: timelineIndex,
+                      playing: playing,
+                      mode: mode,
+                      locationName: locationName,
+                      futureCastEnabled: futureCastEnabled,
+                      futureCastAvailable: futureCastAvailable,
+                      onTimelineChanged: onTimelineChanged,
+                      onPlayPause: onPlayPause,
+                      onLatest: onLatest,
+                    )
+                  : _CompactRadarTimeline(
+                      frame: frame,
+                      frames: frames,
+                      timelineIndex: timelineIndex,
+                      playing: playing,
+                      futureCastEnabled: futureCastEnabled,
+                      futureCastAvailable: futureCastAvailable,
+                      showRangeLabels: false,
+                      onTimelineChanged: onTimelineChanged,
+                      onPlayPause: onPlayPause,
+                      onLatest: onLatest,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle({
+    required this.expanded,
+    required this.onTap,
+  });
+
+  final bool expanded;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: expanded ? 'Collapse radar info' : 'Expand radar info',
+      child: ExcludeSemantics(
+        child: InkWell(
+          borderRadius: DMRadius.full,
+          onTap: onTap,
+          child: const SizedBox(
+            height: 12,
+            width: double.infinity,
+            child: Center(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: DMColors.glassBorderStrong,
+                  borderRadius: DMRadius.full,
                 ),
-                const SizedBox(width: DMSpacing.xl),
-                SizedBox(
-                  width: 344,
-                  child: RadarAlertCards(
-                    layout: RadarAlertCardsLayout.expanded,
-                    modeLabel: mode.label,
-                    timeLabel: _formatRadarTime(selectedTimestamp),
-                    locationName: location.displayName,
-                  ),
-                ),
-              ],
+                child: SizedBox(width: 42, height: 4),
+              ),
             ),
           ),
         ),
@@ -612,31 +808,417 @@ class _ExpandedRadarChrome extends StatelessWidget {
   }
 }
 
-class _RadarTileErrorBanner extends StatelessWidget {
-  const _RadarTileErrorBanner();
+class _ExpandedRadarSheetBody extends StatelessWidget {
+  const _ExpandedRadarSheetBody({
+    required this.frame,
+    required this.frames,
+    required this.timelineIndex,
+    required this.playing,
+    required this.mode,
+    required this.locationName,
+    required this.futureCastEnabled,
+    required this.futureCastAvailable,
+    required this.onTimelineChanged,
+    required this.onPlayPause,
+    required this.onLatest,
+  });
+
+  final RadarFrame frame;
+  final List<RadarFrame> frames;
+  final int timelineIndex;
+  final bool playing;
+  final RadarMode mode;
+  final String locationName;
+  final bool futureCastEnabled;
+  final bool futureCastAvailable;
+  final ValueChanged<double> onTimelineChanged;
+  final VoidCallback onPlayPause;
+  final VoidCallback onLatest;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        _CompactRadarTimeline(
+          frame: frame,
+          frames: frames,
+          timelineIndex: timelineIndex,
+          playing: playing,
+          futureCastEnabled: futureCastEnabled,
+          futureCastAvailable: futureCastAvailable,
+          onTimelineChanged: onTimelineChanged,
+          onPlayPause: onPlayPause,
+          onLatest: onLatest,
+        ),
+        const SizedBox(height: DMSpacing.sm),
+        Wrap(
+          spacing: DMSpacing.xs,
+          runSpacing: DMSpacing.xs,
+          children: [
+            _RadarInfoChip(
+              icon: Icons.layers_outlined,
+              label: mode.label,
+            ),
+            _RadarInfoChip(
+              icon: Icons.schedule_rounded,
+              label: _formatRadarTime(frame.timestamp),
+            ),
+            _RadarInfoChip(
+              icon: Icons.place_outlined,
+              label: locationName,
+            ),
+            _RadarInfoChip(
+              icon: Icons.timeline,
+              label: futureCastAvailable
+                  ? 'FutureCast ${futureCastEnabled ? 'on' : 'off'}'
+                  : 'FutureCast unavailable',
+            ),
+          ],
+        ),
+        const SizedBox(height: DMSpacing.sm),
+        const _RadarLegend(),
+        const SizedBox(height: DMSpacing.xs),
+        Text(
+          'Weather data © OpenWeather',
+          style: DMTypography.labelSmall.copyWith(
+            color: DMColors.textMuted,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompactRadarTimeline extends StatelessWidget {
+  const _CompactRadarTimeline({
+    required this.frame,
+    required this.frames,
+    required this.timelineIndex,
+    required this.playing,
+    required this.futureCastEnabled,
+    required this.futureCastAvailable,
+    required this.onTimelineChanged,
+    required this.onPlayPause,
+    required this.onLatest,
+    this.showRangeLabels = true,
+  });
+
+  final RadarFrame frame;
+  final List<RadarFrame> frames;
+  final int timelineIndex;
+  final bool playing;
+  final bool futureCastEnabled;
+  final bool futureCastAvailable;
+  final ValueChanged<double> onTimelineChanged;
+  final VoidCallback onPlayPause;
+  final VoidCallback onLatest;
+  final bool showRangeLabels;
+
+  @override
+  Widget build(BuildContext context) {
+    final max = math.max(frames.length - 1, 1).toDouble();
+    final divisions = math.max(frames.length - 1, 1);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            DmIconButton(
+              icon: Icon(playing ? Icons.pause : Icons.play_arrow),
+              semanticLabel:
+                  playing ? 'Pause radar timeline' : 'Play radar timeline',
+              tooltip: playing ? 'Pause' : 'Play',
+              variant: DmIconButtonVariant.filled,
+              onPressed: onPlayPause,
+            ),
+            const SizedBox(width: DMSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    frame.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DMTypography.labelLarge,
+                  ),
+                  const SizedBox(height: DMSpacing.xxs),
+                  Text(
+                    _formatRadarTime(frame.timestamp),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DMTypography.labelSmall.copyWith(
+                      color: DMColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: DMSpacing.sm),
+            DmPillButton(
+              label: 'Latest',
+              semanticLabel: 'Show latest radar frame',
+              variant: DmPillButtonVariant.glass,
+              padding: const EdgeInsets.symmetric(
+                horizontal: DMSpacing.sm,
+                vertical: DMSpacing.xxs,
+              ),
+              onPressed: onLatest,
+            ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 6,
+            activeTrackColor: DMColors.skyBlue,
+            inactiveTrackColor: DMColors.glassStrong,
+            thumbColor: DMColors.sunriseYellow,
+            overlayColor: DMColors.opacity(DMColors.sunriseYellow, 0.18),
+            valueIndicatorColor: DMColors.surfaceRaised,
+            tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 0),
+          ),
+          child: Slider(
+            value: timelineIndex.clamp(0, max.toInt()).toDouble(),
+            min: 0,
+            max: max,
+            divisions: divisions,
+            label: frame.label,
+            semanticFormatterCallback: (value) {
+              return 'Radar timeline ${_frameLabelFor(frames, value.round())}';
+            },
+            onChanged: onTimelineChanged,
+          ),
+        ),
+        if (showRangeLabels)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '-2h',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DMTypography.labelSmall.copyWith(
+                    color: DMColors.textMuted,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  '10 min frames',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DMTypography.labelSmall.copyWith(
+                    color: DMColors.sunriseYellow,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  futureCastAvailable && futureCastEnabled ? '+5h' : 'Latest',
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DMTypography.labelSmall.copyWith(
+                    color: DMColors.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _RadarInfoChip extends StatelessWidget {
+  const _RadarInfoChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: DMColors.opacity(DMColors.cloudWhite, 0.08),
+        borderRadius: DMRadius.full,
+        border: Border.all(color: DMColors.glassBorder),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: DMSpacing.sm,
+          vertical: DMSpacing.xs,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: DMColors.skyBlueSoft, size: DMSpacing.iconSm),
+            const SizedBox(width: DMSpacing.xs),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RadarLegend extends StatelessWidget {
+  const _RadarLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    const items = [
+      _LegendItem('Light', Color(0xFF62D9FF)),
+      _LegendItem('Moderate', Color(0xFF3BFF83)),
+      _LegendItem('Heavy', Color(0xFFFFD84D)),
+      _LegendItem('Severe', Color(0xFFFF5A6E)),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Precipitation legend',
+          style: DMTypography.label.copyWith(color: DMColors.textSecondary),
+        ),
+        const SizedBox(height: DMSpacing.xs),
+        Wrap(
+          spacing: DMSpacing.sm,
+          runSpacing: DMSpacing.xs,
+          children: [
+            for (final item in items)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: item.color,
+                      borderRadius: DMRadius.full,
+                    ),
+                    child: const SizedBox(width: 28, height: 8),
+                  ),
+                  const SizedBox(width: DMSpacing.xs),
+                  Text(
+                    item.label,
+                    style: DMTypography.labelSmall.copyWith(
+                      color: DMColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _LegendItem {
+  const _LegendItem(this.label, this.color);
+
+  final String label;
+  final Color color;
+}
+
+class _RadarNoticeBanner extends StatelessWidget {
+  const _RadarNoticeBanner({required this.message});
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
     return DmGlassCard(
-      padding: const EdgeInsets.all(DMSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DMSpacing.sm,
+        vertical: DMSpacing.xs,
+      ),
+      borderRadius: DMRadius.full,
+      gradient: DMGradients.glassNavy,
       borderColor: DMColors.sunriseYellow,
+      shadows: DMShadows.floating,
       child: Row(
         children: [
-          const Icon(Icons.layers_clear_outlined,
-              color: DMColors.sunriseYellow),
-          const SizedBox(width: DMSpacing.sm),
+          const Icon(
+            Icons.info_outline,
+            color: DMColors.sunriseYellow,
+            size: DMSpacing.iconMd,
+          ),
+          const SizedBox(width: DMSpacing.xs),
           Expanded(
             child: Text(
-              'Radar temporarily unavailable. The base map is still usable.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: DMColors.textPrimary,
-                  ),
+              message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: DMTypography.bodySmall.copyWith(
+                color: DMColors.textPrimary,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+bool _coordinateLooksUs(double latitude, double longitude) {
+  return latitude >= 18 &&
+      latitude <= 72 &&
+      longitude >= -170 &&
+      longitude <= -64;
+}
+
+String _locationLabel(LocationCandidate location) {
+  if (location.source == WeatherLocationSource.device.storageValue) {
+    return location.displayName.trim().isEmpty
+        ? 'Current location'
+        : location.displayName;
+  }
+  if (location.source == WeatherLocationSource.unknown.storageValue) {
+    return '${location.displayName} approximate';
+  }
+  return location.displayName;
+}
+
+String _frameLabelFor(List<RadarFrame> frames, int index) {
+  if (frames.isEmpty) return 'Latest';
+  return frames[index.clamp(0, frames.length - 1)].label;
+}
+
+String _tileIssueMessage(String? code) {
+  return switch (code) {
+    'openweather_radar_access_denied' ||
+    'openweather_key_rejected' ||
+    'OPENWEATHER_API_KEY_UNAVAILABLE' ||
+    'OPENWEATHER_API_KEY_MISSING' =>
+      'Radar product/API access issue. Check OpenWeather Maps access on the server key.',
+    'openweather_invalid_request' =>
+      'Invalid radar frame. Jump to Latest and try again.',
+    'openweather_not_found' ||
+    'openweather_tile_empty' =>
+      'No precipitation nearby right now. Try zooming out or scrub FutureCast.',
+    'openweather_timeout' ||
+    'openweather_unavailable' ||
+    'radar_tile_network_error' ||
+    'weather_backend_unreachable' =>
+      'Radar temporarily unavailable. The base map is still usable.',
+    _ => 'Radar temporarily unavailable. The base map is still usable.',
+  };
 }
 
 String _formatRadarTime(int timestamp) {

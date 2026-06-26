@@ -15,10 +15,10 @@ export const enableGlobalForecastRadar = defineString(
 const openWeatherApiBase = "https://api.openweathermap.org";
 const openWeatherMapBase = "https://maps.openweathermap.org";
 const tenMinutesSeconds = 10 * 60;
-const fortyEightHoursSeconds = 48 * 60 * 60;
+const twoHoursSeconds = 120 * 60;
 const fiveHoursSeconds = 5 * 60 * 60;
 const weatherCacheControl = "public, max-age=300, stale-while-revalidate=300";
-const radarFallbackCacheControl = "public, max-age=60";
+const radarFallbackCacheControl = "public, max-age=30";
 const openWeatherTimeoutMs = 8000;
 const authFailureTtlMs = 5 * 60 * 1000;
 const transparentRadarTilePng = Buffer.from(
@@ -27,6 +27,7 @@ const transparentRadarTilePng = Buffer.from(
 );
 
 type RadarMode = "us-forecast" | "global";
+type RadarProduct = "us" | "global";
 
 type JsonRecord = Record<string, unknown>;
 type CacheEntry = {
@@ -133,6 +134,24 @@ export const api = onRequest(
 
       if (path === "/weather/hourly") {
         await handleTimelineWeather(request, response, "1h");
+        return;
+      }
+
+      if (path === "/radarTile") {
+        const product = parseRadarProduct(requiredQuery(request, "product"));
+        await handleRadarTile(
+          request,
+          response,
+          radarModeForProduct(product),
+          requiredQuery(request, "z"),
+          requiredQuery(request, "x"),
+          requiredQuery(request, "y"),
+        );
+        return;
+      }
+
+      if (path === "/radarFrames") {
+        await handleRadarFrames(request, response);
         return;
       }
 
@@ -343,6 +362,37 @@ async function handleAlert(alertId: string, response: Response) {
   }, weatherCacheControl);
 }
 
+async function handleRadarFrames(request: Request, response: Response) {
+  const lat = parseLatitude(requiredQuery(request, "lat"));
+  const lon = parseLongitude(requiredQuery(request, "lon"));
+  const product = parseRadarFrameProduct(
+    queryParam(request, "product") ?? "auto",
+    lat,
+    lon,
+  );
+  const mode = radarModeForProduct(product);
+  const latest = roundToNearestPastTenMinuteUnix();
+  const forecastAvailable =
+    mode === "us-forecast" || globalForecastRadarEnabled();
+
+  // Fail with the same sanitized secret errors as tile/weather routes.
+  getOpenWeatherApiKey();
+
+  const frames = buildRadarFrames(latest, forecastAvailable);
+  sendJson(response, 200, {
+    product,
+    mode,
+    productLabel: mode === "us-forecast" ?
+      "US forecast radar" :
+      "Global precipitation radar",
+    latestTimestamp: latest,
+    minTimestamp: frames[0]?.timestamp ?? latest,
+    maxTimestamp: frames[frames.length - 1]?.timestamp ?? latest,
+    forecastAvailable,
+    frames,
+  }, "public, max-age=60");
+}
+
 async function handleRadarTile(
   request: Request,
   response: Response,
@@ -379,20 +429,17 @@ async function handleRadarTile(
     }
 
     const latest = roundToNearestPastTenMinuteUnix();
-    const min = latest - fortyEightHoursSeconds;
-    const max = mode === "us-forecast" ?
+    const min = latest - twoHoursSeconds;
+    const globalForecastEnabled = globalForecastRadarEnabled();
+    const max = mode === "us-forecast" || globalForecastEnabled ?
       latest + fiveHoursSeconds :
       latest;
-    const globalForecastEnabled = globalForecastRadarEnabled();
-    if (
-      tm < min ||
-      (tm > max && !(mode === "global" && globalForecastEnabled))
-    ) {
+    if (tm < min || tm > max) {
       throw new PublicHttpError(
         400,
         mode === "us-forecast" ?
-          "US forecast radar supports 48 hours of history and 5 hours ahead." :
-          "Global radar supports current and past frames only.",
+          "US forecast radar supports 2 hours of history and 5 hours ahead." :
+          "Global radar supports 2 hours of history and configured future frames.",
       );
     }
   } catch (error) {
@@ -419,7 +466,7 @@ async function handleRadarTile(
   const key = getOpenWeatherApiKey();
   const tilePath = mode === "us-forecast" ?
     `/maps/2.0/radar/us/forecast/${z}/${x}/${y}` :
-    `/maps/2.0/radar/${z}/${x}/${y}`;
+    `/maps/2.0/radar/forecast/${z}/${x}/${y}`;
   const url = new URL(tilePath, openWeatherMapBase);
   url.searchParams.set("appid", key);
   url.searchParams.set("tm", String(tm));
@@ -460,6 +507,13 @@ async function handleRadarTile(
     return;
   }
 
+  logger.info("OpenWeather radar tile proxied", {
+    status: upstream.status,
+    mode,
+    z,
+    tm,
+  });
+
   const contentType = upstream.headers.get("content-type") ?? "image/png";
   if (!isSupportedRadarImageContentType(contentType)) {
     logger.warn("OpenWeather radar tile returned non-image data", {
@@ -484,7 +538,7 @@ async function handleRadarTile(
 
   response
     .status(200)
-    .set("Cache-Control", "public, max-age=300, stale-while-revalidate=300")
+    .set("Cache-Control", "public, max-age=120, stale-while-revalidate=120")
     .set("Content-Type", contentType)
     .send(bytes);
 }
@@ -820,6 +874,75 @@ export function parseUnits(value: string | undefined): "imperial" | "metric" |
     );
   }
   return units;
+}
+
+function parseRadarProduct(value: string): RadarProduct {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "us" || normalized === "global") {
+    return normalized;
+  }
+  throw new PublicHttpError(
+    400,
+    "Radar product must be us or global.",
+    "openweather_invalid_request",
+  );
+}
+
+function parseRadarFrameProduct(
+  value: string,
+  lat: number,
+  lon: number,
+): RadarProduct {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "auto") {
+    return coordinateLooksUs(lat, lon) ? "us" : "global";
+  }
+  return parseRadarProduct(normalized);
+}
+
+function radarModeForProduct(product: RadarProduct): RadarMode {
+  return product === "us" ? "us-forecast" : "global";
+}
+
+function coordinateLooksUs(lat: number, lon: number): boolean {
+  return lat >= 18 && lat <= 72 && lon >= -170 && lon <= -64;
+}
+
+function buildRadarFrames(
+  latest: number,
+  forecastAvailable: boolean,
+): JsonRecord[] {
+  const frames: JsonRecord[] = [];
+  const min = latest - twoHoursSeconds;
+  const max = forecastAvailable ? latest + fiveHoursSeconds : latest;
+  for (let timestamp = min; timestamp <= max; timestamp += tenMinutesSeconds) {
+    const offsetSeconds = timestamp - latest;
+    frames.push({
+      timestamp,
+      label: offsetSeconds === 0 ? "Latest" : radarFrameOffsetLabel(
+        offsetSeconds,
+      ),
+      type: offsetSeconds < 0 ?
+        "history" :
+        offsetSeconds > 0 ? "forecast" : "latest",
+      isLatest: offsetSeconds === 0,
+    });
+  }
+  return frames;
+}
+
+function radarFrameOffsetLabel(offsetSeconds: number): string {
+  const prefix = offsetSeconds < 0 ? "-" : "+";
+  const minutes = Math.floor(Math.abs(offsetSeconds) / 60);
+  if (minutes < 60) {
+    return `${prefix}${minutes} min`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const extraMinutes = minutes % 60;
+  if (extraMinutes === 0) {
+    return `${prefix}${hours}h`;
+  }
+  return `${prefix}${hours}h ${extraMinutes}m`;
 }
 
 function parseInteger(value: string, label: string): number {

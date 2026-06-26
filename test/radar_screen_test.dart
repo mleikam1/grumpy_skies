@@ -56,12 +56,12 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Radar'), findsWidgets);
     expect(find.text('Demo City, US'), findsWidgets);
-    expect(find.text('US forecast radar'), findsWidgets);
     expect(find.text('FutureCast'), findsOneWidget);
     expect(find.text('Latest'), findsWidgets);
-    expect(find.text('Radar product'), findsOneWidget);
-    expect(find.text('Selected frame'), findsOneWidget);
-    expect(find.text('Map center'), findsOneWidget);
+    expect(find.bySemanticsLabel('Radar legend and info'), findsOneWidget);
+    expect(find.text('Radar product'), findsNothing);
+    expect(find.text('Selected frame'), findsNothing);
+    expect(find.text('Map center'), findsNothing);
   });
 
   testWidgets('RadarScreen keeps controls and alert panel available on web',
@@ -78,11 +78,16 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel('Zoom in'), findsOneWidget);
-    expect(find.bySemanticsLabel('Use current location'), findsOneWidget);
+    expect(find.bySemanticsLabel('Recenter radar map'), findsOneWidget);
     expect(find.bySemanticsLabel('Radar layers'), findsOneWidget);
-    expect(find.text('Radar product'), findsOneWidget);
-    expect(find.text('Selected frame'), findsOneWidget);
-    expect(find.text('Map center'), findsOneWidget);
+    expect(find.bySemanticsLabel('Radar legend and info'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel('Radar legend and info'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('US forecast radar'), findsOneWidget);
+    expect(find.text('Precipitation legend'), findsOneWidget);
+    expect(find.text('Weather data © OpenWeather'), findsOneWidget);
   });
 
   testWidgets('RadarScreen shows one clean unavailable state for tile fallback',
@@ -108,12 +113,14 @@ void main() {
         }),
       ),
     );
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.pump();
 
     expect(tester.takeException(), isNull);
     expect(
-      find.text('Radar temporarily unavailable. The base map is still usable.'),
+      find.text(
+        'Radar product/API access issue. Check OpenWeather Maps access on the server key.',
+      ),
       findsOneWidget,
     );
   });

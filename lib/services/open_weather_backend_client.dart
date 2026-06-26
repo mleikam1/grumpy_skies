@@ -216,7 +216,8 @@ class OpenWeatherBackendClient {
     required RadarMode mode,
     required int timestamp,
   }) {
-    return '$baseUrl/radar/tile/${mode.pathSegment}/{z}/{x}/{y}.png?tm=$timestamp';
+    return '$baseUrl/radar/tile/${mode.pathSegment}/{z}/{x}/{y}.png'
+        '?tm=$timestamp';
   }
 
   Future<RadarTileHealth> radarTileHealth({

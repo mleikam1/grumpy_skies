@@ -20,6 +20,7 @@ class RadarTimelineScrubber extends StatelessWidget {
     required this.onChanged,
     required this.onPlayPause,
     required this.onLatest,
+    this.framed = true,
   });
 
   final bool playing;
@@ -32,52 +33,63 @@ class RadarTimelineScrubber extends StatelessWidget {
   final ValueChanged<double> onChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
+  final bool framed;
 
   @override
   Widget build(BuildContext context) {
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        final timeline = _TimelineTrack(
+          value: value,
+          max: max,
+          divisions: divisions,
+          startLabel: startLabel,
+          endLabel: endLabel,
+          onChanged: onChanged,
+        );
+        final header = _TimelineHeader(
+          playing: playing,
+          timeLabel: timeLabel,
+          onPlayPause: onPlayPause,
+          onLatest: onLatest,
+        );
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              header,
+              const SizedBox(height: DMSpacing.xs),
+              timeline,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            SizedBox(width: 300, child: header),
+            const SizedBox(width: DMSpacing.md),
+            Expanded(child: timeline),
+          ],
+        );
+      },
+    );
+
+    if (!framed) {
+      return Semantics(
+        container: true,
+        label: 'Radar timeline scrubber',
+        child: content,
+      );
+    }
+
     return DmGlassCard(
       padding: const EdgeInsets.all(DMSpacing.md),
       gradient: DMGradients.glassNavy,
       borderColor: DMColors.glassBorderStrong,
       semanticLabel: 'Radar timeline scrubber',
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 520;
-          final timeline = _TimelineTrack(
-            value: value,
-            max: max,
-            divisions: divisions,
-            startLabel: startLabel,
-            endLabel: endLabel,
-            onChanged: onChanged,
-          );
-          final header = _TimelineHeader(
-            playing: playing,
-            timeLabel: timeLabel,
-            onPlayPause: onPlayPause,
-            onLatest: onLatest,
-          );
-
-          if (compact) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                header,
-                const SizedBox(height: DMSpacing.sm),
-                timeline,
-              ],
-            );
-          }
-
-          return Row(
-            children: [
-              SizedBox(width: 320, child: header),
-              const SizedBox(width: DMSpacing.md),
-              Expanded(child: timeline),
-            ],
-          );
-        },
-      ),
+      child: content,
     );
   }
 }
