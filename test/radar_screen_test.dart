@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/radar/radar_screen.dart';
+import 'package:grumpy_skies/features/radar/widgets/open_weather_radar_map.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
 import 'package:grumpy_skies/services/open_weather_backend_client.dart';
@@ -92,6 +94,15 @@ void main() {
     expect(find.text('Precipitation legend'), findsOneWidget);
     expect(find.byTooltip('Minimize'), findsOneWidget);
     expect(find.byTooltip('Close'), findsWidgets);
+  });
+
+  testWidgets('RadarScreen defaults map to city-level zoom', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
+    expect(map.options.initialZoom, radarCityZoom);
+    expect(radarCityZoom, inInclusiveRange(9.5, 10.5));
   });
 
   testWidgets('RadarScreen shows one clean unavailable state for tile fallback',

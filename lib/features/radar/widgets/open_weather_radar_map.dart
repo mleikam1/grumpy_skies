@@ -10,6 +10,8 @@ import '../../../design/dm_spacing.dart';
 import '../../../models/weather_models.dart';
 import '../../../services/open_weather_backend_client.dart';
 
+const double radarCityZoom = 10;
+
 class OpenWeatherRadarMap extends StatefulWidget {
   const OpenWeatherRadarMap({
     super.key,
@@ -67,7 +69,7 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
         oldWidget.location.lon != widget.location.lon) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        widget.mapController.move(_center, widget.mapController.camera.zoom);
+        widget.mapController.move(_center, radarCityZoom);
       });
     }
 
@@ -119,7 +121,7 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
       mapController: widget.mapController,
       options: MapOptions(
         initialCenter: _center,
-        initialZoom: 6,
+        initialZoom: radarCityZoom,
         minZoom: 3,
         maxZoom: 12,
         interactionOptions: const InteractionOptions(

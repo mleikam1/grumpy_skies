@@ -362,6 +362,90 @@ void main() {
       expect(bundle.daily.first.weatherIcon, '04d');
     });
 
+    test('maps forecast timeline errors without hiding current weather',
+        () async {
+      final client = OpenWeatherBackendClient(
+        baseUrl: 'https://example.test/api',
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/api/weather/forecast');
+          return http.Response(
+            jsonEncode({
+              'timezone': 'America/Chicago',
+              'timezoneOffset': -18000,
+              'units': 'imperial',
+              'current': {
+                'latitude': 38.8672283,
+                'longitude': -94.6520357,
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'observedAt': 1782043200,
+                'sourceUpdatedAt': 1782043200,
+                'fetchedAt': '2026-06-21T12:03:00Z',
+                'sunrise': 1782030000,
+                'sunset': 1782085200,
+                'temp': 76,
+                'feelsLike': 78,
+                'humidity': 64,
+                'windSpeed': 12,
+                'windDeg': 225,
+                'weatherId': 800,
+                'weatherMain': 'Clear',
+                'weatherDescription': 'clear sky',
+                'weatherIcon': '01d',
+                'units': 'imperial',
+              },
+              'hourlyTimeline': {
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'data': [],
+              },
+              'dailyTimeline': {
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'data': [],
+              },
+              'forecastErrors': {
+                'hourly': {
+                  'endpointType': 'hourly',
+                  'status': 502,
+                  'code': 'openweather_one_call_access_denied',
+                  'message':
+                      'OpenWeather rejected the server key for One Call API 4.0.',
+                },
+                'daily': {
+                  'endpointType': 'daily',
+                  'status': 502,
+                  'code': 'openweather_one_call_access_denied',
+                  'message':
+                      'OpenWeather rejected the server key for One Call API 4.0.',
+                },
+              },
+            }),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }),
+      );
+
+      final bundle = await client.forecast(
+        latitude: 38.8672283,
+        longitude: -94.6520357,
+        locationName: 'Overland Park, KS, US',
+      );
+
+      expect(bundle.current.temperatureF.round(), 76);
+      expect(bundle.hourly, isEmpty);
+      expect(bundle.daily, isEmpty);
+      expect(
+        bundle.hourlyForecastMessage,
+        'Forecast timeline needs OpenWeather One Call API 4.0 access.',
+      );
+      expect(
+        bundle.dailyForecastMessage,
+        'Forecast timeline needs OpenWeather One Call API 4.0 access.',
+      );
+    });
+
     test('does not expose raw socket exceptions to callers', () async {
       final client = OpenWeatherBackendClient(
         baseUrl:

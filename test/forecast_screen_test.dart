@@ -161,6 +161,41 @@ void main() {
     expect(find.textContaining('° / '), findsNWidgets(7));
   });
 
+  testWidgets('forecast empty cards show timeline issue messages',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: DMTheme.light,
+        home: const Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                ForecastHourlyStrip(
+                  hourly: [],
+                  errorMessage:
+                      'Forecast timeline needs OpenWeather One Call API 4.0 access.',
+                ),
+                ForecastDailyGrid(
+                  daily: [],
+                  errorMessage:
+                      'Forecast timeline needs OpenWeather One Call API 4.0 access.',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Forecast timeline needs OpenWeather One Call API 4.0 access.'),
+      findsNWidgets(2),
+    );
+    expect(find.text('Hourly forecast unavailable'), findsNothing);
+    expect(find.text('7-day forecast unavailable'), findsNothing);
+  });
+
   testWidgets('ForecastScreen passes selected coordinates to weather fetch',
       (tester) async {
     final repository = _RecordingWeatherRepository();

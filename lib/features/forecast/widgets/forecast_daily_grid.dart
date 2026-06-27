@@ -14,6 +14,7 @@ class ForecastDailyGrid extends StatelessWidget {
     this.sunset,
     this.referenceTime,
     this.timezoneOffset,
+    this.errorMessage,
   });
 
   final List<DailyForecast> daily;
@@ -21,6 +22,7 @@ class ForecastDailyGrid extends StatelessWidget {
   final DateTime? sunset;
   final DateTime? referenceTime;
   final int? timezoneOffset;
+  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class ForecastDailyGrid extends StatelessWidget {
       timezoneOffset,
     );
     final child = days.isEmpty
-        ? const _EmptyDailyState()
+        ? _EmptyDailyState(message: errorMessage)
         : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -124,7 +126,9 @@ class ForecastDailyGrid extends StatelessWidget {
 }
 
 class _EmptyDailyState extends StatelessWidget {
-  const _EmptyDailyState();
+  const _EmptyDailyState({this.message});
+
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -134,8 +138,10 @@ class _EmptyDailyState extends StatelessWidget {
       shadows: const [],
       child: Center(
         child: Text(
-          '7-day forecast unavailable',
+          message ?? '7-day forecast unavailable',
           textAlign: TextAlign.center,
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
           style: DMTypography.body.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),

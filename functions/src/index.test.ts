@@ -376,6 +376,60 @@ test("maps One Call 4.0 timeline data arrays into forecast DTOs", () => {
   assert.equal(firstDailyWeather.description, "broken clouds");
 });
 
+test("maps One Call 4.0 timeline failures into forecast error metadata", () => {
+  const dto = normalizeOneCallTimelineForecast(
+    {
+      lat: 38.8672283,
+      lon: -94.6520357,
+      timezone: "America/Chicago",
+      timezone_offset: -18000,
+      data: [
+        {
+          dt: 1782043200,
+          temp: 76,
+          feels_like: 78,
+          humidity: 64,
+          weather: [
+            {
+              id: 800,
+              main: "Clear",
+              description: "clear sky",
+              icon: "01d",
+            },
+          ],
+        },
+      ],
+    },
+    null,
+    null,
+    "imperial",
+    {
+      hourly: {
+        endpointType: "hourly",
+        status: 502,
+        code: "openweather_one_call_access_denied",
+        message: "OpenWeather rejected the server key for One Call API 4.0.",
+      },
+      daily: {
+        endpointType: "daily",
+        status: 502,
+        code: "openweather_one_call_access_denied",
+        message: "OpenWeather rejected the server key for One Call API 4.0.",
+      },
+    },
+  );
+  const hourly = dto.hourly as Record<string, unknown>[];
+  const daily = dto.daily as Record<string, unknown>[];
+  const errors = dto.forecastErrors as Record<string, unknown>;
+  const hourlyError = errors.hourly as Record<string, unknown>;
+  const dailyError = errors.daily as Record<string, unknown>;
+
+  assert.equal(hourly.length, 0);
+  assert.equal(daily.length, 0);
+  assert.equal(hourlyError.code, "openweather_one_call_access_denied");
+  assert.equal(dailyError.code, "openweather_one_call_access_denied");
+});
+
 test("weather cache key rounds location and includes units", () => {
   const first = weatherCacheKey(
     "/data/2.5/weather",

@@ -195,6 +195,12 @@ class OpenWeatherRepository extends WeatherRepository {
         ? _hourlyFromTimeline(liveWeather.timeline, current)
         : liveWeather.hourly;
     final daily = liveWeather.daily;
+    _debugForecastCounts(
+      hourlyCount: hourly.length,
+      dailyCount: daily.length,
+      hourlyMessage: liveWeather.hourlyForecastMessage,
+      dailyMessage: liveWeather.dailyForecastMessage,
+    );
     final bundle = WeatherBundle(
       current: current,
       hourly: hourly,
@@ -208,6 +214,8 @@ class OpenWeatherRepository extends WeatherRepository {
       minutePrecipitation: liveWeather.minutePrecipitation,
       timeline: liveWeather.timeline,
       alerts: liveWeather.alerts,
+      hourlyForecastMessage: liveWeather.hourlyForecastMessage,
+      dailyForecastMessage: liveWeather.dailyForecastMessage,
     );
     return bundle;
   }
@@ -230,6 +238,7 @@ class OpenWeatherRepository extends WeatherRepository {
         latitude: latitude,
         longitude: longitude,
         locationName: locationName,
+        forecastError: error,
       );
     }
   }
@@ -238,12 +247,14 @@ class OpenWeatherRepository extends WeatherRepository {
     required double latitude,
     required double longitude,
     required String locationName,
+    Object? forecastError,
   }) async {
     final current = await _client.current(
       latitude: latitude,
       longitude: longitude,
       locationName: locationName,
     );
+    Object? hourlyError;
     final minutesFuture = _client
         .minute(
       latitude: latitude,
@@ -259,6 +270,7 @@ class OpenWeatherRepository extends WeatherRepository {
       longitude: longitude,
     )
         .catchError((Object error) {
+      hourlyError = error;
       _debugOptionalWeatherFailure('hourly', error);
       return <TimelineWeatherPoint>[];
     });
@@ -276,6 +288,10 @@ class OpenWeatherRepository extends WeatherRepository {
       minutePrecipitation: minutes,
       timeline: timeline,
       alerts: alerts,
+      hourlyForecastMessage:
+          timeline.isEmpty ? _forecastIssueMessage(hourlyError) : null,
+      dailyForecastMessage: _forecastIssueMessage(forecastError) ??
+          '7-day forecast needs the bundled forecast backend.',
     );
   }
 
@@ -409,6 +425,25 @@ class OpenWeatherRepository extends WeatherRepository {
     );
   }
 
+  static void _debugForecastCounts({
+    required int hourlyCount,
+    required int dailyCount,
+    String? hourlyMessage,
+    String? dailyMessage,
+  }) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] Forecast repository hourly count: $hourlyCount '
+      'daily count: $dailyCount',
+    );
+    if (hourlyMessage != null) {
+      debugPrint('[GrumpySkies] hourly forecast issue: $hourlyMessage');
+    }
+    if (dailyMessage != null) {
+      debugPrint('[GrumpySkies] daily forecast issue: $dailyMessage');
+    }
+  }
+
   static bool _shouldUseLegacyWeatherFallback(Object error) {
     if (error is! OpenWeatherBackendException) return false;
     return error.statusCode == 404 || error.isProviderAuthorizationFailure;
@@ -427,6 +462,21 @@ class OpenWeatherRepository extends WeatherRepository {
     debugPrint(
       '[GrumpySkies] optional $endpoint weather failed: $error',
     );
+  }
+
+  static String? _forecastIssueMessage(Object? error) {
+    if (error is! OpenWeatherBackendException) return null;
+    return switch (error.code) {
+      'openweather_one_call_access_denied' =>
+        'Forecast timeline needs OpenWeather One Call API 4.0 access.',
+      'openweather_key_rejected' =>
+        'Forecast timeline credentials need attention.',
+      'openweather_not_found' => 'Forecast timeline data was not found.',
+      'openweather_timeout' => 'Forecast timeline timed out. Try again soon.',
+      'openweather_unavailable' =>
+        'Forecast timeline is temporarily unavailable.',
+      _ => error.message,
+    };
   }
 }
 

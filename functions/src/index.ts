@@ -390,32 +390,37 @@ async function handleForecastWeather(request: Request, response: Response) {
   const lat = parseLatitude(requiredQuery(request, "lat"));
   const lon = parseLongitude(requiredQuery(request, "lon"));
   const units = parseUnits(queryParam(request, "units"));
-  const [currentRaw, hourlyRaw, dailyRaw] = await Promise.all([
-    fetchCurrentWeatherForForecast(lat, lon, units),
-    openWeatherJson(
+  const currentRaw = await fetchCurrentWeatherForForecast(lat, lon, units);
+  const [hourlyResult, dailyResult] = await Promise.all([
+    fetchForecastTimeline(
       "/data/4.0/onecall/timeline/1h",
       {lat, lon, units, lang: "en"},
       "weather/forecast/hourly",
+      "hourly",
     ),
-    openWeatherJson(
+    fetchForecastTimeline(
       "/data/4.0/onecall/timeline/1day",
       {lat, lon, units, lang: "en"},
       "weather/forecast/daily",
+      "daily",
     ),
   ]);
   const normalized = normalizeOneCallTimelineForecast(
     currentRaw,
-    hourlyRaw,
-    dailyRaw,
+    hourlyResult.raw,
+    dailyResult.raw,
     units,
+    forecastErrorsFor(hourlyResult.error, dailyResult.error),
   );
   logger.info("OpenWeather forecast timelines normalized", {
-    hourlyStatus: 200,
-    hourlyDataLength: responseDataLength(hourlyRaw),
-    hourlyTimezone: responseTimezone(hourlyRaw),
-    dailyStatus: 200,
-    dailyDataLength: responseDataLength(dailyRaw),
-    dailyTimezone: responseTimezone(dailyRaw),
+    hourlyStatus: hourlyResult.status,
+    hourlyDataLength: hourlyResult.dataLength,
+    hourlyTimezone: hourlyResult.timezone,
+    hourlyErrorCode: stringOrNull(hourlyResult.error?.code),
+    dailyStatus: dailyResult.status,
+    dailyDataLength: dailyResult.dataLength,
+    dailyTimezone: dailyResult.timezone,
+    dailyErrorCode: stringOrNull(dailyResult.error?.code),
   });
 
   sendJson(
@@ -424,6 +429,82 @@ async function handleForecastWeather(request: Request, response: Response) {
     normalized,
     weatherCacheControl,
   );
+}
+
+type ForecastTimelineResult = {
+  raw: unknown | null;
+  status: number;
+  dataLength: number;
+  timezone: string | null;
+  error: JsonRecord | null;
+};
+
+async function fetchForecastTimeline(
+  pathname: string,
+  params: Record<string, string | number | undefined>,
+  routeLabel: string,
+  endpointType: "hourly" | "daily",
+): Promise<ForecastTimelineResult> {
+  try {
+    const raw = await openWeatherJson(pathname, params, routeLabel);
+    return {
+      raw,
+      status: 200,
+      dataLength: responseDataLength(raw) ?? 0,
+      timezone: responseTimezone(raw),
+      error: null,
+    };
+  } catch (error) {
+    const safeError = forecastTimelineError(endpointType, error);
+    logger.warn("OpenWeather forecast timeline unavailable", {
+      endpointType,
+      status: safeError.status,
+      code: safeError.code,
+      message: safeError.message,
+    });
+    return {
+      raw: null,
+      status: numberOrNull(safeError.status) ?? 500,
+      dataLength: 0,
+      timezone: null,
+      error: safeError,
+    };
+  }
+}
+
+function forecastTimelineError(
+  endpointType: "hourly" | "daily",
+  error: unknown,
+): JsonRecord {
+  if (error instanceof PublicHttpError) {
+    return {
+      endpointType,
+      status: error.status,
+      code: error.safeCode,
+      message: error.safeMessage,
+    };
+  }
+
+  return {
+    endpointType,
+    status: 500,
+    code: "openweather_timeline_error",
+    message: "Forecast timeline data is temporarily unavailable.",
+  };
+}
+
+function forecastErrorsFor(
+  hourlyError: JsonRecord | null,
+  dailyError: JsonRecord | null,
+): JsonRecord {
+  const errors: JsonRecord = {};
+  if (hourlyError !== null) {
+    errors.hourly = hourlyError;
+  }
+  if (dailyError !== null) {
+    errors.daily = dailyError;
+  }
+  return errors;
 }
 
 async function fetchCurrentWeatherForForecast(
@@ -2211,6 +2292,7 @@ export function normalizeOneCallTimelineForecast(
   hourlyRaw: unknown,
   dailyRaw: unknown,
   units: "imperial" | "metric" | "standard" = "imperial",
+  forecastErrors: JsonRecord = {},
 ): JsonRecord {
   const current = normalizeCurrentWeather(currentRaw, units);
   const hourlyRoot = asRecord(hourlyRaw);
@@ -2241,6 +2323,7 @@ export function normalizeOneCallTimelineForecast(
     daily,
     hourlyTimeline: normalizeTimelineEnvelope(hourlyRaw, hourly),
     dailyTimeline: normalizeTimelineEnvelope(dailyRaw, daily),
+    forecastErrors,
     alerts: [],
     units,
   };

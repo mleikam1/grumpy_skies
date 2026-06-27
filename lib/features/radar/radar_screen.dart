@@ -439,9 +439,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   void _recenter() {
     final location = _locationController?.selectedLocation;
     if (location == null) return;
-    final camera = _mapController.camera;
-    final zoom = math.max(5.0, camera.zoom.clamp(3.0, 12.0));
-    _mapController.move(LatLng(location.lat, location.lon), zoom);
+    _mapController.move(LatLng(location.lat, location.lon), radarCityZoom);
   }
 
   void _openInfoSheet() {

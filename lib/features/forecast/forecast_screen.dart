@@ -624,6 +624,10 @@ class _ForecastLowerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      debugPrint('Forecast UI hourly count: ${weather.hourly.length}');
+      debugPrint('Forecast UI daily count: ${weather.daily.length}');
+    }
     final forecast = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -633,6 +637,7 @@ class _ForecastLowerSection extends StatelessWidget {
           sunset: weather.current.sunset,
           referenceTime: weather.current.lastUpdated,
           timezoneOffset: weather.current.timezoneOffset,
+          errorMessage: weather.hourlyForecastMessage,
         ),
         SizedBox(height: gap),
         ForecastDailyGrid(
@@ -641,6 +646,7 @@ class _ForecastLowerSection extends StatelessWidget {
           sunset: weather.current.sunset,
           referenceTime: weather.current.lastUpdated,
           timezoneOffset: weather.current.timezoneOffset,
+          errorMessage: weather.dailyForecastMessage,
         ),
       ],
     );

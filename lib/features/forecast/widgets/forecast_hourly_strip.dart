@@ -14,6 +14,7 @@ class ForecastHourlyStrip extends StatelessWidget {
     this.sunset,
     this.referenceTime,
     this.timezoneOffset,
+    this.errorMessage,
   });
 
   final List<HourlyForecast> hourly;
@@ -21,6 +22,7 @@ class ForecastHourlyStrip extends StatelessWidget {
   final DateTime? sunset;
   final DateTime? referenceTime;
   final int? timezoneOffset;
+  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class ForecastHourlyStrip extends StatelessWidget {
       timezoneOffset,
     );
     final child = items.isEmpty
-        ? const _EmptyHourlyState()
+        ? _EmptyHourlyState(message: errorMessage)
         : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -121,7 +123,9 @@ class ForecastHourlyStrip extends StatelessWidget {
 }
 
 class _EmptyHourlyState extends StatelessWidget {
-  const _EmptyHourlyState();
+  const _EmptyHourlyState({this.message});
+
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -131,8 +135,10 @@ class _EmptyHourlyState extends StatelessWidget {
       shadows: const [],
       child: Center(
         child: Text(
-          'Hourly forecast unavailable',
+          message ?? 'Hourly forecast unavailable',
           textAlign: TextAlign.center,
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
           style: DMTypography.body.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),

@@ -573,6 +573,12 @@ class OpenWeatherBackendClient {
               item,
             ))
         .toList(growable: false);
+    final forecastErrors =
+        (json['forecastErrors'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final hourlyForecastMessage =
+        hourly.isEmpty ? _forecastIssueMessage(forecastErrors['hourly']) : null;
+    final dailyForecastMessage =
+        daily.isEmpty ? _forecastIssueMessage(forecastErrors['daily']) : null;
 
     return WeatherBundle(
       current: current,
@@ -581,7 +587,27 @@ class OpenWeatherBackendClient {
       minutePrecipitation: minutes,
       timeline: timeline,
       alerts: alerts,
+      hourlyForecastMessage: hourlyForecastMessage,
+      dailyForecastMessage: dailyForecastMessage,
     );
+  }
+
+  static String? _forecastIssueMessage(Object? value) {
+    if (value is! Map) return null;
+    final record = value.cast<String, dynamic>();
+    final code = record['code'] as String?;
+    final message = record['message'] as String?;
+    return switch (code) {
+      'openweather_one_call_access_denied' =>
+        'Forecast timeline needs OpenWeather One Call API 4.0 access.',
+      'openweather_key_rejected' =>
+        'Forecast timeline credentials need attention.',
+      'openweather_not_found' => 'Forecast timeline data was not found.',
+      'openweather_timeout' => 'Forecast timeline timed out. Try again soon.',
+      'openweather_unavailable' =>
+        'Forecast timeline is temporarily unavailable.',
+      _ => message,
+    };
   }
 
   static List<Map<String, dynamic>> _forecastRecords(

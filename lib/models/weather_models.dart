@@ -854,6 +854,8 @@ class WeatherBundle {
   final List<MinutePrecipitation> minutePrecipitation;
   final List<TimelineWeatherPoint> timeline;
   final List<WeatherAlert> alerts;
+  final String? hourlyForecastMessage;
+  final String? dailyForecastMessage;
 
   const WeatherBundle({
     required this.current,
@@ -864,6 +866,8 @@ class WeatherBundle {
     this.minutePrecipitation = const [],
     this.timeline = const [],
     this.alerts = const [],
+    this.hourlyForecastMessage,
+    this.dailyForecastMessage,
   });
 
   Map<String, dynamic> toJson() => {
@@ -876,6 +880,10 @@ class WeatherBundle {
             minutePrecipitation.map((e) => e.toJson()).toList(),
         'timeline': timeline.map((e) => e.toJson()).toList(),
         'alerts': alerts.map((e) => e.toJson()).toList(),
+        if (hourlyForecastMessage != null)
+          'hourlyForecastMessage': hourlyForecastMessage,
+        if (dailyForecastMessage != null)
+          'dailyForecastMessage': dailyForecastMessage,
       };
 
   factory WeatherBundle.fromSnapshot(WeatherSnapshot snapshot) {
@@ -923,6 +931,8 @@ class WeatherBundle {
                 (e as Map).cast<String, dynamic>(),
               ))
           .toList(),
+      hourlyForecastMessage: json['hourlyForecastMessage'] as String?,
+      dailyForecastMessage: json['dailyForecastMessage'] as String?,
     );
   }
 }
