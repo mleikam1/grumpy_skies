@@ -25,15 +25,9 @@ class ForecastDailyGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final days = daily.take(7).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DmSectionHeader(title: '7-day forecast'),
-        const SizedBox(height: DMSpacing.sm),
-        SizedBox(
-          height: 184,
-          child: ListView.separated(
+    final child = days.isEmpty
+        ? const _EmptyDailyState()
+        : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             clipBehavior: Clip.none,
@@ -54,7 +48,16 @@ class ForecastDailyGrid extends StatelessWidget {
                 ),
               );
             },
-          ),
+          );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const DmSectionHeader(title: '7-day forecast'),
+        const SizedBox(height: DMSpacing.sm),
+        SizedBox(
+          height: 184,
+          child: child,
         ),
       ],
     );
@@ -94,6 +97,28 @@ class ForecastDailyGrid extends StatelessWidget {
       'Sun',
     ];
     return labels[date.weekday - 1];
+  }
+}
+
+class _EmptyDailyState extends StatelessWidget {
+  const _EmptyDailyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return DmGlassCard(
+      padding: const EdgeInsets.all(DMSpacing.md),
+      borderRadius: DMRadius.large,
+      shadows: const [],
+      child: Center(
+        child: Text(
+          '7-day forecast unavailable',
+          textAlign: TextAlign.center,
+          style: DMTypography.body.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
+    );
   }
 }
 

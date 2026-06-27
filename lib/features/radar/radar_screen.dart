@@ -15,6 +15,7 @@ import '../../design/dm_typography.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/fake_weather_repository.dart';
 import '../../repositories/weather_repository.dart';
+import '../../services/chaos_score_service.dart';
 import '../../services/open_weather_backend_client.dart';
 import '../../services/weather_location_controller.dart';
 import '../../shared/widgets/daymaker_components.dart';
@@ -29,30 +30,42 @@ class RadarScreen extends StatefulWidget {
   State<RadarScreen> createState() => _RadarScreenState();
 }
 
+enum _RadarSheetState {
+  open,
+  minimized,
+  closed,
+}
+
 class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   final _mapController = MapController();
 
   WeatherLocationController? _locationController;
   OpenWeatherBackendClient? _client;
+  WeatherRepository? _weatherRepository;
   Timer? _playTimer;
   Timer? _boundaryTimer;
   RadarMode _mode = RadarMode.usForecast;
   RadarFrame? _previousFrame;
+  WeatherBundle? _chaosWeather;
   List<RadarFrame> _frames = const [];
   var _playing = false;
-  var _sheetExpanded = false;
+  var _sheetState = _RadarSheetState.minimized;
   var _timelineIndex = 0;
   var _loadedDependencies = false;
   var _loadingFrames = false;
+  var _loadingChaos = false;
   var _checkingFutureCast = false;
-  var _futureCastAvailable = false;
+  var _futureCastAvailable = true;
+  var _showChaosMeter = true;
   var _frameLoadSerial = 0;
+  var _chaosLoadSerial = 0;
   var _tileIssue = false;
   var _tileIssueUpdateQueued = false;
   var _tileIssueGeneration = 0;
   String? _frameLoadMessage;
   String? _futureCastMessage;
   String? _tileIssueCode;
+  String? _chaosMessage;
 
   @override
   void didChangeDependencies() {
@@ -65,10 +78,13 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
           repository: _readWeatherRepository() ?? const FakeWeatherRepository(),
         );
     _client = _readClient() ?? OpenWeatherBackendClient();
+    _weatherRepository =
+        _readWeatherRepository() ?? const FakeWeatherRepository();
     _locationController!.addListener(_handleLocationChanged);
     final location = _locationController!.selectedLocation;
     _mode = _defaultModeFor(location);
     _loadFrames(keepSelectedTimestamp: false);
+    _loadChaosWeather();
     _refreshFutureCastAvailability();
     _startBoundaryTimer();
     _loadedDependencies = true;
@@ -124,7 +140,10 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     _clearTileIssue();
     _mode = _defaultModeFor(_locationController?.selectedLocation);
     _previousFrame = null;
+    _chaosWeather = null;
+    _chaosMessage = null;
     _loadFrames(keepSelectedTimestamp: false);
+    _loadChaosWeather();
     _refreshFutureCastAvailability();
     _recenter();
     if (mounted) setState(() {});
@@ -311,7 +330,10 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
   void _setMode(RadarMode mode) {
     if (mode == _mode) return;
-    if (mode == RadarMode.futureCast && !_futureCastAvailable) {
+    final location = _locationController?.selectedLocation;
+    final usLocation = location != null &&
+        (location.isUs || _coordinateLooksUs(location.lat, location.lon));
+    if (mode == RadarMode.futureCast && !usLocation) {
       setState(() {
         _tileIssue = true;
         _tileIssueCode = 'futurecast_unavailable';
@@ -337,6 +359,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     }
     if (_checkingFutureCast) return;
     _checkingFutureCast = true;
+    setState(() => _futureCastAvailable = true);
     try {
       final frameSet = await client.radarFrames(
         mode: RadarMode.futureCast,
@@ -346,19 +369,49 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
       );
       if (!mounted) return;
       setState(() {
-        _futureCastAvailable =
-            frameSet.frames.isNotEmpty || frameSet.futureCastAvailable;
+        _futureCastAvailable = true;
         _futureCastMessage = frameSet.diagnosticMessage;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _futureCastAvailable = false;
+        _futureCastAvailable = true;
         _futureCastMessage =
             'FutureCast requires OpenWeather precipitation forecast map access.';
       });
     } finally {
       _checkingFutureCast = false;
+    }
+  }
+
+  Future<void> _loadChaosWeather() async {
+    final location = _locationController?.selectedLocation;
+    final repository = _weatherRepository;
+    if (location == null || repository == null || !_showChaosMeter) return;
+
+    final serial = ++_chaosLoadSerial;
+    setState(() {
+      _loadingChaos = true;
+      _chaosMessage = null;
+    });
+
+    try {
+      final weather = await repository.getWeather(
+        latitude: location.lat,
+        longitude: location.lon,
+        location: location,
+      );
+      if (!mounted || serial != _chaosLoadSerial) return;
+      setState(() {
+        _chaosWeather = weather;
+        _loadingChaos = false;
+      });
+    } catch (_) {
+      if (!mounted || serial != _chaosLoadSerial) return;
+      setState(() {
+        _loadingChaos = false;
+        _chaosMessage = 'Weather signals unavailable';
+      });
     }
   }
 
@@ -392,11 +445,27 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   }
 
   void _openInfoSheet() {
-    setState(() => _sheetExpanded = true);
+    setState(() => _sheetState = _RadarSheetState.open);
   }
 
   void _toggleInfoSheet() {
-    setState(() => _sheetExpanded = !_sheetExpanded);
+    setState(() {
+      _sheetState = _sheetState == _RadarSheetState.open
+          ? _RadarSheetState.minimized
+          : _RadarSheetState.open;
+    });
+  }
+
+  void _minimizeInfoSheet() {
+    setState(() => _sheetState = _RadarSheetState.minimized);
+  }
+
+  void _closeInfoSheet() {
+    setState(() => _sheetState = _RadarSheetState.closed);
+  }
+
+  void _closeChaosMeter() {
+    setState(() => _showChaosMeter = false);
   }
 
   void _handleTileIssue(String? code) {
@@ -462,15 +531,28 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
             final mode = _effectiveModeFor(location);
             final frame = _selectedFrame;
-            final bottomInset = MediaQuery.paddingOf(context).bottom;
+            final mediaPadding = MediaQuery.paddingOf(context);
+            final bottomInset = mediaPadding.bottom;
+            final safeTop = mediaPadding.top;
             final horizontal = width < 600 ? DMSpacing.sm : DMSpacing.xl;
-            const collapsedSheetHeight = 112.0;
-            final expandedSheetHeight = math.min(
-              constraints.maxHeight * (width < 700 ? 0.48 : 0.44),
-              width < 700 ? 360.0 : 340.0,
+            final sheetOpen = _sheetState == _RadarSheetState.open;
+            final sheetMinimized = _sheetState == _RadarSheetState.minimized;
+            const minimizedSheetHeight = 52.0;
+            final openSheetHeight = math.min(
+              constraints.maxHeight * (width < 700 ? 0.36 : 0.34),
+              width < 700 ? 280.0 : 300.0,
             );
-            final sheetHeight =
-                _sheetExpanded ? expandedSheetHeight : collapsedSheetHeight;
+            final noticeOffset = (sheetOpen
+                    ? openSheetHeight
+                    : sheetMinimized
+                        ? minimizedSheetHeight
+                        : 0) +
+                bottomInset +
+                DMSpacing.x2;
+            final chaosScore = _chaosWeather == null
+                ? null
+                : ChaosScoreService.evaluate(_chaosWeather!);
+            final chaosWidth = math.min(232.0, width - horizontal * 2 - 76);
 
             return Stack(
               fit: StackFit.expand,
@@ -485,7 +567,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                   onTileIssue: _handleTileIssue,
                 ),
                 Positioned(
-                  top: MediaQuery.paddingOf(context).top + DMSpacing.sm,
+                  top: safeTop + DMSpacing.sm,
                   left: horizontal,
                   right: 88,
                   child: _RadarStatusStack(
@@ -494,8 +576,20 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                     modeLabel: mode.modeChipLabel,
                   ),
                 ),
+                if (_showChaosMeter && chaosWidth >= 168)
+                  Positioned(
+                    top: safeTop + 62,
+                    left: horizontal,
+                    width: chaosWidth,
+                    child: _ChaosMeterCard(
+                      score: chaosScore,
+                      loading: _loadingChaos,
+                      message: _chaosMessage,
+                      onClose: _closeChaosMeter,
+                    ),
+                  ),
                 Positioned(
-                  top: MediaQuery.paddingOf(context).top + DMSpacing.sm,
+                  top: safeTop + DMSpacing.sm,
                   right: horizontal,
                   child: _RadarFloatingControls(
                     playing: _playing,
@@ -512,7 +606,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                   Positioned(
                     left: horizontal,
                     right: horizontal,
-                    bottom: sheetHeight + bottomInset + DMSpacing.x2,
+                    bottom: noticeOffset,
                     child: _RadarNoticeBanner(
                       message: _loadingFrames
                           ? 'Loading radar frames...'
@@ -521,33 +615,51 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                               : _frameLoadMessage!,
                     ),
                   ),
-                Positioned(
-                  left: horizontal,
-                  right: horizontal,
-                  bottom: bottomInset + DMSpacing.sm,
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 900),
-                      child: _RadarBottomSheet(
-                        expanded: _sheetExpanded,
-                        height: sheetHeight,
-                        frame: frame,
-                        frames: _frames,
-                        timelineIndex: _timelineIndex,
-                        playing: _playing,
-                        mode: mode,
-                        locationName: _locationLabel(location),
-                        futureCastAvailable: _futureCastAvailable,
-                        futureCastMessage: _futureCastMessage,
-                        onModeChanged: _setMode,
-                        onTimelineChanged: _onTimelineChanged,
-                        onPlayPause: _togglePlayback,
-                        onLatest: _jumpToLatest,
-                        onToggleExpanded: _toggleInfoSheet,
+                if (sheetOpen)
+                  Positioned(
+                    left: horizontal,
+                    right: horizontal,
+                    bottom: bottomInset + DMSpacing.sm,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 900),
+                        child: _RadarBottomSheet(
+                          height: openSheetHeight,
+                          frame: frame,
+                          frames: _frames,
+                          timelineIndex: _timelineIndex,
+                          playing: _playing,
+                          mode: mode,
+                          locationName: _locationLabel(location),
+                          futureCastAvailable: _futureCastAvailable,
+                          futureCastMessage: _futureCastMessage,
+                          onModeChanged: _setMode,
+                          onTimelineChanged: _onTimelineChanged,
+                          onPlayPause: _togglePlayback,
+                          onLatest: _jumpToLatest,
+                          onMinimize: _minimizeInfoSheet,
+                          onClose: _closeInfoSheet,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                if (sheetMinimized)
+                  Positioned(
+                    left: horizontal,
+                    right: horizontal,
+                    bottom: bottomInset + DMSpacing.sm,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: _RadarSheetTab(
+                          frame: frame,
+                          mode: mode,
+                          onOpen: _openInfoSheet,
+                          onClose: _closeInfoSheet,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             );
           },
@@ -833,9 +945,187 @@ class _RadarFloatingControls extends StatelessWidget {
   }
 }
 
+class _ChaosMeterCard extends StatelessWidget {
+  const _ChaosMeterCard({
+    required this.score,
+    required this.loading,
+    required this.message,
+    required this.onClose,
+  });
+
+  final ChaosScore? score;
+  final bool loading;
+  final String? message;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = score?.value;
+    final label = score?.label ?? (loading ? 'Checking' : 'Unavailable');
+    final explanation =
+        message ?? score?.explanation ?? 'Reading weather signals';
+
+    return DmGlassCard(
+      padding: const EdgeInsets.fromLTRB(
+        DMSpacing.sm,
+        DMSpacing.xs,
+        DMSpacing.xs,
+        DMSpacing.sm,
+      ),
+      borderRadius: DMRadius.large,
+      gradient: DMGradients.glassNavy,
+      borderColor: DMColors.glassBorderStrong,
+      shadows: DMShadows.floating,
+      semanticLabel: 'Chaos Meter',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Chaos Meter',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DMTypography.labelSmall.copyWith(
+                    color: DMColors.textMuted,
+                  ),
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: 'Close Chaos Meter',
+                constraints:
+                    const BoxConstraints.tightFor(width: 28, height: 28),
+                icon: const Icon(Icons.close_rounded, size: 16),
+                color: DMColors.textMuted,
+                onPressed: onClose,
+              ),
+            ],
+          ),
+          const SizedBox(height: DMSpacing.xxs),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (loading && value == null)
+                const SizedBox.square(
+                  dimension: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Text(
+                  value == null ? '--' : '$value',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DMTypography.numeral.copyWith(
+                    color: DMColors.sunriseYellow,
+                  ),
+                ),
+              const SizedBox(width: DMSpacing.xs),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DMTypography.labelLarge,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: DMSpacing.xxs),
+          Text(
+            explanation,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: DMTypography.labelSmall.copyWith(
+              color: DMColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RadarSheetTab extends StatelessWidget {
+  const _RadarSheetTab({
+    required this.frame,
+    required this.mode,
+    required this.onOpen,
+    required this.onClose,
+  });
+
+  final RadarFrame frame;
+  final RadarMode mode;
+  final VoidCallback onOpen;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return DmGlassCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: DMSpacing.sm,
+        vertical: DMSpacing.xs,
+      ),
+      borderRadius: DMRadius.full,
+      gradient: DMGradients.glassNavy,
+      borderColor: DMColors.glassBorderStrong,
+      shadows: DMShadows.floating,
+      semanticLabel: 'Minimized radar controls',
+      child: Row(
+        children: [
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            tooltip: 'Open radar controls',
+            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+            icon: const Icon(Icons.keyboard_arrow_up_rounded),
+            color: DMColors.skyBlue,
+            onPressed: onOpen,
+          ),
+          const SizedBox(width: DMSpacing.xs),
+          Expanded(
+            child: InkWell(
+              borderRadius: DMRadius.full,
+              onTap: onOpen,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Radar controls',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DMTypography.labelLarge,
+                  ),
+                  Text(
+                    '${mode.modeChipLabel} · ${frame.label}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DMTypography.labelSmall.copyWith(
+                      color: DMColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            tooltip: 'Close radar controls',
+            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+            icon: const Icon(Icons.close_rounded),
+            color: DMColors.textSecondary,
+            onPressed: onClose,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _RadarBottomSheet extends StatelessWidget {
   const _RadarBottomSheet({
-    required this.expanded,
     required this.height,
     required this.frame,
     required this.frames,
@@ -849,10 +1139,10 @@ class _RadarBottomSheet extends StatelessWidget {
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
-    required this.onToggleExpanded,
+    required this.onMinimize,
+    required this.onClose,
   });
 
-  final bool expanded;
   final double height;
   final RadarFrame frame;
   final List<RadarFrame> frames;
@@ -866,7 +1156,8 @@ class _RadarBottomSheet extends StatelessWidget {
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
-  final VoidCallback onToggleExpanded;
+  final VoidCallback onMinimize;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -887,36 +1178,24 @@ class _RadarBottomSheet extends StatelessWidget {
         child: Column(
           children: [
             _SheetHandle(
-              expanded: expanded,
-              onTap: onToggleExpanded,
+              onMinimize: onMinimize,
+              onClose: onClose,
             ),
             Expanded(
-              child: expanded
-                  ? _ExpandedRadarSheetBody(
-                      frame: frame,
-                      frames: frames,
-                      timelineIndex: timelineIndex,
-                      playing: playing,
-                      mode: mode,
-                      locationName: locationName,
-                      futureCastAvailable: futureCastAvailable,
-                      futureCastMessage: futureCastMessage,
-                      onModeChanged: onModeChanged,
-                      onTimelineChanged: onTimelineChanged,
-                      onPlayPause: onPlayPause,
-                      onLatest: onLatest,
-                    )
-                  : _CompactRadarTimeline(
-                      frame: frame,
-                      frames: frames,
-                      timelineIndex: timelineIndex,
-                      playing: playing,
-                      mode: mode,
-                      showRangeLabels: false,
-                      onTimelineChanged: onTimelineChanged,
-                      onPlayPause: onPlayPause,
-                      onLatest: onLatest,
-                    ),
+              child: _ExpandedRadarSheetBody(
+                frame: frame,
+                frames: frames,
+                timelineIndex: timelineIndex,
+                playing: playing,
+                mode: mode,
+                locationName: locationName,
+                futureCastAvailable: futureCastAvailable,
+                futureCastMessage: futureCastMessage,
+                onModeChanged: onModeChanged,
+                onTimelineChanged: onTimelineChanged,
+                onPlayPause: onPlayPause,
+                onLatest: onLatest,
+              ),
             ),
           ],
         ),
@@ -927,37 +1206,58 @@ class _RadarBottomSheet extends StatelessWidget {
 
 class _SheetHandle extends StatelessWidget {
   const _SheetHandle({
-    required this.expanded,
-    required this.onTap,
+    required this.onMinimize,
+    required this.onClose,
   });
 
-  final bool expanded;
-  final VoidCallback onTap;
+  final VoidCallback onMinimize;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: expanded ? 'Collapse radar info' : 'Expand radar info',
-      child: ExcludeSemantics(
-        child: InkWell(
-          borderRadius: DMRadius.full,
-          onTap: onTap,
-          child: const SizedBox(
-            height: 12,
-            width: double.infinity,
-            child: Center(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: DMColors.glassBorderStrong,
-                  borderRadius: DMRadius.full,
+    return Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            button: true,
+            label: 'Minimize radar controls',
+            child: ExcludeSemantics(
+              child: InkWell(
+                borderRadius: DMRadius.full,
+                onTap: onMinimize,
+                child: const SizedBox(
+                  height: 22,
+                  child: Center(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: DMColors.glassBorderStrong,
+                        borderRadius: DMRadius.full,
+                      ),
+                      child: SizedBox(width: 42, height: 4),
+                    ),
+                  ),
                 ),
-                child: SizedBox(width: 42, height: 4),
               ),
             ),
           ),
         ),
-      ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          tooltip: 'Minimize',
+          constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+          color: DMColors.textSecondary,
+          onPressed: onMinimize,
+        ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          tooltip: 'Close',
+          constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+          icon: const Icon(Icons.close_rounded),
+          color: DMColors.textSecondary,
+          onPressed: onClose,
+        ),
+      ],
     );
   }
 }
@@ -1127,7 +1427,6 @@ class _CompactRadarTimeline extends StatelessWidget {
     required this.onTimelineChanged,
     required this.onPlayPause,
     required this.onLatest,
-    this.showRangeLabels = true,
   });
 
   final RadarFrame frame;
@@ -1138,7 +1437,6 @@ class _CompactRadarTimeline extends StatelessWidget {
   final ValueChanged<double> onTimelineChanged;
   final VoidCallback onPlayPause;
   final VoidCallback onLatest;
-  final bool showRangeLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -1233,43 +1531,42 @@ class _CompactRadarTimeline extends StatelessWidget {
             ),
           ),
         ),
-        if (showRangeLabels)
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  historyLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelSmall.copyWith(
-                    color: DMColors.textMuted,
-                  ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                historyLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.textMuted,
                 ),
               ),
-              Expanded(
-                child: Text(
-                  stepLabel,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelSmall.copyWith(
-                    color: DMColors.sunriseYellow,
-                  ),
+            ),
+            Expanded(
+              child: Text(
+                stepLabel,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.sunriseYellow,
                 ),
               ),
-              Expanded(
-                child: Text(
-                  endLabel,
-                  textAlign: TextAlign.right,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelSmall.copyWith(
-                    color: DMColors.textMuted,
-                  ),
+            ),
+            Expanded(
+              child: Text(
+                endLabel,
+                textAlign: TextAlign.right,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: DMTypography.labelSmall.copyWith(
+                  color: DMColors.textMuted,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ],
     );
   }

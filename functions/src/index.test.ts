@@ -4,6 +4,7 @@ import {test} from "node:test";
 import {
   normalizeCurrentWeather,
   normalizeForecastWeather,
+  openWeatherRadarTilePath,
   parseLatitude,
   parseLongitude,
   parseUnits,
@@ -190,7 +191,7 @@ test("maps One Call bundled forecast arrays without truncating daily data", () =
           precipitation: 1.27,
         },
       ],
-      hourly: Array.from({length: 12}, (_, index) => ({
+      hourly: Array.from({length: 48}, (_, index) => ({
         dt: 1782043200 + index * 3600,
         temp: 76 + index,
         feels_like: 78 + index,
@@ -205,7 +206,7 @@ test("maps One Call bundled forecast arrays without truncating daily data", () =
           },
         ],
       })),
-      daily: Array.from({length: 7}, (_, index) => ({
+      daily: Array.from({length: 8}, (_, index) => ({
         dt: 1782043200 + index * 86400,
         temp: {
           min: 60 + index,
@@ -230,10 +231,10 @@ test("maps One Call bundled forecast arrays without truncating daily data", () =
 
   assert.equal(dto.timezone, "America/Chicago");
   assert.equal(dto.timezoneOffset, -18000);
-  assert.equal(hourly.length, 12);
-  assert.equal(daily.length, 7);
+  assert.equal(hourly.length, 48);
+  assert.equal(daily.length, 8);
   assert.equal(hourly[0].temp, 76);
-  assert.equal(hourly[11].temp, 87);
+  assert.equal(hourly[47].temp, 123);
   assert.equal(daily[0].date, "2026-06-21T00:00:00.000");
   assert.equal(firstDailyTemp.min, 60);
   assert.equal(firstDailyTemp.max, 80);
@@ -274,6 +275,17 @@ test("NOAA radar helpers snap to 5 minutes and build Web Mercator bboxes", () =>
   assert.equal(Math.round(bbox.ymin), 4383205);
   assert.equal(Math.round(bbox.xmax), -10018754);
   assert.equal(Math.round(bbox.ymax), 5009377);
+});
+
+test("OpenWeather radar tile paths use US FutureCast and global forecast products", () => {
+  assert.equal(
+    openWeatherRadarTilePath("openweather_futurecast", 6, 15, 24),
+    "/maps/2.0/radar/us/forecast/6/15/24",
+  );
+  assert.equal(
+    openWeatherRadarTilePath("openweather_global", 3, 2, 4),
+    "/maps/2.0/radar/forecast/3/2/4",
+  );
 });
 
 test("classifies OpenWeather One Call auth and subscription errors safely", () => {

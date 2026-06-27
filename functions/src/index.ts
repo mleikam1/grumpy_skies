@@ -38,6 +38,7 @@ type RadarSource =
   "noaa_mrms" |
   "openweather_futurecast" |
   "openweather_global";
+type OpenWeatherRadarSource = Exclude<RadarSource, "noaa_mrms">;
 
 type JsonRecord = Record<string, unknown>;
 type CacheEntry = {
@@ -394,11 +395,23 @@ async function handleForecastWeather(request: Request, response: Response) {
     {lat, lon, units, lang: "en"},
     "weather/forecast",
   );
+  const normalized = normalizeForecastWeather(raw, units);
+  logger.info("OpenWeather forecast normalized", {
+    hourlyLength: Array.isArray(normalized.hourly) ?
+      normalized.hourly.length :
+      0,
+    dailyLength: Array.isArray(normalized.daily) ?
+      normalized.daily.length :
+      0,
+    minuteLength: Array.isArray(normalized.minutes) ?
+      normalized.minutes.length :
+      0,
+  });
 
   sendJson(
     response,
     200,
-    normalizeForecastWeather(raw, units),
+    normalized,
     weatherCacheControl,
   );
 }
@@ -484,6 +497,7 @@ async function handleRadarFrames(request: Request, response: Response) {
     forecastAvailable,
     tenMinutesSeconds,
     openWeatherRadarHistorySeconds,
+    radarSourceForMode(mode),
   );
   sendJson(response, 200, {
     product,
@@ -676,7 +690,7 @@ async function handleOpenWeatherRadarTile(
   xRaw: string,
   yRaw: string,
 ) {
-  const source = radarSourceForMode(mode);
+  const source = radarSourceForMode(mode) as OpenWeatherRadarSource;
 
   let z: number;
   let x: number;
@@ -743,7 +757,7 @@ async function handleOpenWeatherRadarTile(
   }
 
   const key = getOpenWeatherApiKey();
-  const url = openWeatherRadarTileUrl(z, x, y, tm, key);
+  const url = openWeatherRadarTileUrl(source, z, x, y, tm, key);
 
   let upstream: globalThis.Response;
   try {
@@ -1404,17 +1418,37 @@ function radarProbeUrl(
   if (source === "noaa_mrms") {
     return noaaRadarExportImageUrl(z, x, y, timestamp * 1000);
   }
-  return openWeatherRadarTileUrl(z, x, y, timestamp, getOpenWeatherApiKey());
+  return openWeatherRadarTileUrl(
+    source,
+    z,
+    x,
+    y,
+    timestamp,
+    getOpenWeatherApiKey(),
+  );
+}
+
+export function openWeatherRadarTilePath(
+  source: OpenWeatherRadarSource,
+  z: number,
+  x: number,
+  y: number,
+): string {
+  const productPath = source === "openweather_futurecast" ?
+    "radar/us/forecast" :
+    "radar/forecast";
+  return `/maps/2.0/${productPath}/${z}/${x}/${y}`;
 }
 
 function openWeatherRadarTileUrl(
+  source: OpenWeatherRadarSource,
   z: number,
   x: number,
   y: number,
   timestamp: number,
   apiKey: string,
 ): URL {
-  const tilePath = `/maps/2.0/radar/forecast/${z}/${x}/${y}`;
+  const tilePath = openWeatherRadarTilePath(source, z, x, y);
   const url = new URL(tilePath, openWeatherMapBase);
   url.searchParams.set("appid", apiKey);
   url.searchParams.set("tm", String(timestamp));
@@ -1923,6 +1957,7 @@ function buildRadarFrames(
   forecastAvailable: boolean,
   stepSeconds = tenMinutesSeconds,
   historySeconds = openWeatherRadarHistorySeconds,
+  source: RadarSource = "openweather_global",
 ): JsonRecord[] {
   const frames: JsonRecord[] = [];
   const min = latest - historySeconds;
@@ -1938,6 +1973,7 @@ function buildRadarFrames(
         "history" :
         offsetSeconds > 0 ? "forecast" : "latest",
       isLatest: offsetSeconds === 0,
+      source,
     });
   }
   return frames;

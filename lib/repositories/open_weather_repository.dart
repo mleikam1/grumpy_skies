@@ -194,9 +194,7 @@ class OpenWeatherRepository extends WeatherRepository {
     final hourly = liveWeather.hourly.isEmpty
         ? _hourlyFromTimeline(liveWeather.timeline, current)
         : liveWeather.hourly;
-    final daily = liveWeather.daily.isEmpty
-        ? _dailyFromHourly(hourly, current)
-        : liveWeather.daily;
+    final daily = liveWeather.daily;
     final bundle = WeatherBundle(
       current: current,
       hourly: hourly,
@@ -286,17 +284,7 @@ class OpenWeatherRepository extends WeatherRepository {
     CurrentWeather current,
   ) {
     if (timeline.isEmpty) {
-      return [
-        HourlyForecast(
-          time: current.lastUpdated,
-          temperatureC: current.temperatureC,
-          condition: current.condition,
-          precipitationChance: current.precipitationChance,
-          weatherIcon: current.weatherIcon,
-          weatherMain: current.weatherMain,
-          weatherId: current.weatherId,
-        ),
-      ];
+      return const [];
     }
 
     return timeline.take(24).map((point) {
@@ -312,64 +300,6 @@ class OpenWeatherRepository extends WeatherRepository {
         weatherId: point.weatherId,
       );
     }).toList();
-  }
-
-  static List<DailyForecast> _dailyFromHourly(
-    List<HourlyForecast> hourly,
-    CurrentWeather current,
-  ) {
-    final byDate = <DateTime, List<HourlyForecast>>{};
-    for (final hour in hourly) {
-      final day = DateTime(hour.time.year, hour.time.month, hour.time.day);
-      byDate.putIfAbsent(day, () => []).add(hour);
-    }
-
-    if (byDate.isEmpty) {
-      return [
-        DailyForecast(
-          date: current.lastUpdated,
-          minTempC: current.temperatureC,
-          maxTempC: current.temperatureC,
-          condition: current.condition,
-          precipitationChance: current.precipitationChance,
-          weatherIcon: current.weatherIcon,
-          weatherMain: current.weatherMain,
-          weatherId: current.weatherId,
-        ),
-      ];
-    }
-
-    return byDate.entries.take(7).map((entry) {
-      final representative = _representativeDailyHour(entry.value);
-      final temps = entry.value.map((hour) => hour.temperatureC).toList();
-      final rainChance = entry.value
-          .map((hour) => hour.precipitationChance)
-          .fold<int>(0, (max, value) => value > max ? value : max);
-      return DailyForecast(
-        date: entry.key,
-        minTempC: temps.reduce((a, b) => a < b ? a : b),
-        maxTempC: temps.reduce((a, b) => a > b ? a : b),
-        condition: representative.condition,
-        precipitationChance: rainChance,
-        weatherIcon: representative.weatherIcon,
-        weatherMain: representative.weatherMain,
-        weatherId: representative.weatherId,
-      );
-    }).toList();
-  }
-
-  static HourlyForecast _representativeDailyHour(List<HourlyForecast> hours) {
-    return hours.reduce((best, next) {
-      final bestScore = _daytimeScore(best.time);
-      final nextScore = _daytimeScore(next.time);
-      return nextScore < bestScore ? next : best;
-    });
-  }
-
-  static int _daytimeScore(DateTime time) {
-    final middayDistance = (time.hour - 12).abs() * 60 + time.minute.abs();
-    final daylightPenalty = time.hour >= 6 && time.hour < 20 ? 0 : 10000;
-    return daylightPenalty + middayDistance;
   }
 
   static WeatherSnapshot _snapshotFromBundle(WeatherBundle bundle) {

@@ -531,38 +531,38 @@ class OpenWeatherBackendClient {
     );
     final timezoneOffset =
         current.timezoneOffset ?? (json['timezoneOffset'] as num?)?.round();
-    final hourly = ((json['hourly'] as List?) ?? const [])
+    final hourly = _recordsFromList(json['hourly'])
         .map(
           (item) => _hourlyForecastFromBackend(
-            (item as Map).cast<String, dynamic>(),
+            item,
             current: current,
             units: dtoUnits,
           ),
         )
         .toList(growable: false);
-    final daily = ((json['daily'] as List?) ?? const [])
+    final daily = _recordsFromList(json['daily'])
         .map(
           (item) => _dailyForecastFromBackend(
-            (item as Map).cast<String, dynamic>(),
+            item,
             current: current,
             units: dtoUnits,
             timezoneOffset: timezoneOffset,
           ),
         )
         .toList(growable: false);
-    final minutes = ((json['minutes'] as List?) ?? const [])
+    final minutes = _recordsFromList(json['minutes'])
         .map((item) => MinutePrecipitation.fromJson(
-              (item as Map).cast<String, dynamic>(),
+              item,
             ))
         .toList(growable: false);
-    final timeline = ((json['hourly'] as List?) ?? const [])
+    final timeline = _recordsFromList(json['hourly'])
         .map((item) => TimelineWeatherPoint.fromJson(
-              (item as Map).cast<String, dynamic>(),
+              item,
             ))
         .toList(growable: false);
-    final alerts = ((json['alerts'] as List?) ?? const [])
+    final alerts = _recordsFromList(json['alerts'])
         .map((item) => WeatherAlert.fromJson(
-              (item as Map).cast<String, dynamic>(),
+              item,
             ))
         .toList(growable: false);
 
@@ -574,6 +574,15 @@ class OpenWeatherBackendClient {
       timeline: timeline,
       alerts: alerts,
     );
+  }
+
+  static Iterable<Map<String, dynamic>> _recordsFromList(Object? value) sync* {
+    if (value is! List) return;
+    for (final item in value) {
+      if (item is Map) {
+        yield item.cast<String, dynamic>();
+      }
+    }
   }
 
   static HourlyForecast _hourlyForecastFromBackend(

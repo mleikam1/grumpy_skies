@@ -63,13 +63,18 @@ List<RadarFrame> generateRadarFrames({
     frames.add(
       RadarFrame(
         timestamp: timestamp,
-        label: isLatest ? 'Latest' : _frameOffsetLabel(offsetSeconds),
+        label: isLatest
+            ? mode == RadarMode.futureCast
+                ? 'Now'
+                : 'Latest'
+            : _frameOffsetLabel(offsetSeconds),
         type: offsetSeconds < 0
             ? RadarFrameType.history
             : offsetSeconds > 0
                 ? RadarFrameType.forecast
                 : RadarFrameType.latest,
         isLatest: isLatest,
+        source: mode.sourceParam,
       ),
     );
   }

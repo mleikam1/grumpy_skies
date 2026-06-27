@@ -175,7 +175,7 @@ void main() {
                 },
               ],
               'hourly': List.generate(
-                12,
+                48,
                 (index) => {
                   'dt': 1782043200 + index * 3600,
                   'temp': 76 + index,
@@ -189,7 +189,7 @@ void main() {
                 },
               ),
               'daily': List.generate(
-                7,
+                8,
                 (index) => {
                   'dt': 1782043200 + index * 86400,
                   'date':
@@ -222,12 +222,12 @@ void main() {
 
       expect(bundle.current.locationName, 'Overland Park, KS, US');
       expect(bundle.current.timezoneOffset, -18000);
-      expect(bundle.hourly, hasLength(12));
-      expect(bundle.daily, hasLength(7));
+      expect(bundle.hourly, hasLength(48));
+      expect(bundle.daily, hasLength(8));
       expect(bundle.minutePrecipitation, hasLength(1));
-      expect(bundle.timeline, hasLength(12));
+      expect(bundle.timeline, hasLength(48));
       expect(bundle.hourly.first.temperatureF.round(), 76);
-      expect(bundle.hourly.last.temperatureF.round(), 87);
+      expect(bundle.hourly.last.temperatureF.round(), 123);
       expect(bundle.daily.first.maxTempF.round(), 80);
       expect(bundle.daily.first.minTempF.round(), 60);
       expect(bundle.daily.first.condition, 'Broken Clouds');

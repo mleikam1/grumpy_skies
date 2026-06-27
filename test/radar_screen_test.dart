@@ -56,6 +56,8 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Radar'), findsWidgets);
     expect(find.text('Demo City, US'), findsWidgets);
+    expect(find.text('Chaos Meter'), findsOneWidget);
+    expect(find.text('Radar controls'), findsOneWidget);
     expect(find.text('FutureCast'), findsNothing);
     expect(find.text('Latest'), findsWidgets);
     expect(find.bySemanticsLabel('Radar legend and info'), findsOneWidget);
@@ -86,8 +88,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('NOAA MRMS radar'), findsOneWidget);
+    expect(find.text('FutureCast'), findsOneWidget);
     expect(find.text('Precipitation legend'), findsOneWidget);
-    expect(find.text('Radar © NOAA/NWS MRMS'), findsOneWidget);
+    expect(find.byTooltip('Minimize'), findsOneWidget);
+    expect(find.byTooltip('Close'), findsWidgets);
   });
 
   testWidgets('RadarScreen shows one clean unavailable state for tile fallback',

@@ -29,15 +29,9 @@ class ForecastHourlyStrip extends StatelessWidget {
       referenceTime ?? DateTime.now(),
       timezoneOffset,
     );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DmSectionHeader(title: 'Hourly'),
-        const SizedBox(height: DMSpacing.sm),
-        SizedBox(
-          height: 168,
-          child: ListView.separated(
+    final child = items.isEmpty
+        ? const _EmptyHourlyState()
+        : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             clipBehavior: Clip.none,
@@ -51,7 +45,16 @@ class ForecastHourlyStrip extends StatelessWidget {
                 sunset: sunset,
               );
             },
-          ),
+          );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const DmSectionHeader(title: 'Hourly'),
+        const SizedBox(height: DMSpacing.sm),
+        SizedBox(
+          height: 168,
+          child: child,
         ),
       ],
     );
@@ -114,6 +117,28 @@ class ForecastHourlyStrip extends StatelessWidget {
     return DateTime.fromMillisecondsSinceEpoch(
       time.toUtc().millisecondsSinceEpoch + timezoneOffset * 1000,
       isUtc: true,
+    );
+  }
+}
+
+class _EmptyHourlyState extends StatelessWidget {
+  const _EmptyHourlyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return DmGlassCard(
+      padding: const EdgeInsets.all(DMSpacing.md),
+      borderRadius: DMRadius.large,
+      shadows: const [],
+      child: Center(
+        child: Text(
+          'Hourly forecast unavailable',
+          textAlign: TextAlign.center,
+          style: DMTypography.body.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
     );
   }
 }

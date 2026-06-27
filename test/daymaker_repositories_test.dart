@@ -142,7 +142,7 @@ void main() {
     expect(bundle.minutePrecipitation, hasLength(1));
     expect(bundle.timeline, hasLength(1));
     expect(bundle.hourly, hasLength(1));
-    expect(bundle.daily, hasLength(1));
+    expect(bundle.daily, isEmpty);
     expect(client.forecastCalls, 1);
     expect(client.currentCalls, 1);
     expect(client.minuteCalls, 1);
@@ -163,9 +163,9 @@ void main() {
     expect(bundle.current.locationName, 'Overland Park, Kansas, US');
     expect(bundle.current.temperatureF.round(), 76);
     expect(bundle.minutePrecipitation, hasLength(1));
-    expect(bundle.timeline, hasLength(12));
-    expect(bundle.hourly, hasLength(12));
-    expect(bundle.daily, hasLength(7));
+    expect(bundle.timeline, hasLength(48));
+    expect(bundle.hourly, hasLength(48));
+    expect(bundle.daily, hasLength(8));
     expect(bundle.daily.first.maxTempF.round(), 80);
     expect(bundle.daily.first.minTempF.round(), 60);
     expect(client.forecastCalls, 1);
@@ -253,9 +253,9 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
     return WeatherBundle(
       current: current,
       hourly: List.generate(
-        12,
+        48,
         (index) => HourlyForecast(
-          time: DateTime(2026, 6, 21, 12 + index),
+          time: DateTime(2026, 6, 21, 12).add(Duration(hours: index)),
           temperatureC: (76 + index - 32) * 5 / 9,
           condition: 'Clear',
           precipitationChance: index * 2,
@@ -265,7 +265,7 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
         ),
       ),
       daily: List.generate(
-        7,
+        8,
         (index) => DailyForecast(
           date: DateTime(2026, 6, 21 + index),
           minTempC: (60 + index - 32) * 5 / 9,
@@ -284,9 +284,9 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
         ),
       ],
       timeline: List.generate(
-        12,
+        48,
         (index) => TimelineWeatherPoint(
-          time: DateTime(2026, 6, 21, 12 + index),
+          time: DateTime(2026, 6, 21, 12).add(Duration(hours: index)),
           temperatureF: (76 + index).toDouble(),
           condition: 'Clear',
         ),
