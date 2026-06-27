@@ -4,6 +4,9 @@ import {test} from "node:test";
 import {
   normalizeCurrentWeather,
   normalizeForecastWeather,
+  normalizeLegacyForecastWeather,
+  normalizeNwsForecastWeather,
+  normalizeOneCall3ForecastWeather,
   normalizeOneCallTimelineForecast,
   openWeatherRadarTilePath,
   parseLatitude,
@@ -428,6 +431,260 @@ test("maps One Call 4.0 timeline failures into forecast error metadata", () => {
   assert.equal(daily.length, 0);
   assert.equal(hourlyError.code, "openweather_one_call_access_denied");
   assert.equal(dailyError.code, "openweather_one_call_access_denied");
+});
+
+test("maps One Call 3.0 fallback forecast into timeline-compatible DTOs", () => {
+  const dto = normalizeOneCall3ForecastWeather(
+    {
+      lat: 38.8672283,
+      lon: -94.6520357,
+      timezone: "America/Chicago",
+      timezone_offset: -18000,
+      current: {
+        dt: 1782043200,
+        sunrise: 1782030000,
+        sunset: 1782085200,
+        temp: 76,
+        feels_like: 78,
+        humidity: 64,
+        weather: [
+          {
+            id: 800,
+            main: "Clear",
+            description: "clear sky",
+            icon: "01d",
+          },
+        ],
+      },
+      hourly: Array.from({length: 48}, (_, index) => ({
+        dt: 1782043200 + index * 3600,
+        temp: 76 + index,
+        feels_like: 78 + index,
+        humidity: 64,
+        pop: 0.2,
+        weather: [
+          {
+            id: 801,
+            main: "Clouds",
+            description: "few clouds",
+            icon: "02d",
+          },
+        ],
+      })),
+      daily: Array.from({length: 8}, (_, index) => ({
+        dt: 1782043200 + index * 86400,
+        temp: {
+          min: 60 + index,
+          max: 82 + index,
+        },
+        pop: 0.35,
+        weather: [
+          {
+            id: 803,
+            main: "Clouds",
+            description: "broken clouds",
+            icon: "04d",
+          },
+        ],
+      })),
+    },
+    "imperial",
+  );
+  const hourly = dto.hourly as Record<string, unknown>[];
+  const daily = dto.daily as Record<string, unknown>[];
+  const hourlyTimeline = dto.hourlyTimeline as Record<string, unknown>;
+  const dailyTimeline = dto.dailyTimeline as Record<string, unknown>;
+
+  assert.equal(dto.forecastSource, "openweather_onecall_3");
+  assert.equal(hourly.length, 48);
+  assert.equal(daily.length, 8);
+  assert.equal((hourlyTimeline.data as unknown[]).length, 48);
+  assert.equal((dailyTimeline.data as unknown[]).length, 8);
+});
+
+test("maps legacy 2.5 forecast data into hourly and aggregated daily DTOs", () => {
+  const currentRaw = {
+    coord: {
+      lat: 38.8672283,
+      lon: -94.6520357,
+    },
+    weather: [
+      {
+        id: 800,
+        main: "Clear",
+        description: "clear sky",
+        icon: "01d",
+      },
+    ],
+    main: {
+      temp: 76,
+      feels_like: 78,
+      humidity: 64,
+    },
+    wind: {
+      speed: 10,
+      deg: 180,
+    },
+    dt: 1782043200,
+    timezone: -18000,
+  };
+  const legacyRaw = {
+    city: {
+      coord: {
+        lat: 38.8672283,
+        lon: -94.6520357,
+      },
+      timezone: -18000,
+    },
+    list: Array.from({length: 16}, (_, index) => ({
+      dt: 1782043200 + index * 10800,
+      main: {
+        temp: 70 + index,
+        temp_min: 68 + index,
+        temp_max: 72 + index,
+        feels_like: 71 + index,
+        pressure: 1014,
+        humidity: 64,
+      },
+      weather: [
+        {
+          id: 500,
+          main: "Rain",
+          description: "light rain",
+          icon: "10d",
+        },
+      ],
+      clouds: {
+        all: 40,
+      },
+      wind: {
+        speed: 12,
+        gust: 18,
+        deg: 225,
+      },
+      pop: 0.4,
+      rain: {
+        "3h": 0.12,
+      },
+    })),
+  };
+
+  const dto = normalizeLegacyForecastWeather(
+    currentRaw,
+    legacyRaw,
+    null,
+    "imperial",
+  );
+  const hourly = dto.hourly as Record<string, unknown>[];
+  const daily = dto.daily as Record<string, unknown>[];
+  const firstDailyTemp = daily[0].temp as Record<string, unknown>;
+
+  assert.equal(dto.forecastSource, "openweather_legacy_2_5");
+  assert.equal(hourly.length, 16);
+  assert.ok(daily.length >= 2);
+  assert.equal(hourly[0].temp, 70);
+  assert.equal(hourly[0].precipitationProbability, 0.4);
+  assert.equal(firstDailyTemp.min, 68);
+  assert.equal(daily[0].pop, 0.4);
+});
+
+test("maps National Weather Service forecast periods into hourly and 7 daily DTOs", () => {
+  const currentRaw = {
+    coord: {
+      lat: 38.8672283,
+      lon: -94.6520357,
+    },
+    weather: [
+      {
+        id: 800,
+        main: "Clear",
+        description: "clear sky",
+        icon: "01d",
+      },
+    ],
+    main: {
+      temp: 76,
+      feels_like: 78,
+      humidity: 64,
+    },
+    wind: {
+      speed: 10,
+      deg: 180,
+    },
+    dt: 1782043200,
+    timezone: -18000,
+  };
+  const pointsRaw = {
+    properties: {
+      timeZone: "America/Chicago",
+      relativeLocation: {
+        geometry: {
+          coordinates: [-94.6520357, 38.8672283],
+        },
+        properties: {
+          city: "Overland Park",
+        },
+      },
+    },
+  };
+  const hourlyRaw = {
+    properties: {
+      periods: Array.from({length: 72}, (_, index) => ({
+        startTime: new Date(Date.UTC(2026, 5, 27, index)).toISOString(),
+        temperature: 70 + (index % 12),
+        temperatureUnit: "F",
+        windSpeed: "8 to 12 mph",
+        windDirection: "S",
+        shortForecast: index % 3 === 0 ? "Chance Rain Showers" : "Mostly Sunny",
+        probabilityOfPrecipitation: {
+          value: index % 3 === 0 ? 40 : 5,
+        },
+        relativeHumidity: {
+          value: 65,
+        },
+      })),
+    },
+  };
+  const dailyRaw = {
+    properties: {
+      periods: Array.from({length: 14}, (_, index) => {
+        const day = Math.floor(index / 2);
+        const daytime = index % 2 === 0;
+        return {
+          startTime: `2026-06-${String(27 + day).padStart(2, "0")}T${daytime ? "06" : "18"}:00:00-05:00`,
+          isDaytime: daytime,
+          temperature: daytime ? 82 + day : 62 + day,
+          temperatureUnit: "F",
+          windSpeed: "10 mph",
+          windDirection: "SW",
+          shortForecast: daytime ? "Mostly Sunny" : "Partly Cloudy",
+          probabilityOfPrecipitation: {
+            value: daytime ? 20 : 10,
+          },
+        };
+      }),
+    },
+  };
+
+  const dto = normalizeNwsForecastWeather(
+    currentRaw,
+    pointsRaw,
+    hourlyRaw,
+    dailyRaw,
+    "imperial",
+  );
+  const hourly = dto.hourly as Record<string, unknown>[];
+  const daily = dto.daily as Record<string, unknown>[];
+  const firstDailyTemp = daily[0].temp as Record<string, unknown>;
+
+  assert.equal(dto.forecastSource, "nws_api");
+  assert.equal(dto.timezone, "America/Chicago");
+  assert.equal(hourly.length, 72);
+  assert.equal(daily.length, 7);
+  assert.equal(hourly[0].precipitationProbability, 40);
+  assert.equal(hourly[0].windSpeed, 12);
+  assert.equal(firstDailyTemp.max, 82);
+  assert.equal(firstDailyTemp.min, 62);
 });
 
 test("weather cache key rounds location and includes units", () => {

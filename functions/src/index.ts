@@ -14,6 +14,7 @@ export const enableGlobalForecastRadar = defineString(
 
 const openWeatherApiBase = "https://api.openweathermap.org";
 const openWeatherMapBase = "https://maps.openweathermap.org";
+const nwsApiBase = "https://api.weather.gov";
 const noaaRadarImageServerBase =
   "https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity_time/ImageServer";
 const tenMinutesSeconds = 10 * 60;
@@ -26,7 +27,9 @@ const noaaFrameClusterSeconds = 120;
 const weatherCacheControl = "public, max-age=300, stale-while-revalidate=300";
 const radarFallbackCacheControl = "public, max-age=30";
 const openWeatherTimeoutMs = 8000;
+const nwsTimeoutMs = 8000;
 const authFailureTtlMs = 5 * 60 * 1000;
+const nwsUserAgent = "grumpy-skies/1.0 (wingman-interactive-live)";
 const transparentRadarTilePng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAABFUlEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBPAAB2ClDBAAAAABJRU5ErkJggg==",
   "base64",
@@ -413,6 +416,7 @@ async function handleForecastWeather(request: Request, response: Response) {
     forecastErrorsFor(hourlyResult.error, dailyResult.error),
   );
   logger.info("OpenWeather forecast timelines normalized", {
+    forecastSource: "openweather_onecall_4_timelines",
     hourlyStatus: hourlyResult.status,
     hourlyDataLength: hourlyResult.dataLength,
     hourlyTimezone: hourlyResult.timezone,
@@ -422,6 +426,36 @@ async function handleForecastWeather(request: Request, response: Response) {
     dailyTimezone: dailyResult.timezone,
     dailyErrorCode: stringOrNull(dailyResult.error?.code),
   });
+
+  const fallback = await fetchForecastFallbackIfNeeded(
+    lat,
+    lon,
+    units,
+    currentRaw,
+    normalized,
+    hourlyResult,
+    dailyResult,
+  );
+  if (fallback !== null) {
+    logger.info("OpenWeather forecast fallback normalized", {
+      forecastSource: fallback.source,
+      hourlyStatus: fallback.hourlyStatus,
+      hourlyDataLength: fallback.hourlyDataLength,
+      hourlyTimezone: fallback.hourlyTimezone,
+      hourlyErrorCode: stringOrNull(fallback.hourlyError?.code),
+      dailyStatus: fallback.dailyStatus,
+      dailyDataLength: fallback.dailyDataLength,
+      dailyTimezone: fallback.dailyTimezone,
+      dailyErrorCode: stringOrNull(fallback.dailyError?.code),
+    });
+    sendJson(
+      response,
+      200,
+      fallback.normalized,
+      weatherCacheControl,
+    );
+    return;
+  }
 
   sendJson(
     response,
@@ -438,6 +472,243 @@ type ForecastTimelineResult = {
   timezone: string | null;
   error: JsonRecord | null;
 };
+
+type ForecastFallbackResult = {
+  normalized: JsonRecord;
+  source: string;
+  hourlyStatus: number;
+  hourlyDataLength: number;
+  hourlyTimezone: string | null;
+  hourlyError: JsonRecord | null;
+  dailyStatus: number;
+  dailyDataLength: number;
+  dailyTimezone: string | null;
+  dailyError: JsonRecord | null;
+};
+
+async function fetchForecastFallbackIfNeeded(
+  lat: number,
+  lon: number,
+  units: "imperial" | "metric" | "standard",
+  currentRaw: unknown,
+  normalized: JsonRecord,
+  hourlyResult: ForecastTimelineResult,
+  dailyResult: ForecastTimelineResult,
+): Promise<ForecastFallbackResult | null> {
+  if (
+    responseDataLength(normalized.hourly) !== 0 &&
+    responseDataLength(normalized.daily) !== 0
+  ) {
+    return null;
+  }
+
+  const timelineErrors = forecastErrorsFor(hourlyResult.error, dailyResult.error);
+  const oneCall3 = await fetchOneCall3ForecastFallback(lat, lon, units, timelineErrors);
+  if (oneCall3 !== null) {
+    return oneCall3;
+  }
+
+  const nws = await fetchNwsForecastFallback(
+    lat,
+    lon,
+    units,
+    currentRaw,
+    timelineErrors,
+  );
+  if (nws !== null) {
+    return nws;
+  }
+
+  return fetchLegacyForecastFallback(lat, lon, units, currentRaw, timelineErrors);
+}
+
+async function fetchOneCall3ForecastFallback(
+  lat: number,
+  lon: number,
+  units: "imperial" | "metric" | "standard",
+  timelineErrors: JsonRecord,
+): Promise<ForecastFallbackResult | null> {
+  try {
+    const raw = await openWeatherJson(
+      "/data/3.0/onecall",
+      {lat, lon, units, lang: "en"},
+      "weather/forecast/onecall3",
+    );
+    const normalized = normalizeOneCall3ForecastWeather(
+      raw,
+      units,
+      timelineErrors,
+    );
+    const hourlyDataLength = responseDataLength(normalized.hourly) ?? 0;
+    const dailyDataLength = responseDataLength(normalized.daily) ?? 0;
+    if (hourlyDataLength === 0 && dailyDataLength === 0) {
+      return null;
+    }
+    return {
+      normalized,
+      source: "openweather_onecall_3",
+      hourlyStatus: 200,
+      hourlyDataLength,
+      hourlyTimezone: stringOrNull(normalized.timezone),
+      hourlyError: null,
+      dailyStatus: 200,
+      dailyDataLength,
+      dailyTimezone: stringOrNull(normalized.timezone),
+      dailyError: null,
+    };
+  } catch (error) {
+    const safeError = forecastTimelineError("hourly", error);
+    logger.warn("OpenWeather One Call 3.0 forecast fallback unavailable", {
+      status: safeError.status,
+      code: safeError.code,
+      message: safeError.message,
+    });
+    return null;
+  }
+}
+
+async function fetchLegacyForecastFallback(
+  lat: number,
+  lon: number,
+  units: "imperial" | "metric" | "standard",
+  currentRaw: unknown,
+  timelineErrors: JsonRecord,
+): Promise<ForecastFallbackResult | null> {
+  let hourlyRaw: unknown;
+  try {
+    hourlyRaw = await openWeatherJson(
+      "/data/2.5/forecast",
+      {lat, lon, units, lang: "en"},
+      "weather/forecast/legacy-hourly",
+    );
+  } catch (error) {
+    const safeError = forecastTimelineError("hourly", error);
+    logger.warn("OpenWeather legacy forecast fallback unavailable", {
+      status: safeError.status,
+      code: safeError.code,
+      message: safeError.message,
+    });
+    return null;
+  }
+
+  let dailyRaw: unknown | null = null;
+  let dailyError: JsonRecord | null = null;
+  try {
+    dailyRaw = await openWeatherJson(
+      "/data/2.5/forecast/daily",
+      {lat, lon, units, lang: "en", cnt: 7},
+      "weather/forecast/legacy-daily",
+    );
+  } catch (error) {
+    dailyError = forecastTimelineError("daily", error);
+    logger.warn("OpenWeather legacy daily forecast fallback unavailable", {
+      status: dailyError.status,
+      code: dailyError.code,
+      message: dailyError.message,
+    });
+  }
+
+  const normalized = normalizeLegacyForecastWeather(
+    currentRaw,
+    hourlyRaw,
+    dailyRaw,
+    units,
+    {
+      ...timelineErrors,
+      ...(dailyError === null ? {} : {legacyDaily: dailyError}),
+    },
+  );
+  const hourlyDataLength = responseDataLength(normalized.hourly) ?? 0;
+  const dailyDataLength = responseDataLength(normalized.daily) ?? 0;
+  if (hourlyDataLength === 0 && dailyDataLength === 0) {
+    return null;
+  }
+
+  return {
+    normalized,
+    source: dailyRaw === null ?
+      "openweather_legacy_2_5_aggregate" :
+      "openweather_legacy_2_5",
+    hourlyStatus: 200,
+    hourlyDataLength,
+    hourlyTimezone: stringOrNull(normalized.timezone),
+    hourlyError: null,
+    dailyStatus: dailyDataLength > 0 ?
+      200 :
+      numberOrNull(dailyError?.status) ?? 500,
+    dailyDataLength,
+    dailyTimezone: stringOrNull(normalized.timezone),
+    dailyError: dailyDataLength > 0 ? null : dailyError,
+  };
+}
+
+async function fetchNwsForecastFallback(
+  lat: number,
+  lon: number,
+  units: "imperial" | "metric" | "standard",
+  currentRaw: unknown,
+  timelineErrors: JsonRecord,
+): Promise<ForecastFallbackResult | null> {
+  if (!coordinateLooksUs(lat, lon)) {
+    return null;
+  }
+
+  try {
+    const points = await nwsJson(new URL(
+      `/points/${lat.toFixed(4)},${lon.toFixed(4)}`,
+      nwsApiBase,
+    ));
+    const properties = asRecord(asRecord(points).properties);
+    const hourlyUrl = stringOrNull(properties.forecastHourly);
+    const dailyUrl = stringOrNull(properties.forecast);
+    if (hourlyUrl === null || dailyUrl === null) {
+      throw new PublicHttpError(
+        502,
+        "National Weather Service forecast metadata is unavailable.",
+        "nws_forecast_metadata_unavailable",
+      );
+    }
+
+    const [hourlyRaw, dailyRaw] = await Promise.all([
+      nwsJson(new URL(hourlyUrl)),
+      nwsJson(new URL(dailyUrl)),
+    ]);
+    const normalized = normalizeNwsForecastWeather(
+      currentRaw,
+      points,
+      hourlyRaw,
+      dailyRaw,
+      units,
+      timelineErrors,
+    );
+    const hourlyDataLength = responseDataLength(normalized.hourly) ?? 0;
+    const dailyDataLength = responseDataLength(normalized.daily) ?? 0;
+    if (hourlyDataLength === 0 && dailyDataLength === 0) {
+      return null;
+    }
+
+    return {
+      normalized,
+      source: "nws_api",
+      hourlyStatus: 200,
+      hourlyDataLength,
+      hourlyTimezone: stringOrNull(normalized.timezone),
+      hourlyError: null,
+      dailyStatus: 200,
+      dailyDataLength,
+      dailyTimezone: stringOrNull(normalized.timezone),
+      dailyError: null,
+    };
+  } catch (error) {
+    const safeError = forecastTimelineError("daily", error);
+    logger.warn("National Weather Service forecast fallback unavailable", {
+      status: safeError.status,
+      code: safeError.code,
+      message: safeError.message,
+    });
+    return null;
+  }
+}
 
 async function fetchForecastTimeline(
   pathname: string,
@@ -1283,6 +1554,46 @@ async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
   }
 }
 
+async function nwsJson(url: URL): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), nwsTimeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "Accept": "application/geo+json, application/json",
+        "User-Agent": nwsUserAgent,
+      },
+    });
+    if (!response.ok) {
+      throw new PublicHttpError(
+        upstreamStatus(response.status),
+        "National Weather Service forecast data is temporarily unavailable.",
+        "nws_forecast_unavailable",
+      );
+    }
+    return response.json();
+  } catch (error) {
+    if (error instanceof PublicHttpError) {
+      throw error;
+    }
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new PublicHttpError(
+        504,
+        "National Weather Service forecast timed out.",
+        "nws_forecast_timeout",
+      );
+    }
+    throw new PublicHttpError(
+      503,
+      "National Weather Service forecast data is temporarily unavailable.",
+      "nws_forecast_unavailable",
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function radarSourceForMode(mode: RadarMode): RadarSource {
   if (mode === "us-forecast") return "noaa_mrms";
   if (mode === "futurecast") return "openweather_futurecast";
@@ -1841,10 +2152,10 @@ function safeNoaaTileErrorCode(status: number): string {
 
 function providerAuthFailureScope(pathname: string): string {
   if (pathname.startsWith("/data/3.0/onecall")) {
-    return "onecall";
+    return "onecall3";
   }
   if (pathname.startsWith("/data/4.0/onecall/")) {
-    return "onecall";
+    return "onecall4";
   }
   if (pathname.startsWith("/geo/")) {
     return "geo";
@@ -2287,6 +2598,35 @@ export function normalizeForecastWeather(
   };
 }
 
+export function normalizeOneCall3ForecastWeather(
+  raw: unknown,
+  units: "imperial" | "metric" | "standard" = "imperial",
+  forecastErrors: JsonRecord = {},
+): JsonRecord {
+  const root = asRecord(raw);
+  const timezoneOffset = numberOrNull(
+    root.timezone_offset ??
+    root.timezoneOffset,
+  );
+  const hourly = normalizeHourlyForecastRecords(root.hourly);
+  const daily = normalizeDailyForecastRecords(root.daily, timezoneOffset);
+  return {
+    ...normalizeForecastWeather(raw, units),
+    hourly,
+    daily,
+    hourlyTimeline: normalizeTimelineEnvelope(
+      timelinePayload(root, root.hourly),
+      hourly,
+    ),
+    dailyTimeline: normalizeTimelineEnvelope(
+      timelinePayload(root, root.daily),
+      daily,
+    ),
+    forecastErrors,
+    forecastSource: "openweather_onecall_3",
+  };
+}
+
 export function normalizeOneCallTimelineForecast(
   currentRaw: unknown,
   hourlyRaw: unknown,
@@ -2329,6 +2669,124 @@ export function normalizeOneCallTimelineForecast(
   };
 }
 
+export function normalizeLegacyForecastWeather(
+  currentRaw: unknown,
+  hourlyRaw: unknown,
+  dailyRaw: unknown,
+  units: "imperial" | "metric" | "standard" = "imperial",
+  forecastErrors: JsonRecord = {},
+): JsonRecord {
+  const current = normalizeCurrentWeather(currentRaw, units);
+  const hourlyRoot = asRecord(hourlyRaw);
+  const city = asRecord(hourlyRoot.city);
+  const coord = asRecord(city.coord);
+  const timezoneOffset = numberOrNull(
+    city.timezone ??
+    current.timezoneOffset,
+  );
+  const timezone = stringOrNull(current.timezone);
+  const hourlyRecords = normalizeLegacyHourlyForecastRecords(hourlyRaw);
+  const dailyRecords = normalizeLegacyDailyForecastRecords(
+    dailyRaw,
+    hourlyRecords,
+    timezoneOffset,
+  );
+  const hourly = normalizeHourlyForecastRecords(hourlyRecords);
+  const daily = normalizeDailyForecastRecords(dailyRecords, timezoneOffset);
+
+  return {
+    latitude: numberOrNull(coord.lat ?? current.latitude),
+    longitude: numberOrNull(coord.lon ?? current.longitude),
+    timezone,
+    timezoneOffset,
+    current,
+    minutes: [],
+    hourly,
+    daily,
+    hourlyTimeline: {
+      latitude: numberOrNull(coord.lat ?? current.latitude),
+      longitude: numberOrNull(coord.lon ?? current.longitude),
+      timezone,
+      timezone_offset: timezoneOffset,
+      timezoneOffset,
+      data: hourly,
+      next: null,
+    },
+    dailyTimeline: {
+      latitude: numberOrNull(coord.lat ?? current.latitude),
+      longitude: numberOrNull(coord.lon ?? current.longitude),
+      timezone,
+      timezone_offset: timezoneOffset,
+      timezoneOffset,
+      data: daily,
+      next: null,
+    },
+    forecastErrors,
+    forecastSource: "openweather_legacy_2_5",
+    alerts: [],
+    units,
+  };
+}
+
+export function normalizeNwsForecastWeather(
+  currentRaw: unknown,
+  pointsRaw: unknown,
+  hourlyRaw: unknown,
+  dailyRaw: unknown,
+  units: "imperial" | "metric" | "standard" = "imperial",
+  forecastErrors: JsonRecord = {},
+): JsonRecord {
+  const current = normalizeCurrentWeather(currentRaw, units);
+  const pointsProperties = asRecord(asRecord(pointsRaw).properties);
+  const relativeLocation = asRecord(pointsProperties.relativeLocation);
+  const relativeProperties = asRecord(relativeLocation.properties);
+  const geometry = asRecord(relativeLocation.geometry);
+  const coordinates = Array.isArray(geometry.coordinates) ?
+    geometry.coordinates :
+    [];
+  const timezone = stringOrNull(pointsProperties.timeZone ?? current.timezone);
+  const hourly = normalizeNwsHourlyForecastRecords(hourlyRaw, units);
+  const daily = normalizeNwsDailyForecastRecords(dailyRaw, units);
+  const latitude = numberOrNull(current.latitude) ??
+    numberOrNull(coordinates[1]);
+  const longitude = numberOrNull(current.longitude) ??
+    numberOrNull(coordinates[0]);
+
+  return {
+    latitude,
+    longitude,
+    timezone,
+    timezoneOffset: current.timezoneOffset,
+    current,
+    minutes: [],
+    hourly,
+    daily,
+    hourlyTimeline: {
+      latitude,
+      longitude,
+      timezone,
+      timezone_offset: current.timezoneOffset,
+      timezoneOffset: current.timezoneOffset,
+      data: hourly,
+      next: null,
+    },
+    dailyTimeline: {
+      latitude,
+      longitude,
+      timezone,
+      timezone_offset: current.timezoneOffset,
+      timezoneOffset: current.timezoneOffset,
+      data: daily,
+      next: null,
+    },
+    forecastErrors,
+    forecastSource: "nws_api",
+    forecastLocationName: stringOrNull(relativeProperties.city),
+    alerts: [],
+    units,
+  };
+}
+
 function normalizeTimelineEnvelope(
   raw: unknown,
   data: JsonRecord[],
@@ -2344,6 +2802,410 @@ function normalizeTimelineEnvelope(
     data,
     next: sanitizeNext(root.next),
   };
+}
+
+function timelinePayload(root: JsonRecord, data: unknown): JsonRecord {
+  return {
+    lat: root.lat,
+    lon: root.lon,
+    timezone: root.timezone,
+    timezone_offset: root.timezone_offset,
+    timezoneOffset: root.timezoneOffset,
+    data,
+  };
+}
+
+function normalizeLegacyHourlyForecastRecords(raw: unknown): JsonRecord[] {
+  return dataArray(raw).map((item) => {
+    const record = asRecord(item);
+    const main = asRecord(record.main);
+    const wind = asRecord(record.wind);
+    const clouds = asRecord(record.clouds);
+    const rain = asRecord(record.rain);
+    const snow = asRecord(record.snow);
+    const rainAmount = numberOrNull(rain["3h"] ?? rain["1h"] ?? record.rain);
+    const snowAmount = numberOrNull(snow["3h"] ?? snow["1h"] ?? record.snow);
+    return {
+      dt: numberOrNull(record.dt),
+      temp: numberOrNull(record.temp ?? main.temp),
+      minTemp: numberOrNull(record.minTemp ?? main.temp_min ?? main.temp),
+      maxTemp: numberOrNull(record.maxTemp ?? main.temp_max ?? main.temp),
+      feels_like: numberOrNull(record.feels_like ?? main.feels_like),
+      pressure: numberOrNull(record.pressure ?? main.pressure),
+      humidity: numberOrNull(record.humidity ?? main.humidity),
+      clouds: numberOrNull(record.clouds ?? clouds.all),
+      visibility: numberOrNull(record.visibility),
+      pop: numberOrNull(record.pop),
+      precipitation: numberOrNull(
+        record.precipitation ??
+        rainAmount ??
+        snowAmount,
+      ) ?? 0,
+      rain1h: rainAmount,
+      snow1h: snowAmount,
+      wind_speed: numberOrNull(record.wind_speed ?? wind.speed),
+      wind_gust: numberOrNull(record.wind_gust ?? wind.gust),
+      wind_deg: numberOrNull(record.wind_deg ?? wind.deg),
+      weather: record.weather,
+    };
+  });
+}
+
+function normalizeLegacyDailyForecastRecords(
+  dailyRaw: unknown,
+  hourlyRecords: JsonRecord[],
+  timezoneOffset: number | null,
+): JsonRecord[] {
+  const direct = dataArray(dailyRaw).map(normalizeLegacyDailyForecastRecord);
+  if (direct.length > 0) {
+    return direct.slice(0, 7);
+  }
+  return aggregateLegacyDailyForecastRecords(hourlyRecords, timezoneOffset)
+    .slice(0, 7);
+}
+
+function normalizeLegacyDailyForecastRecord(item: unknown): JsonRecord {
+  const record = asRecord(item);
+  const temp = asRecord(record.temp);
+  const feelsLike = asRecord(record.feels_like ?? record.feelsLike);
+  return {
+    dt: numberOrNull(record.dt),
+    sunrise: numberOrNull(record.sunrise),
+    sunset: numberOrNull(record.sunset),
+    temp: {
+      day: numberOrNull(temp.day ?? record.dayTemp ?? record.temp),
+      min: numberOrNull(temp.min ?? record.minTemp ?? record.min_temp),
+      max: numberOrNull(temp.max ?? record.maxTemp ?? record.max_temp),
+      night: numberOrNull(temp.night),
+      eve: numberOrNull(temp.eve),
+      morn: numberOrNull(temp.morn),
+    },
+    feels_like: {
+      day: numberOrNull(feelsLike.day),
+      night: numberOrNull(feelsLike.night),
+      eve: numberOrNull(feelsLike.eve),
+      morn: numberOrNull(feelsLike.morn),
+    },
+    pressure: numberOrNull(record.pressure),
+    humidity: numberOrNull(record.humidity),
+    dew_point: numberOrNull(record.dew_point ?? record.dewPoint),
+    wind_speed: numberOrNull(record.wind_speed ?? record.speed),
+    wind_gust: numberOrNull(record.wind_gust ?? record.gust),
+    wind_deg: numberOrNull(record.wind_deg ?? record.deg),
+    clouds: numberOrNull(record.clouds),
+    pop: numberOrNull(record.pop),
+    rain: numberOrNull(record.rain),
+    snow: numberOrNull(record.snow),
+    weather: record.weather,
+  };
+}
+
+type LegacyDailyAggregate = {
+  key: string;
+  representativeScore: number;
+  representative: JsonRecord;
+  dt: number;
+  minTemp: number;
+  maxTemp: number;
+  pop: number;
+  precipitation: number;
+};
+
+function aggregateLegacyDailyForecastRecords(
+  hourlyRecords: JsonRecord[],
+  timezoneOffset: number | null,
+): JsonRecord[] {
+  const groups = new Map<string, LegacyDailyAggregate>();
+  for (const record of hourlyRecords) {
+    const dt = numberOrNull(record.dt);
+    const temp = numberOrNull(record.temp);
+    if (dt === null || temp === null) {
+      continue;
+    }
+    const key = localDateIso(dt, timezoneOffset);
+    if (key === null) {
+      continue;
+    }
+    const minTemp = numberOrNull(record.minTemp ?? record.temp) ?? temp;
+    const maxTemp = numberOrNull(record.maxTemp ?? record.temp) ?? temp;
+    const pop = numberOrNull(record.pop) ?? 0;
+    const precipitation = numberOrNull(record.precipitation) ?? 0;
+    const score = Math.abs(localHour(dt, timezoneOffset) - 12);
+    const existing = groups.get(key);
+    if (existing === undefined) {
+      groups.set(key, {
+        key,
+        representativeScore: score,
+        representative: record,
+        dt,
+        minTemp,
+        maxTemp,
+        pop,
+        precipitation,
+      });
+      continue;
+    }
+
+    existing.minTemp = Math.min(existing.minTemp, minTemp);
+    existing.maxTemp = Math.max(existing.maxTemp, maxTemp);
+    existing.pop = Math.max(existing.pop, pop);
+    existing.precipitation += precipitation;
+    if (score < existing.representativeScore) {
+      existing.representativeScore = score;
+      existing.representative = record;
+      existing.dt = dt;
+    }
+  }
+
+  return Array.from(groups.values())
+    .sort((left, right) => left.key.localeCompare(right.key))
+    .map((aggregate) => {
+      const representative = aggregate.representative;
+      const dayTemp = numberOrNull(representative.temp) ??
+        (aggregate.minTemp + aggregate.maxTemp) / 2;
+      return {
+        dt: aggregate.dt,
+        date: aggregate.key,
+        temp: {
+          day: dayTemp,
+          min: aggregate.minTemp,
+          max: aggregate.maxTemp,
+          night: aggregate.minTemp,
+          eve: dayTemp,
+          morn: aggregate.minTemp,
+        },
+        feels_like: {
+          day: numberOrNull(representative.feels_like) ?? dayTemp,
+        },
+        pressure: numberOrNull(representative.pressure),
+        humidity: numberOrNull(representative.humidity),
+        wind_speed: numberOrNull(representative.wind_speed),
+        wind_gust: numberOrNull(representative.wind_gust),
+        wind_deg: numberOrNull(representative.wind_deg),
+        clouds: numberOrNull(representative.clouds),
+        pop: aggregate.pop,
+        rain: aggregate.precipitation,
+        weather: representative.weather,
+      };
+    });
+}
+
+function localHour(unixSeconds: number, timezoneOffset: number | null): number {
+  const local = new Date((unixSeconds + (timezoneOffset ?? 0)) * 1000);
+  return local.getUTCHours();
+}
+
+function normalizeNwsHourlyForecastRecords(
+  raw: unknown,
+  units: "imperial" | "metric" | "standard",
+): JsonRecord[] {
+  return nwsPeriods(raw).slice(0, 72).map((period) => {
+    const tempF = numberOrNull(period.temperature);
+    const condition = stringOrNull(period.shortForecast) ??
+      stringOrNull(period.detailedForecast) ??
+      "Forecast";
+    const pop = numberOrNull(
+      asRecord(period.probabilityOfPrecipitation).value,
+    ) ?? 0;
+    return {
+      dt: unixSecondsFromIso(period.startTime),
+      temp: tempF === null ? null : temperatureFromFahrenheit(tempF, units),
+      feels_like: tempF === null ? null : temperatureFromFahrenheit(tempF, units),
+      humidity: numberOrNull(asRecord(period.relativeHumidity).value),
+      condition,
+      precipitationProbability: pop,
+      pop,
+      precipitation: 0,
+      windSpeed: windSpeedMph(period.windSpeed),
+      windMph: windSpeedMph(period.windSpeed),
+      wind_speed: windSpeedMph(period.windSpeed),
+      windDeg: windDirectionDegrees(stringOrNull(period.windDirection)),
+      wind_deg: windDirectionDegrees(stringOrNull(period.windDirection)),
+      weather: {
+        id: nwsWeatherId(condition),
+        main: nwsWeatherMain(condition),
+        description: condition.toLowerCase(),
+        icon: null,
+      },
+    };
+  });
+}
+
+function normalizeNwsDailyForecastRecords(
+  raw: unknown,
+  units: "imperial" | "metric" | "standard",
+): JsonRecord[] {
+  const aggregates = new Map<string, JsonRecord>();
+  for (const period of nwsPeriods(raw)) {
+    const startTime = stringOrNull(period.startTime);
+    const key = startTime?.slice(0, 10);
+    const tempF = numberOrNull(period.temperature);
+    if (key === undefined || key === null || tempF === null) {
+      continue;
+    }
+    const temp = temperatureFromFahrenheit(tempF, units);
+    const condition = stringOrNull(period.shortForecast) ??
+      stringOrNull(period.detailedForecast) ??
+      "Forecast";
+    const pop = numberOrNull(
+      asRecord(period.probabilityOfPrecipitation).value,
+    ) ?? 0;
+    const isDaytime = period.isDaytime === true;
+    const existing = aggregates.get(key);
+    if (existing === undefined) {
+      aggregates.set(key, {
+        date: `${key}T00:00:00.000`,
+        dt: unixSecondsFromIso(startTime),
+        temp: {
+          day: temp,
+          min: temp,
+          max: temp,
+          night: temp,
+          eve: temp,
+          morn: temp,
+        },
+        feels_like: {
+          day: temp,
+          night: temp,
+        },
+        condition,
+        precipitationProbability: pop,
+        pop,
+        weather: {
+          id: nwsWeatherId(condition),
+          main: nwsWeatherMain(condition),
+          description: condition.toLowerCase(),
+          icon: null,
+        },
+      });
+      continue;
+    }
+
+    const tempRecord = asRecord(existing.temp);
+    const feelsLike = asRecord(existing.feels_like);
+    tempRecord.min = Math.min(numberOrNull(tempRecord.min) ?? temp, temp);
+    tempRecord.max = Math.max(numberOrNull(tempRecord.max) ?? temp, temp);
+    if (isDaytime) {
+      tempRecord.day = temp;
+      feelsLike.day = temp;
+      existing.condition = condition;
+      existing.weather = {
+        id: nwsWeatherId(condition),
+        main: nwsWeatherMain(condition),
+        description: condition.toLowerCase(),
+        icon: null,
+      };
+    } else {
+      tempRecord.night = temp;
+      feelsLike.night = temp;
+    }
+    existing.pop = Math.max(numberOrNull(existing.pop) ?? 0, pop);
+    existing.precipitationProbability = existing.pop;
+  }
+
+  return Array.from(aggregates.values())
+    .sort((left, right) =>
+      String(left.date).localeCompare(String(right.date)))
+    .slice(0, 7);
+}
+
+function nwsPeriods(raw: unknown): JsonRecord[] {
+  const periods = asRecord(asRecord(raw).properties).periods;
+  return Array.isArray(periods) ? periods.map(asRecord) : [];
+}
+
+function unixSecondsFromIso(value: unknown): number | null {
+  const raw = stringOrNull(value);
+  if (raw === null) {
+    return null;
+  }
+  const parsed = Date.parse(raw);
+  return Number.isFinite(parsed) ? Math.floor(parsed / 1000) : null;
+}
+
+function temperatureFromFahrenheit(
+  tempF: number,
+  units: "imperial" | "metric" | "standard",
+): number {
+  if (units === "metric") {
+    return (tempF - 32) * 5 / 9;
+  }
+  if (units === "standard") {
+    return (tempF - 32) * 5 / 9 + 273.15;
+  }
+  return tempF;
+}
+
+function windSpeedMph(value: unknown): number | null {
+  const raw = stringOrNull(value);
+  if (raw === null) {
+    return null;
+  }
+  const matches = Array.from(raw.matchAll(/\d+(?:\.\d+)?/g));
+  if (matches.length === 0) {
+    return null;
+  }
+  const speeds = matches
+    .map((match) => Number(match[0]))
+    .filter((speed) => Number.isFinite(speed));
+  if (speeds.length === 0) {
+    return null;
+  }
+  return Math.max(...speeds);
+}
+
+function windDirectionDegrees(value: string | null): number | null {
+  if (value === null) {
+    return null;
+  }
+  const normalized = value.toUpperCase();
+  const directions: Record<string, number> = {
+    N: 0,
+    NNE: 23,
+    NE: 45,
+    ENE: 68,
+    E: 90,
+    ESE: 113,
+    SE: 135,
+    SSE: 158,
+    S: 180,
+    SSW: 203,
+    SW: 225,
+    WSW: 248,
+    W: 270,
+    WNW: 293,
+    NW: 315,
+    NNW: 338,
+  };
+  return directions[normalized] ?? null;
+}
+
+function nwsWeatherMain(condition: string): string {
+  const normalized = condition.toLowerCase();
+  if (normalized.includes("thunder")) return "Thunderstorm";
+  if (normalized.includes("snow") || normalized.includes("sleet")) return "Snow";
+  if (
+    normalized.includes("rain") ||
+    normalized.includes("shower") ||
+    normalized.includes("drizzle")
+  ) {
+    return "Rain";
+  }
+  if (normalized.includes("fog") || normalized.includes("haze")) return "Mist";
+  if (normalized.includes("cloud") || normalized.includes("overcast")) {
+    return "Clouds";
+  }
+  return "Clear";
+}
+
+function nwsWeatherId(condition: string): number {
+  const main = nwsWeatherMain(condition);
+  if (main === "Thunderstorm") return 200;
+  if (main === "Snow") return 600;
+  if (main === "Rain") return 500;
+  if (main === "Mist") return 701;
+  if (main === "Clouds") return 801;
+  return 800;
 }
 
 function normalizeMinutePrecipitation(
@@ -2657,7 +3519,10 @@ export function safeUpstreamMessage(
       return "OpenWeather rejected the server key for radar maps. Enable OpenWeather Maps/radar access for OPENWEATHER_API_KEY, then redeploy functions.";
     }
     if (code === "openweather_one_call_access_denied") {
-      return "OpenWeather rejected the server key for One Call API 4.0. Enable the One Call by Call subscription for OPENWEATHER_API_KEY, then redeploy functions.";
+      const product = scope === "onecall3" ?
+        "One Call API 3.0" :
+        "One Call API 4.0";
+      return `OpenWeather rejected the server key for ${product}. Enable the One Call by Call subscription for OPENWEATHER_API_KEY, then redeploy functions.`;
     }
     return "OpenWeather rejected the server key. Check OPENWEATHER_API_KEY and redeploy after secret changes.";
   }
