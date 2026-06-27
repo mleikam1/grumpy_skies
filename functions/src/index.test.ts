@@ -4,6 +4,7 @@ import {test} from "node:test";
 import {
   normalizeCurrentWeather,
   normalizeForecastWeather,
+  normalizeOneCallTimelineForecast,
   openWeatherRadarTilePath,
   parseLatitude,
   parseLongitude,
@@ -239,6 +240,140 @@ test("maps One Call bundled forecast arrays without truncating daily data", () =
   assert.equal(firstDailyTemp.min, 60);
   assert.equal(firstDailyTemp.max, 80);
   assert.equal(daily[0].condition, "broken clouds");
+});
+
+test("maps One Call 4.0 timeline data arrays into forecast DTOs", () => {
+  const currentRaw = {
+    lat: 38.8672283,
+    lon: -94.6520357,
+    timezone: "America/Chicago",
+    timezone_offset: -18000,
+    data: [
+      {
+        dt: 1782043200,
+        sunrise: 1782030000,
+        sunset: 1782085200,
+        temp: 76,
+        feels_like: 78,
+        humidity: 64,
+        weather: [
+          {
+            id: 500,
+            main: "Rain",
+            description: "light rain",
+            icon: "10d",
+          },
+        ],
+      },
+    ],
+  };
+  const hourlyRaw = {
+    lat: 38.8672283,
+    lon: -94.6520357,
+    timezone: "America/Chicago",
+    timezone_offset: -18000,
+    data: Array.from({length: 20}, (_, index) => ({
+      dt: 1782043200 + index * 3600,
+      temp: 76 + index,
+      feels_like: 78 + index,
+      pressure: 1014,
+      humidity: 64,
+      dew_point: 63,
+      uvi: 7.2,
+      clouds: 40,
+      visibility: 10000,
+      wind_speed: 12,
+      wind_gust: 19,
+      wind_deg: 225,
+      pop: 0.2,
+      rain: {"1h": 0.08},
+      weather: [
+        {
+          id: 801,
+          main: "Clouds",
+          description: "few clouds",
+          icon: "02d",
+        },
+      ],
+    })),
+  };
+  const dailyRaw = {
+    lat: 38.8672283,
+    lon: -94.6520357,
+    timezone: "America/Chicago",
+    timezone_offset: -18000,
+    data: Array.from({length: 10}, (_, index) => ({
+      dt: 1782043200 + index * 86400,
+      sunrise: 1782030000 + index * 86400,
+      sunset: 1782085200 + index * 86400,
+      moonrise: 1782090000 + index * 86400,
+      moonset: 1782120000 + index * 86400,
+      moon_phase: 0.42,
+      temp: {
+        day: 76 + index,
+        min: 60 + index,
+        max: 82 + index,
+        night: 68 + index,
+        eve: 74 + index,
+        morn: 62 + index,
+      },
+      feels_like: {
+        day: 78 + index,
+        night: 69 + index,
+        eve: 75 + index,
+        morn: 63 + index,
+      },
+      pressure: 1014,
+      humidity: 64,
+      dew_point: 63,
+      wind_speed: 12,
+      wind_gust: 19,
+      wind_deg: 225,
+      clouds: 40,
+      pop: 0.35,
+      uvi: 7.2,
+      weather: [
+        {
+          id: 803,
+          main: "Clouds",
+          description: "broken clouds",
+          icon: "04d",
+        },
+      ],
+    })),
+  };
+
+  const dto = normalizeOneCallTimelineForecast(
+    currentRaw,
+    hourlyRaw,
+    dailyRaw,
+    "imperial",
+  );
+  const hourly = dto.hourly as Record<string, unknown>[];
+  const daily = dto.daily as Record<string, unknown>[];
+  const hourlyTimeline = dto.hourlyTimeline as Record<string, unknown>;
+  const dailyTimeline = dto.dailyTimeline as Record<string, unknown>;
+  const hourlyTimelineData =
+    hourlyTimeline.data as Record<string, unknown>[];
+  const dailyTimelineData = dailyTimeline.data as Record<string, unknown>[];
+  const firstDailyTemp = daily[0].temp as Record<string, unknown>;
+  const firstHourlyWeather = hourly[0].weather as Record<string, unknown>;
+  const firstDailyWeather = daily[0].weather as Record<string, unknown>;
+
+  assert.equal(dto.timezone, "America/Chicago");
+  assert.equal(dto.timezoneOffset, -18000);
+  assert.equal(hourly.length, 20);
+  assert.equal(daily.length, 10);
+  assert.equal(hourlyTimelineData.length, 20);
+  assert.equal(dailyTimelineData.length, 10);
+  assert.equal(hourly[0].temp, 76);
+  assert.equal(hourly[0].precipitationProbability, 0.2);
+  assert.equal(hourly[0].rain1h, 0.08);
+  assert.equal(firstHourlyWeather.icon, "02d");
+  assert.equal(firstDailyTemp.min, 60);
+  assert.equal(firstDailyTemp.max, 82);
+  assert.equal(daily[0].pop, 0.35);
+  assert.equal(firstDailyWeather.description, "broken clouds");
 });
 
 test("weather cache key rounds location and includes units", () => {

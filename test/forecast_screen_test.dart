@@ -101,7 +101,7 @@ void main() {
 
     final reference = DateTime(2026, 6, 21, 12, 30);
     final hourly = List.generate(
-      48,
+      20,
       (index) => HourlyForecast(
         time: DateTime(2026, 6, 21, 12).add(Duration(hours: index)),
         temperatureC: (76 + index - 32) * 5 / 9,
@@ -113,7 +113,7 @@ void main() {
       ),
     );
     final daily = List.generate(
-      8,
+      10,
       (index) => DailyForecast(
         date: DateTime(2026, 6, 21 + index),
         minTempC: (60 + index - 32) * 5 / 9,
@@ -157,6 +157,7 @@ void main() {
     expect(find.textContaining('rain'), findsNWidgets(12));
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('Tomorrow'), findsOneWidget);
+    expect(find.text('Tuesday'), findsOneWidget);
     expect(find.textContaining('° / '), findsNWidgets(7));
   });
 

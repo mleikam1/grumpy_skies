@@ -531,7 +531,15 @@ class OpenWeatherBackendClient {
     );
     final timezoneOffset =
         current.timezoneOffset ?? (json['timezoneOffset'] as num?)?.round();
-    final hourly = _recordsFromList(json['hourly'])
+    final hourlyRecords = _forecastRecords(
+      json['hourly'],
+      json['hourlyTimeline'],
+    );
+    final dailyRecords = _forecastRecords(
+      json['daily'],
+      json['dailyTimeline'],
+    );
+    final hourly = hourlyRecords
         .map(
           (item) => _hourlyForecastFromBackend(
             item,
@@ -540,7 +548,7 @@ class OpenWeatherBackendClient {
           ),
         )
         .toList(growable: false);
-    final daily = _recordsFromList(json['daily'])
+    final daily = dailyRecords
         .map(
           (item) => _dailyForecastFromBackend(
             item,
@@ -555,7 +563,7 @@ class OpenWeatherBackendClient {
               item,
             ))
         .toList(growable: false);
-    final timeline = _recordsFromList(json['hourly'])
+    final timeline = hourlyRecords
         .map((item) => TimelineWeatherPoint.fromJson(
               item,
             ))
@@ -574,6 +582,17 @@ class OpenWeatherBackendClient {
       timeline: timeline,
       alerts: alerts,
     );
+  }
+
+  static List<Map<String, dynamic>> _forecastRecords(
+    Object? records,
+    Object? timeline,
+  ) {
+    final direct = _recordsFromList(records).toList(growable: false);
+    if (direct.isNotEmpty) return direct;
+    final timelineRecord =
+        timeline is Map ? timeline.cast<String, dynamic>() : null;
+    return _recordsFromList(timelineRecord?['data']).toList(growable: false);
   }
 
   static Iterable<Map<String, dynamic>> _recordsFromList(Object? value) sync* {
@@ -600,6 +619,7 @@ class OpenWeatherBackendClient {
           : _temperatureToC((rawTemp as num).toDouble(), units),
       condition: _titleCase(
         (json['condition'] ??
+                json['weatherDescription'] ??
                 weather?['description'] ??
                 weather?['main'] ??
                 current.condition)
@@ -611,7 +631,8 @@ class OpenWeatherBackendClient {
             json['precipitationChance'],
         fallback: current.precipitationChance,
       ),
-      weatherIcon: (json['icon'] ?? weather?['icon']) as String?,
+      weatherIcon:
+          (json['weatherIcon'] ?? json['icon'] ?? weather?['icon']) as String?,
       weatherMain: (json['weatherMain'] ?? weather?['main']) as String?,
       weatherId: (json['weatherId'] ?? weather?['id'] as num?)?.round(),
     );
@@ -642,6 +663,7 @@ class OpenWeatherBackendClient {
           : _temperatureToC((rawMax as num).toDouble(), units),
       condition: _titleCase(
         (json['condition'] ??
+                json['weatherDescription'] ??
                 weather?['description'] ??
                 weather?['main'] ??
                 current.condition)
@@ -653,7 +675,8 @@ class OpenWeatherBackendClient {
             json['precipitationChance'],
         fallback: current.precipitationChance,
       ),
-      weatherIcon: (json['icon'] ?? weather?['icon']) as String?,
+      weatherIcon:
+          (json['weatherIcon'] ?? json['icon'] ?? weather?['icon']) as String?,
       weatherMain: (json['weatherMain'] ?? weather?['main']) as String?,
       weatherId: (json['weatherId'] ?? weather?['id'] as num?)?.round(),
     );

@@ -390,22 +390,32 @@ async function handleForecastWeather(request: Request, response: Response) {
   const lat = parseLatitude(requiredQuery(request, "lat"));
   const lon = parseLongitude(requiredQuery(request, "lon"));
   const units = parseUnits(queryParam(request, "units"));
-  const raw = await openWeatherJson(
-    "/data/3.0/onecall",
-    {lat, lon, units, lang: "en"},
-    "weather/forecast",
+  const [currentRaw, hourlyRaw, dailyRaw] = await Promise.all([
+    fetchCurrentWeatherForForecast(lat, lon, units),
+    openWeatherJson(
+      "/data/4.0/onecall/timeline/1h",
+      {lat, lon, units, lang: "en"},
+      "weather/forecast/hourly",
+    ),
+    openWeatherJson(
+      "/data/4.0/onecall/timeline/1day",
+      {lat, lon, units, lang: "en"},
+      "weather/forecast/daily",
+    ),
+  ]);
+  const normalized = normalizeOneCallTimelineForecast(
+    currentRaw,
+    hourlyRaw,
+    dailyRaw,
+    units,
   );
-  const normalized = normalizeForecastWeather(raw, units);
-  logger.info("OpenWeather forecast normalized", {
-    hourlyLength: Array.isArray(normalized.hourly) ?
-      normalized.hourly.length :
-      0,
-    dailyLength: Array.isArray(normalized.daily) ?
-      normalized.daily.length :
-      0,
-    minuteLength: Array.isArray(normalized.minutes) ?
-      normalized.minutes.length :
-      0,
+  logger.info("OpenWeather forecast timelines normalized", {
+    hourlyStatus: 200,
+    hourlyDataLength: responseDataLength(hourlyRaw),
+    hourlyTimezone: responseTimezone(hourlyRaw),
+    dailyStatus: 200,
+    dailyDataLength: responseDataLength(dailyRaw),
+    dailyTimezone: responseTimezone(dailyRaw),
   });
 
   sendJson(
@@ -414,6 +424,36 @@ async function handleForecastWeather(request: Request, response: Response) {
     normalized,
     weatherCacheControl,
   );
+}
+
+async function fetchCurrentWeatherForForecast(
+  lat: number,
+  lon: number,
+  units: "imperial" | "metric" | "standard",
+): Promise<unknown> {
+  try {
+    return await openWeatherJson(
+      "/data/4.0/onecall/current",
+      {lat, lon, units, lang: "en"},
+      "weather/forecast/current",
+    );
+  } catch (error) {
+    if (!isOneCallAccessDenied(error)) {
+      throw error;
+    }
+
+    logger.warn(
+      "OpenWeather One Call current unavailable in forecast aggregator; using legacy current weather",
+      {
+        code: (error as PublicHttpError).safeCode,
+      },
+    );
+    return openWeatherJson(
+      "/data/2.5/weather",
+      {lat, lon, units, lang: "en"},
+      "weather/forecast/current/fallback",
+    );
+  }
 }
 
 async function handleMinuteWeather(request: Request, response: Response) {
@@ -1066,7 +1106,14 @@ async function fetchOpenWeatherJson(
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const upstream = await fetchWithTimeout(url);
     if (upstream.ok) {
-      return upstream.json();
+      const json = await upstream.json();
+      logger.info("OpenWeather API response", {
+        route: routeLabel,
+        status: upstream.status,
+        dataLength: responseDataLength(json),
+        timezone: responseTimezone(json),
+      });
+      return json;
     }
 
     const upstreamErrorBody = await safeUpstreamErrorBody(upstream);
@@ -1105,6 +1152,31 @@ async function fetchOpenWeatherJson(
     "Weather provider is temporarily unavailable.",
     "openweather_unavailable",
   );
+}
+
+function responseDataLength(raw: unknown): number | null {
+  if (Array.isArray(raw)) {
+    return raw.length;
+  }
+  const record = asRecord(raw);
+  const candidates = [
+    record.data,
+    record.hourly,
+    record.daily,
+    record.minutely,
+    record.list,
+  ];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate.length;
+    }
+  }
+  return null;
+}
+
+function responseTimezone(raw: unknown): string | null {
+  const record = asRecord(raw);
+  return stringOrNull(record.timezone);
 }
 
 async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
@@ -2134,6 +2206,63 @@ export function normalizeForecastWeather(
   };
 }
 
+export function normalizeOneCallTimelineForecast(
+  currentRaw: unknown,
+  hourlyRaw: unknown,
+  dailyRaw: unknown,
+  units: "imperial" | "metric" | "standard" = "imperial",
+): JsonRecord {
+  const current = normalizeCurrentWeather(currentRaw, units);
+  const hourlyRoot = asRecord(hourlyRaw);
+  const dailyRoot = asRecord(dailyRaw);
+  const timezoneOffset = numberOrNull(
+    hourlyRoot.timezone_offset ??
+    hourlyRoot.timezoneOffset ??
+    dailyRoot.timezone_offset ??
+    dailyRoot.timezoneOffset ??
+    current.timezoneOffset,
+  );
+  const timezone = stringOrNull(
+    hourlyRoot.timezone ??
+    dailyRoot.timezone ??
+    current.timezone,
+  );
+  const hourly = normalizeHourlyForecastRecords(dataArray(hourlyRaw));
+  const daily = normalizeDailyForecastRecords(dataArray(dailyRaw), timezoneOffset);
+
+  return {
+    latitude: numberOrNull(hourlyRoot.lat ?? dailyRoot.lat ?? current.latitude),
+    longitude: numberOrNull(hourlyRoot.lon ?? dailyRoot.lon ?? current.longitude),
+    timezone,
+    timezoneOffset,
+    current,
+    minutes: [],
+    hourly,
+    daily,
+    hourlyTimeline: normalizeTimelineEnvelope(hourlyRaw, hourly),
+    dailyTimeline: normalizeTimelineEnvelope(dailyRaw, daily),
+    alerts: [],
+    units,
+  };
+}
+
+function normalizeTimelineEnvelope(
+  raw: unknown,
+  data: JsonRecord[],
+): JsonRecord {
+  const root = asRecord(raw);
+  const timezoneOffset = numberOrNull(root.timezone_offset ?? root.timezoneOffset);
+  return {
+    latitude: numberOrNull(root.lat),
+    longitude: numberOrNull(root.lon),
+    timezone: stringOrNull(root.timezone),
+    timezone_offset: timezoneOffset,
+    timezoneOffset,
+    data,
+    next: sanitizeNext(root.next),
+  };
+}
+
 function normalizeMinutePrecipitation(
   raw: unknown,
   units: "imperial" | "metric" | "standard",
@@ -2172,30 +2301,52 @@ function normalizeHourlyForecastRecords(raw: unknown): JsonRecord[] {
   return records.map((item) => {
     const record = asRecord(item);
     const weather = pickWeather(record);
+    const weatherId = numberOrNull(weather.id);
+    const weatherMain = stringOrNull(weather.main);
+    const weatherDescription = stringOrNull(weather.description);
+    const weatherIcon = stringOrNull(weather.icon);
+    const pop = numberOrNull(
+      record.pop ??
+      record.precipitation_probability,
+    );
+    const rain1h = numberOrNull(asRecord(record.rain)["1h"] ?? record.rain1h);
+    const snow1h = numberOrNull(asRecord(record.snow)["1h"] ?? record.snow1h);
     return {
       dt: numberOrNull(record.dt),
       temp: numberOrNull(record.temp ?? record.temperature),
       feelsLike: numberOrNull(record.feels_like ?? record.feelsLike),
+      pressure: numberOrNull(record.pressure),
       humidity: numberOrNull(record.humidity),
-      precipitationProbability: numberOrNull(
-        record.pop ??
-        record.precipitation_probability,
-      ),
+      dewPoint: numberOrNull(record.dew_point ?? record.dewPoint),
+      uvi: numberOrNull(record.uvi ?? record.uvIndex),
+      clouds: numberOrNull(record.clouds),
+      visibility: numberOrNull(record.visibility),
+      precipitationProbability: pop,
+      pop,
       precipitation: numberOrNull(
         record.precipitation ??
         record.rain1h ??
+        rain1h ??
+        snow1h ??
         asRecord(record.rain)["1h"] ??
         asRecord(record.snow)["1h"] ??
         record.rain ??
         record.snow,
       ) ?? 0,
+      rain1h,
+      snow1h,
       windSpeed: numberOrNull(record.wind_speed ?? record.windSpeed),
+      windGust: numberOrNull(record.wind_gust ?? record.windGust),
       windDeg: numberOrNull(record.wind_deg ?? record.windDeg),
+      weatherId,
+      weatherMain,
+      weatherDescription,
+      weatherIcon,
       weather: {
-        description: stringOrNull(weather.description),
-        icon: stringOrNull(weather.icon),
-        id: numberOrNull(weather.id),
-        main: stringOrNull(weather.main),
+        description: weatherDescription,
+        icon: weatherIcon,
+        id: weatherId,
+        main: weatherMain,
       },
       alertIds: normalizeAlertIds(record.alerts),
     };
@@ -2210,8 +2361,17 @@ function normalizeDailyForecastRecords(
   return records.map((item) => {
     const record = asRecord(item);
     const temp = asRecord(record.temp);
+    const feelsLike = asRecord(record.feels_like ?? record.feelsLike);
     const weather = pickWeather(record);
     const dt = numberOrNull(record.dt);
+    const weatherId = numberOrNull(weather.id);
+    const weatherMain = stringOrNull(weather.main);
+    const weatherDescription = stringOrNull(weather.description);
+    const weatherIcon = stringOrNull(weather.icon);
+    const pop = numberOrNull(
+      record.pop ??
+      record.precipitation_probability,
+    );
     return {
       dt,
       date: localDateIso(dt, timezoneOffset),
@@ -2219,6 +2379,7 @@ function normalizeDailyForecastRecords(
       sunset: numberOrNull(record.sunset),
       moonrise: numberOrNull(record.moonrise),
       moonset: numberOrNull(record.moonset),
+      moonPhase: numberOrNull(record.moon_phase ?? record.moonPhase),
       temp: {
         day: numberOrNull(temp.day),
         min: numberOrNull(record.minTemp ?? record.min_temp ?? temp.min),
@@ -2227,27 +2388,39 @@ function normalizeDailyForecastRecords(
         eve: numberOrNull(temp.eve),
         morn: numberOrNull(temp.morn),
       },
+      feelsLike: {
+        day: numberOrNull(feelsLike.day),
+        night: numberOrNull(feelsLike.night),
+        eve: numberOrNull(feelsLike.eve),
+        morn: numberOrNull(feelsLike.morn),
+      },
       minTemp: numberOrNull(record.minTemp ?? record.min_temp ?? temp.min),
       maxTemp: numberOrNull(record.maxTemp ?? record.max_temp ?? temp.max),
+      pressure: numberOrNull(record.pressure),
       humidity: numberOrNull(record.humidity),
-      precipitationProbability: numberOrNull(
-        record.pop ??
-        record.precipitation_probability,
-      ),
+      dewPoint: numberOrNull(record.dew_point ?? record.dewPoint),
+      precipitationProbability: pop,
+      pop,
       precipitation: numberOrNull(record.rain ?? record.snow ?? 0) ?? 0,
       windSpeed: numberOrNull(record.wind_speed ?? record.windSpeed),
+      windGust: numberOrNull(record.wind_gust ?? record.windGust),
       windDeg: numberOrNull(record.wind_deg ?? record.windDeg),
+      clouds: numberOrNull(record.clouds),
       uvi: numberOrNull(record.uvi ?? record.uvIndex),
       condition: stringOrNull(
         weather.description ??
         weather.main ??
         record.summary,
       ),
+      weatherId,
+      weatherMain,
+      weatherDescription,
+      weatherIcon,
       weather: {
-        description: stringOrNull(weather.description),
-        icon: stringOrNull(weather.icon),
-        id: numberOrNull(weather.id),
-        main: stringOrNull(weather.main),
+        description: weatherDescription,
+        icon: weatherIcon,
+        id: weatherId,
+        main: weatherMain,
       },
       alertIds: normalizeAlertIds(record.alerts),
     };

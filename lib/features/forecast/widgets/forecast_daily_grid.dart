@@ -24,12 +24,17 @@ class ForecastDailyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final days = daily.take(7).toList();
+    final days = _visibleDays(
+      daily,
+      referenceTime ?? DateTime.now(),
+      timezoneOffset,
+    );
     final child = days.isEmpty
         ? const _EmptyDailyState()
         : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: DMSpacing.xs),
             clipBehavior: Clip.none,
             itemCount: days.length,
             separatorBuilder: (_, __) => const SizedBox(width: DMSpacing.sm),
@@ -63,13 +68,27 @@ class ForecastDailyGrid extends StatelessWidget {
     );
   }
 
+  static List<DailyForecast> _visibleDays(
+    List<DailyForecast> daily,
+    DateTime referenceTime,
+    int? timezoneOffset,
+  ) {
+    final today = _forecastDate(referenceTime, timezoneOffset);
+    final sorted = daily.toList()
+      ..sort((left, right) => left.date.compareTo(right.date));
+    return sorted
+        .where((day) => !_calendarDate(day.date).isBefore(today))
+        .take(7)
+        .toList(growable: false);
+  }
+
   static String _dayLabel(
     DateTime date,
     DateTime referenceTime,
     int? timezoneOffset,
   ) {
     final today = _forecastDate(referenceTime, timezoneOffset);
-    final forecastDate = DateTime(date.year, date.month, date.day);
+    final forecastDate = _calendarDate(date);
     final dayOffset = forecastDate.difference(today).inDays;
     if (dayOffset == 0) return 'Today';
     if (dayOffset == 1) return 'Tomorrow';
@@ -86,15 +105,19 @@ class ForecastDailyGrid extends StatelessWidget {
     return DateTime(local.year, local.month, local.day);
   }
 
+  static DateTime _calendarDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
   static String _weekday(DateTime date) {
     const labels = [
-      'Mon',
-      'Tue',
-      'Wed',
-      'Thu',
-      'Fri',
-      'Sat',
-      'Sun',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     return labels[date.weekday - 1];
   }

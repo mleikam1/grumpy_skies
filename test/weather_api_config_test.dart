@@ -233,6 +233,135 @@ void main() {
       expect(bundle.daily.first.condition, 'Broken Clouds');
     });
 
+    test('maps One Call 4.0 hourly and daily timeline data arrays', () async {
+      final client = OpenWeatherBackendClient(
+        baseUrl: 'https://example.test/api',
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/api/weather/forecast');
+          return http.Response(
+            jsonEncode({
+              'timezone': 'America/Chicago',
+              'timezoneOffset': -18000,
+              'units': 'imperial',
+              'current': {
+                'latitude': 38.8672283,
+                'longitude': -94.6520357,
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'observedAt': 1782043200,
+                'sourceUpdatedAt': 1782043200,
+                'fetchedAt': '2026-06-21T12:03:00Z',
+                'sunrise': 1782030000,
+                'sunset': 1782085200,
+                'temp': 76,
+                'feelsLike': 78,
+                'humidity': 64,
+                'windSpeed': 12,
+                'windDeg': 225,
+                'weatherId': 500,
+                'weatherMain': 'Rain',
+                'weatherDescription': 'light rain',
+                'weatherIcon': '10d',
+                'units': 'imperial',
+              },
+              'hourlyTimeline': {
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'data': List.generate(
+                  20,
+                  (index) => {
+                    'dt': 1782043200 + index * 3600,
+                    'temp': 76 + index,
+                    'feels_like': 78 + index,
+                    'pressure': 1014,
+                    'humidity': 64,
+                    'dew_point': 63,
+                    'uvi': 7.2,
+                    'clouds': 40,
+                    'visibility': 10000,
+                    'wind_speed': 12,
+                    'wind_gust': 19,
+                    'wind_deg': 225,
+                    'pop': 0.2,
+                    'rain': {'1h': 0.08},
+                    'weather': [
+                      {
+                        'id': 801,
+                        'main': 'Clouds',
+                        'description': 'few clouds',
+                        'icon': '02d',
+                      },
+                    ],
+                  },
+                ),
+              },
+              'dailyTimeline': {
+                'timezone': 'America/Chicago',
+                'timezoneOffset': -18000,
+                'data': List.generate(
+                  10,
+                  (index) => {
+                    'dt': 1782043200 + index * 86400,
+                    'temp': {
+                      'day': 76 + index,
+                      'min': 60 + index,
+                      'max': 82 + index,
+                      'night': 68 + index,
+                      'eve': 74 + index,
+                      'morn': 62 + index,
+                    },
+                    'feels_like': {
+                      'day': 78 + index,
+                      'night': 69 + index,
+                      'eve': 75 + index,
+                      'morn': 63 + index,
+                    },
+                    'pressure': 1014,
+                    'humidity': 64,
+                    'dew_point': 63,
+                    'wind_speed': 12,
+                    'wind_gust': 19,
+                    'wind_deg': 225,
+                    'clouds': 40,
+                    'pop': 0.35,
+                    'uvi': 7.2,
+                    'weather': [
+                      {
+                        'id': 803,
+                        'main': 'Clouds',
+                        'description': 'broken clouds',
+                        'icon': '04d',
+                      },
+                    ],
+                  },
+                ),
+              },
+            }),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }),
+      );
+
+      final bundle = await client.forecast(
+        latitude: 38.8672283,
+        longitude: -94.6520357,
+        locationName: 'Overland Park, KS, US',
+      );
+
+      expect(bundle.hourly, hasLength(20));
+      expect(bundle.daily, hasLength(10));
+      expect(bundle.timeline, hasLength(20));
+      expect(bundle.hourly.first.temperatureF.round(), 76);
+      expect(bundle.hourly.first.precipitationChance, 20);
+      expect(bundle.hourly.first.weatherIcon, '02d');
+      expect(bundle.daily.first.maxTempF.round(), 82);
+      expect(bundle.daily.first.minTempF.round(), 60);
+      expect(bundle.daily.first.precipitationChance, 35);
+      expect(bundle.daily.first.condition, 'Broken Clouds');
+      expect(bundle.daily.first.weatherIcon, '04d');
+    });
+
     test('does not expose raw socket exceptions to callers', () async {
       final client = OpenWeatherBackendClient(
         baseUrl:

@@ -34,6 +34,7 @@ class ForecastHourlyStrip extends StatelessWidget {
         : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: DMSpacing.xs),
             clipBehavior: Clip.none,
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(width: DMSpacing.sm),
@@ -67,27 +68,25 @@ class ForecastHourlyStrip extends StatelessWidget {
   ) {
     final sorted = hourly.toList()
       ..sort((left, right) => left.time.compareTo(right.time));
-    final currentIndex = sorted.indexWhere(
-      (hour) => _isSameLocalHour(hour.time, referenceTime, timezoneOffset),
-    );
-    final futureIndex = sorted.indexWhere(
-      (hour) => !hour.time.isBefore(referenceTime),
-    );
-    final startIndex = currentIndex >= 0 ? currentIndex : futureIndex;
-    final visible = sorted.skip(startIndex >= 0 ? startIndex : 0).take(12);
+    final thresholdUtc =
+        referenceTime.toUtc().subtract(const Duration(minutes: 30));
+    final visible = sorted
+        .where((hour) => !hour.time.toUtc().isBefore(thresholdUtc))
+        .take(12)
+        .toList(growable: false);
 
     return [
       for (var index = 0; index < visible.length; index++)
         _HourlyForecastItem(
-          hour: visible.elementAt(index),
+          hour: visible[index],
           label: index == 0 &&
                   _isSameLocalHour(
-                    visible.elementAt(index).time,
+                    visible[index].time,
                     referenceTime,
                     timezoneOffset,
                   )
               ? 'Now'
-              : _formatHour(visible.elementAt(index).time, timezoneOffset),
+              : _formatHour(visible[index].time, timezoneOffset),
         ),
     ];
   }
