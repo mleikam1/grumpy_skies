@@ -100,115 +100,22 @@ abstract final class OpenWeatherIconMapper {
     if (id == null) return null;
 
     if (id >= 200 && id < 300) {
-      final extreme = id == 202 ||
-          id == 212 ||
-          id == 221 ||
-          id == 232 ||
-          text.contains('heavy') ||
-          text.contains('severe') ||
-          text.contains('ragged');
-      final wet = id == 200 ||
-          id == 201 ||
-          id == 202 ||
-          id == 230 ||
-          id == 231 ||
-          id == 232 ||
-          text.contains('rain') ||
-          text.contains('drizzle');
-
-      if (extreme && wet) {
-        return _variant(
-          isDay: isDay,
-          day: 'thunderstorms-day-extreme-rain',
-          night: 'thunderstorms-night-extreme-rain',
-          neutral: 'thunderstorms-extreme-rain',
-        );
-      }
-      if (extreme) {
-        return _variant(
-          isDay: isDay,
-          day: 'thunderstorms-day-extreme',
-          night: 'thunderstorms-night-extreme',
-          neutral: 'thunderstorms-extreme',
-        );
-      }
-      if (wet) {
-        return _variant(
-          isDay: isDay,
-          day: 'thunderstorms-day-rain',
-          night: 'thunderstorms-night-rain',
-          neutral: 'thunderstorms-rain',
-        );
-      }
-      return _variant(
-        isDay: isDay,
-        day: 'thunderstorms-day',
-        night: 'thunderstorms-night',
-        neutral: 'thunderstorms',
-      );
+      return 'thunderstorms';
     }
 
     if (id >= 300 && id < 400) {
-      return _variant(
-        isDay: isDay,
-        day: 'overcast-day-drizzle',
-        night: 'overcast-night-drizzle',
-        neutral: 'drizzle',
-      );
+      return 'drizzle';
     }
 
     if (id >= 500 && id < 600) {
-      if (id == 511) return 'sleet';
-      if (id >= 502 && id <= 504) {
-        return _variant(
-          isDay: isDay,
-          day: 'extreme-day-rain',
-          night: 'extreme-night-rain',
-          neutral: 'extreme-rain',
-        );
-      }
-      if (id >= 520) {
-        return _variant(
-          isDay: isDay,
-          day: 'overcast-day-rain',
-          night: 'overcast-night-rain',
-          neutral: 'rain',
-        );
-      }
-      return _variant(
-        isDay: isDay,
-        day: 'partly-cloudy-day-rain',
-        night: 'partly-cloudy-night-rain',
-        neutral: 'rain',
-      );
+      return 'rain';
     }
 
     if (id >= 600 && id < 700) {
       if (id == 611 || id == 612 || id == 613 || id == 615 || id == 616) {
         return 'sleet';
       }
-      if (id == 602) {
-        return _variant(
-          isDay: isDay,
-          day: 'extreme-day-snow',
-          night: 'extreme-night-snow',
-          neutral: 'extreme-snow',
-        );
-      }
-      if (id >= 620) {
-        return _variant(
-          isDay: isDay,
-          day: 'overcast-day-snow',
-          night: 'overcast-night-snow',
-          neutral: 'snow',
-        );
-      }
-      return _variant(
-        isDay: isDay,
-        day: 'partly-cloudy-day-snow',
-        night: 'partly-cloudy-night-snow',
-        neutral: 'snow',
-      );
+      return 'snow';
     }
 
     if (id >= 700 && id < 800) {
@@ -221,19 +128,14 @@ abstract final class OpenWeatherIconMapper {
             night: 'haze-night',
             neutral: 'haze',
           ),
-        731 || 751 || 761 || 762 => _variant(
-            isDay: isDay,
-            day: 'dust-day',
-            night: 'dust-night',
-            neutral: 'dust',
-          ),
+        731 || 751 || 761 || 762 => 'dust',
         741 => _variant(
             isDay: isDay,
             day: 'fog-day',
             night: 'fog-night',
             neutral: 'fog',
           ),
-        771 => 'wind-alert',
+        771 => 'wind',
         781 => 'tornado',
         _ => _slugForText(
             conditionMain: null,
@@ -302,30 +204,10 @@ abstract final class OpenWeatherIconMapper {
           night: 'overcast-night',
           neutral: 'overcast',
         ),
-      '09' => _variant(
-          isDay: isDay,
-          day: 'overcast-day-rain',
-          night: 'overcast-night-rain',
-          neutral: 'rain',
-        ),
-      '10' => _variant(
-          isDay: isDay,
-          day: 'partly-cloudy-day-rain',
-          night: 'partly-cloudy-night-rain',
-          neutral: 'rain',
-        ),
-      '11' => _variant(
-          isDay: isDay,
-          day: 'thunderstorms-day',
-          night: 'thunderstorms-night',
-          neutral: 'thunderstorms',
-        ),
-      '13' => _variant(
-          isDay: isDay,
-          day: 'partly-cloudy-day-snow',
-          night: 'partly-cloudy-night-snow',
-          neutral: 'snow',
-        ),
+      '09' => 'rain',
+      '10' => 'rain',
+      '11' => 'thunderstorms',
+      '13' => 'snow',
       '50' => _variant(
           isDay: isDay,
           day: 'fog-day',

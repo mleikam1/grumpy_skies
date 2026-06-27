@@ -34,7 +34,7 @@ void main() {
           conditionMain: 'Rain',
           conditionDescription: 'light rain',
         ),
-        'partly-cloudy-day-rain',
+        'rain',
       );
 
       expect(
@@ -44,7 +44,7 @@ void main() {
           conditionMain: 'Thunderstorm',
           conditionDescription: 'thunderstorm with rain',
         ),
-        'thunderstorms-night-rain',
+        'thunderstorms',
       );
     });
 
@@ -65,7 +65,7 @@ void main() {
     test('uses OpenWeather icon family when condition ID is unavailable', () {
       expect(
         OpenWeatherIconMapper.map(openWeatherIconCode: '13n'),
-        'partly-cloudy-night-snow',
+        'snow',
       );
     });
 

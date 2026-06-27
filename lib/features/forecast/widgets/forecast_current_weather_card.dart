@@ -86,16 +86,19 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
             children: [
               _WeatherFact(
                 icon: Icons.device_thermostat_outlined,
+                iconSlug: 'thermometer',
                 label: 'Feels like',
                 value: '${weather.feelsLikeF.round()}°',
               ),
               _WeatherFact(
                 icon: Icons.air_rounded,
+                iconSlug: 'wind',
                 label: 'Wind',
                 value: weather.windLabel,
               ),
               _WeatherFact(
                 icon: Icons.water_drop_outlined,
+                iconSlug: 'humidity',
                 label: 'Humidity',
                 value: '${weather.humidity}%',
               ),
@@ -145,11 +148,13 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
 class _WeatherFact extends StatelessWidget {
   const _WeatherFact({
     required this.icon,
+    this.iconSlug,
     required this.label,
     required this.value,
   });
 
   final IconData icon;
+  final String? iconSlug;
   final String label;
   final String value;
 
@@ -169,7 +174,15 @@ class _WeatherFact extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: DMSpacing.iconSm, color: DMColors.skyBlueSoft),
+          if (iconSlug == null)
+            Icon(icon, size: DMSpacing.iconSm, color: DMColors.skyBlueSoft)
+          else
+            DaymakerWeatherIcon(
+              iconSlug: iconSlug,
+              size: DMSpacing.iconSm,
+              semanticLabel: label,
+              color: DMColors.skyBlueSoft,
+            ),
           const SizedBox(width: DMSpacing.xs),
           Flexible(
             child: Column(

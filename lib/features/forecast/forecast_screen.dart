@@ -704,14 +704,18 @@ class ShortTermPrecipitationCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
-                    hasPrecipitation
-                        ? Icons.umbrella_outlined
-                        : Icons.check_circle_outline,
-                    color: hasPrecipitation
-                        ? DMColors.rainTeal
-                        : DMColors.mintGreen,
-                  ),
+                  if (hasPrecipitation)
+                    const DaymakerWeatherIcon(
+                      iconSlug: 'umbrella',
+                      size: DMSpacing.iconMd,
+                      semanticLabel: 'Precipitation',
+                      color: DMColors.rainTeal,
+                    )
+                  else
+                    const Icon(
+                      Icons.check_circle_outline,
+                      color: DMColors.mintGreen,
+                    ),
                   const SizedBox(width: DMSpacing.sm),
                   Expanded(
                     child: Text(
