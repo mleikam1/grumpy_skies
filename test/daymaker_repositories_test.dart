@@ -82,13 +82,13 @@ void main() {
     );
   });
 
-  test(
-      'OpenWeatherRepository skips legacy endpoints when forecast bundle fails',
+  test('OpenWeatherRepository does not fall back for invalid forecast requests',
       () async {
     final client = _RecordingBackendClient(
       forecastError: const OpenWeatherBackendException(
-        'OpenWeather rejected the server key.',
-        statusCode: 502,
+        'The weather request had invalid parameters.',
+        statusCode: 400,
+        code: 'openweather_invalid_request',
       ),
     );
     final repo = OpenWeatherRepository(client: client);
@@ -117,6 +117,36 @@ void main() {
     );
     expect(client.forecastCalls, 1);
     expect(client.currentCalls, 0);
+  });
+
+  test(
+      'OpenWeatherRepository falls back when deployed forecast route is absent',
+      () async {
+    final client = _RecordingBackendClient(
+      forecastError: const OpenWeatherBackendException(
+        'Weather endpoint not found.',
+        statusCode: 404,
+        code: 'weather_endpoint_not_found',
+      ),
+    );
+    final repo = OpenWeatherRepository(client: client);
+
+    final bundle = await repo.getWeather(
+      latitude: 38.974,
+      longitude: -94.685,
+      location: _testLocation,
+    );
+
+    expect(bundle.current.locationName, 'Overland Park, Kansas, US');
+    expect(bundle.current.temperatureF.round(), 76);
+    expect(bundle.minutePrecipitation, hasLength(1));
+    expect(bundle.timeline, hasLength(1));
+    expect(bundle.hourly, hasLength(1));
+    expect(bundle.daily, hasLength(1));
+    expect(client.forecastCalls, 1);
+    expect(client.currentCalls, 1);
+    expect(client.minuteCalls, 1);
+    expect(client.hourlyCalls, 1);
   });
 
   test('OpenWeatherRepository uses bundled hourly and daily forecast arrays',
@@ -145,12 +175,14 @@ void main() {
   });
 
   test('OpenWeatherRepository throttles forced auth retries', () async {
+    const authError = OpenWeatherBackendException(
+      'OpenWeather rejected the server key for One Call API 4.0.',
+      statusCode: 502,
+      code: 'openweather_one_call_access_denied',
+    );
     final client = _RecordingBackendClient(
-      forecastError: const OpenWeatherBackendException(
-        'OpenWeather rejected the server key for One Call API 4.0.',
-        statusCode: 502,
-        code: 'openweather_one_call_access_denied',
-      ),
+      forecastError: authError,
+      currentError: authError,
     );
     final repo = OpenWeatherRepository(client: client);
 
@@ -174,7 +206,7 @@ void main() {
     );
 
     expect(client.forecastCalls, 1);
-    expect(client.currentCalls, 0);
+    expect(client.currentCalls, 1);
     expect(client.minuteCalls, 0);
     expect(client.hourlyCalls, 0);
   });
@@ -192,9 +224,11 @@ const _testLocation = LocationCandidate(
 class _RecordingBackendClient extends OpenWeatherBackendClient {
   _RecordingBackendClient({
     this.forecastError,
+    this.currentError,
   }) : super(baseUrl: 'https://example.com/api');
 
   final Object? forecastError;
+  final Object? currentError;
   int forecastCalls = 0;
   int currentCalls = 0;
   int minuteCalls = 0;
@@ -268,6 +302,8 @@ class _RecordingBackendClient extends OpenWeatherBackendClient {
     String locationName = '',
   }) async {
     currentCalls++;
+    final error = currentError;
+    if (error != null) throw error;
     return _currentWeather(
       latitude: latitude,
       longitude: longitude,

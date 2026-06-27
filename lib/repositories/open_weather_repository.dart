@@ -185,7 +185,7 @@ class OpenWeatherRepository extends WeatherRepository {
       locationName: locationName,
     );
 
-    final liveWeather = await _client.forecast(
+    final liveWeather = await _fetchPreferredWeatherBundle(
       latitude: latitude,
       longitude: longitude,
       locationName: locationName,
@@ -212,6 +212,73 @@ class OpenWeatherRepository extends WeatherRepository {
       alerts: liveWeather.alerts,
     );
     return bundle;
+  }
+
+  Future<WeatherBundle> _fetchPreferredWeatherBundle({
+    required double latitude,
+    required double longitude,
+    required String locationName,
+  }) async {
+    try {
+      return await _client.forecast(
+        latitude: latitude,
+        longitude: longitude,
+        locationName: locationName,
+      );
+    } catch (error) {
+      if (!_shouldUseLegacyWeatherFallback(error)) rethrow;
+      _debugLegacyWeatherFallback(error);
+      return _fetchLegacyWeatherBundle(
+        latitude: latitude,
+        longitude: longitude,
+        locationName: locationName,
+      );
+    }
+  }
+
+  Future<WeatherBundle> _fetchLegacyWeatherBundle({
+    required double latitude,
+    required double longitude,
+    required String locationName,
+  }) async {
+    final current = await _client.current(
+      latitude: latitude,
+      longitude: longitude,
+      locationName: locationName,
+    );
+    final minutesFuture = _client
+        .minute(
+      latitude: latitude,
+      longitude: longitude,
+    )
+        .catchError((Object error) {
+      _debugOptionalWeatherFailure('minute', error);
+      return <MinutePrecipitation>[];
+    });
+    final timelineFuture = _client
+        .hourly(
+      latitude: latitude,
+      longitude: longitude,
+    )
+        .catchError((Object error) {
+      _debugOptionalWeatherFailure('hourly', error);
+      return <TimelineWeatherPoint>[];
+    });
+
+    final minutes = await minutesFuture;
+    final timeline = await timelineFuture;
+    final alerts = current.alertIds.isEmpty
+        ? const <WeatherAlert>[]
+        : await getWeatherAlerts(alertIds: current.alertIds);
+
+    return WeatherBundle(
+      current: current,
+      hourly: _hourlyFromTimeline(timeline, current),
+      daily: const [],
+      minutePrecipitation: minutes,
+      timeline: timeline,
+      alerts: alerts,
+    );
   }
 
   static List<HourlyForecast> _hourlyFromTimeline(
@@ -409,6 +476,26 @@ class OpenWeatherRepository extends WeatherRepository {
       '[GrumpySkies] weather display location=$locationName '
       'lat=${latitude.toStringAsFixed(3)} '
       'lon=${longitude.toStringAsFixed(3)}',
+    );
+  }
+
+  static bool _shouldUseLegacyWeatherFallback(Object error) {
+    if (error is! OpenWeatherBackendException) return false;
+    return error.statusCode == 404 || error.isProviderAuthorizationFailure;
+  }
+
+  static void _debugLegacyWeatherFallback(Object error) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] bundled forecast unavailable; '
+      'using deployed legacy weather endpoints: $error',
+    );
+  }
+
+  static void _debugOptionalWeatherFailure(String endpoint, Object error) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[GrumpySkies] optional $endpoint weather failed: $error',
     );
   }
 }
