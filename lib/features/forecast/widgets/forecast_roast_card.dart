@@ -6,7 +6,6 @@ import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../models/daymaker_models.dart';
-import '../../../shared/assets/dm_assets.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 
 class ForecastRoastCard extends StatelessWidget {
@@ -33,15 +32,19 @@ class ForecastRoastCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              DmAssetImage(
-                assetPath: DmAssets.personas.karen,
-                width: 68,
-                height: 68,
-                fit: BoxFit.cover,
-                borderRadius: DMRadius.full,
-                semanticLabel: 'Karen avatar',
-                placeholderGradient: DMGradients.sunrise,
-                placeholderIcon: Icons.person_outline_rounded,
+              SizedBox(
+                width: 118,
+                child: AspectRatio(
+                  aspectRatio: 1774 / 887,
+                  child: DmAssetImage(
+                    assetPath: persona.avatarAsset,
+                    fit: BoxFit.cover,
+                    borderRadius: DMRadius.card,
+                    semanticLabel: '${persona.name} persona card',
+                    placeholderGradient: DMGradients.sunrise,
+                    placeholderIcon: Icons.person_outline_rounded,
+                  ),
+                ),
               ),
               const SizedBox(width: DMSpacing.md),
               Expanded(

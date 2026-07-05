@@ -40,7 +40,7 @@ class PersonaRoastService {
         return "Back in my day, $tempF°F meant we kept quiet and layered up.";
       case PersonaType.politician:
         return "The temperature is $tempF°F and totally under control.";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "$tempF°F. Sky feels weird. Snack time.";
     }
   }
@@ -53,7 +53,7 @@ class PersonaRoastService {
         return "Humidity this high should be illegal. Fix it. ($value)";
       case PersonaType.fratBro:
         return "Air's so thick you could bench press it. ($value)";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "Sky sticky. Don’t like it. ($value)";
       case PersonaType.grandpa:
         return "Reminds me of the great damp of ’72. ($value)";
@@ -74,7 +74,7 @@ class PersonaRoastService {
         return "AQI at $level. I've breathed worse, but this is rude.";
       case PersonaType.politician:
         return "AQI $level is simply a temporary inconvenience.";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "Air yucky. Number $level. I pout.";
     }
   }
@@ -91,7 +91,7 @@ class PersonaRoastService {
         return "$value chance of rain. Grab your coat like we used to.";
       case PersonaType.politician:
         return "With a $value precipitation probability, I recommend umbrellas.";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "$value rain. Boots on. Puddles now.";
     }
   }
@@ -108,7 +108,7 @@ class PersonaRoastService {
           return "Feels like ${feelsLikeF.toStringAsFixed(0)}°F. Too hot for common sense.";
         case PersonaType.politician:
           return "The feels-like is ${feelsLikeF.toStringAsFixed(0)}°F. We are monitoring.";
-        case PersonaType.toddler:
+        case PersonaType.twoYearOld:
           return "Feels ${feelsLikeF.toStringAsFixed(0)}. Too hot. Nap.";
       }
     }
@@ -123,7 +123,7 @@ class PersonaRoastService {
           return "Feels like ${feelsLikeF.toStringAsFixed(0)}°F. Layer up, rookie.";
         case PersonaType.politician:
           return "Perceived temperature: ${feelsLikeF.toStringAsFixed(0)}°F. Situation fluid.";
-        case PersonaType.toddler:
+        case PersonaType.twoYearOld:
           return "Feels ${feelsLikeF.toStringAsFixed(0)}. Need blanket.";
       }
     }
@@ -143,7 +143,7 @@ class PersonaRoastService {
         return "Sunrise $timeString. We used to wake with the sun, not after it.";
       case PersonaType.politician:
         return "Sunrise scheduled for $timeString. We're spinning it as intentional.";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "Sun wake at $timeString. Too late.";
     }
   }
@@ -160,7 +160,7 @@ class PersonaRoastService {
         return "Sunset at $timeString. We used to respect early nights.";
       case PersonaType.politician:
         return "Expect sunset around $timeString. It's within acceptable margins.";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "Sun bye-bye at $timeString. Bedtime? No.";
     }
   }
@@ -188,7 +188,7 @@ class PersonaRoastService {
           return "Moonrise $timeString. Stars used to show up earlier.";
         case PersonaType.politician:
           return "Moonrise projected for $timeString. We support lunar transparency.";
-        case PersonaType.toddler:
+        case PersonaType.twoYearOld:
           return "Moon wake at $timeString. Sparkly!";
       }
     }
@@ -203,7 +203,7 @@ class PersonaRoastService {
         return "Moonset $timeString. Night's overstaying its welcome.";
       case PersonaType.politician:
         return "Moonset around $timeString. An orderly transition of power.";
-      case PersonaType.toddler:
+      case PersonaType.twoYearOld:
         return "Moon sleep at $timeString. Night-night.";
     }
   }

@@ -52,7 +52,7 @@ assets/
   textures/
 ```
 
-The app already includes starter files such as `assets/brand/app_icon.png`, `assets/mascots/daymaker_idle.png`, and `assets/personas/karen.png`. Most other paths are intentional placeholders. Missing files render through `DmAssetImage` fallbacks so development builds stay usable while generated art is incomplete.
+The app already includes starter files such as `assets/brand/app_icon.png`, `assets/mascots/daymaker_idle.png`, and `assets/personas/karen_roast_queen.png`. Most other paths are intentional placeholders. Missing files render through `DmAssetImage` fallbacks so development builds stay usable while generated art is incomplete.
 
 ## Replacing Placeholder Assets
 
@@ -61,7 +61,7 @@ ChatGPT-generated assets should be dropped into the exact paths listed in `DmAss
 1. Generate PNG assets at the requested size and transparent/background style for the target slot.
 2. Save the file into the matching folder and filename from `lib/shared/assets/dm_assets.dart`.
 3. Prefer replacing placeholders in place instead of changing Dart constants.
-4. Keep image names lowercase with underscores, for example `assets/personas/frat_bro.png`.
+4. Keep image names lowercase with underscores, for example `assets/personas/frat_bro_barometer_bro.png`.
 5. Run `flutter test test/asset_manifest_test.dart` to confirm the manifest still resolves expected folders.
 6. Run the full check before handing off: `dart format .`, `flutter analyze`, and `flutter test`.
 

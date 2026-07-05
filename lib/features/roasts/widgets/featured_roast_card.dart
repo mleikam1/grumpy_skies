@@ -32,10 +32,10 @@ class FeaturedRoastCard extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 620;
-          final avatarSize = wide ? 132.0 : 104.0;
+          final avatarWidth = wide ? 248.0 : 136.0;
           final avatar = _FeaturedAvatar(
             persona: persona,
-            size: avatarSize,
+            width: avatarWidth,
           );
           final content = _FeaturedRoastContent(
             persona: persona,
@@ -86,32 +86,32 @@ class FeaturedRoastCard extends StatelessWidget {
 class _FeaturedAvatar extends StatelessWidget {
   const _FeaturedAvatar({
     required this.persona,
-    required this.size,
+    required this.width,
   });
 
   final Persona persona;
-  final double size;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
+      width: width,
       padding: const EdgeInsets.all(3),
       decoration: const BoxDecoration(
-        shape: BoxShape.circle,
+        borderRadius: DMRadius.card,
         gradient: DMGradients.primaryAction,
         boxShadow: DMShadows.sunGlow,
       ),
-      child: DmAssetImage(
-        assetPath: persona.avatarAsset,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        borderRadius: DMRadius.full,
-        semanticLabel: '${persona.name} avatar',
-        placeholderGradient: _personaGradient(persona.id),
-        placeholderIcon: Icons.person_rounded,
+      child: AspectRatio(
+        aspectRatio: 1774 / 887,
+        child: DmAssetImage(
+          assetPath: persona.avatarAsset,
+          fit: BoxFit.cover,
+          borderRadius: DMRadius.medium,
+          semanticLabel: '${persona.name} persona card',
+          placeholderGradient: _personaGradient(persona.id),
+          placeholderIcon: Icons.person_rounded,
+        ),
       ),
     );
   }
@@ -314,10 +314,10 @@ class _RoastBadge extends StatelessWidget {
 
 Gradient _personaGradient(String personaId) {
   return switch (personaId) {
-    'frat-bro' => DMGradients.clearSky,
+    'frat_bro' || 'frat-bro' => DMGradients.clearSky,
     'grandpa' => DMGradients.rain,
     'politician' => DMGradients.storm,
-    'two-year-old' => DMGradients.heat,
+    'two_year_old' || 'two-year-old' || 'toddler' => DMGradients.heat,
     _ => DMGradients.sunrise,
   };
 }

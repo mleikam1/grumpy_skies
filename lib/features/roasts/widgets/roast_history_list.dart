@@ -164,10 +164,10 @@ String _formatTimestamp(DateTime timestamp) {
 
 Gradient _personaGradient(String personaId) {
   return switch (personaId) {
-    'frat-bro' => DMGradients.clearSky,
+    'frat_bro' || 'frat-bro' => DMGradients.clearSky,
     'grandpa' => DMGradients.rain,
     'politician' => DMGradients.storm,
-    'two-year-old' => DMGradients.heat,
+    'two_year_old' || 'two-year-old' || 'toddler' => DMGradients.heat,
     _ => DMGradients.sunrise,
   };
 }

@@ -1,5 +1,6 @@
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
+import '../features/roasts/models/roast_persona.dart';
 import '../shared/assets/dm_assets.dart';
 
 abstract final class DayMakerSampleData {
@@ -158,50 +159,11 @@ abstract final class DayMakerSampleData {
   static final WeatherBundle weatherBundle =
       WeatherBundle.fromSnapshot(weatherSnapshot);
 
-  static final Persona persona = Persona(
-    id: 'karen',
-    name: 'Karen',
-    title: 'Roast Queen',
-    avatarAsset: DmAssets.personas.karen,
-    requiredXp: 0,
-    unlocked: true,
-  );
+  static final Persona persona =
+      RoastPersonas.defaultPersona.toDayMakerPersona();
 
-  static final List<Persona> personas = List.unmodifiable([
-    persona,
-    Persona(
-      id: 'frat-bro',
-      name: 'Frat Bro',
-      title: 'Barometer Bro',
-      avatarAsset: DmAssets.personas.fratBro,
-      requiredXp: 0,
-      unlocked: true,
-    ),
-    Persona(
-      id: 'grandpa',
-      name: 'Grandpa',
-      title: 'Cloud Historian',
-      avatarAsset: DmAssets.personas.grandpa,
-      requiredXp: 0,
-      unlocked: true,
-    ),
-    Persona(
-      id: 'politician',
-      name: 'Politician',
-      title: 'Spin Doctor',
-      avatarAsset: DmAssets.personas.politician,
-      requiredXp: 0,
-      unlocked: true,
-    ),
-    Persona(
-      id: 'two-year-old',
-      name: '2-Year-Old',
-      title: 'Tiny Thunder',
-      avatarAsset: DmAssets.personas.toddler,
-      requiredXp: 0,
-      unlocked: true,
-    ),
-  ]);
+  static final List<Persona> personas =
+      List.unmodifiable(RoastPersonas.toDayMakerPersonas());
 
   static final Roast roast = Roast(
     id: 'demo-karen-daily-roast',
@@ -217,7 +179,7 @@ abstract final class DayMakerSampleData {
     roast,
     Roast(
       id: 'demo-frat-bro-daily-roast',
-      personaId: 'frat-bro',
+      personaId: 'frat_bro',
       weatherSnapshotId: weatherSnapshot.id,
       text:
           'It’s 72°F, bro. The clouds are mid and the humidity is doing keg stands.',
@@ -226,10 +188,10 @@ abstract final class DayMakerSampleData {
       xpReward: 15,
     ),
     Roast(
-      id: 'demo-grandpa-daily-roast',
-      personaId: 'grandpa',
+      id: 'demo-two-year-old-daily-roast',
+      personaId: 'two_year_old',
       weatherSnapshotId: weatherSnapshot.id,
-      text: 'Back in my day, 8 mph wind was called walking to school uphill.',
+      text: 'Sky is blue. Sun is loud. Shoes are optional.',
       category: 'daily',
       createdAt: observedAt.subtract(const Duration(minutes: 24)),
       xpReward: 15,
@@ -239,16 +201,17 @@ abstract final class DayMakerSampleData {
       personaId: 'politician',
       weatherSnapshotId: weatherSnapshot.id,
       text:
-          'We are forming a committee to investigate why 56% humidity feels personal.',
+          'Today’s conditions are not bad weather; they are an atmospheric opportunity.',
       category: 'daily',
       createdAt: observedAt.subtract(const Duration(minutes: 36)),
       xpReward: 15,
     ),
     Roast(
-      id: 'demo-two-year-old-daily-roast',
-      personaId: 'two-year-old',
+      id: 'demo-grandpa-daily-roast',
+      personaId: 'grandpa',
       weatherSnapshotId: weatherSnapshot.id,
-      text: 'Clouds said no nap, so now the whole sky is cranky.',
+      text:
+          'Back in my day, we called this bring a jacket and stop complaining.',
       category: 'daily',
       createdAt: observedAt.subtract(const Duration(minutes: 48)),
       xpReward: 15,
@@ -268,7 +231,7 @@ abstract final class DayMakerSampleData {
     ),
     Roast(
       id: 'demo-frat-bro-hourly-roast',
-      personaId: 'frat-bro',
+      personaId: 'frat_bro',
       weatherSnapshotId: weatherSnapshot.id,
       text: 'Wind at 8 mph: light breeze, heavy main-character energy.',
       category: 'hourly',
@@ -276,10 +239,10 @@ abstract final class DayMakerSampleData {
       xpReward: 10,
     ),
     Roast(
-      id: 'demo-grandpa-hourly-roast',
-      personaId: 'grandpa',
+      id: 'demo-two-year-old-hourly-roast',
+      personaId: 'two_year_old',
       weatherSnapshotId: weatherSnapshot.id,
-      text: 'Humidity at 56% and everyone acts like the sky invented problems.',
+      text: 'Rain chance is 38%, which is also the chance of sharing snacks.',
       category: 'hourly',
       createdAt: observedAt.subtract(const Duration(hours: 3)),
       xpReward: 10,
@@ -294,10 +257,10 @@ abstract final class DayMakerSampleData {
       xpReward: 10,
     ),
     Roast(
-      id: 'demo-two-year-old-hourly-roast',
-      personaId: 'two-year-old',
+      id: 'demo-grandpa-hourly-roast',
+      personaId: 'grandpa',
       weatherSnapshotId: weatherSnapshot.id,
-      text: 'Rain chance is 38%, which is also the chance of sharing snacks.',
+      text: 'Humidity at 56% and everyone acts like the sky invented problems.',
       category: 'hourly',
       createdAt: observedAt.subtract(const Duration(hours: 5)),
       xpReward: 10,

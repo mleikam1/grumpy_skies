@@ -1,4 +1,5 @@
 import '../data/daymaker_sample_data.dart';
+import '../features/roasts/models/roast_persona.dart';
 import '../models/weather_models.dart';
 import 'roast_repository.dart';
 
@@ -14,8 +15,9 @@ class FakeRoastRepository implements RoastRepository {
 
   @override
   Future<Persona> getPersona(String id) async {
+    final normalizedId = RoastPersonas.normalizeId(id);
     return DayMakerSampleData.personas.firstWhere(
-      (persona) => persona.id == id,
+      (persona) => persona.id == normalizedId,
       orElse: () => DayMakerSampleData.persona,
     );
   }
@@ -25,9 +27,10 @@ class FakeRoastRepository implements RoastRepository {
     required String personaId,
     required String weatherSnapshotId,
   }) async {
+    final normalizedPersonaId = RoastPersonas.normalizeId(personaId);
     return DayMakerSampleData.dailyRoasts.firstWhere(
       (roast) =>
-          roast.personaId == personaId &&
+          RoastPersonas.normalizeId(roast.personaId) == normalizedPersonaId &&
           roast.weatherSnapshotId == weatherSnapshotId,
       orElse: () => DayMakerSampleData.roast,
     );
@@ -39,8 +42,12 @@ class FakeRoastRepository implements RoastRepository {
       return DayMakerSampleData.roastHistory;
     }
 
+    final normalizedPersonaId = RoastPersonas.normalizeId(personaId);
     return DayMakerSampleData.roastHistory
-        .where((roast) => roast.personaId == personaId)
+        .where(
+          (roast) =>
+              RoastPersonas.normalizeId(roast.personaId) == normalizedPersonaId,
+        )
         .toList(growable: false);
   }
 

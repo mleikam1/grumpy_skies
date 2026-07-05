@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/daymaker_sample_data.dart';
+import '../features/roasts/models/roast_persona.dart';
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
 import 'settings_repository.dart';
@@ -30,8 +31,10 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
 
     return defaults.copyWith(
       temperatureUnit: _readTemperatureUnit() ?? defaults.temperatureUnit,
-      selectedPersonaId: _preferences.getString(_selectedPersonaIdKey) ??
-          defaults.selectedPersonaId,
+      selectedPersonaId: RoastPersonas.normalizeId(
+        _preferences.getString(_selectedPersonaIdKey) ??
+            defaults.selectedPersonaId,
+      ),
       notificationsEnabled: _preferences.getBool(_notificationsEnabledKey) ??
           defaults.notificationsEnabled,
       adsEnabled: _preferences.getBool(_adsEnabledKey) ?? defaults.adsEnabled,
@@ -50,7 +53,7 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
       ),
       _preferences.setString(
         _selectedPersonaIdKey,
-        settings.selectedPersonaId,
+        RoastPersonas.normalizeId(settings.selectedPersonaId),
       ),
       _preferences.setBool(
         _notificationsEnabledKey,

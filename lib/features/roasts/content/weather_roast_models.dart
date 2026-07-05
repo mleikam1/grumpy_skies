@@ -3,15 +3,16 @@ import '../../../models/weather_models.dart';
 const supportedWeatherRoastPersonas = <String>{
   'karen',
   'frat_bro',
-  'old_grandpa',
+  'two_year_old',
   'politician',
-  'toddler',
+  'grandpa',
 };
 
 const legacyWeatherRoastPersonaAliases = <String, String>{
   'frat-bro': 'frat_bro',
-  'grandpa': 'old_grandpa',
-  'two-year-old': 'toddler',
+  'old_grandpa': 'grandpa',
+  'two-year-old': 'two_year_old',
+  'toddler': 'two_year_old',
 };
 
 const supportedRoastPlaceholders = <String>{

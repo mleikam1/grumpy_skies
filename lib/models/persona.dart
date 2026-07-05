@@ -1,4 +1,4 @@
-enum PersonaType { karen, fratBro, grandpa, politician, toddler }
+enum PersonaType { karen, fratBro, twoYearOld, politician, grandpa }
 
 extension PersonaTypeExt on PersonaType {
   String get displayName {
@@ -7,12 +7,12 @@ extension PersonaTypeExt on PersonaType {
         return 'Karen';
       case PersonaType.fratBro:
         return 'Frat Bro';
-      case PersonaType.grandpa:
-        return 'Grandpa';
+      case PersonaType.twoYearOld:
+        return '2-Year-Old';
       case PersonaType.politician:
         return 'Politician';
-      case PersonaType.toddler:
-        return '2-Year-Old';
+      case PersonaType.grandpa:
+        return 'Grandpa';
     }
   }
 }

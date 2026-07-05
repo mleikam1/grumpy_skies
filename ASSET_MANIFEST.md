@@ -67,11 +67,11 @@ Generated assets may be absent during development. UI must load these paths only
 | `assets/mascots/daymaker_umbrella.png` | Rain state mascot | PNG | 1024x1024 px | Yes |
 | `assets/mascots/daymaker_sleepy.png` | Night/idle mascot | PNG | 1024x1024 px | Yes |
 | `assets/mascots/daymaker_severe_alert.png` | Severe weather mascot | PNG | 1024x1024 px | Yes |
-| `assets/personas/karen.png` | Persona carousel, roast cards | PNG | 1024x1024 px | Yes |
-| `assets/personas/frat_bro.png` | Persona carousel, roast cards | PNG | 1024x1024 px | Yes |
-| `assets/personas/grandpa.png` | Persona carousel, roast cards | PNG | 1024x1024 px | Yes |
-| `assets/personas/politician.png` | Persona carousel, roast cards | PNG | 1024x1024 px | Yes |
-| `assets/personas/toddler.png` | Persona carousel, roast cards | PNG | 1024x1024 px | Yes |
+| `assets/personas/karen_roast_queen.png` | Persona carousel, roast cards | PNG | 1774x887 px | No |
+| `assets/personas/frat_bro_barometer_bro.png` | Persona carousel, roast cards | PNG | 1774x887 px | No |
+| `assets/personas/two_year_old_tiny_thunder.png` | Persona carousel, roast cards | PNG | 1774x887 px | No |
+| `assets/personas/politician_spin_doctor.png` | Persona carousel, roast cards | PNG | 1774x887 px | No |
+| `assets/personas/grandpa_cloud_historian.png` | Persona carousel, roast cards | PNG | 1774x887 px | No |
 | `assets/personas/snarky_storm.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
 | `assets/personas/cloudy_cynic.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
 | `assets/personas/sunny_sass.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |

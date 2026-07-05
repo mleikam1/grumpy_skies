@@ -84,7 +84,7 @@ If you deploy those files through Firebase Hosting, set Remote Config like this:
 roast_pack_enabled=true
 roast_pack_version=2026.06.26.1
 roast_pack_url=/content/roasts/roast_pack_v2026.06.26.1.json
-roast_pack_sha256=4bc1e8148913165ed2c5a4a40245a2246e5d85ca89149b76a86955a328ddebbb
+roast_pack_sha256=b4079e3c71e696996abbf38fe7168e8a9d594c034c102c435bf5b9a8cf4f1dec
 roast_pack_min_app_build=1
 roast_disabled_ids=
 ```
@@ -96,9 +96,9 @@ Supported personas:
 ```text
 karen
 frat_bro
-old_grandpa
+two_year_old
 politician
-toddler
+grandpa
 ```
 
 Supported roast types:

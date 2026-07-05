@@ -11,12 +11,15 @@ import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
+import '../../features/roasts/models/roast_persona.dart';
 import '../../features/roasts/content/roast_pack_repository.dart';
 import '../../features/roasts/content/roast_selector.dart';
 import '../../features/roasts/content/weather_roast_models.dart';
 import '../../models/weather_models.dart';
+import '../../repositories/settings_repository.dart';
 import '../../repositories/weather_repository.dart';
 import '../../services/open_weather_backend_client.dart';
+import '../../services/settings_controller.dart';
 import '../../services/weather_location_controller.dart';
 import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/daymaker_components.dart';
@@ -40,6 +43,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
   WeatherRepository? _repository;
   RoastPackRepository? _roastPackRepository;
+  SettingsRepository? _settingsRepository;
   WeatherLocationController? _locationController;
   WeatherBundle? _weather;
   RoastPack? _roastPack;
@@ -52,6 +56,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
   var _roastIndex = 0;
   var _loadedRepository = false;
   var _showLocationSelector = false;
+  var _selectedPersonaId = RoastPersonas.defaultPersona.id;
   final _recentRoastIds = <String>[];
   final _roastSelector = const RoastSelector();
 
@@ -62,6 +67,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
     _repository = widget.weatherRepository ?? context.read<WeatherRepository>();
     _roastPackRepository = _readRoastPackRepository() ?? RoastPackRepository();
+    _settingsRepository = _readSettingsRepository();
     _locationController = _readLocationController() ??
         WeatherLocationController(
           repository: _repository!,
@@ -69,6 +75,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
     _locationController!.addListener(_handleLocationChanged);
     _loadedRepository = true;
     _startAutoRefresh();
+    unawaited(_loadSelectedPersona());
     unawaited(_loadRoastPack());
     if (_locationController!.selectedLocation == null) {
       setState(() => _loading = false);
@@ -82,6 +89,14 @@ class _ForecastScreenState extends State<ForecastScreen> {
   RoastPackRepository? _readRoastPackRepository() {
     try {
       return context.read<RoastPackRepository>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  SettingsRepository? _readSettingsRepository() {
+    try {
+      return context.read<SettingsRepository>();
     } catch (_) {
       return null;
     }
@@ -109,6 +124,33 @@ class _ForecastScreenState extends State<ForecastScreen> {
       return context.read<WeatherLocationController>();
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<void> _loadSelectedPersona() async {
+    final repository = _settingsRepository;
+    if (repository == null) return;
+
+    try {
+      final settings = await repository.loadSettings();
+      if (!mounted) return;
+      setState(() {
+        _selectedPersonaId =
+            RoastPersonas.normalizeId(settings.selectedPersonaId);
+      });
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[GrumpySkies] selected persona load error: $error');
+      }
+    }
+  }
+
+  String _selectedPersonaIdForBuild() {
+    try {
+      final controller = context.watch<SettingsController>();
+      return RoastPersonas.normalizeId(controller.selectedPersonaId);
+    } catch (_) {
+      return _selectedPersonaId;
     }
   }
 
@@ -220,12 +262,17 @@ class _ForecastScreenState extends State<ForecastScreen> {
       );
   }
 
-  void _showNextRoast() {
+  void _showNextRoast(String personaId) {
     final weather = _weather;
     final pack = _roastPack;
     if (weather != null && pack != null) {
       final snapshot = _snapshotForWeather(weather);
-      final selection = _selectWeatherRoast(pack, weather, snapshot);
+      final selection = _selectWeatherRoast(
+        pack,
+        weather,
+        snapshot,
+        personaId,
+      );
       _recentRoastIds.add(selection.line.id);
       if (_recentRoastIds.length > 8) {
         _recentRoastIds.removeRange(0, _recentRoastIds.length - 8);
@@ -237,12 +284,11 @@ class _ForecastScreenState extends State<ForecastScreen> {
     });
   }
 
-  Future<void> _shareRoast() async {
+  Future<void> _shareRoast(String personaId) async {
     final weather = _weather;
     final roast = weather == null
-        ? DayMakerSampleData
-            .roastHistory[_roastIndex % DayMakerSampleData.roastHistory.length]
-        : _roastForWeather(weather, _snapshotForWeather(weather));
+        ? _fallbackRoastForPersona(personaId)
+        : _roastForWeather(weather, _snapshotForWeather(weather), personaId);
     await Clipboard.setData(ClipboardData(text: roast.text));
     if (!mounted) return;
 
@@ -297,8 +343,11 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
     final weather = _weather!;
     final snapshot = _snapshotForWeather(weather);
+    final selectedPersonaId = _selectedPersonaIdForBuild();
+    final selectedPersona =
+        RoastPersonas.byId(selectedPersonaId).toDayMakerPersona();
     final now = _relativeNow ?? weather.current.lastUpdated;
-    final roast = _roastForWeather(weather, snapshot);
+    final roast = _roastForWeather(weather, snapshot, selectedPersona.id);
     final location = _cityName(
       weather.current.locationName.isNotEmpty
           ? weather.current.locationName
@@ -363,10 +412,10 @@ class _ForecastScreenState extends State<ForecastScreen> {
                       ),
                       SizedBox(height: gap),
                       ForecastRoastCard(
-                        persona: DayMakerSampleData.persona,
+                        persona: selectedPersona,
                         roast: roast,
-                        onNewRoast: _showNextRoast,
-                        onShare: _shareRoast,
+                        onNewRoast: () => _showNextRoast(selectedPersona.id),
+                        onShare: () => _shareRoast(selectedPersona.id),
                       ),
                       SizedBox(height: gap),
                       ForecastMetricChips(weather: snapshot),
@@ -403,14 +452,17 @@ class _ForecastScreenState extends State<ForecastScreen> {
     return trimmed.split(',').first.trim();
   }
 
-  Roast _roastForWeather(WeatherBundle weather, WeatherSnapshot snapshot) {
+  Roast _roastForWeather(
+    WeatherBundle weather,
+    WeatherSnapshot snapshot,
+    String personaId,
+  ) {
     final pack = _roastPack;
     if (pack == null) {
-      return DayMakerSampleData
-          .roastHistory[_roastIndex % DayMakerSampleData.roastHistory.length];
+      return _fallbackRoastForPersona(personaId);
     }
 
-    final selection = _selectWeatherRoast(pack, weather, snapshot);
+    final selection = _selectWeatherRoast(pack, weather, snapshot, personaId);
     return Roast(
       id: selection.line.id,
       personaId: selection.line.persona,
@@ -426,6 +478,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
     RoastPack pack,
     WeatherBundle weather,
     WeatherSnapshot snapshot,
+    String personaId,
   ) {
     final context = WeatherRoastContext.fromWeatherBundle(
       weather,
@@ -434,12 +487,24 @@ class _ForecastScreenState extends State<ForecastScreen> {
     return _roastSelector.select(
       pack: pack,
       context: context,
-      persona: DayMakerSampleData.persona.id,
+      persona: personaId,
       type: RoastType.today,
       maxLevel: RoastLevel.medium,
       recentRoastIds: _recentRoastIds,
-      seed: '${snapshot.id}|${weather.current.displayUpdatedAt}|$_roastIndex',
+      seed:
+          '${snapshot.id}|$personaId|${weather.current.displayUpdatedAt}|$_roastIndex',
     );
+  }
+
+  Roast _fallbackRoastForPersona(String personaId) {
+    final normalized = RoastPersonas.normalizeId(personaId);
+    final matches = DayMakerSampleData.roastHistory
+        .where(
+          (roast) => RoastPersonas.normalizeId(roast.personaId) == normalized,
+        )
+        .toList(growable: false);
+    if (matches.isEmpty) return DayMakerSampleData.roast;
+    return matches[_roastIndex % matches.length];
   }
 
   static WeatherSnapshot _snapshotForWeather(WeatherBundle weather) {

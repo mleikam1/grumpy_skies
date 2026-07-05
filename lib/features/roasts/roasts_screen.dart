@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +12,10 @@ import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../models/daymaker_models.dart';
 import '../../repositories/roast_repository.dart';
+import '../../repositories/settings_repository.dart';
+import '../../services/settings_controller.dart';
 import '../../shared/widgets/daymaker_components.dart';
+import 'models/roast_persona.dart';
 import 'widgets/daymaker_persona_carousel.dart';
 import 'widgets/featured_roast_card.dart';
 import 'widgets/roast_cooldown_card.dart';
@@ -20,9 +26,11 @@ class RoastsScreen extends StatefulWidget {
   const RoastsScreen({
     super.key,
     this.roastRepository,
+    this.settingsRepository,
   });
 
   final RoastRepository? roastRepository;
+  final SettingsRepository? settingsRepository;
 
   @override
   State<RoastsScreen> createState() => _RoastsScreenState();
@@ -30,6 +38,8 @@ class RoastsScreen extends StatefulWidget {
 
 class _RoastsScreenState extends State<RoastsScreen> {
   RoastRepository? _repository;
+  SettingsRepository? _settingsRepository;
+  SettingsController? _settingsController;
   var _loadedRepository = false;
   var _loading = true;
   Object? _error;
@@ -45,6 +55,9 @@ class _RoastsScreenState extends State<RoastsScreen> {
     if (_loadedRepository) return;
 
     _repository = widget.roastRepository ?? context.read<RoastRepository>();
+    _settingsRepository =
+        widget.settingsRepository ?? _readSettingsRepository();
+    _settingsController = _readSettingsController();
     _loadedRepository = true;
     _loadRoasts();
   }
@@ -59,6 +72,22 @@ class _RoastsScreenState extends State<RoastsScreen> {
     }
   }
 
+  SettingsRepository? _readSettingsRepository() {
+    try {
+      return context.read<SettingsRepository>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  SettingsController? _readSettingsController() {
+    try {
+      return context.read<SettingsController>();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _loadRoasts() async {
     setState(() {
       _loading = true;
@@ -68,6 +97,7 @@ class _RoastsScreenState extends State<RoastsScreen> {
     try {
       final repository = _repository!;
       final personas = await repository.getPersonas();
+      final settings = await _settingsRepository?.loadSettings();
       final dailyRoasts = await Future.wait(
         personas.map(
           (persona) => repository.getDailyRoast(
@@ -77,17 +107,14 @@ class _RoastsScreenState extends State<RoastsScreen> {
         ),
       );
       final history = await repository.getRoastHistory();
+      final preferredPersonaId = _selectedPersonaId ??
+          _settingsController?.selectedPersonaId ??
+          settings?.selectedPersonaId ??
+          RoastPersonas.defaultPersona.id;
 
       if (!mounted) return;
 
-      final currentSelection = _selectedPersonaId;
-      final hasCurrentSelection =
-          personas.any((persona) => persona.id == currentSelection);
-      final selectedPersonaId = hasCurrentSelection
-          ? currentSelection
-          : personas.isEmpty
-              ? null
-              : personas.first.id;
+      final selectedPersonaId = _resolvePersonaId(preferredPersonaId, personas);
 
       setState(() {
         _personas = personas;
@@ -109,7 +136,29 @@ class _RoastsScreenState extends State<RoastsScreen> {
   }
 
   void _selectPersona(Persona persona) {
-    setState(() => _selectedPersonaId = persona.id);
+    final normalizedId = RoastPersonas.normalizeId(persona.id);
+    setState(() => _selectedPersonaId = normalizedId);
+    final settingsController = _settingsController;
+    if (settingsController != null) {
+      settingsController.setSelectedPersonaId(normalizedId);
+    } else {
+      unawaited(_saveSelectedPersona(normalizedId));
+    }
+  }
+
+  Future<void> _saveSelectedPersona(String personaId) async {
+    final repository = _settingsRepository;
+    if (repository == null) return;
+
+    try {
+      await repository.updateSettings(
+        (settings) => settings.copyWith(selectedPersonaId: personaId),
+      );
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[GrumpySkies] selected persona save error: $error');
+      }
+    }
   }
 
   void _showShareSnackBar(Roast _) {
@@ -237,12 +286,30 @@ class _RoastsScreenState extends State<RoastsScreen> {
     if (selectedId == null) return null;
 
     for (final persona in _personas) {
-      if (persona.id == selectedId) {
+      if (persona.id == selectedId ||
+          RoastPersonas.normalizeIdOrNull(persona.id) == selectedId) {
         return persona;
       }
     }
 
     return _personas.isEmpty ? null : _personas.first;
+  }
+
+  String? _resolvePersonaId(String? rawId, List<Persona> personas) {
+    if (personas.isEmpty) return null;
+
+    final normalized = RoastPersonas.normalizeId(rawId);
+    final fallback = RoastPersonas.defaultPersona.id;
+    for (final candidate in [normalized, fallback, personas.first.id]) {
+      for (final persona in personas) {
+        if (persona.id == candidate ||
+            RoastPersonas.normalizeIdOrNull(persona.id) == candidate) {
+          return persona.id;
+        }
+      }
+    }
+
+    return personas.first.id;
   }
 
   Roast _featuredRoastFor(Persona persona) {

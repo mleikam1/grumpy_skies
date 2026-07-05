@@ -24,24 +24,36 @@ class DaymakerPersonaCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 204,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(vertical: DMSpacing.xs),
-        itemCount: personas.length,
-        separatorBuilder: (context, index) => const SizedBox(
-          width: DMSpacing.sm,
-        ),
-        itemBuilder: (context, index) {
-          final persona = personas[index];
-          return _PersonaCarouselCard(
-            persona: persona,
-            selected: persona.id == selectedPersonaId,
-            onTap: () => onPersonaSelected(persona),
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final cardWidth = width >= 900
+            ? ((width - (DMSpacing.sm * 4)) / 5).clamp(176.0, 220.0)
+            : width >= 600
+                ? 264.0
+                : 244.0;
+
+        return SizedBox(
+          height: 224,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(vertical: DMSpacing.xs),
+            itemCount: personas.length,
+            separatorBuilder: (context, index) => const SizedBox(
+              width: DMSpacing.sm,
+            ),
+            itemBuilder: (context, index) {
+              final persona = personas[index];
+              return _PersonaCarouselCard(
+                persona: persona,
+                width: cardWidth,
+                selected: persona.id == selectedPersonaId,
+                onTap: () => onPersonaSelected(persona),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -49,11 +61,13 @@ class DaymakerPersonaCarousel extends StatelessWidget {
 class _PersonaCarouselCard extends StatelessWidget {
   const _PersonaCarouselCard({
     required this.persona,
+    required this.width,
     required this.selected,
     required this.onTap,
   });
 
   final Persona persona;
+  final double width;
   final bool selected;
   final VoidCallback onTap;
 
@@ -68,7 +82,7 @@ class _PersonaCarouselCard extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: '${persona.name}, ${persona.title}',
+      label: '${persona.name}, ${persona.title} persona',
       child: ExcludeSemantics(
         child: Material(
           color: Colors.transparent,
@@ -78,7 +92,7 @@ class _PersonaCarouselCard extends StatelessWidget {
             child: AnimatedContainer(
               duration: motion,
               curve: DMMotion.easeOut,
-              width: 156,
+              width: width,
               padding: const EdgeInsets.all(DMSpacing.sm),
               decoration: BoxDecoration(
                 gradient: selected ? DMGradients.glass : DMGradients.glassNavy,
@@ -91,7 +105,7 @@ class _PersonaCarouselCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _PersonaAvatar(persona: persona, selected: selected),
+                      _PersonaArtwork(persona: persona),
                       const SizedBox(height: DMSpacing.sm),
                       Text(
                         persona.name,
@@ -156,35 +170,74 @@ class _PersonaCarouselCard extends StatelessWidget {
   }
 }
 
-class _PersonaAvatar extends StatelessWidget {
-  const _PersonaAvatar({
-    required this.persona,
-    required this.selected,
-  });
+class _PersonaArtwork extends StatelessWidget {
+  const _PersonaArtwork({required this.persona});
 
   final Persona persona;
-  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 78,
-      height: 78,
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: selected ? DMGradients.primaryAction : null,
-        color: selected ? null : DMColors.glass,
+    return AspectRatio(
+      aspectRatio: 1774 / 887,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          borderRadius: DMRadius.medium,
+          boxShadow: DMShadows.soft,
+        ),
+        child: DmAssetImage(
+          assetPath: persona.avatarAsset,
+          fit: BoxFit.cover,
+          borderRadius: DMRadius.medium,
+          semanticLabel: '${persona.name} persona card',
+          placeholderGradient: _personaGradient(persona.id),
+          placeholderIcon: Icons.person_rounded,
+          placeholderBuilder: (context) => _PersonaArtworkFallback(
+            persona: persona,
+          ),
+        ),
       ),
-      child: DmAssetImage(
-        assetPath: persona.avatarAsset,
-        width: 74,
-        height: 74,
-        fit: BoxFit.cover,
-        borderRadius: DMRadius.full,
-        semanticLabel: '${persona.name} avatar',
-        placeholderGradient: _personaGradient(persona.id),
-        placeholderIcon: Icons.person_rounded,
+    );
+  }
+}
+
+class _PersonaArtworkFallback extends StatelessWidget {
+  const _PersonaArtworkFallback({required this.persona});
+
+  final Persona persona;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: _personaGradient(persona.id),
+        borderRadius: DMRadius.medium,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(DMSpacing.sm),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              persona.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: DMTypography.labelLarge.copyWith(
+                color: DMColors.deepNavy,
+              ),
+            ),
+            const SizedBox(height: DMSpacing.xs),
+            Text(
+              persona.title.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: DMTypography.labelSmall.copyWith(
+                color: DMColors.deepNavy,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -192,10 +245,10 @@ class _PersonaAvatar extends StatelessWidget {
 
 Gradient _personaGradient(String personaId) {
   return switch (personaId) {
-    'frat-bro' => DMGradients.clearSky,
+    'frat_bro' || 'frat-bro' => DMGradients.clearSky,
     'grandpa' => DMGradients.rain,
     'politician' => DMGradients.storm,
-    'two-year-old' => DMGradients.heat,
+    'two_year_old' || 'two-year-old' || 'toddler' => DMGradients.heat,
     _ => DMGradients.sunrise,
   };
 }

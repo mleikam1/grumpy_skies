@@ -214,6 +214,8 @@ class Persona {
   final String avatarAsset;
   final int requiredXp;
   final bool unlocked;
+  final String toneDescription;
+  final bool enabled;
 
   const Persona({
     required this.id,
@@ -222,9 +224,15 @@ class Persona {
     required this.avatarAsset,
     required this.requiredXp,
     required this.unlocked,
-  });
+    this.toneDescription = '',
+    bool? enabled,
+  }) : enabled = enabled ?? unlocked;
 
   String get displayName => '$name, $title';
+
+  String get badgeText => title.toUpperCase();
+
+  String get assetPath => avatarAsset;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -233,6 +241,8 @@ class Persona {
         'avatarAsset': avatarAsset,
         'requiredXp': requiredXp,
         'unlocked': unlocked,
+        'toneDescription': toneDescription,
+        'enabled': enabled,
       };
 }
 

@@ -145,12 +145,21 @@ final class DmMascotAssets {
 final class DmPersonaAssets {
   const DmPersonaAssets._();
 
-  // TODO(assets): Add generated persona portraits at these exact paths.
-  final String karen = 'assets/personas/karen.png';
-  final String fratBro = 'assets/personas/frat_bro.png';
-  final String grandpa = 'assets/personas/grandpa.png';
-  final String politician = 'assets/personas/politician.png';
-  final String toddler = 'assets/personas/toddler.png';
+  final String karenRoastQueen = 'assets/personas/karen_roast_queen.png';
+  final String fratBroBarometerBro =
+      'assets/personas/frat_bro_barometer_bro.png';
+  final String twoYearOldTinyThunder =
+      'assets/personas/two_year_old_tiny_thunder.png';
+  final String politicianSpinDoctor =
+      'assets/personas/politician_spin_doctor.png';
+  final String grandpaCloudHistorian =
+      'assets/personas/grandpa_cloud_historian.png';
+
+  final String karen = 'assets/personas/karen_roast_queen.png';
+  final String fratBro = 'assets/personas/frat_bro_barometer_bro.png';
+  final String grandpa = 'assets/personas/grandpa_cloud_historian.png';
+  final String politician = 'assets/personas/politician_spin_doctor.png';
+  final String toddler = 'assets/personas/two_year_old_tiny_thunder.png';
   final String snarkyStorm = 'assets/personas/snarky_storm.png';
   final String cloudyCynic = 'assets/personas/cloudy_cynic.png';
   final String sunnySass = 'assets/personas/sunny_sass.png';
