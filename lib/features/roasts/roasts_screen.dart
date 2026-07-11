@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/daymaker_sample_data.dart';
@@ -161,12 +162,19 @@ class _RoastsScreenState extends State<RoastsScreen> {
     }
   }
 
-  void _showShareSnackBar(Roast _) {
-    // TODO(haptics): Add success feedback when native sharing is wired.
+  Future<void> _shareRoast(Roast roast) async {
+    final persona = RoastPersonas.maybeById(roast.personaId);
+    final attribution = persona?.displayName ?? 'DayMaker';
+    await Clipboard.setData(
+      ClipboardData(text: '$attribution: ${roast.text}'),
+    );
+    if (!mounted) return;
+
+    // TODO(haptics): Add success feedback after native share/copy completes.
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(content: Text('Share action coming soon.')),
+        const SnackBar(content: Text('Roast copied for sharing.')),
       );
   }
 
@@ -249,7 +257,7 @@ class _RoastsScreenState extends State<RoastsScreen> {
                         persona: selectedPersona,
                         roast: featuredRoast,
                         weather: DayMakerSampleData.weatherSnapshot,
-                        onShare: () => _showShareSnackBar(featuredRoast),
+                        onShare: () => _shareRoast(featuredRoast),
                       ),
                       SizedBox(height: gap),
                       const DmSectionHeader(
@@ -266,7 +274,7 @@ class _RoastsScreenState extends State<RoastsScreen> {
                       RoastHistoryList(
                         roasts: history,
                         personas: _personas,
-                        onShareRoast: _showShareSnackBar,
+                        onShareRoast: _shareRoast,
                       ),
                       SizedBox(height: gap),
                       const RoastCooldownCard(),
@@ -313,16 +321,20 @@ class _RoastsScreenState extends State<RoastsScreen> {
   }
 
   Roast _featuredRoastFor(Persona persona) {
+    final selectedId = RoastPersonas.normalizeId(persona.id);
     return _dailyRoasts[persona.id] ??
         _history.firstWhere(
-          (roast) => roast.personaId == persona.id,
+          (roast) => RoastPersonas.normalizeId(roast.personaId) == selectedId,
           orElse: () => DayMakerSampleData.roast,
         );
   }
 
   List<Roast> _historyFor(Persona persona) {
+    final selectedId = RoastPersonas.normalizeId(persona.id);
     final personaHistory = _history
-        .where((roast) => roast.personaId == persona.id)
+        .where(
+          (roast) => RoastPersonas.normalizeId(roast.personaId) == selectedId,
+        )
         .toList(growable: false);
 
     if (personaHistory.isNotEmpty) {

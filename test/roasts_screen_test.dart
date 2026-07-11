@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
@@ -47,6 +48,14 @@ void main() {
 
   testWidgets('RoastsScreen updates featured roast when persona is selected',
       (tester) async {
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async => null,
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {
@@ -76,10 +85,12 @@ void main() {
       find.bySemanticsLabel('Share featured roast from Frat Bro'),
       findsOneWidget,
     );
-    await tester.tap(find.text('Share').first);
-    await tester.pump();
+    await tester.tap(
+      find.bySemanticsLabel('Share featured roast from Frat Bro'),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Share action coming soon.'), findsOneWidget);
+    expect(find.text('Roast copied for sharing.'), findsOneWidget);
   });
 
   testWidgets('RoastsScreen shows full carousel across expanded web width',

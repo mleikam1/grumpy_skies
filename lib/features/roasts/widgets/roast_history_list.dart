@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
 import '../../../design/dm_gradients.dart';
-import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../models/daymaker_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
+import '../models/roast_persona.dart';
+import 'persona_avatar.dart';
 
 class RoastHistoryList extends StatelessWidget {
   const RoastHistoryList({
@@ -58,22 +59,23 @@ class RoastHistoryList extends StatelessWidget {
   }
 
   Persona _personaFor(Roast roast) {
+    final normalizedRoastPersonaId =
+        RoastPersonas.normalizeIdOrNull(roast.personaId);
     for (final persona in personas) {
-      if (persona.id == roast.personaId) {
+      if (RoastPersonas.normalizeIdOrNull(persona.id) ==
+          normalizedRoastPersonaId) {
         return persona;
       }
     }
 
-    return personas.isEmpty
-        ? const Persona(
-            id: 'unknown',
-            name: 'DayMaker',
-            title: 'Weather Voice',
-            avatarAsset: '',
-            requiredXp: 0,
-            unlocked: true,
-          )
-        : personas.first;
+    return const Persona(
+      id: 'unknown',
+      name: 'DayMaker',
+      title: 'Weather Voice',
+      avatarAsset: '',
+      requiredXp: 0,
+      unlocked: true,
+    );
   }
 }
 
@@ -95,15 +97,10 @@ class _HistoryRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DmAssetImage(
-            assetPath: persona.avatarAsset,
-            width: 48,
-            height: 48,
-            fit: BoxFit.cover,
-            borderRadius: DMRadius.full,
-            semanticLabel: '${persona.name} avatar',
-            placeholderGradient: _personaGradient(persona.id),
-            placeholderIcon: Icons.person_rounded,
+          PersonaAvatar(
+            persona: persona,
+            size: 48,
+            showShadow: false,
           ),
           const SizedBox(width: DMSpacing.sm),
           Expanded(
@@ -160,14 +157,4 @@ String _formatTimestamp(DateTime timestamp) {
   final minutes = timestamp.minute.toString().padLeft(2, '0');
   final suffix = timestamp.hour >= 12 ? 'PM' : 'AM';
   return '$hour:$minutes $suffix';
-}
-
-Gradient _personaGradient(String personaId) {
-  return switch (personaId) {
-    'frat_bro' || 'frat-bro' => DMGradients.clearSky,
-    'grandpa' => DMGradients.rain,
-    'politician' => DMGradients.storm,
-    'two_year_old' || 'two-year-old' || 'toddler' => DMGradients.heat,
-    _ => DMGradients.sunrise,
-  };
 }

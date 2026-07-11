@@ -9,12 +9,12 @@ import '../../design/dm_gradients.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
+import '../../features/roasts/models/roast_persona.dart';
+import '../../features/roasts/widgets/persona_avatar.dart';
 import '../../models/temperature_unit.dart';
 import '../../services/settings_controller.dart';
 import '../../services/weather_location_controller.dart';
-import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/dm_app_background.dart';
-import '../../shared/widgets/dm_asset_image.dart';
 import '../../shared/widgets/dm_buttons.dart';
 import '../../shared/widgets/dm_segmented_control.dart';
 import 'widgets/dm_settings_row.dart';
@@ -169,6 +169,9 @@ class _PreferencesColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final persona =
+        RoastPersonas.byId(settings.selectedPersonaId).toDayMakerPersona();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -202,15 +205,15 @@ class _PreferencesColumn extends StatelessWidget {
           ),
         ),
         SizedBox(height: gap),
-        const _SettingsSection(
+        _SettingsSection(
           title: 'Default Persona',
           child: DmSettingsRow(
-            leading: _KarenAvatar(),
-            title: 'Karen, ROAST QUEEN',
-            subtitle:
-                'Your default forecast voice. Polished, pointed, and absolutely ready to complain about humidity.',
-            trailing: _Chevron(),
-            semanticLabel: 'Default persona Karen Roast Queen',
+            leading: PersonaAvatar(persona: persona, size: 56),
+            title: '${persona.name}, ${persona.badgeText}',
+            subtitle: RoastPersonas.byId(persona.id).toneDescription,
+            trailing: const _Chevron(),
+            semanticLabel:
+                'Default persona ${persona.name} ${persona.badgeText}',
           ),
         ),
         SizedBox(height: gap),
@@ -524,31 +527,6 @@ class _SettingsSection extends StatelessWidget {
         ),
         child,
       ],
-    );
-  }
-}
-
-class _KarenAvatar extends StatelessWidget {
-  const _KarenAvatar();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: DMGradients.sunrise,
-        borderRadius: DMRadius.full,
-        border: Border.all(color: DMColors.glassBorderStrong),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(DMSpacing.xxs),
-        child: DmAssetImage(
-          assetPath: DmAssets.personas.karen,
-          width: 56,
-          height: 56,
-          borderRadius: DMRadius.full,
-          semanticLabel: 'Karen avatar',
-        ),
-      ),
     );
   }
 }

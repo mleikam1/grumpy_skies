@@ -8,7 +8,7 @@ import '../../../design/dm_shadows.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../models/daymaker_models.dart';
-import '../../../shared/widgets/daymaker_components.dart';
+import 'persona_avatar.dart';
 
 class DaymakerPersonaCarousel extends StatelessWidget {
   const DaymakerPersonaCarousel({
@@ -45,6 +45,7 @@ class DaymakerPersonaCarousel extends StatelessWidget {
             itemBuilder: (context, index) {
               final persona = personas[index];
               return _PersonaCarouselCard(
+                key: ValueKey('persona-card-${persona.id}'),
                 persona: persona,
                 width: cardWidth,
                 selected: persona.id == selectedPersonaId,
@@ -60,6 +61,7 @@ class DaymakerPersonaCarousel extends StatelessWidget {
 
 class _PersonaCarouselCard extends StatelessWidget {
   const _PersonaCarouselCard({
+    super.key,
     required this.persona,
     required this.width,
     required this.selected,
@@ -105,7 +107,10 @@ class _PersonaCarouselCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _PersonaArtwork(persona: persona),
+                      PersonaAvatar(
+                        persona: persona,
+                        size: 104,
+                      ),
                       const SizedBox(height: DMSpacing.sm),
                       Text(
                         persona.name,
@@ -168,87 +173,4 @@ class _PersonaCarouselCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PersonaArtwork extends StatelessWidget {
-  const _PersonaArtwork({required this.persona});
-
-  final Persona persona;
-
-  @override
-  Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1774 / 887,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          borderRadius: DMRadius.medium,
-          boxShadow: DMShadows.soft,
-        ),
-        child: DmAssetImage(
-          assetPath: persona.avatarAsset,
-          fit: BoxFit.cover,
-          borderRadius: DMRadius.medium,
-          semanticLabel: '${persona.name} persona card',
-          placeholderGradient: _personaGradient(persona.id),
-          placeholderIcon: Icons.person_rounded,
-          placeholderBuilder: (context) => _PersonaArtworkFallback(
-            persona: persona,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PersonaArtworkFallback extends StatelessWidget {
-  const _PersonaArtworkFallback({required this.persona});
-
-  final Persona persona;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: _personaGradient(persona.id),
-        borderRadius: DMRadius.medium,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(DMSpacing.sm),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              persona.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: DMTypography.labelLarge.copyWith(
-                color: DMColors.deepNavy,
-              ),
-            ),
-            const SizedBox(height: DMSpacing.xs),
-            Text(
-              persona.title.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: DMTypography.labelSmall.copyWith(
-                color: DMColors.deepNavy,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-Gradient _personaGradient(String personaId) {
-  return switch (personaId) {
-    'frat_bro' || 'frat-bro' => DMGradients.clearSky,
-    'grandpa' => DMGradients.rain,
-    'politician' => DMGradients.storm,
-    'two_year_old' || 'two-year-old' || 'toddler' => DMGradients.heat,
-    _ => DMGradients.sunrise,
-  };
 }

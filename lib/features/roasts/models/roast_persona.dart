@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+
+import '../../../design/dm_colors.dart';
+import '../../../design/dm_gradients.dart';
 import '../../../models/daymaker_models.dart' as daymaker;
 import '../../../shared/assets/dm_assets.dart';
 
@@ -24,6 +28,9 @@ class RoastPersona {
     required this.badgeText,
     required this.assetPath,
     required this.toneDescription,
+    required this.accentColor,
+    required this.fallbackGradient,
+    this.aliases = const [],
     this.enabled = true,
   });
 
@@ -32,6 +39,9 @@ class RoastPersona {
   final String badgeText;
   final String assetPath;
   final String toneDescription;
+  final Color accentColor;
+  final Gradient fallbackGradient;
+  final List<String> aliases;
   final bool enabled;
 
   String get id => key.storageId;
@@ -61,6 +71,8 @@ abstract final class RoastPersonas {
       assetPath: DmAssets.personas.karenRoastQueen,
       toneDescription:
           'Smug, sassy, suburban, brutally observant, funny but not hateful.',
+      accentColor: DMColors.playfulPink,
+      fallbackGradient: DMGradients.sunrise,
     ),
     RoastPersona(
       key: RoastPersonaId.fratBro,
@@ -69,6 +81,9 @@ abstract final class RoastPersonas {
       assetPath: DmAssets.personas.fratBroBarometerBro,
       toneDescription:
           'Overly confident hype-man energy with weather-as-party-report logic.',
+      accentColor: DMColors.sunriseYellow,
+      fallbackGradient: DMGradients.clearSky,
+      aliases: ['fratbro'],
     ),
     RoastPersona(
       key: RoastPersonaId.twoYearOld,
@@ -77,6 +92,9 @@ abstract final class RoastPersonas {
       assetPath: DmAssets.personas.twoYearOldTinyThunder,
       toneDescription:
           'Chaotic toddler logic that stays adorable, impulsive, and non-cruel.',
+      accentColor: DMColors.sunriseYellow,
+      fallbackGradient: DMGradients.heat,
+      aliases: ['toddler', '2_year_old'],
     ),
     RoastPersona(
       key: RoastPersonaId.politician,
@@ -85,6 +103,8 @@ abstract final class RoastPersonas {
       assetPath: DmAssets.personas.politicianSpinDoctor,
       toneDescription:
           'Evasive, over-polished public-relations spin with absurd optimism.',
+      accentColor: DMColors.skyBlue,
+      fallbackGradient: DMGradients.storm,
     ),
     RoastPersona(
       key: RoastPersonaId.grandpa,
@@ -93,6 +113,9 @@ abstract final class RoastPersonas {
       assetPath: DmAssets.personas.grandpaCloudHistorian,
       toneDescription:
           'Folksy, nostalgic old-school weather wisdom with gentle ribbing.',
+      accentColor: DMColors.mintGreen,
+      fallbackGradient: DMGradients.rain,
+      aliases: ['old_grandpa'],
     ),
   ]);
 
@@ -128,18 +151,28 @@ abstract final class RoastPersonas {
   }
 
   static String? normalizeIdOrNull(String? id) {
-    final raw = id?.trim().toLowerCase();
-    if (raw == null || raw.isEmpty) return null;
+    final normalized = _normalizeToken(id);
+    if (normalized == null) return null;
 
-    final normalized = raw.replaceAll(RegExp(r'[\s-]+'), '_');
-    return switch (normalized) {
-      'karen' => RoastPersonaId.karen.storageId,
-      'frat_bro' => RoastPersonaId.fratBro.storageId,
-      'two_year_old' || 'toddler' => RoastPersonaId.twoYearOld.storageId,
-      'politician' => RoastPersonaId.politician.storageId,
-      'grandpa' || 'old_grandpa' => RoastPersonaId.grandpa.storageId,
-      _ => null,
-    };
+    for (final persona in all) {
+      final candidates = <String>[
+        persona.id,
+        persona.displayName,
+        ...persona.aliases,
+      ];
+      if (candidates
+          .any((candidate) => _normalizeToken(candidate) == normalized)) {
+        return persona.id;
+      }
+    }
+
+    return null;
+  }
+
+  static String? _normalizeToken(String? value) {
+    final raw = value?.trim().toLowerCase();
+    if (raw == null || raw.isEmpty) return null;
+    return raw.replaceAll(RegExp(r'[\s-]+'), '_');
   }
 }
 

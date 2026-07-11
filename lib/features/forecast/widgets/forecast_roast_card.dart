@@ -5,6 +5,8 @@ import '../../../design/dm_gradients.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../features/roasts/models/roast_persona.dart';
+import '../../../features/roasts/widgets/persona_avatar.dart';
 import '../../../models/daymaker_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 
@@ -24,27 +26,19 @@ class ForecastRoastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final personaConfig = RoastPersonas.byId(persona.id);
+
     return DmGlassCard(
       gradient: DMGradients.premiumCard,
-      borderColor: DMColors.opacity(DMColors.playfulPinkSoft, 0.48),
+      borderColor: DMColors.opacity(personaConfig.accentColor, 0.48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              SizedBox(
-                width: 118,
-                child: AspectRatio(
-                  aspectRatio: 1774 / 887,
-                  child: DmAssetImage(
-                    assetPath: persona.avatarAsset,
-                    fit: BoxFit.cover,
-                    borderRadius: DMRadius.card,
-                    semanticLabel: '${persona.name} persona card',
-                    placeholderGradient: DMGradients.sunrise,
-                    placeholderIcon: Icons.person_outline_rounded,
-                  ),
-                ),
+              PersonaAvatar(
+                persona: persona,
+                size: 88,
               ),
               const SizedBox(width: DMSpacing.md),
               Expanded(
@@ -60,7 +54,10 @@ class ForecastRoastCard extends StatelessWidget {
                     const SizedBox(height: DMSpacing.xs),
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: _RoastBadge(label: persona.title.toUpperCase()),
+                      child: _RoastBadge(
+                        label: persona.title.toUpperCase(),
+                        accentColor: personaConfig.accentColor,
+                      ),
                     ),
                   ],
                 ),
@@ -99,9 +96,13 @@ class ForecastRoastCard extends StatelessWidget {
 }
 
 class _RoastBadge extends StatelessWidget {
-  const _RoastBadge({required this.label});
+  const _RoastBadge({
+    required this.label,
+    required this.accentColor,
+  });
 
   final String label;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -111,11 +112,11 @@ class _RoastBadge extends StatelessWidget {
         vertical: DMSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: DMColors.playfulPink,
+        color: accentColor,
         borderRadius: DMRadius.full,
         boxShadow: [
           BoxShadow(
-            color: DMColors.opacity(DMColors.playfulPink, 0.26),
+            color: DMColors.opacity(accentColor, 0.26),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../design/dm_colors.dart';
 import '../../../design/dm_gradients.dart';
 import '../../../design/dm_radius.dart';
-import '../../../design/dm_shadows.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../models/daymaker_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
+import '../models/roast_persona.dart';
+import 'persona_avatar.dart';
 
 class FeaturedRoastCard extends StatelessWidget {
   const FeaturedRoastCard({
@@ -25,10 +26,11 @@ class FeaturedRoastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final personaConfig = RoastPersonas.byId(persona.id);
+
     return DmGlassCard(
       gradient: DMGradients.premiumCard,
-      borderColor: DMColors.opacity(DMColors.playfulPinkSoft, 0.52),
-      shadows: DMShadows.playfulGlow,
+      borderColor: DMColors.opacity(personaConfig.accentColor, 0.52),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 620;
@@ -94,25 +96,9 @@ class _FeaturedAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(3),
-      decoration: const BoxDecoration(
-        borderRadius: DMRadius.card,
-        gradient: DMGradients.primaryAction,
-        boxShadow: DMShadows.sunGlow,
-      ),
-      child: AspectRatio(
-        aspectRatio: 1774 / 887,
-        child: DmAssetImage(
-          assetPath: persona.avatarAsset,
-          fit: BoxFit.cover,
-          borderRadius: DMRadius.medium,
-          semanticLabel: '${persona.name} persona card',
-          placeholderGradient: _personaGradient(persona.id),
-          placeholderIcon: Icons.person_rounded,
-        ),
-      ),
+    return PersonaAvatar(
+      persona: persona,
+      size: width,
     );
   }
 }
@@ -155,6 +141,8 @@ class _PersonaTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final personaConfig = RoastPersonas.byId(persona.id);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -167,7 +155,10 @@ class _PersonaTitle extends StatelessWidget {
         const SizedBox(height: DMSpacing.xs),
         Align(
           alignment: Alignment.centerLeft,
-          child: _RoastBadge(label: persona.title.toUpperCase()),
+          child: _RoastBadge(
+            label: persona.title.toUpperCase(),
+            accentColor: personaConfig.accentColor,
+          ),
         ),
       ],
     );
@@ -280,9 +271,13 @@ class _MiniStat extends StatelessWidget {
 }
 
 class _RoastBadge extends StatelessWidget {
-  const _RoastBadge({required this.label});
+  const _RoastBadge({
+    required this.label,
+    required this.accentColor,
+  });
 
   final String label;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -292,11 +287,11 @@ class _RoastBadge extends StatelessWidget {
         vertical: DMSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: DMColors.playfulPink,
+        color: accentColor,
         borderRadius: DMRadius.full,
         boxShadow: [
           BoxShadow(
-            color: DMColors.opacity(DMColors.playfulPink, 0.28),
+            color: DMColors.opacity(accentColor, 0.28),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -310,14 +305,4 @@ class _RoastBadge extends StatelessWidget {
       ),
     );
   }
-}
-
-Gradient _personaGradient(String personaId) {
-  return switch (personaId) {
-    'frat_bro' || 'frat-bro' => DMGradients.clearSky,
-    'grandpa' => DMGradients.rain,
-    'politician' => DMGradients.storm,
-    'two_year_old' || 'two-year-old' || 'toddler' => DMGradients.heat,
-    _ => DMGradients.sunrise,
-  };
 }

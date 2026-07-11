@@ -289,7 +289,10 @@ class _ForecastScreenState extends State<ForecastScreen> {
     final roast = weather == null
         ? _fallbackRoastForPersona(personaId)
         : _roastForWeather(weather, _snapshotForWeather(weather), personaId);
-    await Clipboard.setData(ClipboardData(text: roast.text));
+    final persona = RoastPersonas.byId(personaId);
+    await Clipboard.setData(
+      ClipboardData(text: '${persona.displayName}: ${roast.text}'),
+    );
     if (!mounted) return;
 
     // TODO(haptics): Add success feedback after native share/copy completes.

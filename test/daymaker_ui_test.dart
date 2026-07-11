@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
 import 'package:grumpy_skies/features/fun/widgets/meme_canvas.dart';
+import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
@@ -60,6 +61,27 @@ void main() {
 
       expectNoFlutterExceptions(tester);
       expect(find.text('Karen'), findsWidgets);
+    });
+
+    testWidgets('Forecast and Roasts share the selected persona',
+        (tester) async {
+      await tester.pumpDayMakerRoute(initialLocation: AppRoutes.roasts);
+
+      await tester.ensureVisible(find.text('Frat Bro').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Frat Bro').first);
+      await tester.pumpAndSettle();
+
+      final settings =
+          tester.element(find.byType(RoastsScreen)).read<SettingsController>();
+      expect(settings.selectedPersonaId, 'frat_bro');
+
+      await tester.tap(find.bySemanticsLabel('Forecast tab'));
+      await tester.pumpAndSettle();
+
+      expectNoFlutterExceptions(tester);
+      expect(find.text('Frat Bro'), findsOneWidget);
+      expect(find.text('BAROMETER BRO'), findsOneWidget);
     });
 
     testWidgets('settings unit toggle works', (tester) async {
