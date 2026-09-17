@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/weather_models.dart';
+import '../models/weather_safety.dart';
 import '../services/cache_service.dart';
 import '../services/open_weather_backend_client.dart';
 import 'weather_repository.dart';
@@ -10,10 +11,13 @@ class OpenWeatherRepository extends WeatherRepository {
     required OpenWeatherBackendClient client,
     CacheService? cacheService,
     Duration cacheDuration = const Duration(minutes: 10),
-  })  : _client = client,
+    WeatherClock? clock,
+  })  : _clock = clock ?? DateTime.now,
+        _client = client,
         _cacheService = cacheService,
         _cacheDuration = cacheDuration;
 
+  final WeatherClock _clock;
   final OpenWeatherBackendClient _client;
   final CacheService? _cacheService;
   final Duration _cacheDuration;
@@ -97,10 +101,10 @@ class OpenWeatherRepository extends WeatherRepository {
     } catch (error) {
       _recentFailures[cacheKey] = _WeatherRequestFailure(
         error: error,
-        failedAt: DateTime.now(),
+        failedAt: _clock(),
       );
       final cached = _cacheService?.getWeatherBundle(latitude, longitude);
-      if (cached != null) return cached;
+      if (cached != null) return cached.asOfflineCache();
       rethrow;
     } finally {
       if (identical(_inFlightBundles[cacheKey], request)) {
@@ -139,14 +143,16 @@ class OpenWeatherRepository extends WeatherRepository {
   WeatherBundle? _validCachedBundle(double latitude, double longitude) {
     final lastFetch = _cacheService?.getLastFetchTime(latitude, longitude);
     if (lastFetch == null) return null;
-    if (DateTime.now().difference(lastFetch) > _cacheDuration) return null;
+    final age = _clock().difference(lastFetch);
+    if (age.isNegative || age > _cacheDuration) return null;
     return _cacheService?.getWeatherBundle(latitude, longitude);
   }
 
   _WeatherRequestFailure? _recentFailure(double latitude, double longitude) {
     final failure = _recentFailures[_requestKey(latitude, longitude)];
     if (failure == null) return null;
-    if (DateTime.now().difference(failure.failedAt) <= _failureCooldown) {
+    final age = _clock().difference(failure.failedAt);
+    if (!age.isNegative && age <= _failureCooldown) {
       return failure;
     }
     _recentFailures.remove(_requestKey(latitude, longitude));
@@ -214,6 +220,8 @@ class OpenWeatherRepository extends WeatherRepository {
       minutePrecipitation: liveWeather.minutePrecipitation,
       timeline: liveWeather.timeline,
       alerts: liveWeather.alerts,
+      alertCoverageVerified: liveWeather.alertCoverageVerified,
+      alertsCheckedAt: liveWeather.alertsCheckedAt,
       hourlyForecastMessage: liveWeather.hourlyForecastMessage,
       dailyForecastMessage: liveWeather.dailyForecastMessage,
     );
@@ -311,6 +319,7 @@ class OpenWeatherRepository extends WeatherRepository {
             : _fToC(point.temperatureF!),
         condition: point.condition,
         precipitationChance: point.precipitationChance,
+        precipitationChanceKnown: point.precipitationChanceKnown,
         weatherIcon: point.icon,
         weatherMain: point.weatherMain,
         weatherId: point.weatherId,

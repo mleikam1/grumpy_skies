@@ -1,3 +1,4 @@
+import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -40,7 +41,9 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '${weather.temperatureF.round()}°F',
+                        forecastTemperature(weather.temperatureC,
+                            forecastTemperatureUnit(context),
+                            suffix: true),
                         style: DMTypography.weatherNumeral(fontSize: 80),
                       ),
                     ),
@@ -88,7 +91,8 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
                 icon: Icons.device_thermostat_outlined,
                 iconSlug: 'thermometer',
                 label: 'Feels like',
-                value: '${weather.feelsLikeF.round()}°',
+                value: forecastTemperature(
+                    weather.feelsLikeC, forecastTemperatureUnit(context)),
               ),
               _WeatherFact(
                 icon: Icons.air_rounded,
@@ -116,8 +120,6 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   _formatUpdated(weather.displayUpdatedAt, now),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: DMTypography.bodySmall,
                 ),
               ),
@@ -129,19 +131,25 @@ class ForecastCurrentWeatherCard extends StatelessWidget {
   }
 
   static String _formatUpdated(DateTime updatedAt, DateTime now) {
+    if (updatedAt.millisecondsSinceEpoch <= 0) {
+      return 'Observation time unavailable';
+    }
     final elapsed = now.difference(updatedAt);
+    if (elapsed.isNegative) {
+      return 'Observation timestamp is ahead of device clock';
+    }
     if (elapsed.inMinutes < 1) {
-      return 'Last updated just now';
+      return 'Observed just now';
     }
 
     if (elapsed.inHours < 1) {
       final minutes = elapsed.inMinutes;
-      return 'Last updated $minutes min ago';
+      return 'Observed $minutes min ago${elapsed > const Duration(minutes: 30) ? ' · Stale' : ''}';
     }
 
     final hours = elapsed.inHours;
     final label = hours == 1 ? 'hour' : 'hours';
-    return 'Last updated $hours $label ago';
+    return 'Observed $hours $label ago · Stale';
   }
 }
 

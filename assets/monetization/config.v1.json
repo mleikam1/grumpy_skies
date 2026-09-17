@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "kind": "documented-local-defaults",
+  "productionEnabled": false,
+  "webEnabled": false,
+  "webInterstitials": false,
+  "nativeAdjacentHumor": true,
+  "webAdjacentHumor": false,
+  "eligibleHoldoutPercent": 10,
+  "minimumForegroundSeconds": 180,
+  "minimumCompletedTasks": 3,
+  "minimumInterstitialIntervalSeconds": 300,
+  "maximumPerSession": 1,
+  "maximumPerRolling24Hours": 3,
+  "sessionInactivityMinutes": 30,
+  "bannerRefresh": "off-in-AdMob-console-required",
+  "configurationSource": "AdConfig.fromEnvironment; this file documents matching defaults, not a remote switch"
+}

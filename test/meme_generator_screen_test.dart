@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:grumpy_skies/config/app_routes.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
@@ -16,6 +18,7 @@ import 'package:grumpy_skies/features/fun/meme/widgets/meme_document_canvas.dart
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_export_preview.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_inspector.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
+import 'package:grumpy_skies/monetization/widgets/ad_section.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +71,36 @@ void main() {
       await _flush(tester, store);
     });
   }
+
+  testWidgets(
+      'same studio route removes publisher ad before editing a saved meme',
+      (tester) async {
+    final store = MemeStore(MemoryMemeBackend());
+    await _pumpStudio(tester, store, width: 1280);
+    final library = tester.element(find.byType(MemeLibrary));
+    await tester.scrollUntilVisible(find.byType(AdSection), 300,
+        scrollable: find.byType(Scrollable).first);
+    await _settle(tester);
+    final slot = tester.element(find.byType(AdSection));
+    final selected = tester
+        .widget<MemeLibrary>(find.byType(MemeLibrary))
+        .catalog
+        .templates[5];
+    expect(slot.mounted, isTrue);
+    tester.widget<MemeLibrary>(find.byType(MemeLibrary)).onTemplate(selected);
+    await _settle(tester);
+    expect(library.mounted, isFalse);
+    expect(slot.mounted, isFalse);
+    expect(find.byType(AdSection), findsNothing);
+    expect(find.byType(MemeDocumentCanvas), findsOneWidget);
+    await tester.tap(find.text('Save Draft'));
+    await _settle(tester);
+    final draft = (await store.listDocuments()).single;
+    expect(draft.templateId, selected.id);
+    expect(draft.toJson().toString(), isNot(contains('Advertisements')));
+    await tester.pumpWidget(const SizedBox());
+    await _flush(tester, store);
+  });
 
   testWidgets('phone landscape and a keyboard-open tool sheet remain editable',
       (tester) async {
@@ -265,6 +298,73 @@ void main() {
     await _flush(tester, store);
   });
 
+  testWidgets('explicit completed Done dismisses result and reaches Fun once',
+      (tester) async {
+    final store = MemeStore(MemoryMemeBackend());
+    final adapter = _RecordingExportAdapter();
+    final source = DisplayedRoastSnapshot(
+        id: 'completion_source',
+        text: 'The clouds brought snacks.',
+        personaId: 'karen',
+        sourceKey: 'forecast',
+        sourceLabel: 'Forecast',
+        isSample: false);
+    final router = GoRouter(initialLocation: AppRoutes.memeGenerator, routes: [
+      GoRoute(
+          path: AppRoutes.fun,
+          builder: (_, __) =>
+              const Scaffold(body: Text('Fun completed destination'))),
+      GoRoute(
+          path: AppRoutes.memeGenerator,
+          builder: (_, __) => MemeGeneratorScreen(
+              initialRoast: source,
+              store: store,
+              exports: MemeExportService(adapter: adapter))),
+    ]);
+    addTearDown(router.dispose);
+    await _pumpStudio(tester, store,
+        initialRoast: source,
+        app: MaterialApp.router(theme: _testTheme(), routerConfig: router));
+    final canvas =
+        tester.widget<MemeDocumentCanvas>(find.byType(MemeDocumentCanvas));
+    final savedId = canvas.editor.document.id;
+    await tester.runAsync(() => canvas.cache.prepare(canvas.editor.document));
+    await _show(tester, find.text('Export'), delta: -300);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Export'));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    });
+    for (var i = 0;
+        i < 80 && find.byType(MemeExportPreview).evaluate().isEmpty;
+        i++) {
+      await tester.pump();
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 25)));
+    }
+    await _settle(tester);
+    await _show(tester, find.text('Save Image'));
+    await tester.tap(find.text('Save Image'));
+    await _settle(tester);
+    await _show(tester, find.text('Done / Back to Fun'));
+    await tester.tap(find.text('Done / Back to Fun'));
+    // PNG preparation used runAsync; its Navigator continuation lives in that
+    // real async zone. Let both it and Flutter's dismissal frames complete.
+    for (var attempt = 0; attempt < 40; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 25)));
+      if (find.text('Fun completed destination').evaluate().isNotEmpty) break;
+    }
+    await _settle(tester);
+    expect(find.text('Fun completed destination'), findsOneWidget);
+    expect(find.byType(MemeExportPreview), findsNothing);
+    expect((await store.load(savedId))!.id, savedId);
+    expect(adapter.saves, 1);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await _flush(tester, store);
+  });
+
   testWidgets('export preview saves actual PNG and reports share cancellation',
       (tester) async {
     final store = MemeStore(MemoryMemeBackend());
@@ -317,6 +417,7 @@ void main() {
     expect(adapter.backups, 1);
     expect(adapter.backupBytes, isNotEmpty);
     await tester.tap(find.text('Continue Editing'));
+    await tester.pump(const Duration(milliseconds: 500));
     await _settle(tester);
     expect(find.byType(MemeDocumentCanvas), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -334,6 +435,7 @@ Future<void> _pumpStudio(
   bool reduceMotion = false,
   DisplayedRoastSnapshot? initialRoast,
   MemeExportService? exports,
+  Widget? app,
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
@@ -360,20 +462,21 @@ Future<void> _pumpStudio(
   await tester.runAsync(() async {
     await tester.pumpWidget(RepaintBoundary(
         key: _surfaceKey,
-        child: MaterialApp(
-          key: UniqueKey(),
-          theme: _testTheme(),
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(textScale),
-              disableAnimations: reduceMotion,
-            ),
-            child: child!,
-          ),
-          home: MemeGeneratorScreen(
-              store: store, initialRoast: initialRoast, exports: exports),
-        )));
+        child: app ??
+            MaterialApp(
+              key: UniqueKey(),
+              theme: _testTheme(),
+              debugShowCheckedModeBanner: false,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(textScale),
+                  disableAnimations: reduceMotion,
+                ),
+                child: child!,
+              ),
+              home: MemeGeneratorScreen(
+                  store: store, initialRoast: initialRoast, exports: exports),
+            )));
     await Future<void>.delayed(const Duration(milliseconds: 100));
   });
   for (var attempt = 0; attempt < 40; attempt++) {

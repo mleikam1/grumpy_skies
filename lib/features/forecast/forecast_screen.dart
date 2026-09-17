@@ -21,6 +21,10 @@ import '../../features/roasts/content/roast_pack_repository.dart';
 import '../../features/roasts/content/roast_selector.dart';
 import '../../features/roasts/content/weather_roast_models.dart';
 import '../../models/weather_models.dart';
+import '../../models/weather_safety.dart';
+import '../../models/precipitation_coverage.dart';
+import '../../monetization/ad_placement.dart';
+import '../../monetization/widgets/ad_section.dart';
 import '../../repositories/settings_repository.dart';
 import '../../repositories/weather_repository.dart';
 import '../../services/open_weather_backend_client.dart';
@@ -35,16 +39,56 @@ class ForecastScreen extends StatefulWidget {
   const ForecastScreen({
     super.key,
     this.weatherRepository,
+    this.clock,
   });
 
   final WeatherRepository? weatherRepository;
+  final WeatherClock? clock;
 
   @override
   State<ForecastScreen> createState() => _ForecastScreenState();
 }
 
-class _ForecastScreenState extends State<ForecastScreen> {
-  static const _sampleUpdatedOffset = Duration(minutes: 10);
+class _ForecastScreenState extends State<ForecastScreen>
+    with WidgetsBindingObserver {
+  DateTime get _now => (widget.clock ?? DateTime.now)();
+  int _requestSerial = 0;
+  bool _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (!_foreground) return;
+    final weather = _weather;
+    final now = _now;
+    final retrievedAt =
+        weather?.current.fetchedAt ?? weather?.current.displayUpdatedAt;
+    final retrievalAge =
+        retrievedAt == null ? null : now.difference(retrievedAt);
+    final needsRefresh = weather == null ||
+        weather.isOfflineCache ||
+        _error != null ||
+        weatherFreshness(weather.current.displayUpdatedAt, now) !=
+            WeatherFreshness.fresh ||
+        retrievalAge == null ||
+        retrievalAge.isNegative ||
+        retrievalAge >= const Duration(minutes: 10);
+    // Returning from an SDK view, share sheet, or brief interruption rechecks
+    // elapsed time without manufacturing another weather request.
+    if (needsRefresh) _locationController?.invalidateWeatherSafety();
+    if (mounted) setState(() {});
+    if (needsRefresh &&
+        _locationController?.selectedLocation != null &&
+        !_loading) {
+      unawaited(_loadWeather(forceRefresh: true));
+    }
+  }
 
   WeatherRepository? _repository;
   RoastPackRepository? _roastPackRepository;
@@ -52,7 +96,6 @@ class _ForecastScreenState extends State<ForecastScreen> {
   WeatherLocationController? _locationController;
   WeatherBundle? _weather;
   RoastPack? _roastPack;
-  DateTime? _relativeNow;
   Object? _error;
   Timer? _autoRefreshTimer;
   String? _activeLocationKey;
@@ -119,6 +162,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _autoRefreshTimer?.cancel();
     _locationController?.removeListener(_handleLocationChanged);
     super.dispose();
@@ -177,9 +221,15 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
   void _startAutoRefresh() {
     _autoRefreshTimer?.cancel();
-    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
-      if (!mounted || _loading || _weather == null) return;
-      _loadWeather();
+    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (!mounted || !_foreground) return;
+      setState(() {});
+      if (_loading || _weather == null) return;
+      final retrieval =
+          _weather!.current.fetchedAt ?? _weather!.current.displayUpdatedAt;
+      if (_now.difference(retrieval) >= const Duration(minutes: 10)) {
+        _loadWeather();
+      }
     });
   }
 
@@ -189,6 +239,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
       if (!mounted) return;
       _readMemeRegistry()?.clearSource('forecast');
       setState(() {
+        _requestSerial++;
         _weather = null;
         _activeLocationKey = null;
         _loading = false;
@@ -205,6 +256,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
 
     _readMemeRegistry()?.clearSource('forecast');
     _activeLocationKey = key;
+    _weather = null;
     _showLocationSelector = false;
     _loadWeather(forceRefresh: true);
   }
@@ -219,6 +271,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
       return;
     }
 
+    final requestSerial = ++_requestSerial;
     _activeLocationKey = _locationKey(location);
     setState(() {
       _loading = true;
@@ -233,25 +286,16 @@ class _ForecastScreenState extends State<ForecastScreen> {
         forceRefresh: forceRefresh,
         location: location,
       );
-      if (!mounted) return;
-
-      final now = DateTime.now();
-      final observedAt = weather.current.lastUpdated;
-      final relativeNow =
-          now.difference(observedAt).abs() > const Duration(hours: 6)
-              ? observedAt.add(_sampleUpdatedOffset)
-              : now;
-      setState(() {
-        _weather = weather;
-        _relativeNow = relativeNow;
-      });
+      if (!mounted || requestSerial != _requestSerial) return;
+      setState(() => _weather = weather);
+      _locationController?.updateWeatherSafety(weather, location);
       _locationController?.markWeatherLoaded();
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || requestSerial != _requestSerial) return;
       setState(() => _error = error);
       _locationController?.markWeatherError(_friendlyError(error));
     } finally {
-      if (mounted) {
+      if (mounted && requestSerial == _requestSerial) {
         setState(() => _loading = false);
       }
     }
@@ -356,7 +400,13 @@ class _ForecastScreenState extends State<ForecastScreen> {
     final selectedPersonaId = _selectedPersonaIdForBuild();
     final selectedPersona =
         RoastPersonas.byId(selectedPersonaId).toDayMakerPersona();
-    final now = _relativeNow ?? weather.current.lastUpdated;
+    final now = _now;
+    final relevantAlerts =
+        weather.alerts.where((alert) => alert.isRelevantAt(now)).toList();
+    final observationFresh =
+        weatherFreshness(weather.current.displayUpdatedAt, now) ==
+            WeatherFreshness.fresh;
+    final cached = weather.isOfflineCache || _error != null;
     final roast = _roastForWeather(weather, snapshot, selectedPersona.id);
     final memeSource = _memeSource(roast, weather);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -404,9 +454,12 @@ class _ForecastScreenState extends State<ForecastScreen> {
                           setState(() => _showLocationSelector = true);
                         },
                       ),
-                      if (_error != null) ...[
+                      if (cached) ...[
                         const SizedBox(height: DMSpacing.sm),
-                        _StaleWeatherBanner(message: _friendlyError(_error)),
+                        _StaleWeatherBanner(
+                            message: _error == null
+                                ? 'Offline cached weather.'
+                                : _friendlyError(_error)),
                       ],
                       if (_showLocationSelector) ...[
                         SizedBox(height: gap),
@@ -418,6 +471,15 @@ class _ForecastScreenState extends State<ForecastScreen> {
                           },
                         ),
                       ],
+                      if (_repository is FakeWeatherRepository) ...[
+                        SizedBox(height: gap),
+                        const Text('Sample weather · demonstration data',
+                            style: DMTypography.bodySmall),
+                      ],
+                      if (relevantAlerts.isNotEmpty) ...[
+                        SizedBox(height: gap),
+                        WeatherAlertsPanel(alerts: relevantAlerts),
+                      ],
                       SizedBox(height: gap),
                       _ForecastTopSection(
                         weather: weather,
@@ -426,31 +488,58 @@ class _ForecastScreenState extends State<ForecastScreen> {
                         expanded: breakpoint.isExpanded,
                       ),
                       SizedBox(height: gap),
-                      ForecastRoastCard(
-                        persona: selectedPersona,
-                        roast: roast,
-                        sourceLabel:
-                            memeSource.isSample ? 'Sample roast' : null,
-                        onNewRoast: () => _showNextRoast(selectedPersona.id),
-                        onShare: () => _shareRoast(selectedPersona.id),
-                        onShareToMeme: () => context.push(
-                          AppRoutes.memeGenerator,
-                          extra: memeSource,
-                        ),
-                      ),
-                      SizedBox(height: gap),
-                      ForecastMetricChips(weather: snapshot),
-                      SizedBox(height: gap),
                       ShortTermPrecipitationCard(
                         minutes: weather.minutePrecipitation,
+                        now: now,
+                        unavailable: !observationFresh || cached,
+                        units: weather.current.units,
                       ),
-                      if (weather.alerts.isNotEmpty) ...[
+                      SizedBox(height: gap),
+                      ForecastHourlyStrip(
+                        hourly: weather.hourly,
+                        sunrise: weather.current.sunrise,
+                        sunset: weather.current.sunset,
+                        referenceTime: now,
+                        timezoneOffset: weather.current.timezoneOffset,
+                        errorMessage: weather.hourlyForecastMessage,
+                      ),
+                      if (!_loading &&
+                          !cached &&
+                          observationFresh &&
+                          relevantAlerts.isEmpty &&
+                          _repository is! FakeWeatherRepository)
+                        const AdSection(placement: AdPlacement.forecastBanner),
+                      if (relevantAlerts.isEmpty) ...[
                         SizedBox(height: gap),
-                        WeatherAlertsPanel(alerts: weather.alerts),
+                        ForecastRoastCard(
+                          persona: selectedPersona,
+                          roast: roast,
+                          sourceLabel:
+                              memeSource.isSample ? 'Sample roast' : null,
+                          onNewRoast: () => _showNextRoast(selectedPersona.id),
+                          onShare: () => _shareRoast(selectedPersona.id),
+                          onShareToMeme: () => context.push(
+                            AppRoutes.memeGenerator,
+                            extra: memeSource,
+                          ),
+                        ),
                       ],
+                      SizedBox(height: gap),
+                      ForecastMetricChips(
+                        weather: snapshot,
+                        rainAvailable: observationFresh &&
+                            !cached &&
+                            (weather.current.precipitationChanceKnown ||
+                                weather.hourly.any((hour) =>
+                                    hour.precipitationChanceKnown &&
+                                    !hour.time.isBefore(now) &&
+                                    hour.time.isBefore(
+                                        now.add(const Duration(hours: 12))))),
+                      ),
                       SizedBox(height: gap),
                       _ForecastLowerSection(
                         weather: weather,
+                        now: now,
                         gap: gap,
                         expanded: breakpoint.isExpanded,
                       ),
@@ -531,13 +620,15 @@ class _ForecastScreenState extends State<ForecastScreen> {
     WeatherSnapshot snapshot,
     String personaId,
   ) {
-    final context = WeatherRoastContext.fromWeatherBundle(
+    final roastContext = WeatherRoastContext.fromWeatherBundle(
       weather,
-      now: _relativeNow ?? weather.current.displayUpdatedAt,
+      now: _now,
+      temperatureUnit: context.read<SettingsController?>()?.temperatureUnit ??
+          TemperatureUnit.fahrenheit,
     );
     return _roastSelector.select(
       pack: pack,
-      context: context,
+      context: roastContext,
       persona: personaId,
       type: RoastType.today,
       maxLevel: RoastLevel.medium,
@@ -730,11 +821,13 @@ class _ForecastTopSection extends StatelessWidget {
 class _ForecastLowerSection extends StatelessWidget {
   const _ForecastLowerSection({
     required this.weather,
+    required this.now,
     required this.gap,
     required this.expanded,
   });
 
   final WeatherBundle weather;
+  final DateTime now;
   final double gap;
   final bool expanded;
 
@@ -747,20 +840,11 @@ class _ForecastLowerSection extends StatelessWidget {
     final forecast = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ForecastHourlyStrip(
-          hourly: weather.hourly,
-          sunrise: weather.current.sunrise,
-          sunset: weather.current.sunset,
-          referenceTime: weather.current.lastUpdated,
-          timezoneOffset: weather.current.timezoneOffset,
-          errorMessage: weather.hourlyForecastMessage,
-        ),
-        SizedBox(height: gap),
         ForecastDailyGrid(
           daily: weather.daily,
           sunrise: weather.current.sunrise,
           sunset: weather.current.sunset,
-          referenceTime: weather.current.lastUpdated,
+          referenceTime: now,
           timezoneOffset: weather.current.timezoneOffset,
           errorMessage: weather.dailyForecastMessage,
         ),
@@ -794,25 +878,29 @@ class ShortTermPrecipitationCard extends StatelessWidget {
   const ShortTermPrecipitationCard({
     super.key,
     required this.minutes,
+    this.now,
+    this.unavailable = false,
+    this.units = 'imperial',
   });
 
   final List<MinutePrecipitation> minutes;
+  final DateTime? now;
+  final bool unavailable;
+  final String units;
 
   @override
   Widget build(BuildContext context) {
-    final wetIndex = minutes.indexWhere((minute) => minute.isWet);
-    final hasPrecipitation = wetIndex >= 0;
-    final title = hasPrecipitation
-        ? 'Precipitation starts ${_relativeMinuteLabel(wetIndex)}'
-        : 'No precipitation expected in the next hour';
-    final visibleMinutes = hasPrecipitation
-        ? minutes.skip(wetIndex).take(12).toList()
-        : minutes.take(12).toList();
+    final reference = now ?? DateTime.now();
+    final coverage =
+        PrecipitationCoverage(minutes, reference, unavailable: unavailable);
+    final hasPrecipitation = coverage.points.any((minute) => minute.isWet);
+    final title = coverage.summary(reference);
+    final visibleMinutes = coverage.points.take(12).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const DmSectionHeader(title: 'Next hour'),
+        DmSectionHeader(title: coverage.heading),
         const SizedBox(height: DMSpacing.sm),
         DmGlassCard(
           child: Column(
@@ -828,9 +916,13 @@ class ShortTermPrecipitationCard extends StatelessWidget {
                       color: DMColors.rainTeal,
                     )
                   else
-                    const Icon(
-                      Icons.check_circle_outline,
-                      color: DMColors.mintGreen,
+                    Icon(
+                      coverage.coversNextHour
+                          ? Icons.check_circle_outline
+                          : Icons.info_outline,
+                      color: coverage.coversNextHour
+                          ? DMColors.mintGreen
+                          : DMColors.textMuted,
                     ),
                   const SizedBox(width: DMSpacing.sm),
                   Expanded(
@@ -856,7 +948,7 @@ class ShortTermPrecipitationCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                               horizontal: 2,
                             ),
-                            child: _MinuteBar(minute: minute),
+                            child: _MinuteBar(minute: minute, units: units),
                           ),
                         ),
                     ],
@@ -869,17 +961,13 @@ class ShortTermPrecipitationCard extends StatelessWidget {
       ],
     );
   }
-
-  static String _relativeMinuteLabel(int index) {
-    if (index <= 0) return 'now';
-    return 'in $index min';
-  }
 }
 
 class _MinuteBar extends StatelessWidget {
-  const _MinuteBar({required this.minute});
+  const _MinuteBar({required this.minute, required this.units});
 
   final MinutePrecipitation minute;
+  final String units;
 
   @override
   Widget build(BuildContext context) {
@@ -892,7 +980,7 @@ class _MinuteBar extends StatelessWidget {
       children: [
         Tooltip(
           message:
-              '${_formatTime(minute.time)}: ${minute.precipitation.toStringAsFixed(2)} in',
+              '${_formatTime(minute.time)}: ${minute.precipitation.toStringAsFixed(2)} ${units == 'imperial' ? 'in/h' : 'mm/h'}',
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             height: height,
@@ -960,38 +1048,49 @@ class _WeatherAlertTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return DmGlassCard(
       borderColor: DMColors.alertOrange,
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: EdgeInsets.zero,
-        iconColor: DMColors.sunriseYellow,
-        collapsedIconColor: DMColors.textMuted,
-        leading: const Icon(
-          Icons.warning_amber_rounded,
-          color: DMColors.alertOrange,
-        ),
-        title: Text(
-          alert.event,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: DMTypography.title,
-        ),
-        subtitle: Text(
-          _subtitle(alert),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: DMTypography.bodySmall,
-        ),
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              alert.description.isEmpty
-                  ? 'No additional alert details were provided.'
-                  : alert.description,
-              style: DMTypography.body,
-            ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          iconColor: DMColors.sunriseYellow,
+          collapsedIconColor: DMColors.textMuted,
+          leading: const Icon(
+            Icons.warning_amber_rounded,
+            color: DMColors.alertOrange,
           ),
-        ],
+          title: Text(
+            alert.event,
+            style: DMTypography.title,
+          ),
+          subtitle: Text(
+            _subtitle(alert),
+            style: DMTypography.bodySmall,
+          ),
+          children: [
+            if (alert.area?.isNotEmpty == true)
+              Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Area: ${alert.area}', style: DMTypography.body)),
+            if (alert.instructions?.isNotEmpty == true)
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: DMSpacing.sm),
+                  child: Align(
+                      alignment: Alignment.centerLeft,
+                      child:
+                          Text(alert.instructions!, style: DMTypography.body))),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                alert.description.isEmpty
+                    ? 'No additional alert details were provided.'
+                    : alert.description,
+                style: DMTypography.body,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1009,7 +1108,7 @@ class _WeatherAlertTile extends StatelessWidget {
     final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
     final minute = time.minute.toString().padLeft(2, '0');
     final suffix = time.hour >= 12 ? 'PM' : 'AM';
-    return '${time.month}/${time.day} $hour:$minute $suffix';
+    return '${time.month}/${time.day}/${time.year} $hour:$minute $suffix ${time.timeZoneName}';
   }
 }
 

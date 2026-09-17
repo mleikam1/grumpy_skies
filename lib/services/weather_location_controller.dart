@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/weather_models.dart';
+import '../models/weather_safety.dart';
+export '../models/weather_safety.dart' show WeatherSafetyStatus;
 import '../repositories/weather_repository.dart';
 import 'location_service.dart';
 
@@ -28,7 +30,9 @@ class WeatherLocationController extends ChangeNotifier {
     LocationService locationService = const GeolocatorLocationService(),
     SharedPreferences? preferences,
     WeatherLocation? initialLocation,
-  })  : _repository = repository,
+    WeatherClock? clock,
+  })  : _clock = clock ?? DateTime.now,
+        _repository = repository,
         _locationService = locationService,
         _preferences = preferences,
         _selectedLocation = initialLocation?.hasValidCoordinates == true
@@ -54,6 +58,10 @@ class WeatherLocationController extends ChangeNotifier {
     return controller;
   }
 
+  final WeatherClock _clock;
+  WeatherBundle? _safetyWeather;
+  String? _safetyLocationKey;
+
   final WeatherRepository _repository;
   final LocationService _locationService;
   final SharedPreferences? _preferences;
@@ -67,6 +75,53 @@ class WeatherLocationController extends ChangeNotifier {
   LocationSelectionStatus get status => _status;
   String? get message => _message;
   bool get hasSelectedLocation => _selectedLocation != null;
+
+  WeatherSafetyStatus get safetyStatus {
+    if (_selectedLocation == null ||
+        _safetyLocationKey != _locationKey(_selectedLocation!)) {
+      return WeatherSafetyStatus.unknown;
+    }
+    return weatherSafetyStatus(_safetyWeather, _clock());
+  }
+
+  List<WeatherAlert> get activeAlerts {
+    if (_selectedLocation == null ||
+        _safetyLocationKey != _locationKey(_selectedLocation!)) {
+      return const [];
+    }
+    return _safetyWeather?.alerts
+            .where((alert) => alert.isRelevantAt(_clock()))
+            .toList(growable: false) ??
+        const [];
+  }
+
+  void updateWeatherSafety(WeatherBundle weather, LocationCandidate location) {
+    if (_selectedLocation == null ||
+        _locationKey(location) != _locationKey(_selectedLocation!)) {
+      return;
+    }
+    // Use the actual requested location and reject a mismatched provider payload.
+    final lat = weather.current.latitude;
+    final lon = weather.current.longitude;
+    if ((lat != null && (lat - location.lat).abs() > 0.02) ||
+        (lon != null && (lon - location.lon).abs() > 0.02)) {
+      invalidateWeatherSafety();
+      return;
+    }
+    _safetyWeather = weather;
+    _safetyLocationKey = _locationKey(location);
+    _notifyListenersSafely();
+  }
+
+  /// Called on resume and fetch failures. Retain received warning text while
+  /// rejecting previous clear coverage, so a failed refresh cannot clear a risk.
+  void invalidateWeatherSafety() {
+    _safetyWeather = _safetyWeather?.asOfflineCache();
+    _notifyListenersSafely();
+  }
+
+  static String _locationKey(LocationCandidate location) =>
+      '${location.lat},${location.lon}';
 
   Future<void> restoreLastSelectedLocation() async {
     final raw = _preferences?.getString(_selectedLocationKey);
@@ -186,12 +241,14 @@ class WeatherLocationController extends ChangeNotifier {
       return;
     }
 
+    _safetyWeather = null;
+    _safetyLocationKey = null;
     _selectedLocation = location is WeatherLocation
-        ? location.copyWith(updatedAt: DateTime.now())
+        ? location.copyWith(updatedAt: _clock())
         : WeatherLocation.fromCandidate(
             location,
             source: source,
-            updatedAt: DateTime.now(),
+            updatedAt: _clock(),
           );
     _status = source == WeatherLocationSource.device
         ? LocationSelectionStatus.permissionGranted
@@ -241,6 +298,7 @@ class WeatherLocationController extends ChangeNotifier {
   }
 
   void markWeatherError(String message) {
+    invalidateWeatherSafety();
     if (_selectedLocation == null) return;
     _setStatus(LocationSelectionStatus.weatherError, message);
     _debugWeatherFetchFailed(message);

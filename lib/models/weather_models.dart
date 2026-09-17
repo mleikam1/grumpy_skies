@@ -199,17 +199,19 @@ class MinutePrecipitation {
     required this.precipitation,
   });
 
-  bool get isWet => precipitation > 0;
+  bool get hasValue => precipitation.isFinite && precipitation >= 0;
+
+  bool get isWet => hasValue && precipitation > 0;
 
   Map<String, dynamic> toJson() => {
         'time': time.toIso8601String(),
-        'precipitation': precipitation,
+        'precipitation': precipitation.isFinite ? precipitation : null,
       };
 
   factory MinutePrecipitation.fromJson(Map<String, dynamic> json) {
     return MinutePrecipitation(
       time: _dateFromJson(json['time'] ?? json['dt']),
-      precipitation: ((json['precipitation'] ?? 0) as num).toDouble(),
+      precipitation: (json['precipitation'] as num?)?.toDouble() ?? double.nan,
     );
   }
 }
@@ -220,6 +222,7 @@ class TimelineWeatherPoint {
   final double? feelsLikeF;
   final int? humidity;
   final int precipitationChance;
+  final bool precipitationChanceKnown;
   final double precipitation;
   final double? windMph;
   final int? windDeg;
@@ -235,6 +238,7 @@ class TimelineWeatherPoint {
     this.feelsLikeF,
     this.humidity,
     this.precipitationChance = 0,
+    this.precipitationChanceKnown = true,
     this.precipitation = 0,
     this.windMph,
     this.windDeg,
@@ -251,6 +255,7 @@ class TimelineWeatherPoint {
         'feelsLikeF': feelsLikeF,
         'humidity': humidity,
         'precipitationChance': precipitationChance,
+        'precipitationChanceKnown': precipitationChanceKnown,
         'precipitation': precipitation,
         'windMph': windMph,
         'windDeg': windDeg,
@@ -276,6 +281,8 @@ class TimelineWeatherPoint {
       humidity: (json['humidity'] as num?)?.round(),
       precipitationChance:
           probability <= 1 ? (probability * 100).round() : probability.round(),
+      precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
+          json['precipitationProbability'] is num,
       precipitation: ((json['precipitation'] ?? 0) as num).toDouble(),
       windMph: (json['windMph'] ?? json['windSpeed']) == null
           ? null
@@ -299,6 +306,9 @@ class WeatherAlert {
   final DateTime? start;
   final DateTime? end;
   final String description;
+  final String? area;
+  final String? instructions;
+  final String? severity;
 
   const WeatherAlert({
     required this.senderName,
@@ -306,9 +316,17 @@ class WeatherAlert {
     this.start,
     this.end,
     required this.description,
+    this.area,
+    this.instructions,
+    this.severity,
   });
 
+  bool isRelevantAt(DateTime now) => end == null || end!.isAfter(now);
+
   Map<String, dynamic> toJson() => {
+        'area': area,
+        'instructions': instructions,
+        'severity': severity,
         'senderName': senderName,
         'event': event,
         'start': start?.toIso8601String(),
@@ -325,6 +343,9 @@ class WeatherAlert {
       start: _nullableDateFromJson(json['start']),
       end: _nullableDateFromJson(json['end']),
       description: (json['description'] ?? '') as String,
+      area: (json['area'] ?? json['areaDesc'] ?? json['area_desc']) as String?,
+      instructions: (json['instructions'] ?? json['instruction']) as String?,
+      severity: json['severity'] as String?,
     );
   }
 }
@@ -487,6 +508,7 @@ class CurrentWeather {
   final String windDirection;
   final int humidity;
   final int precipitationChance;
+  final bool precipitationChanceKnown;
   final int aqi;
   final String aqiCategory;
   final DateTime sunrise;
@@ -524,6 +546,7 @@ class CurrentWeather {
     this.windDirection = '',
     required this.humidity,
     required this.precipitationChance,
+    this.precipitationChanceKnown = true,
     required this.aqi,
     this.aqiCategory = '',
     required this.sunrise,
@@ -562,6 +585,7 @@ class CurrentWeather {
         'windDirection': windDirection,
         'humidity': humidity,
         'precipitationChance': precipitationChance,
+        'precipitationChanceKnown': precipitationChanceKnown,
         'aqi': aqi,
         'aqiCategory': aqiCategory,
         'sunrise': sunrise.toIso8601String(),
@@ -606,7 +630,8 @@ class CurrentWeather {
   double? get visibilityMiles =>
       visibilityMeters == null ? null : visibilityMeters! / 1609.344;
 
-  DateTime get displayUpdatedAt => fetchedAt ?? sourceUpdatedAt ?? lastUpdated;
+  /// Observation freshness must never be reset by a cache/network retrieval.
+  DateTime get displayUpdatedAt => sourceUpdatedAt ?? lastUpdated;
 
   String get windLabel {
     final direction = windDirection.isEmpty ? '' : ' $windDirection';
@@ -636,7 +661,8 @@ class CurrentWeather {
     if ((snowLastHour ?? 0) > 0) {
       values.add('${snowLastHour!.toStringAsFixed(2)} $unit snow');
     }
-    return values.isEmpty ? 'None' : values.join(' / ');
+    if (rainLastHour == null && snowLastHour == null) return 'Unavailable';
+    return values.isEmpty ? 'None reported' : values.join(' / ');
   }
 
   factory CurrentWeather.fromSnapshot(WeatherSnapshot snapshot) {
@@ -701,6 +727,8 @@ class CurrentWeather {
       windDirection: (json['windDirection'] ?? '') as String,
       humidity: (json['humidity'] as num).toInt(),
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
+      precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
+          json['precipitationChance'] is num,
       aqi: ((json['aqi'] ?? 50) as num).toInt(),
       aqiCategory: (json['aqiCategory'] ?? '') as String,
       sunrise: _safeParseDate(json['sunrise']) ?? DateTime.now(),
@@ -736,6 +764,7 @@ class HourlyForecast {
   final double temperatureC;
   final String condition;
   final int precipitationChance;
+  final bool precipitationChanceKnown;
   final String? weatherIcon;
   final String? weatherMain;
   final int? weatherId;
@@ -745,6 +774,7 @@ class HourlyForecast {
     required this.temperatureC,
     required this.condition,
     this.precipitationChance = 0,
+    this.precipitationChanceKnown = true,
     this.weatherIcon,
     this.weatherMain,
     this.weatherId,
@@ -766,6 +796,7 @@ class HourlyForecast {
         'temperatureC': temperatureC,
         'condition': condition,
         'precipitationChance': precipitationChance,
+        'precipitationChanceKnown': precipitationChanceKnown,
         'weatherIcon': weatherIcon,
         'weatherMain': weatherMain,
         'weatherId': weatherId,
@@ -777,6 +808,8 @@ class HourlyForecast {
       temperatureC: (json['temperatureC'] as num).toDouble(),
       condition: json['condition'] as String,
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
+      precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
+          json['precipitationChance'] is num,
       weatherIcon: json['weatherIcon'] as String?,
       weatherMain: json['weatherMain'] as String?,
       weatherId: (json['weatherId'] as num?)?.round(),
@@ -790,6 +823,7 @@ class DailyForecast {
   final double maxTempC;
   final String condition;
   final int precipitationChance;
+  final bool precipitationChanceKnown;
   final String? weatherIcon;
   final String? weatherMain;
   final int? weatherId;
@@ -800,6 +834,7 @@ class DailyForecast {
     required this.maxTempC,
     required this.condition,
     this.precipitationChance = 0,
+    this.precipitationChanceKnown = true,
     this.weatherIcon,
     this.weatherMain,
     this.weatherId,
@@ -825,6 +860,7 @@ class DailyForecast {
         'maxTempC': maxTempC,
         'condition': condition,
         'precipitationChance': precipitationChance,
+        'precipitationChanceKnown': precipitationChanceKnown,
         'weatherIcon': weatherIcon,
         'weatherMain': weatherMain,
         'weatherId': weatherId,
@@ -837,6 +873,8 @@ class DailyForecast {
       maxTempC: (json['maxTempC'] as num).toDouble(),
       condition: json['condition'] as String,
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
+      precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
+          json['precipitationChance'] is num,
       weatherIcon: json['weatherIcon'] as String?,
       weatherMain: json['weatherMain'] as String?,
       weatherId: (json['weatherId'] as num?)?.round(),
@@ -854,6 +892,11 @@ class WeatherBundle {
   final List<MinutePrecipitation> minutePrecipitation;
   final List<TimelineWeatherPoint> timeline;
   final List<WeatherAlert> alerts;
+
+  /// True only when the backend explicitly verifies complete alert coverage.
+  final bool alertCoverageVerified;
+  final DateTime? alertsCheckedAt;
+  final bool isOfflineCache;
   final String? hourlyForecastMessage;
   final String? dailyForecastMessage;
 
@@ -866,6 +909,9 @@ class WeatherBundle {
     this.minutePrecipitation = const [],
     this.timeline = const [],
     this.alerts = const [],
+    this.alertCoverageVerified = false,
+    this.alertsCheckedAt,
+    this.isOfflineCache = false,
     this.hourlyForecastMessage,
     this.dailyForecastMessage,
   });
@@ -880,11 +926,19 @@ class WeatherBundle {
             minutePrecipitation.map((e) => e.toJson()).toList(),
         'timeline': timeline.map((e) => e.toJson()).toList(),
         'alerts': alerts.map((e) => e.toJson()).toList(),
+        'alertCoverageVerified': alertCoverageVerified,
+        'alertsCheckedAt': alertsCheckedAt?.toIso8601String(),
+        'isOfflineCache': isOfflineCache,
         if (hourlyForecastMessage != null)
           'hourlyForecastMessage': hourlyForecastMessage,
         if (dailyForecastMessage != null)
           'dailyForecastMessage': dailyForecastMessage,
       };
+
+  WeatherBundle asOfflineCache() => WeatherBundle.fromJson({
+        ...toJson(),
+        'isOfflineCache': true,
+      });
 
   factory WeatherBundle.fromSnapshot(WeatherSnapshot snapshot) {
     return WeatherBundle(
@@ -931,6 +985,9 @@ class WeatherBundle {
                 (e as Map).cast<String, dynamic>(),
               ))
           .toList(),
+      alertCoverageVerified: json['alertCoverageVerified'] == true,
+      alertsCheckedAt: _nullableDateFromJson(json['alertsCheckedAt']),
+      isOfflineCache: json['isOfflineCache'] == true,
       hourlyForecastMessage: json['hourlyForecastMessage'] as String?,
       dailyForecastMessage: json['dailyForecastMessage'] as String?,
     );

@@ -12,9 +12,11 @@ import '../features/splash/splash_screen.dart';
 import '../features/roasts/advanced_roast_reveal_screen.dart';
 import '../features/roasts/roasts_screen.dart';
 import 'daymaker_shell.dart';
+import '../monetization/ad_modal_observer.dart';
 
 final daymakerRouter = GoRouter(
   initialLocation: AppRoutes.splash,
+  observers: [AdModalObserver()],
   routes: [
     GoRoute(
       path: '/',
@@ -26,6 +28,7 @@ final daymakerRouter = GoRouter(
       builder: (context, state) => const SplashScreen(),
     ),
     ShellRoute(
+      observers: [AdModalObserver()],
       builder: (context, state, child) {
         return DaymakerShell(
           location: state.uri.path,

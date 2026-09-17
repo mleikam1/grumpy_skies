@@ -133,8 +133,8 @@ void main() {
       expect(weather.alertIds, ['alert-1']);
       expect(weather.timezone, 'America/Chicago');
       expect(weather.timezoneOffset, -18000);
-      expect(
-          weather.displayUpdatedAt.toUtc(), DateTime.utc(2026, 6, 21, 12, 3));
+      expect(weather.fetchedAt?.toUtc(), DateTime.utc(2026, 6, 21, 12, 3));
+      expect(weather.displayUpdatedAt.toUtc(), DateTime.utc(2026, 6, 21, 12));
     });
 
     test('maps bundled forecast hourly and daily DTO arrays', () async {

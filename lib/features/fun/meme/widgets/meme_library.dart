@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../monetization/monetization_controller.dart';
+import '../../../../monetization/ad_placement.dart';
+import '../../../../monetization/widgets/ad_section.dart';
 import '../meme_catalog.dart';
 import '../models/meme_document.dart';
 import 'meme_inspector.dart';
@@ -43,6 +47,28 @@ class MemeLibrary extends StatefulWidget {
 
 class _MemeLibraryState extends State<MemeLibrary> {
   String _search = '', _filter = 'All', _section = 'Templates';
+
+  Future<void> _showStorageInfo() async {
+    final monetization = context.read<MonetizationController?>();
+    monetization?.beginOperation();
+    try {
+      await showDialog<void>(
+          context: context,
+          builder: (c) => AlertDialog(
+                  title: const Text('Your memes stay with you'),
+                  content: const Text(kIsWeb
+                      ? 'Saved in this browser. Browser storage can be cleared or evicted; keep a project backup. Offline editing needs the chosen images to be loaded first. A new browser session may need a connection to load the app and artwork.'
+                      : 'Your photos and projects are saved privately on this device. Bundled templates work offline, including your first launch. Save a portable project backup to keep another copy.'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(c),
+                        child: const Text('Got it'))
+                  ]));
+    } finally {
+      monetization?.endOperation();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final templates = widget.catalog.templates
@@ -103,18 +129,7 @@ class _MemeLibraryState extends State<MemeLibrary> {
         TextButton.icon(
             icon: const Icon(Icons.privacy_tip_outlined, size: 16),
             label: const Text('Local drafts • Storage & offline'),
-            onPressed: () => showDialog<void>(
-                context: context,
-                builder: (c) => AlertDialog(
-                        title: const Text('Your memes stay with you'),
-                        content: const Text(kIsWeb
-                            ? 'Saved in this browser. Browser storage can be cleared or evicted; keep a project backup. Offline editing needs the chosen images to be loaded first. A new browser session may need a connection to load the app and artwork.'
-                            : 'Your photos and projects are saved privately on this device. Bundled templates work offline, including your first launch. Save a portable project backup to keep another copy.'),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(c),
-                              child: const Text('Got it'))
-                        ]))),
+            onPressed: _showStorageInfo),
         const SizedBox(height: 24),
         Wrap(spacing: 8, children: [
           for (final section in ['Templates', 'Favorites', 'My Memes'])
@@ -173,21 +188,38 @@ class _MemeLibraryState extends State<MemeLibrary> {
               : c.crossAxisExtent < 900
                   ? 2
                   : 3;
-          return SliverGrid.builder(
-              itemCount: templates.length,
+          Widget grid(int start, int end) => SliverGrid.builder(
+              itemCount: end - start,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
                   crossAxisSpacing: 18,
                   mainAxisSpacing: 18,
                   mainAxisExtent: c.crossAxisExtent / cols + 82),
               itemBuilder: (context, i) {
-                final t = templates[i];
+                final t = templates[start + i];
                 return _TemplateCard(
                     template: t,
                     favorite: widget.favorites.contains(t.id),
                     onFavorite: () => widget.onFavorite(t.id),
                     onTap: () => widget.onTemplate(t));
               });
+          // The ad gets its own full-width row, never a template/draft cell.
+          // Round to the completed row containing template six if the grid's
+          // column count changes in future. Fewer than six gets no slot.
+          final breakAfter = ((6 + cols - 1) ~/ cols) * cols;
+          if (templates.length < breakAfter) return grid(0, templates.length);
+          return SliverMainAxisGroup(
+              key: ValueKey('publisher-templates:$_section:$_search:$_filter:'
+                  '${templates.map((t) => t.id).join(',')}'),
+              slivers: [
+                grid(0, breakAfter),
+                SliverToBoxAdapter(
+                    child: AdSection(
+                        placement: AdPlacement.memeLibraryMrec,
+                        contentCount: templates.length)),
+                if (templates.length > breakAfter)
+                  grid(breakAfter, templates.length),
+              ]);
         }),
       SliverToBoxAdapter(
           child:

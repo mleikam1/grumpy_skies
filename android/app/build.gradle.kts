@@ -7,6 +7,18 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Only DayMaker-specific metadata may replace this official demo app ID.
+val daymakerAdMobAppId = providers.gradleProperty("daymakerAdMobAppId")
+    .getOrElse("ca-app-pub-3940256099942544~3347511713")
+val daymakerDartDefines = providers.gradleProperty("dart-defines").getOrElse("")
+val daymakerReleaseBuild = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+val validateDaymakerAds by tasks.registering(Exec::class) {
+    commandLine("python3", "../../tools/validate_monetization.py", "--platform", "android",
+        "--mode", if (daymakerReleaseBuild) "release" else "debug",
+        "--defines", daymakerDartDefines, "--app-id", daymakerAdMobAppId)
+}
+tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(validateDaymakerAds) }
+
 android {
     namespace = "com.example.grumpy_skies"
     compileSdk = flutter.compileSdkVersion
@@ -22,7 +34,8 @@ android {
         applicationId = "com.example.grumpy_skies"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 24)
+        manifestPlaceholders["daymakerAdMobAppId"] = daymakerAdMobAppId
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

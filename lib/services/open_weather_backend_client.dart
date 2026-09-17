@@ -492,6 +492,7 @@ class OpenWeatherBackendClient {
       windDirection: _windDirection((json['windDeg'] as num?)?.toDouble()),
       humidity: (json['humidity'] as num?)?.round() ?? 0,
       precipitationChance: 0,
+      precipitationChanceKnown: false,
       aqi: 0,
       aqiCategory: '',
       sunrise: sunrise ?? DateTime(now.year, now.month, now.day, 6),
@@ -501,7 +502,9 @@ class OpenWeatherBackendClient {
       uvIndex: (json['uvi'] as num?)?.toDouble() ?? 0,
       uvCategory: _uvCategory((json['uvi'] as num?)?.toDouble() ?? 0),
       chaosMeterPercent: _chaosMeter(weatherId),
-      lastUpdated: observedAt ?? sourceUpdatedAt ?? now,
+      lastUpdated: observedAt ??
+          sourceUpdatedAt ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       dewPointC: dewPoint == null ? null : _temperatureToC(dewPoint, dtoUnits),
       pressureHpa: (json['pressure'] as num?)?.round(),
       visibilityMeters: (json['visibility'] as num?)?.round(),
@@ -587,6 +590,8 @@ class OpenWeatherBackendClient {
       minutePrecipitation: minutes,
       timeline: timeline,
       alerts: alerts,
+      alertCoverageVerified: json['alertCoverageVerified'] == true,
+      alertsCheckedAt: _dateFromJson(json['alertsCheckedAt']),
       hourlyForecastMessage: hourlyForecastMessage,
       dailyForecastMessage: dailyForecastMessage,
     );
@@ -651,6 +656,9 @@ class OpenWeatherBackendClient {
                 current.condition)
             .toString(),
       ),
+      precipitationChanceKnown: (json['precipitationProbability'] ??
+          json['pop'] ??
+          json['precipitationChance']) is num,
       precipitationChance: _precipitationChance(
         json['precipitationProbability'] ??
             json['pop'] ??
@@ -695,6 +703,9 @@ class OpenWeatherBackendClient {
                 current.condition)
             .toString(),
       ),
+      precipitationChanceKnown: (json['precipitationProbability'] ??
+          json['pop'] ??
+          json['precipitationChance']) is num,
       precipitationChance: _precipitationChance(
         json['precipitationProbability'] ??
             json['pop'] ??

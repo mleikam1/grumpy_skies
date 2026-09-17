@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../monetization/monetization_controller.dart';
+import '../meme_completion.dart';
 import '../models/meme_document.dart';
 import '../platform/meme_export_service.dart';
 import '../storage/meme_store.dart';
@@ -12,18 +15,23 @@ class MemeExportPreview extends StatefulWidget {
       required this.png,
       this.backup,
       required this.exports,
-      required this.store});
+      required this.store,
+      this.onDone});
   final MemeDocument document;
   final Uint8List png;
   final Uint8List? backup;
   final MemeExportService exports;
   final MemeStore store;
+  final VoidCallback? onDone;
   @override
   State<MemeExportPreview> createState() => _MemeExportPreviewState();
 }
 
 class _MemeExportPreviewState extends State<MemeExportPreview> {
   bool _busy = false;
+  bool _completionReady = false;
+  bool _finishing = false;
+  bool _doneConsumed = false;
   bool _preparingBackup = false;
   Uint8List? _backup;
   String? _backupError;
@@ -57,18 +65,33 @@ class _MemeExportPreviewState extends State<MemeExportPreview> {
     }
   }
 
-  Future<void> _run(Future<MemeTransferResult> action,
+  Future<void> _run(Future<MemeTransferResult> Function() action,
       {bool image = true}) async {
+    if (_busy || _finishing || _doneConsumed) return;
+    final monetization = context.read<MonetizationController?>();
+    monetization?.beginOperation();
     setState(() {
       _busy = true;
       _historyWarning = null;
     });
     try {
-      final result = await action;
+      final result = await action();
       // The platform operation already finished. A failure to update local
       // recents cannot turn a completed Photos save or share into a failure.
       if (mounted) setState(() => _message = result.message);
       if (image && result.completed) {
+        // Result copy must be painted before this can be a completion. Opening
+        // Export, cancelling a transfer, and autosaving drafts do not count.
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted) return;
+        try {
+          await monetization?.recordMemeCompletion(
+              documentId: widget.document.id,
+              revisionId: memeCompletionRevision(widget.document));
+        } catch (_) {
+          // Optional monetization storage must never invalidate a real save.
+        }
+        if (mounted) setState(() => _completionReady = true);
         try {
           await widget.store.recordExport(MemeExportRecord(
               documentId: widget.document.id,
@@ -86,8 +109,20 @@ class _MemeExportPreviewState extends State<MemeExportPreview> {
     } catch (e) {
       if (mounted) setState(() => _message = 'Could not finish: $e');
     } finally {
+      monetization?.endOperation();
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  void _done() {
+    if (!_completionReady || _busy || _finishing || _doneConsumed) return;
+    final navigate = widget.onDone;
+    if (navigate == null) return;
+    setState(() => _finishing = true);
+    _doneConsumed = true;
+    // The studio dismisses this result page before offering the explicit
+    // completion transition. No SDK creative can cover these save controls.
+    navigate();
   }
 
   Rect _origin(BuildContext context) {
@@ -128,29 +163,29 @@ class _MemeExportPreviewState extends State<MemeExportPreview> {
               runSpacing: 12,
               children: [
                 FilledButton.icon(
-                    onPressed: _busy
+                    onPressed: _busy || _finishing
                         ? null
-                        : () => _run(widget.exports
+                        : () => _run(() => widget.exports
                             .savePng(widget.png, widget.document.name)),
                     icon: const Icon(Icons.download),
                     label: const Text('Save Image')),
                 Builder(
                     builder: (c) => FilledButton.icon(
-                        onPressed: _busy
+                        onPressed: _busy || _finishing
                             ? null
-                            : () => _run(widget.exports.sharePng(
+                            : () => _run(() => widget.exports.sharePng(
                                 widget.png, widget.document.name,
                                 origin: _origin(c))),
                         icon: const Icon(Icons.ios_share),
                         label: const Text('Share'))),
                 Builder(
                     builder: (c) => OutlinedButton.icon(
-                        onPressed: _busy || _preparingBackup
+                        onPressed: _busy || _finishing || _preparingBackup
                             ? null
                             : _backup == null
                                 ? _prepareBackup
                                 : () => _run(
-                                    widget.exports.saveBackup(
+                                    () => widget.exports.saveBackup(
                                         _backup!, widget.document.name,
                                         origin: _origin(c)),
                                     image: false),
@@ -160,8 +195,14 @@ class _MemeExportPreviewState extends State<MemeExportPreview> {
                             : _backup == null
                                 ? 'Retry Project Backup'
                                 : 'Save Project Backup'))),
+                if (_completionReady && widget.onDone != null)
+                  FilledButton(
+                      onPressed: _busy || _finishing ? null : _done,
+                      child: const Text('Done / Back to Fun')),
                 OutlinedButton(
-                    onPressed: _busy ? null : () => Navigator.pop(context),
+                    onPressed: _busy || _finishing
+                        ? null
+                        : () => Navigator.pop(context),
                     child: const Text('Continue Editing')),
               ]),
           if (_backupError != null)

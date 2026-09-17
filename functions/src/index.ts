@@ -864,6 +864,9 @@ async function handleAlert(alertId: string, response: Response) {
       start: numberOrNull(record.start),
       end: numberOrNull(record.end),
       description: stringOrNull(record.description),
+      area: stringOrNull(record.area ?? record.areaDesc ?? record.area_desc),
+      instructions: stringOrNull(record.instructions ?? record.instruction),
+      severity: stringOrNull(record.severity),
     },
   }, weatherCacheControl);
 }
@@ -2594,6 +2597,8 @@ export function normalizeForecastWeather(
     hourly: normalizeHourlyForecastRecords(root.hourly),
     daily: normalizeDailyForecastRecords(root.daily, timezoneOffset),
     alerts: normalizeWeatherAlerts(root.alerts),
+    alertCoverageVerified: Array.isArray(root.alerts),
+    alertsCheckedAt: Array.isArray(root.alerts) ? new Date().toISOString() : null,
     units,
   };
 }
@@ -3227,10 +3232,10 @@ function normalizeMinutePrecipitationRecords(
       record.precip ??
       record.rain ??
       record.rain1h,
-    ) ?? 0;
+    );
     return {
       dt: numberOrNull(record.dt),
-      precipitation: units === "imperial" ?
+      precipitation: precipitationMm === null ? null : units === "imperial" ?
         precipitationMm / 25.4 :
         precipitationMm,
     };
@@ -3383,6 +3388,9 @@ function normalizeWeatherAlerts(raw: unknown): JsonRecord[] {
       start: numberOrNull(record.start),
       end: numberOrNull(record.end),
       description: stringOrNull(record.description) ?? "",
+      area: stringOrNull(record.area ?? record.areaDesc ?? record.area_desc),
+      instructions: stringOrNull(record.instructions ?? record.instruction),
+      severity: stringOrNull(record.severity),
     };
   });
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/fun/fun_zone_screen.dart';
+import 'package:grumpy_skies/monetization/widgets/ad_section.dart';
 
 void main() {
   Widget buildSubject() {
@@ -55,15 +56,15 @@ void main() {
       tester.getTopLeft(find.text('Weather Meme Generator')).dy,
       lessThan(tester.getTopLeft(find.text('Weather Fortune Cookie')).dy),
     );
-    expect(find.text('Crack a cookie. Get a weather reveal.'), findsOneWidget);
+    expect(find.text('Crack a cookie. Get a playful fortune, just for fun.'),
+        findsOneWidget);
     expect(find.text('Crack One'), findsOneWidget);
-    expect(find.text('Daily Weather Poll'), findsOneWidget);
-    expect(find.text('Sunny 56%'), findsOneWidget);
-    expect(find.text('Cloudy 28%'), findsOneWidget);
-    expect(find.text('Rainy 16%'), findsOneWidget);
-    expect(find.text('1,842 votes'), findsOneWidget);
+    expect(find.text('Daily Weather Poll'), findsNothing);
+    expect(find.text('1,842 votes'), findsNothing);
+    expect(find.bySemanticsLabel('Vote in daily weather poll'), findsNothing);
+    expect(find.byType(AdSection), findsNothing,
+        reason: 'A navigation tile and an unopened fortune are not content.');
     expect(find.bySemanticsLabel('Crack fortune cookie'), findsOneWidget);
-    expect(find.bySemanticsLabel('Vote in daily weather poll'), findsOneWidget);
   });
 
   testWidgets('FunZoneScreen buttons reveal playful results', (tester) async {
@@ -88,11 +89,8 @@ void main() {
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Vote Now'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Vote Now'));
-    await tester.pump();
-    expect(find.text('Vote counted for today.'), findsOneWidget);
+    expect(find.byType(AdSection), findsOneWidget,
+        reason: 'A real revealed fortune now follows the publisher previews.');
 
     await tester.ensureVisible(find.text('Spin Now'));
     await tester.pumpAndSettle();
@@ -116,11 +114,11 @@ void main() {
 
     expect(tester.takeException(), isNull);
 
-    final pollOffset = tester.getTopLeft(find.text('Daily Weather Poll'));
+    final menaceOffset = tester.getTopLeft(find.text('Weather Menace'));
     final predictorOffset = tester.getTopLeft(find.text('Crazy Day Predictor'));
 
-    expect((pollOffset.dy - predictorOffset.dy).abs(), lessThan(4));
-    expect((pollOffset.dx - predictorOffset.dx).abs(), greaterThan(300));
+    expect((menaceOffset.dy - predictorOffset.dy).abs(), lessThan(4));
+    expect((menaceOffset.dx - predictorOffset.dx).abs(), greaterThan(300));
   });
 
   testWidgets('FunZoneScreen renders expanded masonry and navigates to memes',

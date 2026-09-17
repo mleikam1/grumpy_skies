@@ -1,3 +1,4 @@
+import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -9,9 +10,11 @@ class ForecastMetricChips extends StatelessWidget {
   const ForecastMetricChips({
     super.key,
     required this.weather,
+    this.rainAvailable = true,
   });
 
   final WeatherSnapshot weather;
+  final bool rainAvailable;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +38,9 @@ class ForecastMetricChips extends StatelessWidget {
               child: DmMetricChip(
                 icon: Icons.water_drop_outlined,
                 label: 'Rain',
-                value: '${weather.rainChancePercent}% rain',
+                value: rainAvailable
+                    ? '${weather.rainChancePercent}% rain'
+                    : 'Unavailable',
                 accentColor: DMColors.rainTeal,
               ),
             ),
@@ -53,7 +58,8 @@ class ForecastMetricChips extends StatelessWidget {
               child: DmMetricChip(
                 icon: Icons.thermostat_outlined,
                 label: 'Feels',
-                value: '${weather.feelsLikeF}° Comfortable',
+                value: forecastTemperature(
+                    weather.feelsLikeC, forecastTemperatureUnit(context)),
                 accentColor: DMColors.sunriseYellow,
               ),
             ),

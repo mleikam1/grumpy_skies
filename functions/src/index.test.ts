@@ -776,3 +776,29 @@ test("classifies OpenWeather radar access errors separately", () => {
     /appid/i,
   );
 });
+
+test("weather trust keeps explicit alert coverage and warning instructions", () => {
+  const dto = normalizeForecastWeather({
+    lat: 40,
+    lon: -90,
+    current: {dt: 1789632000, temp: 72},
+    alerts: [{sender_name: "NWS", event: "Flood Warning", start: 1789632000,
+      end: 1789635600, areaDesc: "River district", instruction: "Move uphill",
+      description: "Flooding is occurring", severity: "Severe"}],
+    minutely: [{dt: 1789632000}, {dt: 1789632060, precipitation: 0}],
+  });
+  assert.equal(dto.alertCoverageVerified, true);
+  assert.ok(dto.alertsCheckedAt);
+  const alert = (dto.alerts as Record<string, unknown>[])[0];
+  assert.equal(alert.area, "River district");
+  assert.equal(alert.instructions, "Move uphill");
+  assert.equal(alert.senderName, "NWS");
+  assert.equal(alert.start, 1789632000);
+  assert.equal(alert.end, 1789635600);
+  const minutes = dto.minutes as Record<string, unknown>[];
+  assert.equal(minutes[0].precipitation, null);
+  assert.equal(minutes[1].precipitation, 0);
+  assert.equal(normalizeForecastWeather({current: {dt: 1789632000}}).alertCoverageVerified, false);
+  assert.equal(normalizeForecastWeather({alerts: []}).alertCoverageVerified, true);
+  assert.notEqual(normalizeOneCallTimelineForecast({}, {}, {}).alertCoverageVerified, true);
+});

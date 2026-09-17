@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
 import 'package:grumpy_skies/repositories/fake_roast_repository.dart';
+import 'package:grumpy_skies/monetization/widgets/ad_section.dart';
 
 void main() {
   Widget buildSubject() {
@@ -31,6 +32,8 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('DayMaker'), findsOneWidget);
     expect(find.text('Roasts'), findsOneWidget);
+    expect(find.text('Sample roasts · Sample weather'), findsOneWidget);
+    expect(find.byType(AdSection), findsNothing);
     expect(find.text('Pick your weather personality.'), findsOneWidget);
     expect(find.text('Karen'), findsWidgets);
     expect(find.text('ROAST QUEEN'), findsOneWidget);

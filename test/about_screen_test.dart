@@ -102,9 +102,9 @@ void main() {
 
       expect(find.text('Version 0.1.0'), findsOneWidget);
 
-      await scrollUntilTextVisible(tester, 'Privacy Policy');
+      await scrollUntilTextVisible(tester, 'Privacy information');
 
-      expect(find.text('Privacy Policy'), findsOneWidget);
+      expect(find.text('Privacy information'), findsOneWidget);
       expect(find.text('Terms of Use'), findsOneWidget);
     }
 

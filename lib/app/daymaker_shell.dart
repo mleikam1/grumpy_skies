@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../monetization/monetization_controller.dart';
 
 import '../config/app_routes.dart';
 import '../shared/widgets/dm_bottom_nav.dart';
+import '../shared/widgets/weather_safety_banner.dart';
 
-class DaymakerShell extends StatelessWidget {
+class DaymakerShell extends StatefulWidget {
   const DaymakerShell({
     super.key,
     required this.location,
@@ -23,8 +26,41 @@ class DaymakerShell extends StatelessWidget {
   ];
 
   @override
+  State<DaymakerShell> createState() => _DaymakerShellState();
+
+  static int indexForLocation(String location) {
+    if (location.startsWith(AppRoutes.roasts)) return 1;
+    if (location.startsWith(AppRoutes.radar)) return 2;
+    if (location.startsWith(AppRoutes.fun)) return 3;
+    if (location.startsWith(AppRoutes.settings)) return 4;
+    return 0;
+  }
+}
+
+class _DaymakerShellState extends State<DaymakerShell> {
+  void _syncRoute() {
+    context
+        .read<MonetizationController?>()
+        ?.setRoute(widget.location, deferNotification: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncRoute();
+  }
+
+  @override
+  void didUpdateWidget(DaymakerShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncRoute();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currentIndex = indexForLocation(location);
+    final location = widget.location;
+    final child = widget.child;
+    final currentIndex = DaymakerShell.indexForLocation(location);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -42,7 +78,11 @@ class DaymakerShell extends StatelessWidget {
                 right: 0,
                 bottom: bottomReserve,
                 left: 0,
-                child: child,
+                child: Column(children: [
+                  if (location != AppRoutes.forecast)
+                    const WeatherSafetyBanner(),
+                  Expanded(child: child),
+                ]),
               ),
               Positioned(
                 right: 0,
@@ -51,8 +91,11 @@ class DaymakerShell extends StatelessWidget {
                 child: DmBottomNav(
                   currentIndex: currentIndex,
                   onDestinationSelected: (index) {
-                    final destination = tabLocations[index];
+                    final destination = DaymakerShell.tabLocations[index];
                     if (location == destination) return;
+                    context
+                        .read<MonetizationController?>()
+                        ?.setRoute(destination);
                     context.go(destination);
                   },
                 ),
@@ -62,13 +105,5 @@ class DaymakerShell extends StatelessWidget {
         );
       },
     );
-  }
-
-  static int indexForLocation(String location) {
-    if (location.startsWith(AppRoutes.roasts)) return 1;
-    if (location.startsWith(AppRoutes.radar)) return 2;
-    if (location.startsWith(AppRoutes.fun)) return 3;
-    if (location.startsWith(AppRoutes.settings)) return 4;
-    return 0;
   }
 }

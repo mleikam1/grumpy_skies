@@ -6,6 +6,8 @@ import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../models/daymaker_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
+import '../../../monetization/ad_placement.dart';
+import '../../../monetization/widgets/ad_section.dart';
 import '../models/roast_persona.dart';
 import 'persona_avatar.dart';
 
@@ -15,14 +17,22 @@ class RoastHistoryList extends StatelessWidget {
     required this.roasts,
     required this.personas,
     required this.onShareRoast,
+    this.containsActualContent = false,
   });
 
   final List<Roast> roasts;
   final List<Persona> personas;
   final ValueChanged<Roast> onShareRoast;
 
+  /// Opt in only when a repository supplies actual publisher roast history.
+  /// The app currently supplies sample roasts, so its default stays ad-free.
+  final bool containsActualContent;
+
   @override
   Widget build(BuildContext context) {
+    final actualRoasts = containsActualContent
+        ? roasts.where((roast) => roast.text.trim().isNotEmpty).toList()
+        : const <Roast>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -31,29 +41,50 @@ class RoastHistoryList extends StatelessWidget {
           subtitle: 'Recently served weather commentary.',
         ),
         const SizedBox(height: DMSpacing.sm),
-        DmGlassCard(
-          gradient: DMGradients.glassNavy,
-          borderColor: DMColors.glassBorder,
-          padding: EdgeInsets.zero,
-          child: roasts.isEmpty
-              ? const _EmptyHistory()
-              : Column(
-                  children: [
-                    for (var index = 0; index < roasts.length; index++) ...[
-                      _HistoryRow(
-                        roast: roasts[index],
-                        persona: _personaFor(roasts[index]),
-                        onShare: () => onShareRoast(roasts[index]),
-                      ),
-                      if (index != roasts.length - 1)
-                        const Divider(
-                          height: 1,
-                          color: DMColors.divider,
+        if (containsActualContent && actualRoasts.isNotEmpty)
+          for (var index = 0; index < actualRoasts.length; index++) ...[
+            DmGlassCard(
+              gradient: DMGradients.glassNavy,
+              borderColor: DMColors.glassBorder,
+              padding: EdgeInsets.zero,
+              child: _HistoryRow(
+                roast: actualRoasts[index],
+                persona: _personaFor(actualRoasts[index]),
+                onShare: () => onShareRoast(actualRoasts[index]),
+                showFullText: true,
+              ),
+            ),
+            if (index == 3)
+              AdSection(
+                  placement: AdPlacement.roastsHistoryMrec,
+                  contentCount: actualRoasts.length),
+            if (index < actualRoasts.length - 1)
+              const SizedBox(height: DMSpacing.sm),
+          ]
+        else
+          DmGlassCard(
+            gradient: DMGradients.glassNavy,
+            borderColor: DMColors.glassBorder,
+            padding: EdgeInsets.zero,
+            child: roasts.isEmpty
+                ? const _EmptyHistory()
+                : Column(
+                    children: [
+                      for (var index = 0; index < roasts.length; index++) ...[
+                        _HistoryRow(
+                          roast: roasts[index],
+                          persona: _personaFor(roasts[index]),
+                          onShare: () => onShareRoast(roasts[index]),
                         ),
+                        if (index != roasts.length - 1)
+                          const Divider(
+                            height: 1,
+                            color: DMColors.divider,
+                          ),
+                      ],
                     ],
-                  ],
-                ),
-        ),
+                  ),
+          ),
       ],
     );
   }
@@ -84,11 +115,13 @@ class _HistoryRow extends StatelessWidget {
     required this.roast,
     required this.persona,
     required this.onShare,
+    this.showFullText = false,
   });
 
   final Roast roast;
   final Persona persona;
   final VoidCallback onShare;
+  final bool showFullText;
 
   @override
   Widget build(BuildContext context) {
@@ -118,8 +151,8 @@ class _HistoryRow extends StatelessWidget {
                 const SizedBox(height: DMSpacing.xs),
                 Text(
                   roast.text,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: showFullText ? null : 3,
+                  overflow: showFullText ? null : TextOverflow.ellipsis,
                   style: DMTypography.body,
                 ),
               ],

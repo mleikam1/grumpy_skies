@@ -1,3 +1,4 @@
+import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_radius.dart';
@@ -204,7 +205,8 @@ class _HourlyTile extends StatelessWidget {
             ),
             const SizedBox(height: DMSpacing.xs),
             Text(
-              '${hour.temperatureF.round()}°',
+              forecastTemperature(
+                  hour.temperatureC, forecastTemperatureUnit(context)),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -212,7 +214,9 @@ class _HourlyTile extends StatelessWidget {
             ),
             const SizedBox(height: DMSpacing.xxs),
             Text(
-              '${hour.precipitationChance}% rain',
+              hour.precipitationChanceKnown
+                  ? '${hour.precipitationChance}% rain'
+                  : 'Rain unavailable',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

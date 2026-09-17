@@ -14,6 +14,7 @@ import 'package:grumpy_skies/features/fun/meme/platform/meme_export_service.dart
 import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
 import 'package:grumpy_skies/features/fun/meme/storage/meme_backend_io.dart';
 import 'package:grumpy_skies/features/fun/meme/storage/meme_store.dart';
+import 'package:grumpy_skies/features/fun/meme/widgets/meme_inspector.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,14 @@ void main() {
     await tester.ensureVisible(find.text('Blank Canvas'));
     await tester.tap(find.text('Blank Canvas'));
     await tester.pumpAndSettle();
-    final caption = find.byType(TextField).first;
+    // The tablet editor puts Project name before its caption inspector. Pick
+    // the actual caption by its label so the same flow validates every layout.
+    final caption = find
+        .descendant(
+            of: find.byWidgetPredicate((widget) =>
+                widget is CaptionInput && widget.label == 'Top caption'),
+            matching: find.byType(TextField))
+        .first;
     await tester.ensureVisible(caption);
     await tester.enterText(caption, 'MY FORECAST HAS OPINIONS');
     await tester.pump(const Duration(milliseconds: 900));
@@ -49,12 +57,14 @@ void main() {
     expect(
         saved.layers.any((layer) => layer.text == 'MY FORECAST HAS OPINIONS'),
         isTrue);
+    debugPrint('MEME_DRAFT_SAVED');
 
     // Recreate the repository and editor: no plugin channels are mocked.
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
     final restarted = MemeStore(FileMemeBackend(directory: verification));
     expect((await restarted.load(saved.id))!.toJson(), saved.toJson());
+    debugPrint('MEME_DRAFT_RESTART_VERIFIED');
     final catalog = await MemeCatalog.load();
     final background =
         (await rootBundle.load(catalog.templates.first.assetPath))
@@ -68,6 +78,7 @@ void main() {
     final reopenedStore = MemeStore(FileMemeBackend(directory: verification));
     final reopened = (await reopenedStore.load(photoDraft.id))!;
     expect(await reopenedStore.missingMedia(reopened), isEmpty);
+    debugPrint('MEME_IMPORTED_PHOTO_RESTART_VERIFIED');
     final images = MemeImageCache(
         (ref) => reopenedStore.getMedia(ref.replaceFirst('media:', '')));
     for (final layout in [
@@ -84,6 +95,7 @@ void main() {
       expect(header.getUint32(20), layout.pixelHeight);
       await File('${verification.path}/native_${layout.name}.png')
           .writeAsBytes(png);
+      debugPrint('MEME_PNG_VERIFIED=${layout.name}');
     }
     images.dispose();
     final backup = await reopenedStore.exportBackup(reopened);
@@ -91,6 +103,7 @@ void main() {
         .writeAsBytes(backup);
     final imported = await reopenedStore.importBackup(backup);
     expect(await reopenedStore.missingMedia(imported), isEmpty);
+    debugPrint('MEME_BACKUP_IMPORT_VERIFIED');
 
     await tester.pumpWidget(MaterialApp(
         theme: ThemeData.dark(useMaterial3: true),
@@ -116,13 +129,22 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 200));
     expect(find.text('Image saved to Photos.'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    if (Platform.isAndroid) {
-      await binding.convertFlutterSurfaceToImage();
-      await tester.pumpAndSettle();
+    debugPrint('MEME_PHOTOS_SAVE_VERIFIED');
+    try {
+      if (Platform.isAndroid) {
+        await binding.convertFlutterSurfaceToImage();
+        await tester.pumpAndSettle();
+      }
+      final screenshot =
+          await binding.takeScreenshot('meme_native_export_saved');
+      await File('${verification.path}/native_export_screen.png')
+          .writeAsBytes(screenshot);
+    } on MissingPluginException catch (error) {
+      // Some native test runners omit the optional screenshot channel. The
+      // product flow and actual PNG/Photos assertions above must still pass;
+      // record this capture limitation so the host can retain a device capture.
+      debugPrint('MEME_TEST_SCREENSHOT_UNAVAILABLE=$error');
     }
-    final screenshot = await binding.takeScreenshot('meme_native_export_saved');
-    await File('${verification.path}/native_export_screen.png')
-        .writeAsBytes(screenshot);
     // Opt-in host-assisted check: opens the real OS sheet without choosing a
     // recipient. Dismiss the native sheet within three minutes (Android Back or
     // iOS Close). The default integration run is otherwise unattended.

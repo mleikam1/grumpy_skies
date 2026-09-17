@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'privacy_information.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/app_routes.dart';
@@ -461,24 +462,24 @@ class _LegalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _LinkSectionCard(
+    return _LinkSectionCard(
       title: 'Legal',
       children: [
         _FutureLinkRow(
           icon: Icons.privacy_tip_outlined,
           accentColor: DMColors.lavenderGlass,
-          title: 'Privacy Policy',
-          subtitle: 'Future policy link',
-          onTap: null,
+          title: 'Privacy information',
+          subtitle: 'How this development build handles data',
+          onTap: () => showPrivacyInformation(context),
         ),
-        _FutureLinkRow(
+        const _FutureLinkRow(
           icon: Icons.description_outlined,
           accentColor: DMColors.mintGreen,
           title: 'Terms of Use',
           subtitle: 'Future terms link',
           onTap: null,
         ),
-        _FutureLinkRow(
+        const _FutureLinkRow(
           icon: Icons.library_books_outlined,
           accentColor: DMColors.sunriseAmber,
           title: 'Licenses',

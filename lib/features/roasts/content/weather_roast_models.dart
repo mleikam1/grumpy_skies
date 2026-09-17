@@ -1,3 +1,4 @@
+import '../../../models/temperature_unit.dart';
 import '../../../models/weather_models.dart';
 
 const supportedWeatherRoastPersonas = <String>{
@@ -288,8 +289,10 @@ class WeatherRoastContext {
     required this.daypart,
     required this.tags,
     this.conditionCode,
+    this.temperatureUnit = TemperatureUnit.fahrenheit,
   });
 
+  final TemperatureUnit temperatureUnit;
   final String city;
   final int tempF;
   final int feelsLikeF;
@@ -304,6 +307,7 @@ class WeatherRoastContext {
   factory WeatherRoastContext.fromWeatherBundle(
     WeatherBundle weather, {
     DateTime? now,
+    TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit,
   }) {
     final current = weather.current;
     final observedAt = now ?? current.displayUpdatedAt;
@@ -398,6 +402,7 @@ class WeatherRoastContext {
 
     return WeatherRoastContext(
       city: _cityName(current.locationName),
+      temperatureUnit: temperatureUnit,
       tempF: tempF,
       feelsLikeF: feelsLikeF,
       condition: current.condition,
@@ -410,12 +415,17 @@ class WeatherRoastContext {
     );
   }
 
+  String _displayTemperature(int fahrenheit) =>
+      temperatureUnit == TemperatureUnit.celsius
+          ? ((fahrenheit - 32) * 5 / 9).round().toString()
+          : fahrenheit.toString();
+
   String render(String template) {
     final values = <String, String>{
       'city': city.trim().isEmpty ? 'your area' : city,
-      'temp': tempF.toString(),
-      'temp_unit': '°F',
-      'feels_like': feelsLikeF.toString(),
+      'temp': _displayTemperature(tempF),
+      'temp_unit': '°${temperatureUnit.suffix}',
+      'feels_like': _displayTemperature(feelsLikeF),
       'condition': condition.trim().isEmpty ? 'weather' : condition,
       'humidity': humidity.toString(),
       'wind_mph': windMph.round().toString(),

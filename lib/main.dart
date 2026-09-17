@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'monetization/ad_config.dart';
+import 'monetization/monetization_controller.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'app/daymaker_router.dart';
 import 'features/fun/meme/meme_weather.dart';
 import 'features/roasts/content/roast_pack_repository.dart';
 import 'repositories/open_weather_repository.dart';
@@ -42,9 +46,25 @@ void main() async {
   final xpService = await XpService.create();
   final achievementService = await AchievementService.create();
 
+  final monetization = MonetizationController(
+    config: AdConfig.fromEnvironment(),
+    weather: locationController,
+    personaId: () => settingsController.selectedPersonaId,
+  );
+
+  // Gate-only router observation closes async presentation races for browser
+  // history/deep links. Presentation remains exclusive to the explicit Done API.
+  daymakerRouter.routerDelegate.addListener(() {
+    monetization.setRoute(
+        daymakerRouter.routerDelegate.currentConfiguration.uri.path,
+        deferNotification: true);
+  });
+
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<MonetizationController>.value(
+            value: monetization),
         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
         Provider<WeatherRepository>.value(value: weatherRepository),
         Provider<CacheService>.value(value: weatherCache),
@@ -67,4 +87,7 @@ void main() async {
       child: const GrumpySkiesApp(),
     ),
   );
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(monetization.start());
+  });
 }

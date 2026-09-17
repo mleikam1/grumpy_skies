@@ -10,11 +10,13 @@ class CacheService {
 
   final SharedPreferences _prefs;
 
-  CacheService._(this._prefs);
+  final DateTime Function() _clock;
 
-  static Future<CacheService> create() async {
+  CacheService._(this._prefs, this._clock);
+
+  static Future<CacheService> create({DateTime Function()? clock}) async {
     final prefs = await SharedPreferences.getInstance();
-    return CacheService._(prefs);
+    return CacheService._(prefs, clock ?? DateTime.now);
   }
 
   String _weatherKeyForLocation(double lat, double lon) =>
@@ -32,7 +34,7 @@ class CacheService {
     final tsKey = _tsKeyForLocation(lat, lon);
 
     await _prefs.setString(key, jsonEncode(bundle.toJson()));
-    await _prefs.setString(tsKey, DateTime.now().toIso8601String());
+    await _prefs.setString(tsKey, _clock().toIso8601String());
   }
 
   WeatherBundle? getWeatherBundle(double lat, double lon) {

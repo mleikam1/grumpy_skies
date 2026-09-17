@@ -24,7 +24,8 @@ void main() {
     picture.dispose();
   });
 
-  Future<void> show(WidgetTester tester, _Store store, _Adapter adapter) async {
+  Future<void> show(WidgetTester tester, _Store store, _Adapter adapter,
+      {VoidCallback? onDone}) async {
     tester.view.physicalSize = const Size(1000, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -35,9 +36,51 @@ void main() {
       png: png,
       exports: MemeExportService(adapter: adapter),
       store: store,
+      onDone: onDone,
     )));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('only a received image result enables explicit Done once',
+      (tester) async {
+    var done = 0;
+    final store = _Store();
+    final adapter = _Adapter();
+    await show(tester, store, adapter, onDone: () => done++);
+    expect(find.text('Done / Back to Fun'), findsNothing);
+    await tester.tap(find.text('Save Project Backup'));
+    await tester.pumpAndSettle();
+    expect(find.text('Done / Back to Fun'), findsNothing,
+        reason: 'A project backup alone is not a completed rendered meme.');
+    await tester.tap(find.text('Share'));
+    await tester.pumpAndSettle();
+    expect(find.text('Done / Back to Fun'), findsNothing,
+        reason: 'A cancelled share is not completion.');
+    await tester.tap(find.text('Save Image'));
+    await tester.pumpAndSettle();
+    expect(find.text('Image saved to Photos.'), findsOneWidget);
+    expect(find.text('Done / Back to Fun'), findsOneWidget);
+    expect(done, 0,
+        reason: 'Saving or returning from sharing cannot navigate.');
+    await tester.tap(find.text('Done / Back to Fun'));
+    await tester.pump();
+    await tester.tap(find.text('Done / Back to Fun'));
+    expect(done, 1, reason: 'The explicit completion transition is consumed.');
+  });
+
+  testWidgets('failed or denied image transfer never enables Done',
+      (tester) async {
+    var done = 0;
+    final adapter = _Adapter()
+      ..imageResult = const MemeTransferResult(
+          MemeTransferStatus.denied, 'Photo permission denied.');
+    await show(tester, _Store(), adapter, onDone: () => done++);
+    await tester.tap(find.text('Save Image'));
+    await tester.pumpAndSettle();
+    expect(find.text('Photo permission denied.'), findsOneWidget);
+    expect(find.text('Done / Back to Fun'), findsNothing);
+    expect(done, 0);
+  });
 
   testWidgets('PNG saves while the independent project backup is pending',
       (tester) async {
@@ -141,12 +184,13 @@ class _Adapter implements MemeExportAdapter {
   int savedImages = 0, savedBackups = 0, shares = 0;
   Uint8List? sharedBytes;
   Rect? origin;
+  MemeTransferResult imageResult = const MemeTransferResult(
+      MemeTransferStatus.saved, 'Image saved to Photos.');
 
   @override
   Future<MemeTransferResult> savePng(Uint8List bytes, String fileName) async {
     savedImages++;
-    return const MemeTransferResult(
-        MemeTransferStatus.saved, 'Image saved to Photos.');
+    return imageResult;
   }
 
   @override

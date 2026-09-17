@@ -1,3 +1,4 @@
+import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_radius.dart';
@@ -196,7 +197,7 @@ class _DailyTile extends StatelessWidget {
           ),
           const SizedBox(height: DMSpacing.xs),
           Text(
-            '${day.maxTempF.round()}° / ${day.minTempF.round()}°',
+            '${forecastTemperature(day.maxTempC, forecastTemperatureUnit(context))} / ${forecastTemperature(day.minTempC, forecastTemperatureUnit(context))}',
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

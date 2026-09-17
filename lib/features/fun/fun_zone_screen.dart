@@ -9,8 +9,9 @@ import '../../design/dm_radius.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../shared/widgets/daymaker_components.dart';
+import '../../monetization/ad_placement.dart';
+import '../../monetization/widgets/ad_section.dart';
 import 'widgets/fun_feature_tile.dart';
-import 'widgets/fun_poll_results.dart';
 import 'widgets/fun_wheel_visual.dart';
 
 class FunZoneScreen extends StatefulWidget {
@@ -42,24 +43,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     'Humidity Headliner',
   ];
 
-  static const _pollOptions = [
-    FunPollOption(
-      label: 'Sunny',
-      percent: 56,
-      color: DMColors.sunriseYellow,
-    ),
-    FunPollOption(
-      label: 'Cloudy',
-      percent: 28,
-      color: DMColors.lavenderGlass,
-    ),
-    FunPollOption(
-      label: 'Rainy',
-      percent: 16,
-      color: DMColors.rainTeal,
-    ),
-  ];
-
   var _fortuneIndex = -1;
   var _predictionIndex = -1;
   var _menaceIndex = -1;
@@ -88,11 +71,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       _hasFoundMenace = true;
       _menaceIndex = (_menaceIndex + 1) % _menaces.length;
     });
-  }
-
-  void _showPollVoteMessage() {
-    // TODO(haptics): Add selection feedback once poll votes persist.
-    _showSnackBar('Vote counted for today.');
   }
 
   void _showSnackBar(String message) {
@@ -170,8 +148,8 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
         SizedBox(height: gap),
         _fortuneTile(),
         SizedBox(height: gap),
-        _pollTile(),
-        SizedBox(height: gap),
+        if (_hasCrackedFortune)
+          const AdSection(placement: AdPlacement.funHubMrec),
         _predictorTile(),
         SizedBox(height: gap),
         _menaceTile(),
@@ -188,19 +166,14 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
         SizedBox(height: gap),
         _fortuneTile(),
         SizedBox(height: gap),
-        GridView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: gap,
-            mainAxisSpacing: gap,
-            mainAxisExtent: 500,
-          ),
+        if (_hasCrackedFortune)
+          const AdSection(placement: AdPlacement.funHubMrec),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _pollTile(),
-            _predictorTile(compactWheel: true),
-            _menaceTile(),
+            Expanded(child: _predictorTile(compactWheel: true)),
+            SizedBox(width: gap),
+            Expanded(child: _menaceTile()),
           ],
         ),
       ],
@@ -215,13 +188,11 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
         SizedBox(height: gap),
         _fortuneTile(),
         SizedBox(height: gap),
+        if (_hasCrackedFortune)
+          const AdSection(placement: AdPlacement.funHubMrec),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: _pollTile(minHeight: 278),
-            ),
-            SizedBox(width: gap),
             Expanded(
               child: _predictorTile(minHeight: 380),
             ),
@@ -247,7 +218,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     return FunFeatureTile(
       icon: Icons.auto_awesome_rounded,
       title: 'Weather Fortune Cookie',
-      subtitle: 'Crack a cookie. Get a weather reveal.',
+      subtitle: 'Crack a cookie. Get a playful fortune, just for fun.',
       actionLabel: 'Crack One',
       actionSemanticLabel: 'Crack fortune cookie',
       onAction: _crackFortune,
@@ -273,32 +244,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     );
   }
 
-  Widget _pollTile({double? minHeight}) {
-    return FunFeatureTile(
-      icon: Icons.poll_outlined,
-      title: 'Daily Weather Poll',
-      actionLabel: 'Vote Now',
-      actionSemanticLabel: 'Vote in daily weather poll',
-      onAction: _showPollVoteMessage,
-      accentColor: DMColors.mintGreen,
-      minHeight: minHeight,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const FunPollResults(options: _pollOptions),
-          const SizedBox(height: DMSpacing.md),
-          Text(
-            '1,842 votes',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DMTypography.label.copyWith(color: DMColors.skyBlueSoft),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _predictorTile({
     bool compactWheel = false,
     double? minHeight,
@@ -306,6 +251,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     return FunFeatureTile(
       icon: Icons.cyclone_outlined,
       title: 'Crazy Day Predictor',
+      subtitle: 'Imaginary odds, just for fun.',
       actionLabel: 'Spin Now',
       actionSemanticLabel: 'Spin crazy day predictor',
       onAction: _spinPrediction,

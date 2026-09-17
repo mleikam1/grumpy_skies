@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
+import 'package:grumpy_skies/data/daymaker_sample_data.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
@@ -31,8 +32,10 @@ void main() {
       ],
       child: MaterialApp(
         theme: DMTheme.light,
-        home: const ForecastScreen(
+        home: ForecastScreen(
           weatherRepository: repository,
+          clock: () =>
+              DayMakerSampleData.observedAt.add(const Duration(minutes: 10)),
         ),
       ),
     );
@@ -54,7 +57,7 @@ void main() {
     expect(find.text('Demo City'), findsOneWidget);
     expect(find.text('Partly Cloudy'), findsWidgets);
     expect(find.text('72°F'), findsOneWidget);
-    expect(find.text('Last updated 10 min ago'), findsOneWidget);
+    expect(find.text('Observed 10 min ago'), findsOneWidget);
     expect(find.text('Karen'), findsOneWidget);
     expect(find.text('ROAST QUEEN'), findsOneWidget);
     expect(
@@ -63,7 +66,7 @@ void main() {
     );
     expect(find.text('38% rain'), findsWidgets);
     expect(find.text('82 Moderate'), findsWidgets);
-    expect(find.text('74° Comfortable'), findsOneWidget);
+    expect(find.text('74°'), findsWidgets);
     expect(find.text('7-day forecast'), findsOneWidget);
     await tester.ensureVisible(find.text('Weather data © OpenWeather'));
     expect(find.text('Weather data © OpenWeather'), findsOneWidget);

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/app_routes.dart';
+import '../../monetization/monetization_controller.dart';
 import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
@@ -18,6 +19,7 @@ import '../../shared/widgets/dm_app_background.dart';
 import '../../shared/widgets/dm_buttons.dart';
 import '../../shared/widgets/dm_segmented_control.dart';
 import 'widgets/dm_settings_row.dart';
+import 'privacy_information.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -379,19 +381,9 @@ class _AppColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SettingsSection(
-          title: 'Show Ads / Premium',
-          child: DmSettingsRow(
-            icon: Icons.workspace_premium_rounded,
-            accentColor: DMColors.sunriseYellow,
-            title: 'Premium Active',
-            subtitle: 'Ads are hidden and DayMaker is all yours.',
-            trailing: const _Chevron(),
-            onTap: () => _showSnackBar(
-              context,
-              'Premium settings are coming soon.',
-            ),
-          ),
+        const _SettingsSection(
+          title: 'Advertising & privacy',
+          child: _AdvertisingSettings(),
         ),
         SizedBox(height: gap),
         _SettingsSection(
@@ -541,5 +533,37 @@ class _Chevron extends StatelessWidget {
       color: DMColors.textMuted,
       size: 28,
     );
+  }
+}
+
+class _AdvertisingSettings extends StatelessWidget {
+  const _AdvertisingSettings();
+  @override
+  Widget build(BuildContext context) {
+    final ads = context.watch<MonetizationController?>();
+    return Column(children: [
+      DmSettingsRow(
+          icon: Icons.privacy_tip_outlined,
+          accentColor: DMColors.sunriseYellow,
+          title: 'Advertising status',
+          subtitle: ads?.statusDescription ??
+              'Advertising is disabled in this build.',
+          trailing: const SizedBox.shrink()),
+      DmSettingsRow(
+          icon: Icons.info_outline,
+          accentColor: DMColors.rainTeal,
+          title: 'Privacy information',
+          subtitle: 'Location, local memes, and advertising data.',
+          trailing: const _Chevron(),
+          onTap: () => showPrivacyInformation(context)),
+      if (ads?.privacyOptionsRequired == true)
+        DmSettingsRow(
+            icon: Icons.tune,
+            accentColor: DMColors.skyBlue,
+            title: 'Ad privacy choices',
+            subtitle: 'Review the choices offered for your region.',
+            trailing: const _Chevron(),
+            onTap: () => ads!.showPrivacyOptions()),
+    ]);
   }
 }

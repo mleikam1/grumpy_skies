@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Saving a meme to Pictures only needs this on Android 10 and earlier. -->
@@ -8,6 +9,9 @@
         android:label="grumpy_skies"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Official Google demo app ID by default; no requests unless Dart gates pass. -->
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="${daymakerAdMobAppId}" />
+        <meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

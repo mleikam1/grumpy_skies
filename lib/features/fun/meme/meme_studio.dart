@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../config/app_routes.dart';
 import '../../../design/dm_colors.dart';
 import '../../../models/temperature_unit.dart';
+import '../../../monetization/monetization_controller.dart';
 import '../../../services/cache_service.dart';
 import '../../../services/settings_controller.dart';
 import '../../../services/weather_location_controller.dart';
@@ -147,14 +148,18 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
-  Future<void> _guard(Future<void> Function() action) async {
+  Future<void> _guard(Future<void> Function() action,
+      {bool holdOperation = true}) async {
     if (_busy) return;
+    final monetization = context.read<MonetizationController?>();
+    if (holdOperation) monetization?.beginOperation();
     setState(() => _busy = true);
     try {
       await action();
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
+      if (holdOperation) monetization?.endOperation();
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -407,13 +412,46 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
   }
 
   Future<void> _export() async {
-    await _save();
     final d = _editor!.document;
-    final png = await exportMemePng(d, _images);
-    if (!mounted) return;
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => MemeExportPreview(
-            document: d, png: png, exports: _exports, store: _store)));
+    final monetization = context.read<MonetizationController?>();
+    monetization?.beginOperation();
+    var completedTransition = false;
+    try {
+      if (!await _save()) return;
+      final png = await exportMemePng(d, _images);
+      if (!mounted) return;
+      final route = MaterialPageRoute<bool>(
+          builder: (previewContext) => MemeExportPreview(
+              document: d,
+              png: png,
+              exports: _exports,
+              store: _store,
+              onDone: () => Navigator.pop(previewContext, true)));
+      completedTransition = await Navigator.of(context).push(route) ?? false;
+      // Complete the normal result-page dismissal and detach every save/share
+      // control before offering the explicit transition. Never wait for inventory.
+      if (completedTransition) await route.completed;
+    } finally {
+      monetization?.endOperation();
+    }
+    if (!completedTransition || !mounted) return;
+    var continued = false;
+    void continueNavigation() {
+      if (continued) return;
+      continued = true;
+      if (mounted) context.go(AppRoutes.fun);
+    }
+
+    if (monetization == null) {
+      continueNavigation();
+    } else {
+      try {
+        await monetization.completeMemeTransition(
+            continueNavigation: continueNavigation);
+      } catch (_) {
+        continueNavigation();
+      }
+    }
   }
 
   Future<void> _back() async {
@@ -571,7 +609,9 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
                         onPressed: () => _save(announce: true),
                         child: const Text('Save Draft')),
                     FilledButton.icon(
-                        onPressed: _busy ? null : () => _guard(_export),
+                        onPressed: _busy
+                            ? null
+                            : () => _guard(_export, holdOperation: false),
                         icon: const Icon(Icons.ios_share, size: 18),
                         label: const Text('Export'))
                   ]),
@@ -730,16 +770,23 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
       onRoast: () => _guard(_currentRoast),
       onReroll: () => _guard(_reroll),
       onUpdateWeather: (city) => _guard(() => _updateWeather(city)));
-  void _openTools(String section) {
-    showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        showDragHandle: true,
-        builder: (c) => Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(c).bottom),
-            child: SizedBox(
-                height: MediaQuery.sizeOf(c).height * .7,
-                child: _inspector(section))));
+  Future<void> _openTools(String section) async {
+    final monetization = context.read<MonetizationController?>();
+    monetization?.beginOperation();
+    try {
+      await showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          showDragHandle: true,
+          builder: (c) => Padding(
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(c).bottom),
+              child: SizedBox(
+                  height: MediaQuery.sizeOf(c).height * .7,
+                  child: _inspector(section))));
+    } finally {
+      monetization?.endOperation();
+    }
   }
 }
