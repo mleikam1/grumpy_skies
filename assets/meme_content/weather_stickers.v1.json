@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "packId": "daymaker_weather_stickers_v1",
+  "stickers": [
+    {
+      "id": "side_eye_cloud",
+      "name": "Side Eye Cloud",
+      "assetPath": "assets/meme_stickers/side_eye_cloud.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/side_eye_cloud.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "5bc4496aa31d7ee4b0fbe32f619e2e44a2424df55a3b6d0c3bd01814394fa7f9"
+    },
+    {
+      "id": "smug_sun",
+      "name": "Smug Sun",
+      "assetPath": "assets/meme_stickers/smug_sun.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/smug_sun.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "9bab20833a6b40c46070972c8caf6d23ae13c3ccdb10b077856b71aafb5190f7"
+    },
+    {
+      "id": "rain_drop",
+      "name": "Rain Drop",
+      "assetPath": "assets/meme_stickers/rain_drop.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/rain_drop.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "0a7008e2dc993a48e1a9600e77af80f5ca0fe6a3fde06865e2f155740c72b900"
+    },
+    {
+      "id": "lightning_bolt",
+      "name": "Lightning Bolt",
+      "assetPath": "assets/meme_stickers/lightning_bolt.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/lightning_bolt.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "bc5828cc819c337583d32958344ddda54c9296bb2bc3355e57ae94f09e35a21f"
+    },
+    {
+      "id": "tiny_umbrella",
+      "name": "Tiny Umbrella",
+      "assetPath": "assets/meme_stickers/tiny_umbrella.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/tiny_umbrella.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "1e1049203cde9be79582699f476965f826448d1f005c76dc46ca5771507d392e"
+    },
+    {
+      "id": "snowflake",
+      "name": "Snowflake",
+      "assetPath": "assets/meme_stickers/snowflake.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/snowflake.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "3136e264dd746ae20357ebb546cdd220116355c2e1acd898946c0e97d15898c0"
+    },
+    {
+      "id": "wind_swoosh",
+      "name": "Wind Swoosh",
+      "assetPath": "assets/meme_stickers/wind_swoosh.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/wind_swoosh.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "d3c478c10a43af505acad97087e18bdc156908edca1554cec5b1fc4f4be44054"
+    },
+    {
+      "id": "coffee_cup",
+      "name": "Coffee Cup",
+      "assetPath": "assets/meme_stickers/coffee_cup.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/coffee_cup.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "3ab159eaf77c79fe31d173852b1fc1b4f58752bcfdc206b8e206e2f0db312ce0"
+    },
+    {
+      "id": "sunglasses",
+      "name": "Sunglasses",
+      "assetPath": "assets/meme_stickers/sunglasses.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/sunglasses.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "e6cb7a17069ecc02380e84c83f922e629cfdb826d51443580f9e02b9d19a2bd9"
+    },
+    {
+      "id": "pollen_orb",
+      "name": "Pollen Orb",
+      "assetPath": "assets/meme_stickers/pollen_orb.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/pollen_orb.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "7d2fb02a52fb0304ba83715a42adf32acfb1bafb037d67199f4813ffe975c6d3"
+    },
+    {
+      "id": "rainbow",
+      "name": "Rainbow",
+      "assetPath": "assets/meme_stickers/rainbow.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/rainbow.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "61d02679f6e2f6f0c8ae1bb62118e39cfd5b4c6cfe493798908d559160811253"
+    },
+    {
+      "id": "loading_ring",
+      "name": "Loading Ring",
+      "assetPath": "assets/meme_stickers/loading_ring.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/loading_ring.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "145530af51f31de8eaaad2dc23c723daeaf32ffc70080619d05423a073ed4db2"
+    },
+    {
+      "id": "sparkle",
+      "name": "Sparkle",
+      "assetPath": "assets/meme_stickers/sparkle.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/sparkle.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "c27adfae5cc92225d29335d348621028e960cede1dcebcc5b07b9d96872019e6"
+    },
+    {
+      "id": "wet_sock",
+      "name": "Wet Sock",
+      "assetPath": "assets/meme_stickers/wet_sock.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/wet_sock.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "0532663fd2530904b810fd5bfb48f856875d0fbb91a43e43ecfb2d63302e41d2"
+    },
+    {
+      "id": "melting_popsicle",
+      "name": "Melting Popsicle",
+      "assetPath": "assets/meme_stickers/melting_popsicle.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/melting_popsicle.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "62d2cb6d1f96b61bb7efc1f7b57d29e53465cd941dd16507ed2daf74b5246acd"
+    },
+    {
+      "id": "party_cloud",
+      "name": "Party Cloud",
+      "assetPath": "assets/meme_stickers/party_cloud.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/party_cloud.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "847527744583cc49b27f3fb6c6cc93096c5f9176d95ef77b8e69ebf52ac62710"
+    },
+    {
+      "id": "thermometer",
+      "name": "Thermometer",
+      "assetPath": "assets/meme_stickers/thermometer.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/thermometer.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "3ee00c0ba93fe72ef573f789eafda7ee93deea2ce514767d313676436046e7b0"
+    },
+    {
+      "id": "flying_hat",
+      "name": "Flying Hat",
+      "assetPath": "assets/meme_stickers/flying_hat.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/flying_hat.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "4722fc1efaa8d662e10f3a45b98e3b3bb5f41644a10fc4b3ccc8073e03352863"
+    },
+    {
+      "id": "splash",
+      "name": "Splash",
+      "assetPath": "assets/meme_stickers/splash.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/splash.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "fe8e709f467bf6e6b78912dfbe42b7939b389a19298f4da8e2ea415dc97bb6a0"
+    },
+    {
+      "id": "hot_toast",
+      "name": "Hot Toast",
+      "assetPath": "assets/meme_stickers/hot_toast.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/hot_toast.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "fe91deecd67d5ff26edfe4e7cebf1c64a76746078ba4eaa196032a75fb7972b5"
+    },
+    {
+      "id": "speech_bubble",
+      "name": "Speech Bubble",
+      "assetPath": "assets/meme_stickers/speech_bubble.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/speech_bubble.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "77ebcb16e68b9e09ec82708edf2ad9efe0f41d8931fa21fd10e75226525db688"
+    },
+    {
+      "id": "thought_bubble",
+      "name": "Thought Bubble",
+      "assetPath": "assets/meme_stickers/thought_bubble.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/thought_bubble.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "71491b7e4a73400b5f7652ff08d015430af9089c33c5c141828a5fcc533d87c8"
+    },
+    {
+      "id": "tissue_box",
+      "name": "Tissue Box",
+      "assetPath": "assets/meme_stickers/tissue_box.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/tissue_box.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "7572f83f4bd2d28db9bf0ba9e7c0bda90b9c1eab743512dd788f1e16ad1412ca"
+    },
+    {
+      "id": "cloud_heart",
+      "name": "Cloud Heart",
+      "assetPath": "assets/meme_stickers/cloud_heart.png",
+      "width": 512,
+      "height": 512,
+      "sourceSvgPath": "source_svg/stickers/cloud_heart.svg",
+      "provenance": "Original programmatic illustration for this request",
+      "sha256": "d635a28f5fb6ae7d02ae033d830f1aab2893621b23be993a95f08b1e4f3f7ce2"
+    }
+  ]
+}

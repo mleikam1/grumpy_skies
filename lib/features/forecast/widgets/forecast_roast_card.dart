@@ -17,12 +17,16 @@ class ForecastRoastCard extends StatelessWidget {
     required this.roast,
     required this.onNewRoast,
     required this.onShare,
+    this.onShareToMeme,
+    this.sourceLabel,
   });
 
   final Persona persona;
   final Roast roast;
   final VoidCallback onNewRoast;
   final VoidCallback onShare;
+  final VoidCallback? onShareToMeme;
+  final String? sourceLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +69,10 @@ class ForecastRoastCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: DMSpacing.lg),
+          if (sourceLabel != null) ...[
+            Text(sourceLabel!, style: DMTypography.labelSmall),
+            const SizedBox(height: DMSpacing.xs),
+          ],
           Text(
             roast.text,
             style: DMTypography.headingMedium.copyWith(height: 1.18),
@@ -74,6 +82,14 @@ class ForecastRoastCard extends StatelessWidget {
             spacing: DMSpacing.sm,
             runSpacing: DMSpacing.sm,
             children: [
+              if (onShareToMeme != null)
+                DmPillButton(
+                  label: 'Share to Meme',
+                  semanticLabel: 'Make a meme with this exact displayed roast',
+                  leading: const Icon(Icons.add_photo_alternate_outlined),
+                  variant: DmPillButtonVariant.glass,
+                  onPressed: onShareToMeme!,
+                ),
               DmPillButton(
                 label: 'New Roast',
                 semanticLabel: 'Show a new weather roast',

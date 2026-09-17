@@ -15,6 +15,14 @@ dependencies:
   shared_preferences: ^2.2.3
   geolocator: ^14.0.2
   crypto: ^3.0.7
+  # Local meme documents, personal media, and platform export (no backend).
+  path_provider: ^2.1.6
+  idb_shim: ^2.9.9
+  image_picker: ^1.2.3
+  share_plus: 11.1.0
+  file_selector: ^1.1.0
+  gal: ^2.3.3
+  web: ^1.1.1
 
   # State mgmt (simple)
   provider: ^6.1.2
@@ -30,13 +38,24 @@ dependencies:
   weather_icons_animated: ^0.0.2
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: MemeSans
+      fonts:
+        - asset: assets/fonts/Nunito.ttf
+    - family: MemeMono
+      fonts:
+        - asset: assets/fonts/SpaceMono-Bold.ttf
+          weight: 700
   assets:
+    - assets/fonts/
     - assets/
     - assets/backgrounds/about/
     - assets/backgrounds/forecast/
@@ -60,6 +79,8 @@ flutter:
     - assets/mascots/
     - assets/meme_backgrounds/
     - assets/meme_stickers/
+    - assets/meme_thumbnails/
+    - assets/meme_content/
     - assets/personas/
     - assets/radar/
     - assets/roasts/roast_pack_v1.json

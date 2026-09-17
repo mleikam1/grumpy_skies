@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
-import 'package:grumpy_skies/features/fun/widgets/meme_canvas.dart';
+import 'package:grumpy_skies/features/fun/meme/widgets/meme_document_canvas.dart';
+import 'package:grumpy_skies/features/fun/meme/widgets/meme_inspector.dart';
+import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
 import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
@@ -108,56 +110,63 @@ void main() {
       );
     });
 
-    testWidgets('meme text field updates preview', (tester) async {
+    testWidgets('meme route opens the library and edits a blank caption',
+        (tester) async {
       await tester.pumpDayMakerRoute(
         initialLocation: AppRoutes.memeGenerator,
       );
-
-      await _scrollMemeGeneratorUntilTextVisible(tester, 'Top Text');
-      await tester.enterText(find.byType(TextField).at(0), 'storm mode');
-      await tester.enterText(find.byType(TextField).at(1), 'bring snacks');
+      expect(
+          tester
+              .widget<MemeLibrary>(find.byType(MemeLibrary))
+              .catalog
+              .templates,
+          hasLength(15));
+      await _scrollMemeGeneratorUntilVisible(tester, find.text('Blank Canvas'));
+      await tester.tap(find.text('Blank Canvas'));
       await tester.pumpAndSettle();
-
+      final editor = tester
+          .widget<MemeDocumentCanvas>(find.byType(MemeDocumentCanvas))
+          .editor;
+      final field = find.descendant(
+        of: find.byWidgetPredicate((widget) =>
+            widget is CaptionInput && widget.label == 'Top caption'),
+        matching: find.byType(TextField),
+      );
+      await _scrollMemeGeneratorUntilVisible(tester, field);
+      await tester.enterText(field, 'storm mode');
+      await tester.pump();
+      expect(editor.document.layers.first.text, 'storm mode');
       expectNoFlutterExceptions(tester);
-      expect(
-        find.descendant(
-          of: find.byType(MemeCanvas),
-          matching: find.text('STORM MODE'),
-        ),
-        findsWidgets,
-      );
-      expect(
-        find.descendant(
-          of: find.byType(MemeCanvas),
-          matching: find.text('BRING SNACKS'),
-        ),
-        findsWidgets,
-      );
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
     });
   });
 }
 
-Future<void> _scrollMemeGeneratorUntilTextVisible(
+Future<void> _scrollMemeGeneratorUntilVisible(
   WidgetTester tester,
-  String text,
+  Finder finder,
 ) async {
-  final finder = find.text(text);
-  for (var attempts = 0; attempts < 8; attempts++) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  for (var attempts = 0; attempts < 30; attempts++) {
     if (finder.evaluate().isNotEmpty) {
-      await tester.ensureVisible(finder);
+      await Scrollable.ensureVisible(tester.element(finder.first),
+          alignment: .5);
       await tester.pumpAndSettle();
-      return;
+      if (finder.hitTestable().evaluate().isNotEmpty) {
+        return;
+      }
     }
-
     await tester.drag(
-      find.descendant(
-        of: find.byType(MemeGeneratorScreen),
-        matching: find.byType(ListView),
-      ),
+      find
+          .descendant(
+            of: find.byType(MemeGeneratorScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
       const Offset(0, -280),
     );
     await tester.pumpAndSettle();
   }
-
-  expect(finder, findsOneWidget);
+  expect(finder.hitTestable(), findsOneWidget);
 }

@@ -3,6 +3,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'features/fun/meme/meme_weather.dart';
 import 'features/roasts/content/roast_pack_repository.dart';
 import 'repositories/open_weather_repository.dart';
 import 'repositories/fake_roast_repository.dart';
@@ -46,6 +47,10 @@ void main() async {
       providers: [
         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
         Provider<WeatherRepository>.value(value: weatherRepository),
+        Provider<CacheService>.value(value: weatherCache),
+        ChangeNotifierProvider<DisplayedRoastRegistry>(
+          create: (_) => DisplayedRoastRegistry(),
+        ),
         Provider<RoastPackRepository>.value(value: roastPackRepository),
         Provider<RoastRepository>.value(value: roastRepository),
         Provider<SettingsRepository>.value(value: settingsRepository),

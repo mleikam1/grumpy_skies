@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,9 @@ import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
 import 'package:grumpy_skies/features/fun/fun_zone_screen.dart';
 import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
+import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
+import 'package:grumpy_skies/features/fun/meme/storage/meme_store.dart';
+import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
 import 'package:grumpy_skies/features/radar/radar_screen.dart';
 import 'package:grumpy_skies/features/roasts/advanced_roast_reveal_screen.dart';
 import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
@@ -93,23 +97,56 @@ extension DayMakerWidgetTester on WidgetTester {
 
     final router = buildDayMakerTestRouter(initialLocation: initialLocation);
 
-    await pumpWidget(
-      await buildDayMakerTestProviders(
-        child: MaterialApp.router(
-          theme: DMTheme.light,
-          routerConfig: router,
-          builder: (context, child) {
-            final mediaQuery = MediaQuery.of(context);
-            return MediaQuery(
-              data: mediaQuery.copyWith(
-                textScaler: TextScaler.linear(textScale),
-              ),
-              child: child!,
-            );
-          },
-        ),
+    final app = await buildDayMakerTestProviders(
+      child: MaterialApp.router(
+        theme: DMTheme.light,
+        routerConfig: router,
+        builder: (context, child) {
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(
+              textScaler: TextScaler.linear(textScale),
+            ),
+            child: child!,
+          );
+        },
       ),
     );
+    if (initialLocation == AppRoutes.memeGenerator) {
+      const picker = MethodChannel('plugins.flutter.io/image_picker');
+      const lostData = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.image_picker_android.ImagePickerApi.retrieveLostResults',
+        StandardMessageCodec(),
+      );
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(picker, (_) async => null);
+      messenger.setMockDecodedMessageHandler<Object?>(
+          lostData, (_) async => <Object?>[null]);
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(picker, null);
+        messenger.setMockDecodedMessageHandler<Object?>(lostData, null);
+      });
+      // Bundled fonts and image decoding use real async engine work. Wait for
+      // the catalog without advancing an indefinite loading spinner in fake time.
+      await runAsync(() async {
+        await loadMemeFonts();
+        await pumpWidget(app);
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      for (var attempt = 0; attempt < 40; attempt++) {
+        await pump();
+        await runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 25)));
+        await pump();
+        if (find.byType(MemeLibrary).evaluate().isNotEmpty) {
+          break;
+        }
+      }
+      expect(find.byType(MemeLibrary), findsOneWidget);
+    } else {
+      await pumpWidget(app);
+    }
     await pumpAndSettle();
   }
 }
@@ -156,6 +193,7 @@ WeatherLocation buildTestWeatherLocation() {
 }
 
 GoRouter buildDayMakerTestRouter({required String initialLocation}) {
+  final memeStore = MemeStore(MemoryMemeBackend());
   return GoRouter(
     initialLocation: initialLocation,
     routes: [
@@ -195,7 +233,8 @@ GoRouter buildDayMakerTestRouter({required String initialLocation}) {
             routes: [
               GoRoute(
                 path: 'meme',
-                builder: (context, state) => const MemeGeneratorScreen(),
+                builder: (context, state) =>
+                    MemeGeneratorScreen(store: memeStore),
               ),
             ],
           ),
