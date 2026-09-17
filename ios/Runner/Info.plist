@@ -31,6 +31,12 @@
 		<key>WeatherRadar</key>
 		<string>Grumpy Skies uses your approximate location to center live weather and radar.</string>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>DayMaker uses the camera only when you choose to take a photo for your meme.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DayMaker lets you choose a photo to edit locally in your meme.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>DayMaker saves your finished meme to Photos when you tap Save Image.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Grumpy Skies uses your location to show local weather, radar, alerts, and forecasts.</string>
 	<key>UIApplicationSceneManifest</key>

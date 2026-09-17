@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DayMaker weather meme starter catalog v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "packId",
+    "templates",
+    "personaCaptions"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "packId": {
+      "type": "string"
+    },
+    "templates": {
+      "type": "array",
+      "minItems": 15,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "assetPath",
+          "thumbnailPath",
+          "width",
+          "height",
+          "safeTextZones",
+          "captionPairs",
+          "defaultCaptionId",
+          "defaultTextStyle"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "assetPath": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          },
+          "width": {
+            "const": 1080
+          },
+          "height": {
+            "const": 1080
+          },
+          "safeTextZones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "role",
+                "x",
+                "y",
+                "width",
+                "height"
+              ],
+              "properties": {
+                "role": {
+                  "enum": [
+                    "top",
+                    "bottom"
+                  ]
+                },
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "width": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "height": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            },
+            "minItems": 2
+          },
+          "captionPairs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "top",
+                "bottom",
+                "language",
+                "ratingIntent"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "top": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "bottom": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "language": {
+                  "const": "en"
+                },
+                "ratingIntent": {
+                  "const": "family_friendly"
+                }
+              }
+            },
+            "minItems": 6
+          }
+        }
+      }
+    },
+    "personaCaptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "top",
+          "bottom",
+          "language",
+          "ratingIntent"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "top": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bottom": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "const": "en"
+          },
+          "ratingIntent": {
+            "const": "family_friendly"
+          }
+        }
+      },
+      "minItems": 50
+    }
+  }
+}

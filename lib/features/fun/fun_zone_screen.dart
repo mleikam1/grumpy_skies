@@ -166,7 +166,9 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _fortuneTile(featured: true),
+        _memeTile(featured: true),
+        SizedBox(height: gap),
+        _fortuneTile(),
         SizedBox(height: gap),
         _pollTile(),
         SizedBox(height: gap),
@@ -174,7 +176,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
         SizedBox(height: gap),
         _menaceTile(),
         SizedBox(height: gap),
-        _memeTile(),
       ],
     );
   }
@@ -183,7 +184,9 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _fortuneTile(featured: true, minHeight: 284),
+        _memeTile(featured: true, minHeight: 284),
+        SizedBox(height: gap),
+        _fortuneTile(),
         SizedBox(height: gap),
         GridView(
           shrinkWrap: true,
@@ -198,7 +201,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
             _pollTile(),
             _predictorTile(compactWheel: true),
             _menaceTile(),
-            _memeTile(),
           ],
         ),
       ],
@@ -209,7 +211,9 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _fortuneTile(featured: true, minHeight: 318),
+        _memeTile(featured: true, minHeight: 318),
+        SizedBox(height: gap),
+        _fortuneTile(),
         SizedBox(height: gap),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,8 +231,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _menaceTile(minHeight: 206),
-                  SizedBox(height: gap),
-                  _memeTile(minHeight: 190),
                 ],
               ),
             ),
@@ -345,10 +347,13 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     );
   }
 
-  Widget _memeTile({double? minHeight}) {
+  Widget _memeTile({double? minHeight, bool featured = false}) {
     return FunFeatureTile(
       icon: Icons.image_outlined,
-      title: 'Meme Generator',
+      title: 'Weather Meme Generator',
+      subtitle:
+          'The forecast is your punchline. 15 templates, endless weather drama.',
+      featured: featured,
       actionLabel: 'Make a Meme',
       actionSemanticLabel: 'Open meme generator',
       onAction: _openMemeGenerator,
@@ -481,39 +486,17 @@ class _RevealPill extends StatelessWidget {
 
 class _MemePreviewStrip extends StatelessWidget {
   const _MemePreviewStrip();
-
   @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        _MemePreviewSwatch(color: DMColors.sunriseYellow),
-        SizedBox(width: DMSpacing.xs),
-        _MemePreviewSwatch(color: DMColors.playfulPink),
-        SizedBox(width: DMSpacing.xs),
-        _MemePreviewSwatch(color: DMColors.skyBlue),
-      ],
-    );
-  }
-}
-
-class _MemePreviewSwatch extends StatelessWidget {
-  const _MemePreviewSwatch({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: DMColors.opacity(color, 0.8),
-          borderRadius: DMRadius.medium,
-          border: Border.all(color: DMColors.glassBorderStrong),
-        ),
-        child: const SizedBox(height: 48),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Row(children: [
+        for (final id in ['storm_boss_cat', 'sun_is_personal', 'fog_buffering'])
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset('assets/meme_thumbnails/$id.webp',
+                          fit: BoxFit.contain, cacheWidth: 240)))),
+      ]);
 }
 
 const _funZoneGradient = LinearGradient(

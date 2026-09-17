@@ -1,0 +1,2368 @@
+{
+  "schemaVersion": 1,
+  "packId": "daymaker_weather_meme_starters_v1",
+  "contentVersion": "2026-09-17",
+  "reviewedRepositoryCommit": "4cdb79e568cc355d308cd7ee4925663a255dc7c0",
+  "language": "en",
+  "ratingIntent": "family_friendly",
+  "assetProvenance": "Original programmatically illustrated SVG placeholder artwork created for this request; no third-party photographs, logos, or stock meme images.",
+  "defaultCanvas": {
+    "width": 1080,
+    "height": 1080
+  },
+  "templates": [
+    {
+      "id": "storm_boss_cat",
+      "name": "Storm Boss Cat",
+      "description": "A deadpan cat in a yellow raincoat and dark glasses faces an absurd cartoon storm.",
+      "tags": [
+        "rain",
+        "thunderstorm"
+      ],
+      "assetPath": "assets/meme_backgrounds/storm_boss_cat.webp",
+      "sourceSvgPath": "source_svg/storm_boss_cat.svg",
+      "thumbnailPath": "assets/meme_thumbnails/storm_boss_cat.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "storm_boss_cat_01",
+      "captionPairs": [
+        {
+          "id": "storm_boss_cat_01",
+          "top": "THE FORECAST SAID A LITTLE DRIZZLE",
+          "bottom": "MY CAT HAS REQUESTED A HELICOPTER.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "thunderstorm"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "storm_boss_cat_02",
+          "top": "ME: I CAN MAKE IT TO THE CAR",
+          "bottom": "THE SKY: CUTE LITTLE SIDE QUEST.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "thunderstorm"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "storm_boss_cat_03",
+          "top": "DRESSED FOR A QUICK ERRAND",
+          "bottom": "CAST AS THE LEAD IN A DISASTER MOVIE.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "thunderstorm"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "storm_boss_cat_04",
+          "top": "THE THUNDER IS BEING DRAMATIC",
+          "bottom": "AND I REFUSE TO SHARE TOP BILLING.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "thunderstorm"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "storm_boss_cat_05",
+          "top": "BROUGHT AN UMBRELLA",
+          "bottom": "THE WEATHER BROUGHT A PLOT.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "thunderstorm"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "storm_boss_cat_06",
+          "top": "I AM NOT AFRAID OF THE STORM",
+          "bottom": "I AM AFRAID OF WET SOCKS.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "thunderstorm"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "457ebd4e7237bf68ab950c4a183c735c444caab83b6a0c3a1f0e993398239e2a",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "tiny_umbrella_big_storm",
+      "name": "Tiny Umbrella, Big Storm",
+      "description": "A tiny duck stands under an absurdly undersized umbrella while giant rain streaks fall.",
+      "tags": [
+        "rain",
+        "drizzle"
+      ],
+      "assetPath": "assets/meme_backgrounds/tiny_umbrella_big_storm.webp",
+      "sourceSvgPath": "source_svg/tiny_umbrella_big_storm.svg",
+      "thumbnailPath": "assets/meme_thumbnails/tiny_umbrella_big_storm.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "tiny_umbrella_big_storm_01",
+      "captionPairs": [
+        {
+          "id": "tiny_umbrella_big_storm_01",
+          "top": "MY UMBRELLA HAS ONE JOB",
+          "bottom": "APPARENTLY IT IS DECORATIVE.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "drizzle"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "tiny_umbrella_big_storm_02",
+          "top": "PREPARED FOR THE WEATHER",
+          "bottom": "EMOTIONALLY. NOT EQUIPMENT-WISE.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "drizzle"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "tiny_umbrella_big_storm_03",
+          "top": "MY RAIN PLAN",
+          "bottom": "IS MOSTLY A VERY SMALL ROOF.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "drizzle"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "tiny_umbrella_big_storm_04",
+          "top": "PACKED LIGHT",
+          "bottom": "THE CLOUDS DID NOT.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "drizzle"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "tiny_umbrella_big_storm_05",
+          "top": "IT IS JUST A LITTLE RAIN",
+          "bottom": "SAID SOMEONE WHO IS INSIDE.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "drizzle"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "tiny_umbrella_big_storm_06",
+          "top": "CHECKED THE FORECAST",
+          "bottom": "FOR A DIFFERENT DUCK, APPARENTLY.",
+          "persona": "neutral",
+          "tags": [
+            "rain",
+            "drizzle"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "7926e74f11ea437da2d9718ea5f6a8d6f7bed7f8afef4fd93fccc58a69274c37",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "forecast_betrayal",
+      "name": "Forecast Betrayal",
+      "description": "A sunny picnic setup contrasts with the same picnic beneath a sudden cartoon downpour.",
+      "tags": [
+        "changeable",
+        "rain"
+      ],
+      "assetPath": "assets/meme_backgrounds/forecast_betrayal.webp",
+      "sourceSvgPath": "source_svg/forecast_betrayal.svg",
+      "thumbnailPath": "assets/meme_thumbnails/forecast_betrayal.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": true,
+      "defaultCaptionId": "forecast_betrayal_01",
+      "captionPairs": [
+        {
+          "id": "forecast_betrayal_01",
+          "top": "LEFT THE HOUSE IN SUNGLASSES",
+          "bottom": "CAME HOME AS SOUP.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "rain"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_betrayal_02",
+          "top": "THE FORECAST SAID ZERO DRAMA",
+          "bottom": "THE SKY INVITED THE WHOLE CAST.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "rain"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_betrayal_03",
+          "top": "I TRUSTED THE LITTLE SUN ICON",
+          "bottom": "THAT IS ON ME.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "rain"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_betrayal_04",
+          "top": "ME: PERFECT PICNIC WEATHER",
+          "bottom": "THE CLOUDS: WE BROUGHT SOUP.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "rain"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_betrayal_05",
+          "top": "MORNING: MAIN CHARACTER",
+          "bottom": "AFTERNOON: WET EXTRA.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "rain"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_betrayal_06",
+          "top": "THE WEATHER CHANGED ITS MIND",
+          "bottom": "MY SHOES WERE NOT CONSULTED.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "rain"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "ce3937e14c16458b9caaf9d62d7a4ab602526b269150d40f1959e5d40251f943",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "sun_is_personal",
+      "name": "Sun Is Personal",
+      "description": "An enormous smug sun looms over a distressed melting popsicle.",
+      "tags": [
+        "hot",
+        "clear_day"
+      ],
+      "assetPath": "assets/meme_backgrounds/sun_is_personal.webp",
+      "sourceSvgPath": "source_svg/sun_is_personal.svg",
+      "thumbnailPath": "assets/meme_thumbnails/sun_is_personal.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "sun_is_personal_01",
+      "captionPairs": [
+        {
+          "id": "sun_is_personal_01",
+          "top": "THE SUN IS 93 MILLION MILES AWAY",
+          "bottom": "AND STILL IN MY PERSONAL SPACE.",
+          "persona": "neutral",
+          "tags": [
+            "hot",
+            "clear_day"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sun_is_personal_02",
+          "top": "I WANTED A LITTLE COLOR",
+          "bottom": "NOT A PREHEAT SETTING.",
+          "persona": "neutral",
+          "tags": [
+            "hot",
+            "clear_day"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sun_is_personal_03",
+          "top": "WENT OUTSIDE FOR A MINUTE",
+          "bottom": "MY POPSICLE FILED FOR LIQUIDATION.",
+          "persona": "neutral",
+          "tags": [
+            "hot",
+            "clear_day"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sun_is_personal_04",
+          "top": "THE SUN SAID GOOD MORNING",
+          "bottom": "WITH ITS WHOLE CHEST.",
+          "persona": "neutral",
+          "tags": [
+            "hot",
+            "clear_day"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sun_is_personal_05",
+          "top": "TODAY HAS TWO TEMPERATURES",
+          "bottom": "HOT AND WHY IS THE CHAIR HOT.",
+          "persona": "neutral",
+          "tags": [
+            "hot",
+            "clear_day"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sun_is_personal_06",
+          "top": "THE FORECAST SAID WARM",
+          "bottom": "MY ICE CREAM REQUESTED A LAWYER.",
+          "persona": "neutral",
+          "tags": [
+            "hot",
+            "clear_day"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "041551e7e339e2e3bed1a2d7c79d1662c312a77cf38cbd496b1e12057646364a",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "wind_left_the_chat",
+      "name": "Wind Left the Chat",
+      "description": "A hat, an inside-out umbrella and papers tumble through exaggerated wind swooshes.",
+      "tags": [
+        "wind"
+      ],
+      "assetPath": "assets/meme_backgrounds/wind_left_the_chat.webp",
+      "sourceSvgPath": "source_svg/wind_left_the_chat.svg",
+      "thumbnailPath": "assets/meme_thumbnails/wind_left_the_chat.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "wind_left_the_chat_01",
+      "captionPairs": [
+        {
+          "id": "wind_left_the_chat_01",
+          "top": "WENT OUTSIDE TO CLEAR MY HEAD",
+          "bottom": "THE WIND ALSO CLEARED MY HAT.",
+          "persona": "neutral",
+          "tags": [
+            "wind"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "wind_left_the_chat_02",
+          "top": "DID MY HAIR THIS MORNING",
+          "bottom": "THE WIND SUBMITTED REVISIONS.",
+          "persona": "neutral",
+          "tags": [
+            "wind"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "wind_left_the_chat_03",
+          "top": "MY UMBRELLA IS NOW A SATELLITE DISH",
+          "bottom": "STILL NO SIGNAL.",
+          "persona": "neutral",
+          "tags": [
+            "wind"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "wind_left_the_chat_04",
+          "top": "THE WIND SAID LIGHT AND BREEZY",
+          "bottom": "MY TRASH CAN HAS LEFT THE COUNTY.",
+          "persona": "neutral",
+          "tags": [
+            "wind"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "wind_left_the_chat_05",
+          "top": "NICE HAT",
+          "bottom": "SAID THE SKY, TAKING IT.",
+          "persona": "neutral",
+          "tags": [
+            "wind"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "wind_left_the_chat_06",
+          "top": "I AM NOT WALKING FAST",
+          "bottom": "I AM BEING DELIVERED.",
+          "persona": "neutral",
+          "tags": [
+            "wind"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "e103602a810f1d2a099cf19a6bae0c1c6a6be25b8bdc1da50b9e82b4c08c6e94",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "fog_buffering",
+      "name": "Fog Buffering",
+      "description": "A road vanishes into friendly fog clouds with an original loading-ring motif.",
+      "tags": [
+        "fog",
+        "mist"
+      ],
+      "assetPath": "assets/meme_backgrounds/fog_buffering.webp",
+      "sourceSvgPath": "source_svg/fog_buffering.svg",
+      "thumbnailPath": "assets/meme_thumbnails/fog_buffering.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "fog_buffering_01",
+      "captionPairs": [
+        {
+          "id": "fog_buffering_01",
+          "top": "THE OUTSIDE IS BUFFERING",
+          "bottom": "PLEASE RECONNECT THE SUN.",
+          "persona": "neutral",
+          "tags": [
+            "fog",
+            "mist"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "fog_buffering_02",
+          "top": "VISIBILITY: PREMIUM FEATURE",
+          "bottom": "YOUR FREE TRIAL HAS ENDED.",
+          "persona": "neutral",
+          "tags": [
+            "fog",
+            "mist"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "fog_buffering_03",
+          "top": "OPENED THE CURTAINS",
+          "bottom": "THE WORLD HAS NOT LOADED YET.",
+          "persona": "neutral",
+          "tags": [
+            "fog",
+            "mist"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "fog_buffering_04",
+          "top": "THE VIEW IS INCREDIBLE",
+          "bottom": "PROBABLY.",
+          "persona": "neutral",
+          "tags": [
+            "fog",
+            "mist"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "fog_buffering_05",
+          "top": "THE SKY PUT ON PRIVACY MODE",
+          "bottom": "WITHOUT ASKING THE REST OF US.",
+          "persona": "neutral",
+          "tags": [
+            "fog",
+            "mist"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "fog_buffering_06",
+          "top": "TODAY IS AVAILABLE IN LOW RESOLUTION",
+          "bottom": "PLEASE DO NOT ADJUST YOUR EYEBALLS.",
+          "persona": "neutral",
+          "tags": [
+            "fog",
+            "mist"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "e9191fd5659cfa6a8bb70a59f4395510bf79857eb8df29d8c9a705c83f59e9c1",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "forecast_roulette",
+      "name": "Forecast Roulette",
+      "description": "An original colorful weather wheel cycles among sun, rain, wind, cloud and snow symbols.",
+      "tags": [
+        "changeable"
+      ],
+      "assetPath": "assets/meme_backgrounds/forecast_roulette.webp",
+      "sourceSvgPath": "source_svg/forecast_roulette.svg",
+      "thumbnailPath": "assets/meme_thumbnails/forecast_roulette.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": true,
+      "defaultCaptionId": "forecast_roulette_01",
+      "captionPairs": [
+        {
+          "id": "forecast_roulette_01",
+          "top": "PICKED AN OUTFIT FOR TODAY",
+          "bottom": "THE WEATHER SPUN AGAIN.",
+          "persona": "neutral",
+          "tags": [
+            "changeable"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_roulette_02",
+          "top": "FOUR SEASONS IN ONE AFTERNOON",
+          "bottom": "MY CLOSET IS REQUESTING OVERTIME.",
+          "persona": "neutral",
+          "tags": [
+            "changeable"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_roulette_03",
+          "top": "DRESSING FOR THE WEATHER",
+          "bottom": "IS NOW A MULTIPLE-CHOICE EXAM.",
+          "persona": "neutral",
+          "tags": [
+            "changeable"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_roulette_04",
+          "top": "FORECAST UPDATED",
+          "bottom": "SO DID MY TRUST ISSUES.",
+          "persona": "neutral",
+          "tags": [
+            "changeable"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_roulette_05",
+          "top": "I PACKED A JACKET AND SUNGLASSES",
+          "bottom": "THE SKY ADDED A BONUS ROUND.",
+          "persona": "neutral",
+          "tags": [
+            "changeable"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "forecast_roulette_06",
+          "top": "TODAY IS SPONSORED BY LAYERS",
+          "bottom": "AND A VERY LARGE BAG.",
+          "persona": "neutral",
+          "tags": [
+            "changeable"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "e940da893cce92e312ae40a909f4c99e6de48766966eb285e8b89926deedd2ff",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "snow_day_victory",
+      "name": "Snow Day Victory",
+      "description": "A bundled penguin celebrates three tiny flakes on a little snow mound.",
+      "tags": [
+        "snow",
+        "cold"
+      ],
+      "assetPath": "assets/meme_backgrounds/snow_day_victory.webp",
+      "sourceSvgPath": "source_svg/snow_day_victory.svg",
+      "thumbnailPath": "assets/meme_thumbnails/snow_day_victory.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "snow_day_victory_01",
+      "captionPairs": [
+        {
+          "id": "snow_day_victory_01",
+          "top": "THREE SNOWFLAKES HAVE LANDED",
+          "bottom": "I HAVE CANCELLED MY ENTIRE PERSONALITY.",
+          "persona": "neutral",
+          "tags": [
+            "snow",
+            "cold"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "snow_day_victory_02",
+          "top": "THE SNOW IS ONE INCH DEEP",
+          "bottom": "MY EXCITEMENT IS SIX FEET TALL.",
+          "persona": "neutral",
+          "tags": [
+            "snow",
+            "cold"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "snow_day_victory_03",
+          "top": "IT SNOWED FOR FOUR MINUTES",
+          "bottom": "I AM BASICALLY AN ARCTIC EXPLORER.",
+          "persona": "neutral",
+          "tags": [
+            "snow",
+            "cold"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "snow_day_victory_04",
+          "top": "THE FORECAST MENTIONED FLURRIES",
+          "bottom": "I ALREADY MADE COCOA.",
+          "persona": "neutral",
+          "tags": [
+            "snow",
+            "cold"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "snow_day_victory_05",
+          "top": "SNOW DAY ENERGY",
+          "bottom": "REGULAR WORKDAY CALENDAR.",
+          "persona": "neutral",
+          "tags": [
+            "snow",
+            "cold"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "snow_day_victory_06",
+          "top": "BUILT A SNOWMAN",
+          "bottom": "HE IS TRAVEL SIZE.",
+          "persona": "neutral",
+          "tags": [
+            "snow",
+            "cold"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "31d11c6d176db156d2a1b65d383e42d174b7d479b461bfc1ac7bd5e6f5e969d7",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "humidity_volume",
+      "name": "Humidity Volume",
+      "description": "An expressive fluffy alpaca has a dramatically oversized cloud of frizzy wool.",
+      "tags": [
+        "humid"
+      ],
+      "assetPath": "assets/meme_backgrounds/humidity_volume.webp",
+      "sourceSvgPath": "source_svg/humidity_volume.svg",
+      "thumbnailPath": "assets/meme_thumbnails/humidity_volume.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "humidity_volume_01",
+      "captionPairs": [
+        {
+          "id": "humidity_volume_01",
+          "top": "MY HAIR CHECKED THE HUMIDITY",
+          "bottom": "AND REQUESTED ITS OWN ZIP CODE.",
+          "persona": "neutral",
+          "tags": [
+            "humid"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "humidity_volume_02",
+          "top": "I DID NOT STYLE MY HAIR LIKE THIS",
+          "bottom": "THE AIR DID.",
+          "persona": "neutral",
+          "tags": [
+            "humid"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "humidity_volume_03",
+          "top": "WALKED OUTSIDE LOOKING NORMAL",
+          "bottom": "CAME BACK AS A DECORATIVE SHRUB.",
+          "persona": "neutral",
+          "tags": [
+            "humid"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "humidity_volume_04",
+          "top": "TODAY IS NOT A BAD HAIR DAY",
+          "bottom": "IT IS A REGIONAL EXPANSION.",
+          "persona": "neutral",
+          "tags": [
+            "humid"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "humidity_volume_05",
+          "top": "THE AIR IS WEARING A WET SWEATER",
+          "bottom": "AND WANTS A HUG.",
+          "persona": "neutral",
+          "tags": [
+            "humid"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "humidity_volume_06",
+          "top": "HUMIDITY IS AT FULL VOLUME",
+          "bottom": "MY HAIR HAS SURROUND SOUND.",
+          "persona": "neutral",
+          "tags": [
+            "humid"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "62df8cfb4e80f0939be76e798eeb9a7edc25059d3961c76efe9313914ef745ec",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "cloud_side_eye",
+      "name": "Cloud Side-Eye",
+      "description": "An oversized expressive cloud gives the viewer a deeply unimpressed sideways glance.",
+      "tags": [
+        "cloudy",
+        "overcast"
+      ],
+      "assetPath": "assets/meme_backgrounds/cloud_side_eye.webp",
+      "sourceSvgPath": "source_svg/cloud_side_eye.svg",
+      "thumbnailPath": "assets/meme_thumbnails/cloud_side_eye.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "cloud_side_eye_01",
+      "captionPairs": [
+        {
+          "id": "cloud_side_eye_01",
+          "top": "I MADE OUTDOOR PLANS",
+          "bottom": "THE CLOUD TOOK THAT PERSONALLY.",
+          "persona": "neutral",
+          "tags": [
+            "cloudy",
+            "overcast"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "cloud_side_eye_02",
+          "top": "NO RAIN YET",
+          "bottom": "JUST AGGRESSIVE SUGGESTIONS.",
+          "persona": "neutral",
+          "tags": [
+            "cloudy",
+            "overcast"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "cloud_side_eye_03",
+          "top": "THE SKY HAS AN ATTITUDE",
+          "bottom": "AND NO CUSTOMER SERVICE NUMBER.",
+          "persona": "neutral",
+          "tags": [
+            "cloudy",
+            "overcast"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "cloud_side_eye_04",
+          "top": "ME: COULD WE GET SOME SUN",
+          "bottom": "THE CLOUD: INTERESTING REQUEST.",
+          "persona": "neutral",
+          "tags": [
+            "cloudy",
+            "overcast"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "cloud_side_eye_05",
+          "top": "PARTLY CLOUDY",
+          "bottom": "FULLY JUDGMENTAL.",
+          "persona": "neutral",
+          "tags": [
+            "cloudy",
+            "overcast"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "cloud_side_eye_06",
+          "top": "THAT CLOUD HAS BEEN STARING AT ME",
+          "bottom": "LIKE I OWE IT RENT.",
+          "persona": "neutral",
+          "tags": [
+            "cloudy",
+            "overcast"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "3e61062a8a3f9612e00621297fbeea9c042138aef5bac73d0b1f3ddef82411b5",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "sidewalk_preheating",
+      "name": "Sidewalk Preheating",
+      "description": "A cartoon toast slice watches heat squiggles rise from an absurdly hot sidewalk.",
+      "tags": [
+        "hot"
+      ],
+      "assetPath": "assets/meme_backgrounds/sidewalk_preheating.webp",
+      "sourceSvgPath": "source_svg/sidewalk_preheating.svg",
+      "thumbnailPath": "assets/meme_thumbnails/sidewalk_preheating.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "sidewalk_preheating_01",
+      "captionPairs": [
+        {
+          "id": "sidewalk_preheating_01",
+          "top": "WENT FOR A WALK",
+          "bottom": "THE SIDEWALK ASKED HOW I LIKE MY EGGS.",
+          "persona": "neutral",
+          "tags": [
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sidewalk_preheating_02",
+          "top": "TODAY IS LESS OF A FORECAST",
+          "bottom": "MORE OF AN OVEN SETTING.",
+          "persona": "neutral",
+          "tags": [
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sidewalk_preheating_03",
+          "top": "THE PAVEMENT IS PREHEATING",
+          "bottom": "PLEASE REMOVE ALL PLASTIC PEOPLE.",
+          "persona": "neutral",
+          "tags": [
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sidewalk_preheating_04",
+          "top": "TOUCHED THE CAR DOOR",
+          "bottom": "IT TOUCHED BACK.",
+          "persona": "neutral",
+          "tags": [
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sidewalk_preheating_05",
+          "top": "MY SNEAKERS ARE NOT MELTING",
+          "bottom": "THEY ARE BECOMING ONE WITH THE JOURNEY.",
+          "persona": "neutral",
+          "tags": [
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "sidewalk_preheating_06",
+          "top": "THE WEATHER SAID TOASTY",
+          "bottom": "I DID NOT KNOW IT WAS A JOB TITLE.",
+          "persona": "neutral",
+          "tags": [
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "5c54fc1b92e41d13b4d1efe945ca5a577b3d1930e8f16842dc7366c9bc211334",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "monday_drizzle",
+      "name": "Monday Drizzle",
+      "description": "A tired coffee cup sits beneath its own tiny personal rain cloud.",
+      "tags": [
+        "drizzle",
+        "rain",
+        "cloudy"
+      ],
+      "assetPath": "assets/meme_backgrounds/monday_drizzle.webp",
+      "sourceSvgPath": "source_svg/monday_drizzle.svg",
+      "thumbnailPath": "assets/meme_thumbnails/monday_drizzle.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": false,
+      "defaultCaptionId": "monday_drizzle_01",
+      "captionPairs": [
+        {
+          "id": "monday_drizzle_01",
+          "top": "EVEN MY COFFEE",
+          "bottom": "NEEDS A COFFEE.",
+          "persona": "neutral",
+          "tags": [
+            "drizzle",
+            "rain",
+            "cloudy"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "monday_drizzle_02",
+          "top": "THE SKY AND I",
+          "bottom": "HAVE AGREED TO DO THE BARE MINIMUM.",
+          "persona": "neutral",
+          "tags": [
+            "drizzle",
+            "rain",
+            "cloudy"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "monday_drizzle_03",
+          "top": "LIGHT DRIZZLE",
+          "bottom": "HEAVY SIGH.",
+          "persona": "neutral",
+          "tags": [
+            "drizzle",
+            "rain",
+            "cloudy"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "monday_drizzle_04",
+          "top": "THIS WEATHER COULD HAVE BEEN",
+          "bottom": "AN EMAIL.",
+          "persona": "neutral",
+          "tags": [
+            "drizzle",
+            "rain",
+            "cloudy"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "monday_drizzle_05",
+          "top": "MY MOTIVATION IS WATERPROOF",
+          "bottom": "UNFORTUNATELY IT IS ALSO MISSING.",
+          "persona": "neutral",
+          "tags": [
+            "drizzle",
+            "rain",
+            "cloudy"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "monday_drizzle_06",
+          "top": "A LITTLE RAIN BUILDS CHARACTER",
+          "bottom": "I HAVE ENOUGH CHARACTER.",
+          "persona": "neutral",
+          "tags": [
+            "drizzle",
+            "rain",
+            "cloudy"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "af6e8eff613592e89e5f720921ef6adc80550b653a0474a653219df62a1e777b",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "rainbow_plot_twist",
+      "name": "Rainbow Plot Twist",
+      "description": "A bright rainbow appears between grumpy clouds like a cheerful surprise ending.",
+      "tags": [
+        "after_rain",
+        "rainbow"
+      ],
+      "assetPath": "assets/meme_backgrounds/rainbow_plot_twist.webp",
+      "sourceSvgPath": "source_svg/rainbow_plot_twist.svg",
+      "thumbnailPath": "assets/meme_thumbnails/rainbow_plot_twist.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": true,
+      "defaultCaptionId": "rainbow_plot_twist_01",
+      "captionPairs": [
+        {
+          "id": "rainbow_plot_twist_01",
+          "top": "THE SKY CAUSED ALL THAT DRAMA",
+          "bottom": "THEN SENT A COLORFUL APOLOGY.",
+          "persona": "neutral",
+          "tags": [
+            "after_rain",
+            "rainbow"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "rainbow_plot_twist_02",
+          "top": "THANKS FOR THE RAINBOW",
+          "bottom": "MY SOCKS ARE STILL WET.",
+          "persona": "neutral",
+          "tags": [
+            "after_rain",
+            "rainbow"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "rainbow_plot_twist_03",
+          "top": "THE WEATHER DROPPED A PLOT TWIST",
+          "bottom": "AND SOME VERY AGGRESSIVE PASTELS.",
+          "persona": "neutral",
+          "tags": [
+            "after_rain",
+            "rainbow"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "rainbow_plot_twist_04",
+          "top": "AFTER AN HOUR OF COMPLAINING",
+          "bottom": "THE SKY TURNED ON PARTY MODE.",
+          "persona": "neutral",
+          "tags": [
+            "after_rain",
+            "rainbow"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "rainbow_plot_twist_05",
+          "top": "FINE, WEATHER",
+          "bottom": "THAT WAS A PRETTY GOOD FINALE.",
+          "persona": "neutral",
+          "tags": [
+            "after_rain",
+            "rainbow"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "rainbow_plot_twist_06",
+          "top": "THE SKY IS REBRANDING",
+          "bottom": "AFTER THIS MORNING'S INCIDENT.",
+          "persona": "neutral",
+          "tags": [
+            "after_rain",
+            "rainbow"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "cc2bf477573c4481638f3a4c994f9a22f5b4a33c0b9d1051269264822b896791",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "pollen_boss_battle",
+      "name": "Pollen Boss Battle",
+      "description": "A cheerful cartoon pollen blob faces a tiny tissue-box hero, with no real game branding.",
+      "tags": [
+        "pollen",
+        "spring"
+      ],
+      "assetPath": "assets/meme_backgrounds/pollen_boss_battle.webp",
+      "sourceSvgPath": "source_svg/pollen_boss_battle.svg",
+      "thumbnailPath": "assets/meme_thumbnails/pollen_boss_battle.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": true,
+      "defaultCaptionId": "pollen_boss_battle_01",
+      "captionPairs": [
+        {
+          "id": "pollen_boss_battle_01",
+          "top": "THE TREES ARE FLIRTING",
+          "bottom": "AND MY FACE IS PAYING FOR IT.",
+          "persona": "neutral",
+          "tags": [
+            "pollen",
+            "spring"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "pollen_boss_battle_02",
+          "top": "SPRING HAS ENTERED THE CHAT",
+          "bottom": "MY NOSE HAS LEFT THE MEETING.",
+          "persona": "neutral",
+          "tags": [
+            "pollen",
+            "spring"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "pollen_boss_battle_03",
+          "top": "EVERYTHING IS BLOOMING",
+          "bottom": "INCLUDING MY TISSUE BUDGET.",
+          "persona": "neutral",
+          "tags": [
+            "pollen",
+            "spring"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "pollen_boss_battle_04",
+          "top": "SMELLED THE FLOWERS",
+          "bottom": "THE FLOWERS WON.",
+          "persona": "neutral",
+          "tags": [
+            "pollen",
+            "spring"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "pollen_boss_battle_05",
+          "top": "MY CAR IS YELLOW NOW",
+          "bottom": "NATURE CHOSE THE PAINT PACKAGE.",
+          "persona": "neutral",
+          "tags": [
+            "pollen",
+            "spring"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "pollen_boss_battle_06",
+          "top": "WENT OUTSIDE FOR FRESH AIR",
+          "bottom": "RECEIVED THE DELUXE POLLEN BUNDLE.",
+          "persona": "neutral",
+          "tags": [
+            "pollen",
+            "spring"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "1f8a5cf487a7509ed8744749e00661a120b404ed0080191650aba70e083df0a4",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "temperature_whiplash",
+      "name": "Temperature Whiplash",
+      "description": "A scarf and mittens occupy one side of a split scene while sunglasses and a sun occupy the other.",
+      "tags": [
+        "changeable",
+        "cold",
+        "hot"
+      ],
+      "assetPath": "assets/meme_backgrounds/temperature_whiplash.webp",
+      "sourceSvgPath": "source_svg/temperature_whiplash.svg",
+      "thumbnailPath": "assets/meme_thumbnails/temperature_whiplash.webp",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.038,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.768,
+          "width": 0.88,
+          "height": 0.168
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "artworkStatus": "illustrated_placeholder",
+      "autoSuggestRequiresVerifiedSignal": true,
+      "defaultCaptionId": "temperature_whiplash_01",
+      "captionPairs": [
+        {
+          "id": "temperature_whiplash_01",
+          "top": "HOODIE AT BREAKFAST",
+          "bottom": "HUMAN BAKED POTATO BY LUNCH.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "cold",
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "temperature_whiplash_02",
+          "top": "MORNING OUTFIT: WINTER",
+          "bottom": "AFTERNOON OUTFIT: REGRET.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "cold",
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "temperature_whiplash_03",
+          "top": "I DRESSED FOR TODAY'S WEATHER",
+          "bottom": "WHICH TODAY WERE WE TALKING ABOUT?",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "cold",
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "temperature_whiplash_04",
+          "top": "MY JACKET HAS BEEN ON AND OFF",
+          "bottom": "MORE THAN THE LIVING ROOM LIGHTS.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "cold",
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "temperature_whiplash_05",
+          "top": "HEAT ON AT SEVEN",
+          "bottom": "AIR CONDITIONING AT ELEVEN.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "cold",
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        },
+        {
+          "id": "temperature_whiplash_06",
+          "top": "TODAY REQUIRES THREE OUTFITS",
+          "bottom": "AND A SUPPORT GROUP.",
+          "persona": "neutral",
+          "tags": [
+            "changeable",
+            "cold",
+            "hot"
+          ],
+          "language": "en",
+          "ratingIntent": "family_friendly"
+        }
+      ],
+      "sha256": "558a81ab2ac657b03cf2831a44ab3540b93b04c92043a89b20538ee7324fda36",
+      "defaultTextStyle": {
+        "fontFamilyKey": "meme_sans_bold",
+        "fontSizeNormalized": 0.049,
+        "fontWeight": 900,
+        "fill": "#172C42",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    }
+  ],
+  "personaCaptions": [
+    {
+      "id": "karen_01",
+      "seedPersonaId": "karen",
+      "tags": [
+        "rain"
+      ],
+      "top": "I WOULD LIKE TO SPEAK",
+      "bottom": "TO THE MANAGER OF THIS CLOUD.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_02",
+      "seedPersonaId": "karen",
+      "tags": [
+        "hot"
+      ],
+      "top": "THIS HEAT WAS NOT DISCLOSED",
+      "bottom": "IN THE BROCHURE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_03",
+      "seedPersonaId": "karen",
+      "tags": [
+        "wind"
+      ],
+      "top": "I ORDERED A GENTLE BREEZE",
+      "bottom": "THIS IS A HOSTILE HAIR AUDIT.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_04",
+      "seedPersonaId": "karen",
+      "tags": [
+        "snow"
+      ],
+      "top": "EXCUSE ME, SKY",
+      "bottom": "WHO APPROVED THE FREEZER SETTING?",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_05",
+      "seedPersonaId": "karen",
+      "tags": [
+        "fog"
+      ],
+      "top": "I PAID FOR A VIEW",
+      "bottom": "NOT A CLOUD SUBSCRIPTION.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_06",
+      "seedPersonaId": "karen",
+      "tags": [
+        "humid"
+      ],
+      "top": "MY HAIR WOULD LIKE",
+      "bottom": "TO FILE A FORMAL COMPLAINT.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_07",
+      "seedPersonaId": "karen",
+      "tags": [
+        "cloudy"
+      ],
+      "top": "I REQUESTED SUNSHINE",
+      "bottom": "THIS IS NOT WHAT WE DISCUSSED.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_08",
+      "seedPersonaId": "karen",
+      "tags": [
+        "changeable"
+      ],
+      "top": "THE FORECAST CHANGED AGAIN",
+      "bottom": "I AM KEEPING THE RECEIPTS.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_09",
+      "seedPersonaId": "karen",
+      "tags": [
+        "pollen"
+      ],
+      "top": "THE TREES HAVE BEEN NOTIFIED",
+      "bottom": "THAT MY NOSE WILL BE ESCALATING THIS.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "karen_10",
+      "seedPersonaId": "karen",
+      "tags": [
+        "drizzle"
+      ],
+      "top": "THIS IS NOT EVEN PROPER RAIN",
+      "bottom": "IT IS INCONVENIENCE WITH A SPRAY NOZZLE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_01",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "rain"
+      ],
+      "top": "BRO, THE SKY",
+      "bottom": "IS ABSOLUTELY DUMPING.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_02",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "hot"
+      ],
+      "top": "THE SUN SKIPPED WARM-UP",
+      "bottom": "AND WENT STRAIGHT TO MAX REPS.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_03",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "wind"
+      ],
+      "top": "THIS BREEZE HAS",
+      "bottom": "ZERO CHILL AND EXCELLENT CARDIO.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_04",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "snow"
+      ],
+      "top": "THREE FLAKES, BRO",
+      "bottom": "WE ARE BASICALLY ON AN EXPEDITION.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_05",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "fog"
+      ],
+      "top": "BRO, THE HORIZON",
+      "bottom": "FORGOT TO LOG IN.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_06",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "humid"
+      ],
+      "top": "MY HAIR JUST BULKED",
+      "bottom": "WITHOUT ASKING ME.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_07",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "cloudy"
+      ],
+      "top": "THE CLOUDS SHOWED UP",
+      "bottom": "AND KILLED THE WHOLE VIBE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_08",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "changeable"
+      ],
+      "top": "THE WEATHER IS FREESTYLING",
+      "bottom": "AND MY OUTFIT CANNOT KEEP UP.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_09",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "pollen"
+      ],
+      "top": "THE TREES ARE GOING HARD",
+      "bottom": "MY SINUSES ARE NOT BUILT FOR THIS.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "frat_bro_10",
+      "seedPersonaId": "frat_bro",
+      "tags": [
+        "drizzle"
+      ],
+      "top": "NOT ENOUGH RAIN TO CANCEL",
+      "bottom": "JUST ENOUGH TO RUIN MY FRIES.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_01",
+      "seedPersonaId": "politician",
+      "tags": [
+        "rain"
+      ],
+      "top": "WE HAVE A BOLD PLAN FOR SUNSHINE",
+      "bottom": "THE CLOUDS HAVE REQUESTED MORE TIME.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_02",
+      "seedPersonaId": "politician",
+      "tags": [
+        "hot"
+      ],
+      "top": "LET ME BE PERFECTLY CLEAR",
+      "bottom": "THIS HEAT WAS HERE WHEN I ARRIVED.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_03",
+      "seedPersonaId": "politician",
+      "tags": [
+        "wind"
+      ],
+      "top": "I SUPPORT A STRONG BREEZE",
+      "bottom": "BUT NOT ITS CURRENT HAT POLICY.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_04",
+      "seedPersonaId": "politician",
+      "tags": [
+        "snow"
+      ],
+      "top": "WE PROMISED COOLER TEMPERATURES",
+      "bottom": "SOME DEPARTMENTS OVERDELIVERED.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_05",
+      "seedPersonaId": "politician",
+      "tags": [
+        "fog"
+      ],
+      "top": "WE REMAIN COMMITTED",
+      "bottom": "TO GREATER TRANSPARENCY.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_06",
+      "seedPersonaId": "politician",
+      "tags": [
+        "humid"
+      ],
+      "top": "MY HAIR IS NOT EXPANDING",
+      "bottom": "IT IS CREATING OPPORTUNITIES.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_07",
+      "seedPersonaId": "politician",
+      "tags": [
+        "cloudy"
+      ],
+      "top": "SUNSHINE IS OUR TOP PRIORITY",
+      "bottom": "PENDING CLOUD APPROVAL.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_08",
+      "seedPersonaId": "politician",
+      "tags": [
+        "changeable"
+      ],
+      "top": "MY POSITION ON JACKETS",
+      "bottom": "HAS EVOLVED SINCE BREAKFAST.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_09",
+      "seedPersonaId": "politician",
+      "tags": [
+        "pollen"
+      ],
+      "top": "WE ARE FORMING A TASK FORCE",
+      "bottom": "TO INVESTIGATE THE TREES.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "politician_10",
+      "seedPersonaId": "politician",
+      "tags": [
+        "drizzle"
+      ],
+      "top": "THIS IS NOT A DOWNPOUR",
+      "bottom": "IT IS A PHASED WATER INITIATIVE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_01",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "rain"
+      ],
+      "top": "BACK IN MY DAY",
+      "bottom": "WE CALLED THIS FREE CAR WASH WEATHER.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_02",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "hot"
+      ],
+      "top": "BACK IN MY DAY WE HAD SHADE",
+      "bottom": "THAT WAS THE ENTIRE TECHNOLOGY.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_03",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "wind"
+      ],
+      "top": "WE DID NOT CHECK WIND SPEED",
+      "bottom": "WE CHECKED WHERE THE LAWN CHAIRS WENT.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_04",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "snow"
+      ],
+      "top": "CALL THAT SNOW?",
+      "bottom": "I HAVE SEEN MORE FROST IN THE FREEZER.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_05",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "fog"
+      ],
+      "top": "BACK IN MY DAY THE VIEW WAS FREE",
+      "bottom": "YOU STILL HAD TO WAIT FOR IT.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_06",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "humid"
+      ],
+      "top": "MY KNEES PREDICTED THIS",
+      "bottom": "MY HAIR IS JUST CONFIRMING.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_07",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "cloudy"
+      ],
+      "top": "THAT CLOUD LOOKS LIKE RAIN",
+      "bottom": "AND ALSO LIKE MY OLD RECLINER.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_08",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "changeable"
+      ],
+      "top": "I BROUGHT A JACKET",
+      "bottom": "BECAUSE I HAVE MET WEATHER BEFORE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_09",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "pollen"
+      ],
+      "top": "THE TREES ARE AT IT AGAIN",
+      "bottom": "SAME NONSENSE EVERY SPRING.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "grandpa_10",
+      "seedPersonaId": "grandpa",
+      "tags": [
+        "drizzle"
+      ],
+      "top": "GOOD WEATHER FOR THE GARDEN",
+      "bottom": "BAD WEATHER FOR STANDING IN IT.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_01",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "rain"
+      ],
+      "top": "SKY SPILLED ITS JUICE",
+      "bottom": "BIG MESS.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_02",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "hot"
+      ],
+      "top": "SUN TOO SPICY",
+      "bottom": "TURN IT DOWN.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_03",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "wind"
+      ],
+      "top": "WIND TOOK MY HAT",
+      "bottom": "NOT YOURS, WIND.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_04",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "snow"
+      ],
+      "top": "SKY MADE CONFETTI",
+      "bottom": "I AM THE PARTY.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_05",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "fog"
+      ],
+      "top": "WHERE OUTSIDE GO?",
+      "bottom": "IT WAS JUST HERE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_06",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "humid"
+      ],
+      "top": "MY HAIR GOT BIG",
+      "bottom": "I AM A LION NOW.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_07",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "cloudy"
+      ],
+      "top": "SUN IS HIDING",
+      "bottom": "BAD AT PEEKABOO.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_08",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "changeable"
+      ],
+      "top": "JACKET ON. JACKET OFF.",
+      "bottom": "SKY NEEDS A NAP.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_09",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "pollen"
+      ],
+      "top": "TREE DUST IN MY NOSE",
+      "bottom": "NO THANK YOU, TREE.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    },
+    {
+      "id": "two_year_old_10",
+      "seedPersonaId": "two_year_old",
+      "tags": [
+        "drizzle"
+      ],
+      "top": "TINY RAIN",
+      "bottom": "STILL BIG FEELINGS.",
+      "language": "en",
+      "ratingIntent": "family_friendly"
+    }
+  ]
+}

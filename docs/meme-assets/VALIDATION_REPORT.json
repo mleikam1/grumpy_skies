@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "scope": "Starter asset/content pack validation only; not Flutter application validation.",
+  "reviewedRepositoryCommit": "4cdb79e568cc355d308cd7ee4925663a255dc7c0",
+  "templates": 15,
+  "templateCaptionPairs": 90,
+  "personaCaptionPairs": 50,
+  "stickers": 24,
+  "checks": [
+    "JSON schema validated",
+    "All IDs and full caption pairs unique",
+    "All referenced assets and source SVG files exist",
+    "All background images decode at 1080x1080",
+    "All thumbnails decode at 288x288",
+    "All stickers decode at 512x512 with transparency",
+    "All manifest asset SHA-256 hashes match",
+    "SVG sources contain no rendered caption text or external image elements",
+    "Default caption IDs resolve and safe-text zones fit within the canvas",
+    "No font files included"
+  ],
+  "notPerformed": [
+    "Flutter integration",
+    "App or simulator launch",
+    "Mobile permissions and share sheet testing",
+    "Browser share/download testing",
+    "Signed builds or deployments"
+  ]
+}

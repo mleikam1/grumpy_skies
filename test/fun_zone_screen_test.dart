@@ -49,7 +49,12 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Fun Zone'), findsOneWidget);
     expect(find.text('Play. Predict. Laugh. Repeat.'), findsOneWidget);
+    expect(find.text('Weather Meme Generator'), findsOneWidget);
     expect(find.text('Weather Fortune Cookie'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Weather Meme Generator')).dy,
+      lessThan(tester.getTopLeft(find.text('Weather Fortune Cookie')).dy),
+    );
     expect(find.text('Crack a cookie. Get a weather reveal.'), findsOneWidget);
     expect(find.text('Crack One'), findsOneWidget);
     expect(find.text('Daily Weather Poll'), findsOneWidget);
@@ -67,6 +72,8 @@ void main() {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Crack One'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Crack One'));
     await tester.pumpAndSettle();
     expect(
@@ -125,7 +132,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Weather Menace'), findsOneWidget);
-    expect(find.text('Meme Generator'), findsOneWidget);
+    expect(find.text('Weather Meme Generator'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Make a Meme'));
     await tester.pumpAndSettle();

@@ -180,26 +180,74 @@ Generated assets may be absent during development. UI must load these paths only
 
 ## Meme Assets
 
+The Weather Meme Studio uses the following shipped artwork. The former sunny/rainy/office preset filenames are legacy references, not required studio runtime assets. Flutter renders captions and watermarks; captioned reference PNGs are not bundled. The complete catalog, authoring notes, and verification commands are described in [`docs/WEATHER_MEME_STUDIO.md`](docs/WEATHER_MEME_STUDIO.md).
+
 | Required asset path | Screen usage | Format | Expected dimensions | Transparent background required |
 | --- | --- | --- | --- | --- |
-| `assets/meme_backgrounds/sunny.png` | Meme canvas background, sunny | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/rainy.png` | Meme canvas background, rainy | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/stormy.png` | Meme canvas background, stormy | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/snowy.png` | Meme canvas background, snowy | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/office.png` | Meme canvas background, office | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/commute.png` | Meme canvas background, commute | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/patio.png` | Meme canvas background, patio | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/couch.png` | Meme canvas background, couch | PNG | 1080x1080 px | No |
-| `assets/meme_backgrounds/blank.png` | Meme canvas background, blank | PNG | 1080x1080 px | No |
-| `assets/meme_stickers/sunglasses.png` | Meme sticker, sunglasses | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/umbrella.png` | Meme sticker, umbrella | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/rain_cloud.png` | Meme sticker, rain cloud | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/lightning.png` | Meme sticker, lightning | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/thermometer.png` | Meme sticker, thermometer | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/sad_sun.png` | Meme sticker, sad sun | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/speech_bubble.png` | Meme sticker, speech bubble | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/roast_stamp.png` | Meme sticker, roast stamp | PNG | 512x512 px | Yes |
-| `assets/meme_stickers/warning_label.png` | Meme sticker, warning label | PNG | 512x512 px | Yes |
+| `assets/meme_backgrounds/storm_boss_cat.webp` | Storm Boss Cat, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/storm_boss_cat.webp` | Storm Boss Cat, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/tiny_umbrella_big_storm.webp` | Tiny Umbrella, Big Storm, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/tiny_umbrella_big_storm.webp` | Tiny Umbrella, Big Storm, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/forecast_betrayal.webp` | Forecast Betrayal, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/forecast_betrayal.webp` | Forecast Betrayal, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/sun_is_personal.webp` | Sun Is Personal, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/sun_is_personal.webp` | Sun Is Personal, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/wind_left_the_chat.webp` | Wind Left the Chat, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/wind_left_the_chat.webp` | Wind Left the Chat, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/fog_buffering.webp` | Fog Buffering, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/fog_buffering.webp` | Fog Buffering, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/forecast_roulette.webp` | Forecast Roulette, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/forecast_roulette.webp` | Forecast Roulette, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/snow_day_victory.webp` | Snow Day Victory, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/snow_day_victory.webp` | Snow Day Victory, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/humidity_volume.webp` | Humidity Volume, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/humidity_volume.webp` | Humidity Volume, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/cloud_side_eye.webp` | Cloud Side-Eye, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/cloud_side_eye.webp` | Cloud Side-Eye, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/sidewalk_preheating.webp` | Sidewalk Preheating, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/sidewalk_preheating.webp` | Sidewalk Preheating, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/monday_drizzle.webp` | Monday Drizzle, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/monday_drizzle.webp` | Monday Drizzle, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/rainbow_plot_twist.webp` | Rainbow Plot Twist, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/rainbow_plot_twist.webp` | Rainbow Plot Twist, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/pollen_boss_battle.webp` | Pollen Boss Battle, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/pollen_boss_battle.webp` | Pollen Boss Battle, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_backgrounds/temperature_whiplash.webp` | Temperature Whiplash, editable background | WebP | 1080x1080 px | No |
+| `assets/meme_thumbnails/temperature_whiplash.webp` | Temperature Whiplash, library thumbnail | WebP | 288x288 px | No |
+| `assets/meme_stickers/side_eye_cloud.png` | Side Eye Cloud, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/smug_sun.png` | Smug Sun, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/rain_drop.png` | Rain Drop, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/lightning_bolt.png` | Lightning Bolt, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/tiny_umbrella.png` | Tiny Umbrella, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/snowflake.png` | Snowflake, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/wind_swoosh.png` | Wind Swoosh, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/coffee_cup.png` | Coffee Cup, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/sunglasses.png` | Sunglasses, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/pollen_orb.png` | Pollen Orb, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/rainbow.png` | Rainbow, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/loading_ring.png` | Loading Ring, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/sparkle.png` | Sparkle, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/wet_sock.png` | Wet Sock, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/melting_popsicle.png` | Melting Popsicle, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/party_cloud.png` | Party Cloud, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/thermometer.png` | Thermometer, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/flying_hat.png` | Flying Hat, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/splash.png` | Splash, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/hot_toast.png` | Hot Toast, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/speech_bubble.png` | Speech Bubble, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/thought_bubble.png` | Thought Bubble, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/tissue_box.png` | Tissue Box, movable sticker | PNG | 512x512 px | Yes |
+| `assets/meme_stickers/cloud_heart.png` | Cloud Heart, movable sticker | PNG | 512x512 px | Yes |
+
+| Required content/font path | Usage |
+| --- | --- |
+| `assets/meme_content/weather_meme_catalog.v1.json` | 15 templates, safe-text zones, 90 template pairs and 50 persona pairs. |
+| `assets/meme_content/weather_stickers.v1.json` | 24 stable sticker IDs and provenance. |
+| `assets/meme_content/weather_meme_catalog.v1.schema.json` | Starter catalog schema; distinct from editor document schema. |
+| `assets/fonts/Nunito.ttf` | Locally bundled `MemeSans` font; license retained alongside. |
+| `assets/fonts/SpaceMono-Bold.ttf` | Locally bundled `MemeMono` font; license retained alongside. |
+
+All 39 SVG sources and provenance are retained under `docs/meme-assets/` for authoring, outside the runtime asset bundle. Asset IDs and paths can remain stable when replacing the explicitly labeled placeholder illustrations.
 
 ## Radar And Textures
 

@@ -4,8 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/daymaker_sample_data.dart';
+import '../../config/app_routes.dart';
+import '../fun/meme/meme_weather.dart';
+import '../../models/temperature_unit.dart';
+import '../../repositories/fake_weather_repository.dart';
 import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
@@ -182,6 +187,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
     final location = _locationController?.selectedLocation;
     if (location == null) {
       if (!mounted) return;
+      _readMemeRegistry()?.clearSource('forecast');
       setState(() {
         _weather = null;
         _activeLocationKey = null;
@@ -197,6 +203,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
       return;
     }
 
+    _readMemeRegistry()?.clearSource('forecast');
     _activeLocationKey = key;
     _showLocationSelector = false;
     _loadWeather(forceRefresh: true);
@@ -351,6 +358,11 @@ class _ForecastScreenState extends State<ForecastScreen> {
         RoastPersonas.byId(selectedPersonaId).toDayMakerPersona();
     final now = _relativeNow ?? weather.current.lastUpdated;
     final roast = _roastForWeather(weather, snapshot, selectedPersona.id);
+    final memeSource = _memeSource(roast, weather);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _readMemeRegistry()?.publish(memeSource, weather: weather);
+    });
     final location = _cityName(
       weather.current.locationName.isNotEmpty
           ? weather.current.locationName
@@ -417,8 +429,14 @@ class _ForecastScreenState extends State<ForecastScreen> {
                       ForecastRoastCard(
                         persona: selectedPersona,
                         roast: roast,
+                        sourceLabel:
+                            memeSource.isSample ? 'Sample roast' : null,
                         onNewRoast: () => _showNextRoast(selectedPersona.id),
                         onShare: () => _shareRoast(selectedPersona.id),
+                        onShareToMeme: () => context.push(
+                          AppRoutes.memeGenerator,
+                          extra: memeSource,
+                        ),
                       ),
                       SizedBox(height: gap),
                       ForecastMetricChips(weather: snapshot),
@@ -445,6 +463,36 @@ class _ForecastScreenState extends State<ForecastScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  DisplayedRoastRegistry? _readMemeRegistry() {
+    try {
+      return context.read<DisplayedRoastRegistry>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DisplayedRoastSnapshot _memeSource(Roast roast, WeatherBundle weather) {
+    var unit = TemperatureUnit.fahrenheit;
+    try {
+      unit = context.read<SettingsController>().temperatureUnit;
+    } catch (_) {
+      // Independent forecast widget tests do not require app-level settings.
+    }
+    return DisplayedRoastSnapshot(
+      id: roast.id,
+      text: roast.text,
+      personaId: roast.personaId,
+      sourceKey: 'forecast',
+      sourceLabel: 'Home forecast',
+      isSample: _roastPack == null || _repository is FakeWeatherRepository,
+      weatherSnapshot: MemeWeather.freeze(
+        weather,
+        temperatureUnit: unit,
+        isSample: _repository is FakeWeatherRepository,
       ),
     );
   }

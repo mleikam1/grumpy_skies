@@ -4,8 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/daymaker_sample_data.dart';
+import '../../config/app_routes.dart';
+import '../fun/meme/meme_weather.dart';
+import '../../models/temperature_unit.dart';
+import '../../models/weather_models.dart' show WeatherBundle;
 import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
@@ -221,6 +226,28 @@ class _RoastsScreenState extends State<RoastsScreen> {
 
     final selectedPersona = _selectedPersona!;
     final featuredRoast = _featuredRoastFor(selectedPersona);
+    final memeSource = DisplayedRoastSnapshot(
+      id: featuredRoast.id,
+      text: featuredRoast.text,
+      personaId: featuredRoast.personaId,
+      sourceKey: 'roasts',
+      sourceLabel: 'Roasts',
+      isSample: true,
+      weatherSnapshot: MemeWeather.freeze(
+        WeatherBundle.fromSnapshot(DayMakerSampleData.weatherSnapshot),
+        temperatureUnit:
+            _settingsController?.temperatureUnit ?? TemperatureUnit.fahrenheit,
+        isSample: true,
+      ),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        context.read<DisplayedRoastRegistry>().publish(memeSource);
+      } catch (_) {
+        // This screen can also run without the app's optional meme registry.
+      }
+    });
     final history = _historyFor(selectedPersona);
 
     return LayoutBuilder(
@@ -253,11 +280,32 @@ class _RoastsScreenState extends State<RoastsScreen> {
                     children: [
                       const RoastsBrandHeader(),
                       SizedBox(height: gap),
+                      const Text(
+                        'Sample roasts · Sample weather',
+                        style: DMTypography.labelSmall,
+                      ),
+                      const SizedBox(height: DMSpacing.sm),
                       FeaturedRoastCard(
                         persona: selectedPersona,
                         roast: featuredRoast,
                         weather: DayMakerSampleData.weatherSnapshot,
                         onShare: () => _shareRoast(featuredRoast),
+                      ),
+                      const SizedBox(height: DMSpacing.sm),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: DmPillButton(
+                          label: 'Share to Meme',
+                          semanticLabel:
+                              'Make a meme with this exact sample roast',
+                          leading:
+                              const Icon(Icons.add_photo_alternate_outlined),
+                          variant: DmPillButtonVariant.glass,
+                          onPressed: () => context.push(
+                            AppRoutes.memeGenerator,
+                            extra: memeSource,
+                          ),
+                        ),
                       ),
                       SizedBox(height: gap),
                       const DmSectionHeader(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../config/app_routes.dart';
 import '../features/forecast/forecast_screen.dart';
 import '../features/fun/meme_generator_screen.dart';
+import '../features/fun/meme/meme_weather.dart';
 import '../features/fun/fun_zone_screen.dart';
 import '../features/radar/radar_screen.dart';
 import '../features/settings/about_screen.dart';
@@ -62,7 +63,11 @@ final daymakerRouter = GoRouter(
             GoRoute(
               path: 'meme',
               name: 'memeGenerator',
-              builder: (context, state) => const MemeGeneratorScreen(),
+              builder: (context, state) => MemeGeneratorScreen(
+                initialRoast: state.extra is DisplayedRoastSnapshot
+                    ? state.extra as DisplayedRoastSnapshot
+                    : null,
+              ),
             ),
           ],
         ),
