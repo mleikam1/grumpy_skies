@@ -104,6 +104,8 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
                       revealed: _revealed,
                       personaName: persona!.displayName,
                       avatarAsset: persona.assetPath,
+                      personaId: source.personaId,
+                      mood: source.mood,
                       roastText: source.text,
                       xpReward: 0,
                       onToggleReveal: () =>

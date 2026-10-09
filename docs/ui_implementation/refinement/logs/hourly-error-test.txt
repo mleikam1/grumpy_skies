@@ -1,0 +1,17 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_metrics_test.dart
+00:00 +0: hourly provider error grows at 2x light
+00:00 +1: metric roles meet contrast in light
+00:00 +2: metrics keep real values and wrap at 2x light
+00:00 +3: hourly provider error grows at 2x dark
+00:00 +4: metric roles meet contrast in dark
+00:00 +5: metrics keep real values and wrap at 2x dark
+00:00 +6: missing provider astronomy and UV remain unavailable after persistence
+[GrumpySkies] weather API baseUrl=https://weather.invalid emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/forecast lat=40.000 lon=-90.000
+[GrumpySkies] weather display location=Overland Park, KS, US lat=40.000 lon=-90.000
+[GrumpySkies] weather endpoint /weather/forecast lat=40.000 lon=-90.000
+[GrumpySkies] Forecast repository hourly count: 0 daily count: 0
+00:00 +7: snapshot adapter cannot invent sun or moon event times
+00:00 +8: visibility preserves imperial miles and metric kilometres
+00:00 +9: unsupported AQI and absent rain are explicitly unavailable
+00:00 +10: All tests passed!

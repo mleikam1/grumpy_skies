@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../design/dm_colors.dart';
 import '../../../design/dm_spacing.dart';
@@ -12,6 +13,12 @@ import '../../../models/weather_models.dart';
 import '../../../services/open_weather_backend_client.dart';
 
 const double radarCityZoom = 10;
+
+/// OSM's public service is keyless and best effort. Keep HTTP caching enabled,
+/// identify native requests, and load only the visible viewport (no prefetch).
+/// See docs/ui_implementation/refinement/RADAR.md for the usage policy.
+const radarBasemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const radarMapUserAgent = 'DayMaker/1.0 (com.example.grumpy_skies)';
 
 class OpenWeatherRadarMap extends StatefulWidget {
   const OpenWeatherRadarMap({
@@ -23,6 +30,7 @@ class OpenWeatherRadarMap extends StatefulWidget {
     required this.frame,
     this.previousFrame,
     this.onTileIssue,
+    this.onBasemapIssue,
     this.tileProvider,
   });
 
@@ -33,6 +41,7 @@ class OpenWeatherRadarMap extends StatefulWidget {
   final RadarFrame frame;
   final RadarFrame? previousFrame;
   final ValueChanged<String?>? onTileIssue;
+  final ValueChanged<bool>? onBasemapIssue;
   final TileProvider? tileProvider;
 
   @override
@@ -50,6 +59,8 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
   var _healthCheckSerial = 0;
   String? _lastHealthCheckKey;
   Timer? _healthDebounce;
+  final _failedBasemapTiles = <TileCoordinates>{};
+  bool _lastBasemapIssue = false;
 
   LatLng get _center => LatLng(widget.location.lat, widget.location.lon);
 
@@ -116,9 +127,19 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
 
   @override
   Widget build(BuildContext context) {
-    final attribution = widget.frame.source == 'noaa_mrms'
-        ? 'Map © OpenStreetMap contributors © CARTO · Radar © NOAA/NWS MRMS'
-        : 'Map © OpenStreetMap contributors © CARTO · Radar © OpenWeather';
+    final basemap = TileLayer(
+      tileProvider: widget.tileProvider,
+      urlTemplate: radarBasemapUrl,
+      userAgentPackageName: radarMapUserAgent,
+      // Retain flutter_map's HTTP-aware native cache / browser cache.
+      panBuffer: 0,
+      maxNativeZoom: 19,
+      tileBuilder: (context, child, tile) => _BasemapTileStatus(
+        tile: tile,
+        onStatus: _handleBasemapTileStatus,
+        child: child,
+      ),
+    );
 
     return FlutterMap(
       mapController: widget.mapController,
@@ -132,14 +153,11 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
         ),
       ),
       children: [
-        TileLayer(
-          tileProvider: widget.tileProvider,
-          urlTemplate:
-              'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.grumpy_skies',
-          subdomains: const ['a', 'b', 'c', 'd'],
-          maxNativeZoom: 19,
-        ),
+        // Transform the cartographic base only; precipitation keeps its source palette.
+        if (Theme.of(context).brightness == Brightness.dark)
+          darkModeTilesContainerBuilder(context, basemap)
+        else
+          basemap,
         if (widget.previousFrame != null &&
             (widget.previousFrame!.timestamp != widget.frame.timestamp ||
                 widget.previousFrame!.source != widget.frame.source))
@@ -173,13 +191,24 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
             ),
           ],
         ),
-        Positioned(
-          left: DMSpacing.md,
-          bottom: 132,
-          child: _MapAttribution(text: attribution),
-        ),
       ],
     );
+  }
+
+  void _handleBasemapTileStatus(TileCoordinates coordinates, bool failed) {
+    if (!mounted) return;
+    if (failed) {
+      _failedBasemapTiles.add(coordinates);
+    } else {
+      _failedBasemapTiles.remove(coordinates);
+    }
+    final hasIssue = _failedBasemapTiles.isNotEmpty;
+    if (hasIssue == _lastBasemapIssue) return;
+    _lastBasemapIssue = hasIssue;
+    // Tile listeners may run during map layout or disposal.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onBasemapIssue?.call(_lastBasemapIssue);
+    });
   }
 
   Widget _radarTileLayer({
@@ -198,7 +227,8 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
       tileProvider: widget.tileProvider,
       key: ValueKey('radar-${frame.source}-${frame.timestamp}'),
       urlTemplate: radarTemplate,
-      userAgentPackageName: 'com.example.grumpy_skies',
+      userAgentPackageName: radarMapUserAgent,
+      panBuffer: 0,
       minNativeZoom: 3,
       maxNativeZoom: nativeMaxZoom,
       maxZoom: 12,
@@ -247,30 +277,109 @@ class _LocationMarker extends StatelessWidget {
   }
 }
 
-class _MapAttribution extends StatelessWidget {
-  const _MapAttribution({required this.text});
+/// Kept above the radar sheets/notices by RadarScreen so licence attribution
+/// stays visible at every sheet position and large text size.
+class RadarMapAttribution extends StatelessWidget {
+  const RadarMapAttribution({super.key, required this.source});
 
-  final String text;
+  final String source;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Material(
         color: context.dmColors.surface,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DMSpacing.xs,
-          vertical: 4,
-        ),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: context.dmColors.textSecondary,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () async {
+            final opened = await launchUrl(
+              Uri.parse('https://www.openstreetmap.org/copyright'),
+              mode: LaunchMode.externalApplication,
+            );
+            if (!opened && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Map licence: openstreetmap.org/copyright'),
+              ));
+            }
+          },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: DMSpacing.xs, vertical: 4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '© OpenStreetMap contributors',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: context.dmColors.textPrimary,
+                          decoration: TextDecoration.underline,
+                        ),
+                  ),
+                  Text(
+                    source == 'noaa_mrms'
+                        ? 'Radar © NOAA/NWS MRMS'
+                        : 'Radar © OpenWeather',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: context.dmColors.textSecondary,
+                        ),
+                  ),
+                ],
               ),
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+/// Tracks rendered tile failures separately from radar-overlay health. A tile
+/// that recovers or leaves the viewport no longer keeps the warning active.
+class _BasemapTileStatus extends StatefulWidget {
+  const _BasemapTileStatus(
+      {required this.tile, required this.onStatus, required this.child});
+  final TileImage tile;
+  final void Function(TileCoordinates, bool) onStatus;
+  final Widget child;
+
+  @override
+  State<_BasemapTileStatus> createState() => _BasemapTileStatusState();
+}
+
+class _BasemapTileStatusState extends State<_BasemapTileStatus> {
+  @override
+  void initState() {
+    super.initState();
+    widget.tile.addListener(_report);
+    _report();
+  }
+
+  @override
+  void didUpdateWidget(covariant _BasemapTileStatus oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tile == widget.tile) return;
+    oldWidget.tile.removeListener(_report);
+    oldWidget.onStatus(oldWidget.tile.coordinates, false);
+    widget.tile.addListener(_report);
+    _report();
+  }
+
+  void _report() =>
+      widget.onStatus(widget.tile.coordinates, widget.tile.loadError);
+
+  @override
+  void dispose() {
+    widget.tile.removeListener(_report);
+    widget.onStatus(widget.tile.coordinates, false);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

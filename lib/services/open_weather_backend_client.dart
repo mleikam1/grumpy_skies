@@ -466,7 +466,6 @@ class OpenWeatherBackendClient {
     final windSpeed = (json['windSpeed'] as num?)?.toDouble() ?? 0;
     final windGust = (json['windGust'] as num?)?.toDouble();
     final dewPoint = (json['dewPoint'] as num?)?.toDouble();
-    final now = DateTime.now();
     final observedAt = _dateFromJson(json['observedAt'] ?? json['dt']);
     final sourceUpdatedAt = _dateFromJson(json['sourceUpdatedAt']);
     final fetchedAt = _dateFromJson(json['fetchedAt']);
@@ -495,12 +494,16 @@ class OpenWeatherBackendClient {
       precipitationChanceKnown: false,
       aqi: 0,
       aqiCategory: '',
-      sunrise: sunrise ?? DateTime(now.year, now.month, now.day, 6),
-      sunset: sunset ?? DateTime(now.year, now.month, now.day, 18),
-      moonrise: DateTime(now.year, now.month, now.day, 21),
-      moonset: DateTime(now.year, now.month, now.day + 1, 6),
-      uvIndex: (json['uvi'] as num?)?.toDouble() ?? 0,
-      uvCategory: _uvCategory((json['uvi'] as num?)?.toDouble() ?? 0),
+      sunrise: sunrise ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      sunset: sunset ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      moonrise: _dateFromJson(json['moonrise']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      moonset: _dateFromJson(json['moonset']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      uvIndex: (json['uvi'] as num?)?.toDouble() ?? -1,
+      uvCategory: json['uvi'] is num
+          ? _uvCategory((json['uvi'] as num).toDouble())
+          : '',
       chaosMeterPercent: _chaosMeter(weatherId),
       lastUpdated: observedAt ??
           sourceUpdatedAt ??

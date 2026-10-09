@@ -571,6 +571,7 @@ class _ForecastScreenState extends State<ForecastScreen>
       id: roast.id,
       text: roast.text,
       personaId: roast.personaId,
+      mood: roast.resolvedMood,
       sourceKey: 'forecast',
       sourceLabel: 'Home forecast',
       isSample: _roastPack == null || _repository is FakeWeatherRepository,
@@ -612,6 +613,7 @@ class _ForecastScreenState extends State<ForecastScreen>
       weatherSnapshotId: snapshot.id,
       text: selection.renderedText,
       category: selection.line.type.name,
+      mood: selection.line.mood,
       createdAt: weather.current.displayUpdatedAt,
       xpReward: 15,
     );
@@ -832,9 +834,8 @@ class ShortTermPrecipitationCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: DMTypography.title,
+                      style: DMTypography.body
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -1022,12 +1023,13 @@ class _WeatherAttributionFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      'Weather data © OpenWeather',
-      textAlign: TextAlign.center,
-      style: DMTypography.bodySmall.copyWith(
-        color: context.dmColors.textMuted,
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text('Weather data © OpenWeather',
+          textAlign: TextAlign.center,
+          style: DMTypography.bodySmall.copyWith(
+              fontWeight: FontWeight.w400,
+              color: context.dmColors.textSecondary)),
     );
   }
 }

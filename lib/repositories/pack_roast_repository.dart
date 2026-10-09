@@ -90,6 +90,7 @@ class PackRoastRepository implements RoastRepository {
         weatherSnapshotId: weatherSnapshotId,
         text: selection.renderedText,
         category: selection.line.type.name,
+        mood: selection.line.mood,
         createdAt: _clock(),
         xpReward: 0);
     _daily[id] = roast;

@@ -1,0 +1,132 @@
+[
+  {
+    "mood": "annoyed",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "572cee9a22e5ebed736662a35e5d259c618b5290eb6d98c3fdad812b9ed72d2f"
+  },
+  {
+    "mood": "complaining",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "e1a2f40b399ac66dd2d9a256322c75776dd8c13727cc5af3b735eee0ff2b3cd6"
+  },
+  {
+    "mood": "confident",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "d64f4b4ca9ef4d51330de7c7e56aa58dbc54bdf511e772ba2f973b566280c8cc"
+  },
+  {
+    "mood": "cozy",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "5d5cd365e03cd7d6aac3f017b649cd821347481b97a81b3007ede090505201fa"
+  },
+  {
+    "mood": "excited",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "434f7cae6a427770ccf10236f7c38114cead9c9919b3c4f51c2f4dc553a58d44"
+  },
+  {
+    "mood": "happy",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "3a05a5578f40db44d1be115f9bac1682f5b1ce477fd048cb9ab706dcd8454b80"
+  },
+  {
+    "mood": "hyped",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "35ea45c0c4348d6965eee042c46b6d93deea58dfe1cc54187d0a1b69960fa77d"
+  },
+  {
+    "mood": "neutral",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "c2152b88f37c5d4382cb614185ae8e1edeb30517461671956b99c16fcdd075ec"
+  },
+  {
+    "mood": "sad",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "4a9464ced5b964e52633bd57324d683d2d52336a57e19a8819887177b068cbcb"
+  },
+  {
+    "mood": "worried",
+    "size": [
+      1086,
+      1448
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "0e0696d677332ef1624fdddc24da6cd2ad69053a427c3e86bd869af50766e152"
+  }
+]

@@ -3,6 +3,7 @@ import '../../../design/dm_theme.dart';
 import '../../../models/temperature_unit.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/dm_approved_components.dart';
+import '../../../shared/widgets/dm_roast_mood_badge.dart';
 import '../models/roast_persona.dart';
 
 class FeaturedRoastCard extends StatelessWidget {
@@ -20,11 +21,11 @@ class FeaturedRoastCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dmColors;
-    final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final mood = roast.resolvedMood;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: persona.id == 'karen'
+        gradient: persona.id == 'karen' || persona.id == 'two_year_old'
             ? colors.karenGradient
             : colors.grandpaGradient,
         borderRadius: BorderRadius.circular(22),
@@ -34,78 +35,52 @@ class FeaturedRoastCard extends StatelessWidget {
                 : colors.grandpaBorder),
       ),
       child: LayoutBuilder(builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 300 || scale > 1.35;
+        final large = constraints.maxWidth < 275 ||
+            MediaQuery.textScalerOf(context).scale(14) > 19;
         final title =
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('MEET YOUR FORECASTER',
               style: TextStyle(
                   fontSize: 9,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.1,
                   fontWeight: FontWeight.w800,
                   color: colors.textSecondary)),
           const SizedBox(height: 10),
           Text('${persona.name}.',
               style: const TextStyle(
-                  fontSize: 39,
-                  height: 1.05,
-                  letterSpacing: -1.2,
+                  fontSize: 32,
+                  height: 1.08,
+                  letterSpacing: -1,
                   fontWeight: FontWeight.w800)),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: colors.karenBorder)),
-            child: Text(
-                persona.id == 'grandpa'
-                    ? 'WEATHER WISEGUY'
-                    : RoastPersonas.byId(persona.id).badgeText,
-                style: TextStyle(
-                    fontSize: 9,
-                    letterSpacing: .9,
-                    fontWeight: FontWeight.w800,
-                    color: colors.insightIcon)),
-          ),
+          DmPersonaTitleBadge(
+              label: persona.id == 'grandpa'
+                  ? 'WEATHER WISEGUY'
+                  : RoastPersonas.byId(persona.id).badgeText),
+          const SizedBox(height: 10),
+          DmRoastMoodBadge(mood: mood),
         ]);
-        final quote = Text('“${roast.text}”',
-            style: const TextStyle(
-                fontSize: 21,
-                height: 1.22,
-                letterSpacing: -.35,
-                fontWeight: FontWeight.w700));
+        final portrait = DmPersonaPortrait(
+            personaId: persona.id,
+            mood: mood,
+            height: large ? 155 : 180,
+            width: large ? null : constraints.maxWidth * .43);
         return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (narrow) ...[
-                title,
-                SizedBox(
-                    height: 150,
-                    child: DmPersonaPortrait(personaId: persona.id)),
-                const SizedBox(height: 12),
-                quote,
-              ] else
-                Stack(children: [
-                  Positioned(
-                      top: 0,
-                      right: -12,
-                      child: DmPersonaPortrait(
-                          personaId: persona.id,
-                          width: constraints.maxWidth * .47,
-                          height: 213)),
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                            padding: EdgeInsets.only(
-                                right: constraints.maxWidth * .3),
-                            child: title),
-                        const SizedBox(height: 24),
-                        Padding(
-                            padding: EdgeInsets.only(
-                                right: constraints.maxWidth * .32),
-                            child: quote),
-                      ]),
+              if (large) ...[title, const SizedBox(height: 10), portrait] else
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Expanded(child: title),
+                  const SizedBox(width: 10),
+                  portrait,
                 ]),
+              const SizedBox(height: 16),
+              Text('“${roast.text}”',
+                  style: const TextStyle(
+                      fontSize: 21,
+                      height: 1.22,
+                      letterSpacing: -.35,
+                      fontWeight: FontWeight.w700)),
               const SizedBox(height: 18),
               Divider(color: colors.grandpaBorder, height: 1),
               const SizedBox(height: 12),

@@ -15,7 +15,7 @@ void main() {
       final validation = const RoastPackValidator().validatePack(pack);
 
       expect(pack.schemaVersion, 1);
-      expect(pack.packVersion, '2026.06.26.1');
+      expect(pack.packVersion, '2026.10.09.1');
       expect(pack.personas, containsAll(supportedWeatherRoastPersonas));
       expect(pack.roasts, hasLength(35));
       expect(validation.errors, isEmpty);

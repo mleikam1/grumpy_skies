@@ -10,6 +10,9 @@ import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../shared/widgets/daymaker_components.dart';
+import '../../../shared/widgets/dm_approved_components.dart';
+import '../../../shared/widgets/dm_roast_mood_badge.dart';
+import '../models/roast_mood.dart';
 
 class AdvancedRoastRevealCard extends StatelessWidget {
   const AdvancedRoastRevealCard({
@@ -22,6 +25,8 @@ class AdvancedRoastRevealCard extends StatelessWidget {
     required this.onToggleReveal,
     required this.onRevealGesture,
     required this.onShare,
+    this.personaId,
+    this.mood,
   });
 
   final bool revealed;
@@ -32,6 +37,8 @@ class AdvancedRoastRevealCard extends StatelessWidget {
   final VoidCallback onToggleReveal;
   final VoidCallback onRevealGesture;
   final VoidCallback onShare;
+  final String? personaId;
+  final RoastMood? mood;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +66,8 @@ class AdvancedRoastRevealCard extends StatelessWidget {
                     key: const ValueKey('revealed-roast'),
                     personaName: personaName,
                     avatarAsset: avatarAsset,
+                    personaId: personaId,
+                    mood: mood,
                     roastText: roastText,
                     xpReward: xpReward,
                     onShare: onShare,
@@ -169,6 +178,8 @@ class _RevealedRoastContent extends StatelessWidget {
     required this.roastText,
     required this.xpReward,
     required this.onShare,
+    this.personaId,
+    this.mood,
   });
 
   final String personaName;
@@ -176,6 +187,8 @@ class _RevealedRoastContent extends StatelessWidget {
   final String roastText;
   final int xpReward;
   final VoidCallback onShare;
+  final String? personaId;
+  final RoastMood? mood;
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +202,8 @@ class _RevealedRoastContent extends StatelessWidget {
           final avatar = _PersonaAvatar(
             personaName: personaName,
             avatarAsset: avatarAsset,
+            personaId: personaId,
+            mood: mood,
           );
           final body = _RoastBody(
             roastText: roastText,
@@ -224,10 +239,14 @@ class _PersonaAvatar extends StatelessWidget {
   const _PersonaAvatar({
     required this.personaName,
     required this.avatarAsset,
+    this.personaId,
+    this.mood,
   });
 
   final String personaName;
   final String avatarAsset;
+  final String? personaId;
+  final RoastMood? mood;
 
   @override
   Widget build(BuildContext context) {
@@ -242,17 +261,24 @@ class _PersonaAvatar extends StatelessWidget {
             color: context.dmColors.surfaceSecondary,
             borderRadius: BorderRadius.circular(18),
           ),
-          child: DmAssetImage(
-            assetPath: avatarAsset,
-            width: 106,
-            height: 106,
-            fit: BoxFit.cover,
-            alignment: Alignment.topCenter,
-            borderRadius: BorderRadius.circular(16),
-            semanticLabel: '$personaName avatar',
-            placeholderGradient: DMGradients.sunrise,
-            placeholderIcon: Icons.person_rounded,
-          ),
+          child: personaId != null
+              ? DmPersonaPortrait(
+                  personaId: personaId!,
+                  mood: mood,
+                  width: 106,
+                  height: 106,
+                )
+              : DmAssetImage(
+                  assetPath: avatarAsset,
+                  width: 106,
+                  height: 106,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  borderRadius: BorderRadius.circular(16),
+                  semanticLabel: '$personaName avatar',
+                  placeholderGradient: DMGradients.sunrise,
+                  placeholderIcon: Icons.person_rounded,
+                ),
         ),
         const SizedBox(height: DMSpacing.sm),
         Text(
@@ -263,6 +289,10 @@ class _PersonaAvatar extends StatelessWidget {
             color: context.dmColors.textPrimary,
           ),
         ),
+        if (mood != null) ...[
+          const SizedBox(height: 8),
+          DmRoastMoodBadge(mood: mood!),
+        ],
       ],
     );
   }

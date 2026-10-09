@@ -1,4 +1,4 @@
-import 'weather_roast_models.dart';
+import 'roast_content_models.dart';
 
 class RoastPackValidationResult {
   const RoastPackValidationResult({

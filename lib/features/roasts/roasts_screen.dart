@@ -206,6 +206,7 @@ class _RoastsScreenState extends State<RoastsScreen> {
       id: roast.id,
       text: roast.text,
       personaId: roast.personaId,
+      mood: roast.resolvedMood,
       sourceKey: 'roasts',
       sourceLabel: 'Roasts',
       isSample: widget.isSample,
@@ -481,7 +482,9 @@ class _RoastsScreenState extends State<RoastsScreen> {
                   SizedBox(
                       width: 44,
                       height: 52,
-                      child: DmPersonaPortrait(personaId: roast.personaId)),
+                      child: DmPersonaPortrait(
+                          personaId: roast.personaId,
+                          mood: roast.resolvedMood)),
                   const SizedBox(width: 10),
                   Expanded(
                       child: Column(
@@ -494,7 +497,7 @@ class _RoastsScreenState extends State<RoastsScreen> {
                                 fontWeight: FontWeight.w700, fontSize: 13)),
                         const SizedBox(height: 4),
                         Text(
-                            '${RoastPersonas.byId(roast.personaId).displayName} · ${_ageLabel(roast.createdAt)}',
+                            '${RoastPersonas.byId(roast.personaId).displayName} · ${roast.resolvedMood.label} · ${_ageLabel(roast.createdAt)}',
                             style: TextStyle(
                                 fontSize: 11,
                                 color: context.dmColors.textMuted)),

@@ -69,8 +69,9 @@ void main() {
       find.text('“It’s 72°F and somehow still making a scene.”'),
       findsOneWidget,
     );
-    expect(find.text('38% rain'), findsWidgets);
-    expect(find.text('82 Moderate'), findsWidgets);
+    expect(find.text('38%'), findsWidgets);
+    expect(find.text('82'), findsOneWidget);
+    expect(find.text('Moderate'), findsWidgets);
     expect(find.text('74°'), findsWidgets);
     expect(find.text('7-day forecast'), findsOneWidget);
     await tester.ensureVisible(find.text('Weather data © OpenWeather'));

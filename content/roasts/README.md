@@ -23,6 +23,10 @@ Run this from the Flutter app root:
 dart run tool/build_roast_pack.dart
 ```
 
+The builder and validator share pure Dart content models with the app, so this
+command runs without loading Flutter. To review a build without replacing the
+bundled pack, add `--output /tmp/daymaker-roast-pack.json`.
+
 The builder reads:
 
 ```text
@@ -140,3 +144,22 @@ severe
 To add a persona, roast type, roast level, daypart, placeholder, or weather tag,
 update `weather_roast_models.dart`, the CSV validator/builder tests, and the
 CSV template. New severe-weather lines must stay safety-first.
+
+## Emotion metadata (October 9 refinement)
+
+The optional `mood` column/JSON field selects the expression independently of the
+persona ID: `happy`, `excited`, `hyped`, `cozy`, `complaining`, `annoyed`, `sad`,
+`worried`, `confident`, or `neutral`. The bundled 2026.10.09.1 pack adds editorial
+moods to all 35 existing lines without changing their text or weather conditions.
+Older CSVs without this column still build. Invalid nonempty CSV moods fail
+validation; missing or unfamiliar JSON moods use deterministic content/persona
+inference, so old cached remote packs remain compatible. Explicit `neutral` is an
+intentional expression, not a missing value.
+
+Mood is carried with the displayed quote through Today, Roasts, reveal and share
+handoffs. Another selects a new line using the existing selection rules; rebuilding
+or changing appearance never randomly chooses a new expression. Persona IDs,
+aliases, settings keys, cache keys and meme document schemas are unchanged.
+Production artwork paths and original generation sources are documented in
+`docs/ui_implementation/ASSET_STATUS.md`. The optional remote files above retain
+their published versions; this refinement does not deploy or replace them.

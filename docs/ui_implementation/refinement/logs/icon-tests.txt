@@ -1,0 +1,8 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/openweather_icon_mapper_test.dart
+00:00 +0: missing sun events do not manufacture night and provider code wins
+00:00 +1: OpenWeatherIconMapper uses OpenWeather icon suffix for clear day and night variants
+00:00 +2: OpenWeatherIconMapper maps OpenWeather rain and storm condition IDs
+00:00 +3: OpenWeatherIconMapper falls back to sunrise and sunset when icon code is missing
+00:00 +4: OpenWeatherIconMapper uses OpenWeather icon family when condition ID is unavailable
+00:00 +5: OpenWeatherIconMapper falls back to text and then a package-safe default
+00:00 +6: All tests passed!

@@ -1,0 +1,85 @@
+[
+  {
+    "check": "final-format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test",
+      "tool"
+    ],
+    "started_utc": "2026-10-09T22:55:01.183210+00:00",
+    "finished_utc": "2026-10-09T22:55:01.953493+00:00",
+    "exit_code": 0
+  },
+  {
+    "check": "final-analyze",
+    "command": [
+      "flutter",
+      "analyze",
+      "--no-pub"
+    ],
+    "started_utc": "2026-10-09T22:55:01.953986+00:00",
+    "finished_utc": "2026-10-09T22:55:07.756058+00:00",
+    "exit_code": 0
+  },
+  {
+    "check": "final-tests",
+    "command": [
+      "flutter",
+      "test",
+      "--no-pub",
+      "--reporter",
+      "expanded"
+    ],
+    "started_utc": "2026-10-09T22:55:07.756704+00:00",
+    "finished_utc": "2026-10-09T22:55:56.887970+00:00",
+    "exit_code": 0
+  },
+  {
+    "check": "build-web",
+    "command": [
+      "flutter",
+      "build",
+      "web",
+      "--release",
+      "--no-pub",
+      "--dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api"
+    ],
+    "started_utc": "2026-10-09T22:55:56.888858+00:00",
+    "finished_utc": "2026-10-09T22:56:30.789489+00:00",
+    "exit_code": 0
+  },
+  {
+    "check": "build-android",
+    "command": [
+      "flutter",
+      "build",
+      "apk",
+      "--debug",
+      "--no-pub",
+      "--dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api"
+    ],
+    "started_utc": "2026-10-09T22:56:30.790179+00:00",
+    "finished_utc": "2026-10-09T22:57:15.374089+00:00",
+    "exit_code": 0
+  },
+  {
+    "check": "build-ios-simulator",
+    "command": [
+      "flutter",
+      "build",
+      "ios",
+      "--simulator",
+      "--debug",
+      "--no-codesign",
+      "--no-pub",
+      "--dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api"
+    ],
+    "started_utc": "2026-10-09T22:57:15.376935+00:00",
+    "finished_utc": "2026-10-09T22:58:33.455176+00:00",
+    "exit_code": 0
+  }
+]

@@ -1,53 +1,77 @@
-# Acceptance results — October 9, 2026
+# Acceptance results — current refinement, October 9, 2026
 
-Status: implementation and local functional verification complete; visual fidelity and live radar have the explicit limits below. This is not an exact or production-approved match.
+This ledger covers the local follow-up to `d259422`. The prior implementation's 426 passing tests, push to `origin/main`, and iPhone installation do not establish delivery of these new changes. Those earlier results remain archived in [PRIOR_ACCEPTANCE_RESULTS.md](refinement/PRIOR_ACCEPTANCE_RESULTS.md).
+
+**Current status:** source and artwork are implemented; the final 480-test suite, analyzer, formatting, production-browser and controlled visual checks pass. Web release, Android debug and iOS simulator builds pass. The user has authorized delivery to `origin/main`; physical-iPhone installation of this refinement is not included.
 
 ## Verification ledger
 
-| Check | Result | Evidence |
+| Check | Current result | Evidence |
 | --- | --- | --- |
-| Original baseline | PASS: clean analyzer, 336 tests | logs/baseline-analyze.log, logs/baseline-test.log |
-| Final formatting | PASS: 239 Dart files, zero changes required | logs/format-check.log |
-| Final analyzer | PASS: no issues | logs/final-analyze.log |
-| Final unit/widget suite | PASS: 426 tests | logs/final-tests.log |
-| Fixture visual/responsive suite | PASS: 46 tests; final recaptures retained | logs/fixture-capture.log, VISUAL_QA.md |
-| Web release | PASS; final artifact refresh also passed | logs/build-web.log, logs/build-results.json |
-| Android debug APK | PASS; final artifact refresh also passed | logs/build-android.log, logs/build-results.json |
-| iOS simulator debug | PASS, unsigned simulator app | logs/build-ios-simulator.log, logs/build-results.json |
-| macOS build | BLOCKED: repository has no macOS desktop project | logs/build-macos.log |
-| Diff whitespace | PASS | logs/diff-check.log |
-| Live forecast service | HTTP 200, real forecast response | logs/live-service-check.json |
-| Live global radar metadata | HTTP 200 with provider frame metadata | logs/live-service-check.json |
-| Live global radar tiles | BLOCKED: health response upstream 401, no valid image | logs/live-service-check.json |
+| Final post-fix full suite | PASS: 480 tests | [Full test log](refinement/logs/final-tests.txt) |
+| Final analyzer | PASS: no issues, 4.8 seconds | [Analyzer log](refinement/logs/final-analyze.txt) |
+| Final formatting | PASS: 252 files, zero changed | [Format log](refinement/logs/final-format.txt) |
+| Final emotion card/gallery capture run | PASS: 10 checks, 20 images | [Capture log](refinement/logs/final-emotion-capture.txt), [screenshots](refinement/screenshots/) |
+| Focused forecast/readability tests | PASS: 35 checks at the recorded forecast checkpoint | [Forecast report](refinement/FORECAST_REFINEMENT.md) |
+| Focused radar tests | PASS: 13 checks | [Radar report](refinement/RADAR.md) |
+| Persona asset completeness | PASS: 50/50, 50 unique hashes, all native RGBA, complete provenance, exact source-byte equality | [Verification](artwork/emotions/verification.json), [per-file metadata](artwork/emotions/emotion_asset_metadata.json) |
+| Web release | PASS: compiled production entrypoint | [Build log](refinement/logs/build-web.txt) |
+| Android debug APK | PASS: debug APK | [Build log](refinement/logs/build-android.txt) |
+| iOS simulator debug | PASS: unsigned simulator application | [Build log](refinement/logs/build-ios-simulator.txt) |
+| Current physical-iPhone installation | NOT PERFORMED | Earlier `d259422` installation remains separate |
+| Live forecast and NOAA MRMS | PASS at capture time; actual browser weather and radar playback | [Live browser QA](refinement/LIVE_BROWSER_QA.md), [backend health](refinement/radar_evidence/backend_health.json) |
+| Live OpenWeather global/futurecast radar | OWNER ACTION: upstream 401 / key rejected | [Backend health](refinement/radar_evidence/backend_health.json) |
 
-The first post-change full run had five failures: four old UI/catalog expectations and a new semantics-test teardown issue. These were corrected, preserving exact-roast, navigation, asset-manifest and rendered-PNG assertions. The final full run passed. A concurrent native-asset test invocation also hit a transient generated-file signing race; a subsequent clean run passed. Neither issue is presented as a pre-existing test failure.
+The first current-refinement full run passed 472 checks. An expanded asset test subsequently failed because it assumed many pixels had alpha exactly 255; generated artwork is predominantly nearly opaque. The corrected assertion requires more than 100,000 visible pixels with alpha at least 250, along with transparency, native dimensions, unique hashes and bundled loading. PNG bytes were not changed to satisfy the test. The subsequent 478-test run passed. A final review then found fixed-height clipping in the hourly unavailable state at 200% text; the content now grows, two theme regressions were added, and the final post-fix run passed all 480 tests.
 
-## Behavior verified
+## Behavior and visual evidence
 
-- Separate Light/Dark tokens and persisted Light/Dark/System; new-install Light, legacy preference migration, serialized saves, errors/retry, saved-Dark first Flutter frame, System brightness and explicit override.
-- Shared layout/artwork across appearances; no theme-driven weather request, persona reset, quote reroll, route replacement, scroll reset, draft change or document recolor. Tests include real Today state and real editor draft/undo with a keyboard inset.
-- Four destinations in the approved order; /forecast retained; header Settings route/back, legacy redirects, focused editor/reveal navigation reservation and existing monetization guards.
-- Today: real weather units/timezone/observation age, honest unavailable/offline states, race-safe location changes, real-data insight details, local Another, exact Share/Copy/meme snapshot.
-- Roasts: real cached weather/local editorial pack, five preserved persona IDs/aliases, persisted selection, anti-repeat, genuine displayed session history and exact sharing. Reveal uses a frozen displayed snapshot or an empty state, with keyboard and reduced-motion support; invented rewards were removed.
-- Fun: working local tabs, three quick templates plus featured editable meme, existing activities retained. All19 catalog templates render PNGs; all 15 legacy templates and saved asset paths remain available.
-- Existing meme storage/import/recovery/autosave/layers/undo/export/cancel tests pass. Preview is memory-only; native lost-photo recovery stays enabled in production. New template/document query routes work.
-- Serious alerts suppress roast display/actions; existing ad eligibility/consent/modal/operation tests pass. No ad was added to the hero or editor canvas.
-- Widths 320/360/390/430/768/1440 exercised. Both themes at 2× text pass on all three main screens; reduced motion, keyboard Tab+Enter/Space, labelled/selected navigation semantics and editor keyboard inset pass. Settings/About/welcome also cover narrow large text. This is not a manual VoiceOver/TalkBack certification.
+[Live app overview](refinement/live-overview.jpg) and [live browser notes](refinement/LIVE_BROWSER_QA.md) cover the actual production `lib/main.dart` entrypoint at a 390 × 844 viewport, using the existing backend and a manual public-city search for Overland Park. No personal coordinates or device-location permission were needed.
 
-## Actual browser interaction
+- Today loaded real weather. Details retained real values, correct units/location timezone, readable labels and grouped event cards. Unsupported UV/AQI, missing moon times and absent last-hour precipitation displayed unavailable.
+- The seven-day sheet opened above the bottom navigation, scrolled to Thursday and kept long conditions readable. Light/Dark capture pairs document the same flow.
+- The map displayed actual OSM cartography without the prior CARTO watermark. NOAA frames came through the existing radar API. Play changed to Pause and advanced the frame label; playback was then paused. Local dry imagery was not replaced with invented precipitation.
+- Switching Light to Dark retained the current weather, Karen quote and expression. The Settings Light/Dark/System model remains in place; automated state/persistence and system-mode behavior are part of regression coverage.
+- Live selection of all five personas showed corresponding artwork and mood labels. Roasts displayed the explicit Complaining expression and badge with the real local editorial quote. Share showed that exact text, and Make a meme opened the existing studio with the same bottom caption. No external social message was sent.
 
-The in-app browser ran lib/main_preview.dart at 127.0.0.1:8765. Enabled Flutter semantics; opened Settings from Today, switched Dark, returned with the same quote/weather, navigated to Fun, opened Current mood in the real editor, typed “Same forecast. Tested in the real editor.”, and rendered a 1080×1080 PNG with that caption. Save Image reported “Download requested. Check your browser downloads.” The final filesystem download was not verified, so this is not claimed as completed file delivery. No native share sheet or photo-library save was manually tested.
+The `live_*.jpg` files are browser screenshots, including the debug ribbon. `after_*.png`, canonical emotion cards and expression galleries are real-widget captures using clearly identified controlled fixtures. The seven-day stress fixture tests long conditions and 200% text; it is not a live forecast. Radar evidence separates a real, single visible OSM/NOAA viewport from simulated unavailable cases. See [forecast before/after evidence](refinement/FORECAST_REFINEMENT.md), [radar evidence](refinement/RADAR.md) and [emotion behavior](refinement/EMOTION_SYSTEM.md).
 
-A browser warning still identifies the pre-existing missing optional Crazy Day Predictor wheel PNG. Its existing Flutter fallback keeps the activity usable. It is outside the11 approved artwork assets and remains a legacy illustration task.
+Automated coverage includes metric text contrast ≥4.5:1 and icon contrast ≥3:1, narrow/large-text layouts, reachable daily/hourly content, modal navigation blocking and close controls, real-data/unavailable persistence, deterministic mood precedence/inference, legacy CSV/JSON compatibility, persona aliases and same-persona fallback, exact snapshot handoff, and real weather/radar behavior. Existing settings, navigation, alert/ad guards, meme storage/editor/export and accessibility regressions remain in the full suite. This is not manual VoiceOver/TalkBack certification.
 
-## Visual and asset limits
+## Asset acceptance
 
-Six primary screenshots, important secondary/error/offline/editor/export screens, responsive captures, side-by-side comparisons, overlays and differences are retained. Final Today spacing fits all three fixture daily rows above navigation at 390×930 while preserving touch targets. The three-record fixture truthfully uses “3-day forecast”; rain wording does not invent a rising current probability. Detailed observations and comparison transforms are in VISUAL_QA.md.
+All five personas have all ten requested mood files. The 50 native PNGs are 1086 × 1448 RGBA and total 62,955,894 bytes. Every selected output was individually inspected, then reviewed on light/dark comparison sheets at 128 × 171 portrait slots. Karen complaining, Frat Bro hyped, Grandpa cozy and toddler excited follow the supplied reference poses. Frat Bro cozy was revised to make it distinguishable from happy at that size.
 
-All11 new illustrations are native-size reconstructions. They are not recovered originals. Character/scene proportions, font metrics, glows and gradients differ from the raster. Detached alpha pixels and bright fringes remain in some source artwork; attempted built-in image cleanup did not produce acceptable replacements. See ASSET_STATUS.md and artwork comparisons. This prevents an exact/production-ready visual claim.
+Tiny exterior colored pixels and edge fringes remain at native resolution, especially Karen's pink/white edge and toddler shirt-bottom cyan. They are less apparent at card size. No clean-matte or exact-original claim is made; no local pixel cleanup was performed. The existing approved/legacy paths remain unchanged. [ASSET_STATUS.md](ASSET_STATUS.md) and [asset evidence](artwork/emotions/README.md) record all sources, prompts, dimensions, checks and limitations.
 
-## Platform and service limits
+## Commands and remaining limits
 
-Android warns about future Kotlin migration. iOS warns about existing CocoaPods integration and missing App Store version/build metadata. No dependencies, bundle IDs, Firebase project, provider credentials or platform publishing configuration were changed. Windows/Linux builds were not run on this Mac. macOS cannot build until its target is added. Signed physical-device/release-store validation remains owner work.
+Commands recorded in the focused reports:
 
-The deployed weather forecast works, but global radar health reported an upstream authorization failure. This requires the owner to investigate provider entitlement/server credentials; this implementation does not change them. The fixture radar image exercises only a deliberately isolated unavailable state. No production deployment, public push, purchase or data wipe occurred.
+```sh
+dart format --output=none --set-exit-if-changed lib test tool
+flutter analyze --no-pub
+flutter test --no-pub --reporter expanded
+flutter test --no-pub test/radar_refinement_test.dart test/radar_screen_test.dart
+flutter test --no-pub test/forecast_refinement_capture_test.dart --dart-define=CAPTURE_FORECAST_REFINEMENT=true
+python3 docs/ui_implementation/artwork/emotions/build_emotion_qa.py
+```
+
+The [final execution record](refinement/logs/final-results.json) records exact arguments, timestamps and successful exit codes for formatting, analysis, the full suite, and all three builds. All builds use the existing public production backend:
+
+```sh
+flutter build web --release --no-pub --dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api
+flutter build apk --debug --no-pub --dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api
+flutter build ios --simulator --debug --no-codesign --no-pub --dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api
+flutter test --no-pub test/roast_emotion_capture_test.dart --dart-define=CAPTURE_EMOTIONS=true --reporter expanded
+dart run tool/build_roast_pack.dart --output work/roast-pack-review.json
+flutter run --no-pub -d web-server -t lib/main.dart --dart-define=WEATHER_API_BASE_URL=https://us-central1-wingman-interactive-live.cloudfunctions.net/api --web-hostname 127.0.0.1 --web-port 8766
+```
+
+Toolchain: Flutter 3.44.4 / Dart 3.12.2. Android reports the existing future Kotlin migration warnings; iOS reports existing CocoaPods integration and App Store version/build metadata warnings. These builds do not establish store-release readiness. Windows/Linux builds were not run; this repository has no macOS target. Read-only screenshot composition ran with bundled Pillow Python at `/Users/MattLeikam/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/compose_refinement_review.py`.
+
+Two isolated dark card captures were refreshed after the bulk capture showed transient missing text in its raster output. No application code or artwork changed; the refreshed toddler and Grandpa captures display their labels and actions correctly. Logs: [toddler](refinement/logs/toddler-capture-refresh.txt), [Grandpa](refinement/logs/grandpa-capture-refresh.txt).
+
+The [changed-file inventory](refinement/CHANGED_FILES.md) covers this follow-up.
+
+The owner must repair OpenWeather radar key/entitlement server-side for global/futurecast modes. NOAA and forecast success do not resolve that separate authorization error. The optional splash mascot fallback is pre-existing; native sharing/Photos delivery and current physical-device behavior remain unverified. No signing, bundle ID, deployed backend credentials, store settings, app data or saved document schema changed. This follow-up adds `url_launcher: 6.3.2` and its required platform packages for attribution links; existing dependency versions were not upgraded.

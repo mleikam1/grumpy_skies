@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../design/dm_theme.dart';
 import '../../../models/weather_models.dart';
-import '../../../shared/widgets/dm_approved_components.dart';
+import 'forecast_sheet.dart';
 import 'forecast_hourly_strip.dart';
 
 class ForecastInsightCard extends StatelessWidget {
@@ -42,28 +42,18 @@ class ForecastInsightCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
             borderRadius: BorderRadius.circular(20),
-            onTap: () => showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                showDragHandle: true,
-                builder: (ctx) => SafeArea(
-                    child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const DmApprovedSectionHeader(
-                                  title: 'Forecast details'),
-                              Text(detail),
-                              ForecastHourlyStrip(
-                                  hourly: weather.hourly,
-                                  sunrise: weather.current.sunrise,
-                                  sunset: weather.current.sunset,
-                                  referenceTime: now,
-                                  timezoneOffset:
-                                      weather.current.timezoneOffset)
-                            ])))),
+            onTap: () => showForecastSheet(context,
+                    title: 'Forecast details',
+                    subtitle: detail,
+                    children: [
+                      const SizedBox(height: 14),
+                      ForecastHourlyStrip(
+                          hourly: weather.hourly,
+                          sunrise: weather.current.sunrise,
+                          sunset: weather.current.sunset,
+                          referenceTime: now,
+                          timezoneOffset: weather.current.timezoneOffset),
+                    ]),
             child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

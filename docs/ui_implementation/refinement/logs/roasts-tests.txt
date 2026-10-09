@@ -1,0 +1,62 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart
+00:00 +0: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +1: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content CSV builder validates and generates the bundled schema
+00:00 +2: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: required examples infer stable expressions and explicit mood wins
+00:00 +3: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: required examples infer stable expressions and explicit mood wins
+00:00 +4: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content WeatherRoastContext maps loaded weather into tags
+00:00 +5: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +6: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +7: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +8: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +9: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +10: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +11: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: legacy lines, unfamiliar mood and explicit mood round trip safely
+00:00 +12: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: aliases resolve to fixed bundled paths and same-character fallback
+00:00 +13: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: shared snapshot freezes expression and registry notices an explicit change
+00:00 +14: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: real pack selection and history carry editorial mood without reroll
+00:00 +15: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +16: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +17: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +18: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +19: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +20: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +21: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +22: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +23: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +24: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +25: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +26: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_system_test.dart: karen light long quote at 2x stays readable and actionable
+00:00 +27: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +28: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +29: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +30: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +31: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +32: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +33: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +34: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +35: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +36: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +37: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: approved composition selects Grandpa and shows all five selectors
+00:00 +38: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: tap toggles reveal, drag reveals, and zero XP is never displayed
+00:00 +39: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: tap toggles reveal, drag reveals, and zero XP is never displayed
+00:01 +40: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: tap toggles reveal, drag reveals, and zero XP is never displayed
+00:01 +41: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: tap toggles reveal, drag reveals, and zero XP is never displayed
+00:01 +42: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: tap toggles reveal, drag reveals, and zero XP is never displayed
+00:01 +43: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +44: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +45: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +46: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +47: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +48: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:01 +49: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +50: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +51: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +52: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +53: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +54: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:01 +55: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: Roasts adapts at narrow, tablet and desktop widths in both modes
+00:02 +56: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: Roasts adapts at narrow, tablet and desktop widths in both modes
+00:02 +57: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: pack requires real context, avoids repeat, and records only displayed history
+00:02 +58: All tests passed!

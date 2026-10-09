@@ -1,0 +1,1336 @@
+[
+  {
+    "persona": "karen",
+    "mood": "happy",
+    "path": "assets/personas/karen/happy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-d62b59f5-6fc6-4561-8dfb-c48bf5681197.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: happy: a warm broad closed-mouth smile, relaxed eyebrows and bright friendly eyes. Clearly delighted but calm, no open shouting mouth.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.31087,
+    "sha256": "927256d4656a7425293127b407bce81169ebf4b1fb048b763cae5eb6bb8da12d",
+    "bytes": 1365153,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "excited",
+    "path": "assets/personas/karen/excited.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-bb5520dd-7b81-4676-9cd6-3787205b213e.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: excited: very wide eyes, raised eyebrows and a round open delighted smile, visibly anticipating something fun.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.30899,
+    "sha256": "d77ead906f461c336fc1dd0d3e9114c0af39dd82506e5567ac212d7e5f128ac5",
+    "bytes": 1387234,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "hyped",
+    "path": "assets/personas/karen/hyped.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-02f91926-0819-4182-bb4c-7a598293375a.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: hyped: an exuberant big open laughing grin with visible teeth, energetically raised eyebrows and lifted cheeks; joyful high energy.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.31732,
+    "sha256": "f6c9d42e1754124e46ea5d3931e72f0ed17fafac063cba8771eb001a852b7728",
+    "bytes": 1364207,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "cozy",
+    "path": "assets/personas/karen/cozy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-15e1e4f7-c358-4fdc-991b-5a75215a20f5.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: cozy: eyes gently half-closed or softly closed, a small contented smile and relaxed brows, peaceful sleepy warmth.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.30766,
+    "sha256": "257fdabc3b3f8a262776d866c76cd443f1dd18ccdea331597480803698fd9833",
+    "bytes": 1396567,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "complaining",
+    "path": "assets/personas/karen/complaining.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-1cacc81f-62bd-4278-b161-575854936006.png",
+    "prompt": "Use case: identity-preserve. Create one DayMaker persona emotion transparent PNG. Image1 is existing character identity/style reference. Image2 is the newly approved emotion card whose character expression, outfit and pose are the main requested result. Extract/reconstruct the character only at native high resolution; no card, lettering or UI. Match the crossed-arm pose, closed downturned grumbling mouth, furrowed asymmetrical eyebrows and irritated half-lidded eyes in the approved emotion card. Pink blazer and navy shirt, gold earrings, blonde bob and sunglasses on top. Waist-up portrait. Keep same recognizable face, age, hair and soft dimensional cartoon family. Clean silhouette on actual transparent background; remove all isolated colored flecks, all matte halos and fringes. No outline sticker, no backdrop, no shadow, no emotion marks, no captions or logos. Whole character with all limbs mentioned inside image, centered, portrait 3:4.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Desktop/Screenshot 2026-10-09 at 5.15.56\u202fPM.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.35842,
+    "sha256": "3fbfb8bd9a2275122820576bc17e9200335368b268845708594aa008bad2124b",
+    "bytes": 1339886,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "annoyed",
+    "path": "assets/personas/karen/annoyed.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-361e70e2-c89b-4984-abee-ac33905b8ec6.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: annoyed: low angled brows, half-lidded displeased eyes and a tight asymmetric closed-mouth frown; fed up, distinct from open-mouthed complaining.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.31404,
+    "sha256": "0c377b2741e0a9fe795d562c6a593aa2ad020e00ad1323f1808553ca4489fd52",
+    "bytes": 1386926,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "sad",
+    "path": "assets/personas/karen/sad.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-d56ce67b-cad5-4071-9263-0d7337929c03.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: sad: upward inner eyebrows, downcast eyes and an obvious small downturned mouth, gently disappointed, no smile or tears.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.30787,
+    "sha256": "0535acecdbd108394a7668f4543d95c2a952ebfed4def0f807df8e31d4fb96bc",
+    "bytes": 1393273,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "worried",
+    "path": "assets/personas/karen/worried.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-7bed21f7-9ede-4884-bca8-392b79261b15.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: worried: raised pinched inner brows, eyes wide with concern, small tense slightly parted mouth; anxious but gentle, no smile.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.30559,
+    "sha256": "934ed6027489d2dcbd91383fb8953e8b7c1542b9c5147f73553121321887880b",
+    "bytes": 1410535,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "confident",
+    "path": "assets/personas/karen/confident.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-e87f0254-a569-41d1-9ac2-d2ace7a451bc.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: confident: subtly raised chin, one eyebrow slightly raised, assured small asymmetric closed-mouth smile, relaxed eyes; self-assured without broad grin.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.29788,
+    "sha256": "d319e74f4ead5cfe5f48f03353b90a958d8fd737e3231559e4e583240440301b",
+    "bytes": 1409372,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "karen",
+    "mood": "neutral",
+    "path": "assets/personas/karen/neutral.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-96da007d-f9cc-46ea-bbdb-b2ef7621eab5.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Karen: the same blonde bob hairstyle with navy sunglasses resting on top, round golden earrings, pink blazer and navy shirt with small pale button.\nRequested expression: neutral: relaxed level eyebrows, attentive open eyes and a small relaxed closed mouth with no pronounced smile or frown.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/karen_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_karen_portrait_context.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.30507,
+    "sha256": "665059f669d129b2d9c986ba5e508b38af0a607ccd4d863f8600f1cbaaf5149c",
+    "bytes": 1411483,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "happy",
+    "path": "assets/personas/frat_bro/happy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-234bbc2f-0f07-4488-a0f2-a393b7265b22.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Happy: relaxed, warm closed-mouth smile with gently cheerful eyebrows; calm everyday happiness.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity, clothing, front bust framing and requested expression match; generated alpha preserved. Small detached colored flecks remain near silhouette/shoulder edges and should be disclosed; no local matting applied.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.48855,
+    "sha256": "3a05a5578f40db44d1be115f9bac1682f5b1ce477fd048cb9ab706dcd8454b80",
+    "bytes": 1121039,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "excited",
+    "path": "assets/personas/frat_bro/excited.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-1ebff9fd-107b-4ad6-861f-980737247da7.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Excited: clearly raised eyebrows and open mouth in delighted amazement, joyful energized expression.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity, clothing, front bust framing and requested expression match; generated alpha preserved. Small detached colored flecks remain near silhouette/shoulder edges and should be disclosed; no local matting applied.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46498,
+    "sha256": "434f7cae6a427770ccf10236f7c38114cead9c9919b3c4f51c2f4dc553a58d44",
+    "bytes": 1162677,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "hyped",
+    "path": "assets/personas/frat_bro/hyped.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-8f0483a7-fefe-4661-864f-30e484cc138c.png",
+    "prompt": "Use case: identity-preserve. Create one DayMaker persona emotion transparent PNG. Image1 is existing character identity/style reference. Image2 is the newly approved emotion card whose character expression, outfit and pose are the main requested result. Extract/reconstruct the character only at native high resolution; no card, lettering or UI. Match both thumbs up, exuberant open laughing grin, blue backwards cap, sunglasses, golden yellow T-shirt with small teal palm emblem in the approved emotion card. Waist-up portrait, both hands entirely visible. Keep same recognizable face, age, hair and soft dimensional cartoon family. Clean silhouette on actual transparent background; remove all isolated colored flecks, all matte halos and fringes. No outline sticker, no backdrop, no shadow, no emotion marks, no captions or logos. Whole character with all limbs mentioned inside image, centered, portrait 3:4.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Desktop/Screenshot 2026-10-09 at 5.16.01\u202fPM.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.51412,
+    "sha256": "35ea45c0c4348d6965eee042c46b6d93deea58dfe1cc54187d0a1b69960fa77d",
+    "bytes": 1127741,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "cozy",
+    "path": "assets/personas/frat_bro/cozy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-78321b8a-e6d2-484a-be56-7827cba9e684.png",
+    "prompt": "Use case: identity-preserve. Edit image 1, the current DayMaker Frat Bro cozy expression; image 2 anchors the same approved character identity. Keep golden-brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, same soft polished 3D cartoon style and centered head-and-shoulders bust framing. Make COZY visibly different from happy: gently tilt his head about 8 degrees, softly lowered relaxed brows, a VERY SMALL closed contented smile with nearly straight lips (no curved grin and no visible teeth), gently dropped relaxed shoulders. Expression should read quiet, sleepy comfort rather than cheerful happiness. Preserve identity, palette, wardrobe and portrait scale. No new props, no text, no UI, no backdrop. True transparent alpha outside the solid character silhouette, clean edges, no detached colored speckles or flecks, no halos, no exterior cast shadow.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/personas/frat_bro/cozy.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png"
+    ],
+    "review": "Replacement after paired emotion review: clearly relaxed head tilt, softened lowered brows, and flatter small closed smile distinguish cozy from happy; identity/wardrobe preserved. Tool-generated exterior flecks remain; no local pixel/alpha edits performed.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "replaces_source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-8038d9e1-2976-4e96-a8a6-f64ef3c00456.png",
+    "replacement_reason": "Original cozy and happy were too similar at 128\u00d7171.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.48024,
+    "sha256": "5d5cd365e03cd7d6aac3f017b649cd821347481b97a81b3007ede090505201fa",
+    "bytes": 1155433,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "complaining",
+    "path": "assets/personas/frat_bro/complaining.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-ac4a1b34-5527-4d3b-bdfe-b143fe513974.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Complaining: one eyebrow raised high and the other lowered, mouth open in an asymmetric grumbling complaint, unmistakably exasperated talking expression rather than a smile.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity and framing match; requested mouth/brow expression present. Cozy is subtly calmer than happy. Small colored exterior flecks remain near shoulders and bust base; generated alpha preserved without local editing.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.48008,
+    "sha256": "e1a2f40b399ac66dd2d9a256322c75776dd8c13727cc5af3b735eee0ff2b3cd6",
+    "bytes": 1135174,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "annoyed",
+    "path": "assets/personas/frat_bro/annoyed.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-ee0a008b-1578-469f-858c-3ffe867274c8.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Annoyed: both eyebrows lowered and angled inward, tense closed mouth in a tight clearly downturned frown; irritated but not shouting.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity and centered bust retained; annoyed has down-angled brows and tight frown, sad has raised inner brows and downturned mouth. Small colored edge flecks remain at lower silhouette; no local alpha edits.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.49965,
+    "sha256": "572cee9a22e5ebed736662a35e5d259c618b5290eb6d98c3fdad812b9ed72d2f",
+    "bytes": 1100515,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "sad",
+    "path": "assets/personas/frat_bro/sad.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-6bcacde3-86ca-426f-956c-6494394899c9.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Sad: inner ends of eyebrows raised into a sorrowful arch, cheeks subdued, closed mouth visibly downturned in a soft sad frown; no tears or extra effects.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity and centered bust retained; annoyed has down-angled brows and tight frown, sad has raised inner brows and downturned mouth. Small colored edge flecks remain at lower silhouette; no local alpha edits.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.49102,
+    "sha256": "4a9464ced5b964e52633bd57324d683d2d52336a57e19a8819887177b068cbcb",
+    "bytes": 1113935,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "worried",
+    "path": "assets/personas/frat_bro/worried.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-e30a7a38-25a4-40b7-a448-4fc25c67e8cf.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Worried: eyebrows pinched upward at the center, slightly uneven tense mouth parted just a little, uncertainty and concern, distinct from simple sadness. No tears or extra effects.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity and centered bust retained; worried shows tense parted mouth and pinched raised brows, confident has one raised brow and asymmetric smirk. Small colored edge flecks remain; generated alpha preserved.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.4869,
+    "sha256": "0e0696d677332ef1624fdddc24da6cd2ad69053a427c3e86bd869af50766e152",
+    "bytes": 1118461,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "confident",
+    "path": "assets/personas/frat_bro/confident.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-60b3b770-67ab-453c-9bad-daa8259b522f.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Confident: one eyebrow slightly lifted and a clearly asymmetric assured closed-mouth smirk, chin very subtly raised while retaining the same front-facing centered bust.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity and centered bust retained; worried shows tense parted mouth and pinched raised brows, confident has one raised brow and asymmetric smirk. Small colored edge flecks remain; generated alpha preserved.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.48441,
+    "sha256": "d64f4b4ca9ef4d51330de7c7e56aa58dbc54bdf511e772ba2f973b566280c8cc",
+    "bytes": 1161057,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "frat_bro",
+    "mood": "neutral",
+    "path": "assets/personas/frat_bro/neutral.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-71a3-7a93-bcc3-3d01c3df6911/exec-7a244f88-ce53-4769-a9d7-5c3b9730073e.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker Frat Bro persona expression, one transparent PNG. Image 1 is the approved portrait edit target; image 2 is the small approved in-app style reference. Preserve the same young man's identity, golden brown hair, backward blue cap, navy sunglasses, mustard yellow T-shirt, soft polished 3D cartoon rendering, centered front-facing head-and-shoulders bust, proportions and framing. Change ONLY the expression as specified. Make eyebrows and mouth clearly communicate the emotion, despite sunglasses. True transparent background with clean alpha: every pixel beyond the solid silhouette fully transparent, no detached colored speckles, no white halo, no cast shadow outside silhouette. No UI, cards, lettering, words, props, badges, extra characters, or backdrop. Emotion: Neutral: level relaxed eyebrows, calm straight closed mouth with no upward or downward curvature, no grin and no frown, composed neutral expression.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/frat_bro_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_frat_bro_avatar.png"
+    ],
+    "review": "Identity, wardrobe and centered framing retained; level eyebrows and relaxed nearly straight mouth read neutral. Small detached edge flecks remain; generated alpha preserved without local edits.",
+    "tool": "builtin image_gen",
+    "transparent_background": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.49957,
+    "sha256": "c2152b88f37c5d4382cb614185ae8e1edeb30517461671956b99c16fcdd075ec",
+    "bytes": 1100465,
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "happy",
+    "path": "assets/personas/politician/happy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-18d1c931-5ab4-41a1-aec5-ffff64837980.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: happy: a warm broad closed-mouth smile, relaxed eyebrows and bright friendly eyes. Clearly delighted but calm, no open shouting mouth.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.43235,
+    "sha256": "2cd0187b7055739575d43bce2b5086e76566d2f54168313e45f4fc68803e6296",
+    "bytes": 1212081,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "excited",
+    "path": "assets/personas/politician/excited.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-7abeeacd-f101-43d0-8a3d-58c9a178fc8b.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: excited: very wide eyes, raised eyebrows and a round open delighted smile, visibly anticipating something fun.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.42,
+    "sha256": "3a66d5374925bf3e3c0387ddc6f44db28a6414ecab364783a553cac084a8120e",
+    "bytes": 1266336,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "hyped",
+    "path": "assets/personas/politician/hyped.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-1634e753-8a6b-495b-854e-ab036b0c9d97.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: hyped: an exuberant big open laughing grin with visible teeth, energetically raised eyebrows and lifted cheeks; joyful high energy.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.42857,
+    "sha256": "f9b655e2a48c25bf8b1467d9e46832ae1ca868a5aaa5802ff077d8b5a974e74e",
+    "bytes": 1262142,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "cozy",
+    "path": "assets/personas/politician/cozy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-7b3428fb-d943-4fd4-b07e-e208f67294a9.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: cozy: eyes gently half-closed or softly closed, a small contented smile and relaxed brows, peaceful sleepy warmth.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.41684,
+    "sha256": "51151b81a00404ddb3c98cf95e6890a939770a4fe13375607efb204fbd6219f4",
+    "bytes": 1281422,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "complaining",
+    "path": "assets/personas/politician/complaining.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-f575a8a9-793a-405e-b973-929bf2403372.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: complaining: one brow raised and the other lowered, eyes mildly narrowed, mouth open mid-grumble with lips drawn slightly to one side; visibly delivering a sarcastic complaint, not smiling.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.42753,
+    "sha256": "f0ae5116ea8871d3cb8b692e77807ae8d09ec210ecd942e646d9ca7921dd1b19",
+    "bytes": 1278047,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "annoyed",
+    "path": "assets/personas/politician/annoyed.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-7ff02cd8-3ae6-46cc-849a-4890b3f83b6c.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: annoyed: low angled brows, half-lidded displeased eyes and a tight asymmetric closed-mouth frown; fed up, distinct from open-mouthed complaining.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.41715,
+    "sha256": "99b900ad50af5b71f9ee06d31ddeae35913719c8bbddda050cf79d2f31e70c0f",
+    "bytes": 1266953,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "sad",
+    "path": "assets/personas/politician/sad.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-c2ade29f-c869-44a9-9e60-a589aa261cc5.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: sad: upward inner eyebrows, downcast eyes and an obvious small downturned mouth, gently disappointed, no smile or tears.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.43195,
+    "sha256": "f344997537d09b75d2da63674143ef79c6039fbb86e64def411ec3583b6447ee",
+    "bytes": 1220430,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "worried",
+    "path": "assets/personas/politician/worried.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-010dcaf1-909a-4f47-b8ae-9706143e6297.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: worried: raised pinched inner brows, eyes wide with concern, small tense slightly parted mouth; anxious but gentle, no smile.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.41874,
+    "sha256": "919390574535743e325d4120b491b7af4499b7fef5f66e416073ba5c792542d8",
+    "bytes": 1267672,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "confident",
+    "path": "assets/personas/politician/confident.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-35d99bee-284c-45a3-b84b-a0a1be6269c2.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: confident: subtly raised chin, one eyebrow slightly raised, assured small asymmetric closed-mouth smile, relaxed eyes; self-assured without broad grin.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.43726,
+    "sha256": "b65a4c53ecb3fad26f8c2c3d84326279ae359e385d48fc8ca732118b5243c476",
+    "bytes": 1265781,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "politician",
+    "mood": "neutral",
+    "path": "assets/personas/politician/neutral.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-0577a482-fb1c-471d-8efb-00190e48b356.png",
+    "prompt": "Use case: identity-preserve. Asset type: DayMaker weather app emotion portrait, a single transparent PNG.\nInput image 1 is the edit target and identity/framing lock. Input image 2 is the approved small design crop, supporting identity/style reference only; do not enlarge it or reproduce its card/background/text.\nChange facial expression only to the requested mood while preserving the same recognizable character, exact hairstyle, costume, colors, age, head proportions and soft dimensional cartoon illustration system. Same front-facing bust camera/framing, head and both shoulders fully visible, centered, no hands or added props, no pose overhaul.\nBackground must be actual fully transparent alpha. Render a clean continuous silhouette with antialiased edges; remove source detached colored pixels and bright/white edge fringes. No black/white/checkered backdrop, no ground shadow, no outline sticker, no misty bottom fade. Keep exterior pixels transparent; do not bake in a matte.\nNo UI, captions, letters, logos, speech bubbles, icons or decorative emotion marks. Return exactly one portrait, not a sheet or variations. Native high resolution portrait around 3:4 aspect.\nSubject identity: Politician: the same friendly brown side-parted hair man, navy suit jacket, white shirt and red tie.\nRequested expression: neutral: relaxed level eyebrows, attentive open eyes and a small relaxed closed mouth with no pronounced smile or frown.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/politician_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_politician_avatar.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": false,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.43355,
+    "sha256": "e4e97629ba8919570f600a285ddf448893e3e373fe8794011e9b28bb7193517f",
+    "bytes": 1238236,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "happy",
+    "path": "assets/personas/grandpa/happy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-4055cef7-6308-4880-bdca-ebc7744627e4.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: happy: calm contented smile, closed mouth, gently raised cheeks, softly welcoming eyes; clearly joyful but relaxed.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.35402,
+    "sha256": "438d1a9d8cfa51841812922e69b54c5758235f6a2e8537c93ba90cd012d5cf4f",
+    "bytes": 1405360,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "excited",
+    "path": "assets/personas/grandpa/excited.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-e8179441-f6c9-47fa-a097-07365ed004e8.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: excited: delighted wide eyes, lifted eyebrows, open joyful mouth, bright anticipation; distinct from a closed-mouth happy smile.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.35041,
+    "sha256": "966032bd9e22395b57e5d964d46192b75307e5ef30b6517a8bd1e117813c6abe",
+    "bytes": 1430844,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "hyped",
+    "path": "assets/personas/grandpa/hyped.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-5c1a127e-23cd-4c83-9965-0ea726371402.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: hyped: energetic big toothy laughing grin, cheek muscles raised, eyebrows high, eyes joyfully narrowing, a very slight forward lean. Clearly exuberant celebration, more intense than excited.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.3549,
+    "sha256": "567944363eda3684706907303ed63851343fc1357cf7067c5f26e5536d387330",
+    "bytes": 1400880,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "cozy",
+    "path": "assets/personas/grandpa/cozy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-91c816d1-ac93-4332-9cd0-f661d2ce7fac.png",
+    "prompt": "Use case: identity-preserve. Create one DayMaker persona emotion transparent PNG. Image1 is existing character identity/style reference. Image2 is the newly approved emotion card whose character expression, outfit and pose are the main requested result. Extract/reconstruct the character only at native high resolution; no card, lettering or UI. Match cozy closed eyes and warm small smile, green cardigan over white collar, one hand holding a plain cream ceramic mug at chest level, other hand relaxed. No lettering on mug. Waist-up portrait with no chair or scenery. Keep same recognizable face, age, hair and soft dimensional cartoon family. Clean silhouette on actual transparent background; remove all isolated colored flecks, all matte halos and fringes. No outline sticker, no backdrop, no shadow, no emotion marks, no captions or logos. Whole character with all limbs mentioned inside image, centered, portrait 3:4.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Desktop/Screenshot 2026-10-09 at 5.16.08\u202fPM.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.42539,
+    "sha256": "0c866af58c44d8d6200ac53eddf5fdebd3535c1a9bb9eeb5b3b8582edda95e57",
+    "bytes": 1329657,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "complaining",
+    "path": "assets/personas/grandpa/complaining.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-d2322fe2-79a1-4a7a-8e50-1d9a30773fd1.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: complaining: asymmetric skeptical raised eyebrow, other brow lowered, eyes looking directly at viewer, slightly open grumbling mouth with downturned corners. A comical old man making a complaint, not angry or smiling.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.34631,
+    "sha256": "53ed4a9114faaf679e5903b34f181f28fa079cc25b55599ff89c7ddde867138a",
+    "bytes": 1405280,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "annoyed",
+    "path": "assets/personas/grandpa/annoyed.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-7a257273-2fc6-4585-b0d5-73c298670d88.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: annoyed: both white eyebrows lowered and slightly knitted, eyes narrowed in weary irritation, closed mouth in a tight flat frown, an unimpressed grumpy expression. No smile.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.36027,
+    "sha256": "93819839f10c0237dc8aa7b88920ac950495f916aff62c92ec1db3ea499abaff",
+    "bytes": 1375483,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "sad",
+    "path": "assets/personas/grandpa/sad.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-282f9287-7db8-4c38-b863-a6c4e2f45cf9.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: sad: raised inner eyebrows forming a gentle sad arch, downturned closed mouth, lowered eyelids and sorrowful eyes. Clearly quietly sad, not angry, worried, or smiling. No tears or added props.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.34538,
+    "sha256": "9de87a7ad56e5ce8da8b993db12ca81d32312f2a9f34c6121ae12237e4909c3a",
+    "bytes": 1414829,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "worried",
+    "path": "assets/personas/grandpa/worried.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-5d4d291a-4d44-45fa-8eff-43af1d7050d0.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: worried: inner eyebrows pinched upward, eyes open wide with concern, tense small slightly open mouth. Looks anxiously uncertain, distinct from sad downcast eyes or complaining raised eyebrow. No tears.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.36192,
+    "sha256": "0d08987ec917ec197978c6fe123cd0b300aba00191db4e95a5f025d54e5bdc8b",
+    "bytes": 1376644,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "confident",
+    "path": "assets/personas/grandpa/confident.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-0b2831ae-da79-4854-bf9b-1b8bc2bb3687.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: confident: subtly lifted chin, relaxed direct eyes with one brow slightly lifted, assured small asymmetric closed-mouth smirk. Warm confident self-assurance, not a broad happy grin.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct requested expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.35601,
+    "sha256": "447670e139c23e95ef5ba8470f443c2f5d644eb2e61b187509c246d0f377da7e",
+    "bytes": 1433430,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "grandpa",
+    "mood": "neutral",
+    "path": "assets/personas/grandpa/neutral.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-431282d8-89ed-4917-ac12-66553b0a4b75.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Grandpa persona emotion portrait, used as a small Flutter UI bust. Image 1 is the approved identity and proportions. Image 2 is supporting approved screen artwork style and character reference only: do not recreate the UI. Preserve the exact same elderly Grandpa character: bald crown with white side hair, thick white eyebrows and mustache, navy rectangular glasses, warm peach skin, green sweater and white shirt collar. Preserve the approved gentle polished illustration style, clean shapes, soft dimensional shading, front-facing centered head and shoulders, the same head/body scale and crop with full top of head visible. Change only facial expression and a very slight natural head pose for the requested mood. No hands, props, text, labels, UI, frame, shadows outside the silhouette, confetti, flecks, background color or checkerboard. Give a truly transparent alpha background and clean transparent edges without a white halo, especially around hair and glasses. Portrait canvas. Requested mood: neutral: level relaxed white eyebrows, attentive open eyes, calm resting face, mouth closed with a straight relaxed line. No smile, frown, worry, surprise, or strong emotion. Preserve friendly identity while making a true neutral resting expression.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/grandpa_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_grandpa_portrait_context.png"
+    ],
+    "review": "Identity, crop, glasses, sweater, and distinct neutral resting expression visually inspected. Alpha preserved unmodified. Minor exterior colored flecks remain from generator; no local matting or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.35554,
+    "sha256": "033d361ae3584e831288963200b1e1f4ece0cb489fbe58272e43a3045abb43b6",
+    "bytes": 1391861,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "happy",
+    "path": "assets/personas/two_year_old/happy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-7c4cffc1-44bd-4b3c-8c5e-c3988160b553.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: happy: gentle closed-mouth smile, relaxed raised cheeks and bright contented eyes. Calm happiness, not a wide-open excited mouth.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and happy expression visually inspected. Transparent RGBA output preserved unmodified. Generator retains exterior color flecks; happy has more noticeable bottom-edge colored debris than hyped. No local alpha cleanup applied.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.42367,
+    "sha256": "4424d68148ef6a39182cb025297da18d87514a08fe188e2fd1448fe5933f25f9",
+    "bytes": 1158179,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "excited",
+    "path": "assets/personas/two_year_old/excited.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-fcf22799-3a46-462b-9222-60b5b75638aa.png",
+    "prompt": "Use case: identity-preserve. Create one DayMaker persona emotion transparent PNG. Image1 is existing character identity/style reference. Image2 is the newly approved emotion card whose character expression, outfit and pose are the main requested result. Extract/reconstruct the character only at native high resolution; no card, lettering or UI. Match delighted crescent eyes and open happy grin, raised arms, yellow raincoat with white buttons and hood down, blue pants and yellow rain boots. Full child body with one leg lifted joyfully as in source, no puddle or splash effects. Same orange-brown curl. This approved mood intentionally changes clothing from teal shirt to yellow raincoat. Keep same recognizable face, age, hair and soft dimensional cartoon family. Clean silhouette on actual transparent background; remove all isolated colored flecks, all matte halos and fringes. No outline sticker, no backdrop, no shadow, no emotion marks, no captions or logos. Whole character with all limbs mentioned inside image, centered, portrait 3:4.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Desktop/Screenshot 2026-10-09 at 5.16.15\u202fPM.png"
+    ],
+    "review": "Face/expression and identity visually inspected. Native transparency fringe remains; alpha QA pending.",
+    "canonicalReference": true,
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.54057,
+    "sha256": "65637271714536a10c310d49c6b212c931c6c9243cb5c8681324cd3181b96915",
+    "bytes": 1074115,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "hyped",
+    "path": "assets/personas/two_year_old/hyped.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-19bf82f3-6c6e-45e4-b4a6-1466f76a75f8.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: hyped: exuberant toothy laughing grin, eyes joyfully squeezed, eyebrows raised, high-energy delighted face. More energetic than simple happiness; preserve all approved toddler traits.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and hyped expression visually inspected. Transparent RGBA output preserved unmodified. Generator retains exterior color flecks; happy has more noticeable bottom-edge colored debris than hyped. No local alpha cleanup applied.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46757,
+    "sha256": "773c790a525614cc84741fe26209799deb822877c92762dc7b06f262d55cb4bb",
+    "bytes": 1130634,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "cozy",
+    "path": "assets/personas/two_year_old/cozy.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-cd5ec10a-d5db-4178-98b3-f4c9d73a868d.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: cozy: relaxed sleepy half-lidded eyes, gentle content closed-mouth smile, softened eyebrows, slight resting head inclination. Calm and snug, without blanket, mug, hands, or any added objects.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and distinct cozy expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.44907,
+    "sha256": "73d1e4f7f3d9f6cece41fe87127fd4c3b6cfe47b08c7cb9dc2857fcc5498b21e",
+    "bytes": 1158735,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "complaining",
+    "path": "assets/personas/two_year_old/complaining.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-87f98d10-c1a0-474f-a136-b3f0c8e49291.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: complaining: one eyebrow raised and the other knitted down, small open pouty grumbling mouth, direct displeased eyes. A distinct funny toddler complaint rather than anger or crying.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and distinct complaining expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46184,
+    "sha256": "86251f086f8335911f042ff4fbf34ff64c32f071432d80d11dc6455755884323",
+    "bytes": 1131361,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "annoyed",
+    "path": "assets/personas/two_year_old/annoyed.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-f40f6bac-b430-4720-8bd9-47037df17dd7.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: annoyed: brows lowered toward the center, narrowed unimpressed eyes, small tight closed-mouth frown, mildly grumpy toddler. Distinct from open-mouthed complaining, no smile.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and distinct annoyed expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46588,
+    "sha256": "c12f53d44f0ccff1de763092c0025605dd34ae52950acbe522a1e116f0d6c4ee",
+    "bytes": 1109469,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "sad",
+    "path": "assets/personas/two_year_old/sad.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-28fd4514-a0e8-4ae0-8b18-9d2d1c67a094.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: sad: inner eyebrows raised, eyes looking slightly downward with lowered eyelids, a small downturned mouth, quietly disappointed and sad. No crying drops or props; distinct from anger.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and distinct sad expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46443,
+    "sha256": "bc39cbd3cc12ca64797ac8571ccd7113f4a7df3b4f6769ea7752dd9f1fbedae1",
+    "bytes": 1126700,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "worried",
+    "path": "assets/personas/two_year_old/worried.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-7af71c8c-c438-43e7-85c6-8f1348fce02d.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: worried: inner eyebrows pinched upward, eyes wider with concerned direct gaze, tiny tense open mouth; uncertain anxious expression, distinct from sad lowered eyelids. No tears or added objects.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and distinct worried expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46063,
+    "sha256": "8c8de572604ed15135ccd1f452fb251db8797d6f4d22caaefc8c1ffa9719922f",
+    "bytes": 1135355,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "confident",
+    "path": "assets/personas/two_year_old/confident.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-58417fc1-e931-41e4-a6fc-36451ac75d1c.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: confident: a small assured asymmetric closed-mouth smirk, one brow subtly raised, relaxed direct eyes and a tiny proud chin lift. Playfully self-assured toddler, distinct from broad happiness.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and distinct confident expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46782,
+    "sha256": "d6d208b88d99a6a73a808e5cccdd1982af12c1ecb31209a05b4a26cd74630b3a",
+    "bytes": 1116691,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  },
+  {
+    "persona": "two_year_old",
+    "mood": "neutral",
+    "path": "assets/personas/two_year_old/neutral.png",
+    "source": "/Users/MattLeikam/.codex/generated_images/01a12278-5060-7ad1-9e13-efb27340d978/exec-78797517-919e-4dab-a8ab-f5f26847dca7.png",
+    "prompt": "Use case: identity-preserve. Asset type: transparent DayMaker Two Year Old persona emotion portrait for a small Flutter UI. Image 1 is the approved identity and framing. Image 2 is supporting approved avatar style reference only; do not reproduce a card or UI. Preserve exactly the same young toddler: round peach face, rosy round cheeks, dark navy oval eyes, curved brown eyebrows, distinctive warm orange hair with the same curled top bun and swept bangs, teal crewneck shirt. Preserve the approved polished soft-dimensional cartoon illustration style, same head/shoulders proportions, centered front-facing bust, same framing with full hair bun visible and shoulders complete. Change only facial expression and tiny natural head inclination for the requested mood. Transparent alpha background with clean silhouette: remove reference exterior flecks, avoid white halos and colored specks. No hands, objects, UI, frame, shadow outside silhouette, text, labels, backdrop color or checkerboard. Portrait canvas. Requested mood: neutral: level relaxed eyebrows, attentive open navy oval eyes, mouth closed in a short relaxed straight line. Calm resting expression, neither smile nor frown, no surprise or worry. Preserve toddler's friendly identity without a pronounced emotion.",
+    "references": [
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/assets/approved_v1/personas/two_year_old_portrait.png",
+      "/Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/docs/ui_implementation/artwork/references/light_two_year_old_avatar.png"
+    ],
+    "review": "Identity, hair bun, shirt, crop and neutral resting expression visually inspected. Alpha preserved unmodified. Generator retains exterior colored flecks, especially along shirt bottom; no local alpha editing or cleanup.",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent_pixel_fraction": 0.46158,
+    "sha256": "d5d968e40df6e0cd4a4c7b2460cee33c7db7a4a8e885f3e7a982bd87a4ce31ee",
+    "bytes": 1130154,
+    "tool": "builtin image_gen",
+    "classification": "new reference-guided emotion edit",
+    "alpha_status": "native generated alpha retained; minor exterior flecks/fringes remain",
+    "matches_generated_source_bytes": true
+  }
+]

@@ -1,0 +1,146 @@
+{
+  "captured_frame": {
+    "source": "noaa_mrms",
+    "timestamp": 1791584099,
+    "label": "Latest",
+    "displayLabel": "Latest",
+    "type": "latest",
+    "isLatest": true,
+    "renderable": true,
+    "fallbackCode": null,
+    "diagnosticMessage": "NOAA MRMS radar is available.",
+    "diagnostics": {
+      "source": "noaa_mrms",
+      "frameTimestamp": 1791584099,
+      "displayLabel": "Latest",
+      "tileRequests": 1,
+      "validImageResponses": 1,
+      "transparentFallbackTileResponses": 0,
+      "upstreamErrors": 0,
+      "renderable": true,
+      "skippedDuringPlayback": false
+    }
+  },
+  "viewport_tiles": [
+    {
+      "z": 10,
+      "x": 241,
+      "y": 389,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 241,
+      "y": 390,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 241,
+      "y": 391,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 241,
+      "y": 392,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 241,
+      "y": 393,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 242,
+      "y": 389,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 242,
+      "y": 390,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 242,
+      "y": 391,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 242,
+      "y": 392,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 242,
+      "y": 393,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 243,
+      "y": 389,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 243,
+      "y": 390,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 243,
+      "y": 391,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 243,
+      "y": 392,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    },
+    {
+      "z": 10,
+      "x": 243,
+      "y": 393,
+      "status": 200,
+      "bytes": 334,
+      "content_type": "image/png"
+    }
+  ]
+}

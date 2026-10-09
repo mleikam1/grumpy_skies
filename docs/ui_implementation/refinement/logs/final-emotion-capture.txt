@@ -1,0 +1,12 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roast_emotion_capture_test.dart
+00:00 +0: light karen real roast cards and expression gallery
+00:01 +1: light frat_bro real roast cards and expression gallery
+00:03 +2: light politician real roast cards and expression gallery
+00:04 +3: light grandpa real roast cards and expression gallery
+00:06 +4: light two_year_old real roast cards and expression gallery
+00:07 +5: dark karen real roast cards and expression gallery
+00:09 +6: dark frat_bro real roast cards and expression gallery
+00:10 +7: dark politician real roast cards and expression gallery
+00:11 +8: dark grandpa real roast cards and expression gallery
+00:13 +9: dark two_year_old real roast cards and expression gallery
+00:14 +10: All tests passed!

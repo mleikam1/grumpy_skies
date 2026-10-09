@@ -46,7 +46,11 @@ abstract final class OpenWeatherIconMapper {
     final fromIconCode = _dayFromOpenWeatherIconCode(openWeatherIconCode);
     if (fromIconCode != null) return fromIconCode;
 
-    if (forecastTime == null || sunrise == null || sunset == null) {
+    if (forecastTime == null ||
+        sunrise == null ||
+        sunset == null ||
+        sunrise.millisecondsSinceEpoch <= 0 ||
+        sunset.millisecondsSinceEpoch <= 0) {
       return null;
     }
 

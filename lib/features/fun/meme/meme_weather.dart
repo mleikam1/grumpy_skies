@@ -5,6 +5,7 @@ import '../../../models/weather_models.dart';
 import '../../../services/cache_service.dart';
 import '../../../services/weather_location_controller.dart';
 import '../../roasts/models/roast_persona.dart';
+import '../../roasts/models/roast_mood.dart';
 
 enum MemeWindUnit { mph, kph }
 
@@ -192,9 +193,12 @@ class DisplayedRoastSnapshot {
     required this.sourceKey,
     required this.sourceLabel,
     required this.isSample,
+    RoastMood? mood,
     Map<String, dynamic>? weatherSnapshot,
     DateTime? capturedAt,
-  })  : personaId = RoastPersonas.normalizeId(personaId),
+  })  : mood = RoastMoodResolver.resolve(
+            personaId: personaId, text: text, explicitMood: mood),
+        personaId = RoastPersonas.normalizeId(personaId),
         weatherSnapshot =
             weatherSnapshot == null ? null : Map.unmodifiable(weatherSnapshot),
         capturedAt = capturedAt ?? DateTime.now();
@@ -202,6 +206,7 @@ class DisplayedRoastSnapshot {
   final String id;
   final String text;
   final String personaId;
+  final RoastMood mood;
   final String sourceKey;
   final String sourceLabel;
   final bool isSample;
@@ -231,6 +236,7 @@ class DisplayedRoastRegistry extends ChangeNotifier {
         old.id == snapshot.id &&
         old.text == snapshot.text &&
         old.personaId == snapshot.personaId &&
+        old.mood == snapshot.mood &&
         old.isSample == snapshot.isSample &&
         old.weatherSnapshot?['observedAt'] ==
             snapshot.weatherSnapshot?['observedAt'] &&

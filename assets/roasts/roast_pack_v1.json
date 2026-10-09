@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "pack_version": "2026.06.26.1",
-  "generated_at": "2026-06-26T00:00:00Z",
+  "pack_version": "2026.10.09.1",
+  "generated_at": "2026-10-09T00:00:00Z",
   "personas": [
     "karen",
     "frat_bro",
@@ -12,6 +12,7 @@
   "roasts": [
     {
       "id": "karen_partly_cloudy_today_001",
+      "mood": "annoyed",
       "persona": "karen",
       "type": "today",
       "tags": [
@@ -32,6 +33,7 @@
     },
     {
       "id": "karen_cloudy_hourly_001",
+      "mood": "complaining",
       "persona": "karen",
       "type": "hourly",
       "tags": [
@@ -52,6 +54,7 @@
     },
     {
       "id": "karen_light_rain_commute_001",
+      "mood": "complaining",
       "persona": "karen",
       "type": "commute",
       "tags": [
@@ -74,6 +77,7 @@
     },
     {
       "id": "karen_weekend_good_001",
+      "mood": "confident",
       "persona": "karen",
       "type": "weekend",
       "tags": [
@@ -94,6 +98,7 @@
     },
     {
       "id": "karen_high_uv_mood_001",
+      "mood": "annoyed",
       "persona": "karen",
       "type": "mood",
       "tags": [
@@ -111,6 +116,7 @@
     },
     {
       "id": "karen_fallback_today_001",
+      "mood": "complaining",
       "persona": "karen",
       "type": "today",
       "tags": [
@@ -126,6 +132,7 @@
     },
     {
       "id": "karen_severe_today_001",
+      "mood": "worried",
       "persona": "karen",
       "type": "today",
       "tags": [
@@ -154,6 +161,7 @@
     },
     {
       "id": "frat_bro_hot_humid_today_001",
+      "mood": "annoyed",
       "persona": "frat_bro",
       "type": "today",
       "tags": [
@@ -174,6 +182,7 @@
     },
     {
       "id": "frat_bro_windy_hourly_001",
+      "mood": "hyped",
       "persona": "frat_bro",
       "type": "hourly",
       "tags": [
@@ -190,6 +199,7 @@
     },
     {
       "id": "frat_bro_heavy_rain_commute_001",
+      "mood": "worried",
       "persona": "frat_bro",
       "type": "commute",
       "tags": [
@@ -215,6 +225,7 @@
     },
     {
       "id": "frat_bro_clear_weekend_001",
+      "mood": "hyped",
       "persona": "frat_bro",
       "type": "weekend",
       "tags": [
@@ -235,6 +246,7 @@
     },
     {
       "id": "frat_bro_dry_mood_001",
+      "mood": "complaining",
       "persona": "frat_bro",
       "type": "mood",
       "tags": [
@@ -251,6 +263,7 @@
     },
     {
       "id": "frat_bro_fallback_today_001",
+      "mood": "confident",
       "persona": "frat_bro",
       "type": "today",
       "tags": [
@@ -266,6 +279,7 @@
     },
     {
       "id": "frat_bro_severe_today_001",
+      "mood": "worried",
       "persona": "frat_bro",
       "type": "today",
       "tags": [
@@ -294,6 +308,7 @@
     },
     {
       "id": "grandpa_cold_today_001",
+      "mood": "confident",
       "persona": "grandpa",
       "type": "today",
       "tags": [
@@ -311,6 +326,7 @@
     },
     {
       "id": "grandpa_snow_hourly_001",
+      "mood": "worried",
       "persona": "grandpa",
       "type": "hourly",
       "tags": [
@@ -339,6 +355,7 @@
     },
     {
       "id": "grandpa_fog_commute_001",
+      "mood": "worried",
       "persona": "grandpa",
       "type": "commute",
       "tags": [
@@ -362,6 +379,7 @@
     },
     {
       "id": "grandpa_cloudy_weekend_001",
+      "mood": "cozy",
       "persona": "grandpa",
       "type": "weekend",
       "tags": [
@@ -382,6 +400,7 @@
     },
     {
       "id": "grandpa_bad_air_mood_001",
+      "mood": "worried",
       "persona": "grandpa",
       "type": "mood",
       "tags": [
@@ -398,6 +417,7 @@
     },
     {
       "id": "grandpa_fallback_today_001",
+      "mood": "complaining",
       "persona": "grandpa",
       "type": "today",
       "tags": [
@@ -413,6 +433,7 @@
     },
     {
       "id": "grandpa_severe_today_001",
+      "mood": "worried",
       "persona": "grandpa",
       "type": "today",
       "tags": [
@@ -442,6 +463,7 @@
     },
     {
       "id": "politician_clear_today_001",
+      "mood": "confident",
       "persona": "politician",
       "type": "today",
       "tags": [
@@ -462,6 +484,7 @@
     },
     {
       "id": "politician_heavy_rain_hourly_001",
+      "mood": "neutral",
       "persona": "politician",
       "type": "hourly",
       "tags": [
@@ -485,6 +508,7 @@
     },
     {
       "id": "politician_windy_commute_001",
+      "mood": "confident",
       "persona": "politician",
       "type": "commute",
       "tags": [
@@ -503,6 +527,7 @@
     },
     {
       "id": "politician_weekend_good_001",
+      "mood": "happy",
       "persona": "politician",
       "type": "weekend",
       "tags": [
@@ -523,6 +548,7 @@
     },
     {
       "id": "politician_humid_mood_001",
+      "mood": "annoyed",
       "persona": "politician",
       "type": "mood",
       "tags": [
@@ -542,6 +568,7 @@
     },
     {
       "id": "politician_fallback_today_001",
+      "mood": "neutral",
       "persona": "politician",
       "type": "today",
       "tags": [
@@ -557,6 +584,7 @@
     },
     {
       "id": "politician_severe_today_001",
+      "mood": "worried",
       "persona": "politician",
       "type": "today",
       "tags": [
@@ -585,6 +613,7 @@
     },
     {
       "id": "two_year_old_light_rain_today_001",
+      "mood": "excited",
       "persona": "two_year_old",
       "type": "today",
       "tags": [
@@ -605,6 +634,7 @@
     },
     {
       "id": "two_year_old_hot_hourly_001",
+      "mood": "sad",
       "persona": "two_year_old",
       "type": "hourly",
       "tags": [
@@ -621,6 +651,7 @@
     },
     {
       "id": "two_year_old_snow_commute_001",
+      "mood": "worried",
       "persona": "two_year_old",
       "type": "commute",
       "tags": [
@@ -651,6 +682,7 @@
     },
     {
       "id": "two_year_old_fog_weekend_001",
+      "mood": "annoyed",
       "persona": "two_year_old",
       "type": "weekend",
       "tags": [
@@ -673,6 +705,7 @@
     },
     {
       "id": "two_year_old_nice_mood_001",
+      "mood": "happy",
       "persona": "two_year_old",
       "type": "mood",
       "tags": [
@@ -688,6 +721,7 @@
     },
     {
       "id": "two_year_old_fallback_today_001",
+      "mood": "neutral",
       "persona": "two_year_old",
       "type": "today",
       "tags": [
@@ -703,6 +737,7 @@
     },
     {
       "id": "two_year_old_severe_today_001",
+      "mood": "worried",
       "persona": "two_year_old",
       "type": "today",
       "tags": [

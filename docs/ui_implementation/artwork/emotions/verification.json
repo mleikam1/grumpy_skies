@@ -1,0 +1,12 @@
+{
+  "expected_count": 50,
+  "actual_count": 50,
+  "missing": [],
+  "unique_sha256_count": 50,
+  "total_bytes": 62955894,
+  "all_rgba": true,
+  "all_alpha_zero_to_255": true,
+  "all_provenance_present": true,
+  "all_sources_unchanged": true,
+  "quality_note": "Unique files and alpha coverage do not prove clean matting; consult visual review."
+}

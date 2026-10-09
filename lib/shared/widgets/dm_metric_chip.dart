@@ -1,99 +1,87 @@
-import '../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
+import '../../design/dm_metric_colors.dart';
 
-import '../../design/dm_colors.dart';
-import '../../design/dm_gradients.dart';
-import '../../design/dm_radius.dart';
-import '../../design/dm_spacing.dart';
-import '../../design/dm_typography.dart';
-
+/// A content-sized metric tile shared by Today summary and detail grids.
+/// Values wrap at larger text sizes; unavailable data keeps readable contrast.
 class DmMetricChip extends StatelessWidget {
-  const DmMetricChip({
-    super.key,
-    required this.label,
-    required this.value,
-    this.icon,
-    this.leading,
-    this.accentColor = DMColors.skyBlue,
-    this.onTap,
-    this.semanticLabel,
-  }) : assert(icon != null || leading != null);
+  const DmMetricChip(
+      {super.key,
+      required this.label,
+      required this.value,
+      this.icon,
+      this.leading,
+      this.tone = DMMetricTone.cool,
+      this.status,
+      this.available = true,
+      this.onTap,
+      this.semanticLabel})
+      : assert(icon != null || leading != null);
 
   final String label;
   final String value;
+  final String? status;
   final IconData? icon;
   final Widget? leading;
-  final Color accentColor;
+  final DMMetricTone tone;
+  final bool available;
   final VoidCallback? onTap;
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final content = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: DMSpacing.tapTarget),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: DMGradients.glassNavy,
-          borderRadius: DMRadius.large,
-          border: Border.all(color: context.dmColors.glassBorder),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: DMSpacing.md,
-            vertical: DMSpacing.sm,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+    final colors = DMMetricColors.of(context, tone);
+    final content = Container(
+      constraints: const BoxConstraints(minHeight: 90),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: colors.border)),
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
               IconTheme(
-                data: IconThemeData(color: accentColor, size: DMSpacing.iconMd),
-                child: leading ?? Icon(icon),
-              ),
-              const SizedBox(width: DMSpacing.sm),
-              Flexible(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: DMTypography.labelSmall,
-                    ),
-                    const SizedBox(height: DMSpacing.xxs),
-                    Text(
-                      value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: DMTypography.labelLarge,
-                    ),
-                  ],
-                ),
-              ),
+                  data: IconThemeData(color: colors.accent, size: 20),
+                  child: leading ?? Icon(icon)),
+              const SizedBox(width: 7),
+              Expanded(
+                  child: Text(label,
+                      style: TextStyle(
+                          fontSize: 12,
+                          height: 1.25,
+                          fontWeight: FontWeight.w500,
+                          color: colors.label))),
+            ]),
+            const SizedBox(height: 9),
+            Text(value,
+                style: TextStyle(
+                    fontSize: available ? 20 : 13,
+                    height: 1.2,
+                    fontWeight: available ? FontWeight.w700 : FontWeight.w500,
+                    color: available ? colors.value : colors.unavailable)),
+            if (status != null && status!.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(status!,
+                  style: TextStyle(
+                      fontSize: 12, height: 1.3, color: colors.status)),
             ],
-          ),
-        ),
-      ),
+          ]),
     );
-
-    Widget chip = content;
-    if (onTap != null) {
-      chip = Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: DMRadius.large,
-          onTap: onTap,
-          child: content,
-        ),
-      );
-    }
-
     return Semantics(
       button: onTap != null,
-      enabled: onTap != null,
-      label: semanticLabel ?? '$label, $value',
-      child: ExcludeSemantics(child: chip),
+      label: semanticLabel ??
+          [label, value, if (status != null) status!].join(', '),
+      child: ExcludeSemantics(
+          child: onTap == null
+              ? content
+              : Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: onTap,
+                      child: content))),
     );
   }
 }

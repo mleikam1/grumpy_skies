@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
+import 'package:grumpy_skies/preview/approved_preview.dart';
 import 'package:grumpy_skies/features/radar/radar_screen.dart';
 import 'package:grumpy_skies/features/radar/widgets/open_weather_radar_map.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
@@ -38,7 +39,7 @@ void main() {
       ],
       child: MaterialApp(
         theme: DMTheme.light,
-        home: const RadarScreen(),
+        home: RadarScreen(tileProvider: PreviewMemoryTiles()),
       ),
     );
   }

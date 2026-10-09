@@ -1,4 +1,5 @@
 import 'forecast_temperature.dart';
+import 'forecast_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:weather_icons_animated/weather_icons_animated.dart';
 
@@ -41,21 +42,21 @@ class ForecastDailyGrid extends StatelessWidget {
               days.isEmpty ? 'Daily forecast' : '${days.length}-day forecast',
           onAction: days.isEmpty
               ? null
-              : () => showModalBottomSheet<void>(
-                  context: context,
-                  showDragHandle: true,
-                  builder: (ctx) => SafeArea(
-                          child: ListView(children: [
-                        for (final day in days)
-                          ListTile(
-                              title: Text(_dayLabel(
-                                  day.date,
+              : () => showForecastSheet(context,
+                      title: '${days.length}-day forecast',
+                      subtitle: 'Daily conditions · High / Low',
+                      children: [
+                        for (var index = 0; index < days.length; index++) ...[
+                          if (index > 0)
+                            Divider(height: 1, color: context.dmColors.divider),
+                          _DailyDetailRow(
+                              day: days[index],
+                              label: _dayLabel(
+                                  days[index].date,
                                   referenceTime ?? DateTime.now(),
                                   timezoneOffset)),
-                              subtitle: Text(day.condition),
-                              trailing: Text(
-                                  '${forecastTemperature(day.maxTempC, forecastTemperatureUnit(context))} / ${forecastTemperature(day.minTempC, forecastTemperatureUnit(context))}'))
-                      ])))),
+                        ],
+                      ])),
       if (days.isEmpty)
         _EmptyDailyState(message: errorMessage)
       else
@@ -69,7 +70,7 @@ class ForecastDailyGrid extends StatelessWidget {
                 if (i > 0) Divider(height: 1, color: context.dmColors.divider),
                 Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                     child: Row(children: [
                       Expanded(
                           flex: 3,
@@ -79,7 +80,7 @@ class ForecastDailyGrid extends StatelessWidget {
                                   referenceTime ?? DateTime.now(),
                                   timezoneOffset),
                               style: const TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w600))),
+                                  fontSize: 13, fontWeight: FontWeight.w600))),
                       Expanded(
                           flex: 3,
                           child: Align(
@@ -189,13 +190,83 @@ class _EmptyDailyState extends StatelessWidget {
         child: Text(
           message ?? '7-day forecast unavailable',
           textAlign: TextAlign.center,
-          maxLines: 4,
-          overflow: TextOverflow.ellipsis,
           style: DMTypography.body.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
     );
+  }
+}
+
+class _DailyDetailRow extends StatelessWidget {
+  const _DailyDetailRow({required this.day, required this.label});
+  final DailyForecast day;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final unit = forecastTemperatureUnit(context);
+    final high = forecastTemperature(day.maxTempC, unit);
+    final low = forecastTemperature(day.minTempC, unit);
+    final colors = context.dmColors;
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 17),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(
+                child: Text(label,
+                    style: TextStyle(
+                        fontSize: 16,
+                        height: 1.2,
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary))),
+            const SizedBox(width: 12),
+            Semantics(
+                label: 'High $high, low $low',
+                child: ExcludeSemantics(
+                    child: Text.rich(
+                        TextSpan(children: [
+                          TextSpan(
+                              text: high,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: colors.textPrimary)),
+                          TextSpan(
+                              text: '  /  $low',
+                              style: TextStyle(color: colors.textSecondary)),
+                        ]),
+                        style: const TextStyle(fontSize: 17, height: 1.2)))),
+          ]),
+          const SizedBox(height: 10),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            DaymakerWeatherIcon(
+                style: WeatherIconStyle.line,
+                color: day.weatherId == 800 ? null : colors.textSecondary,
+                conditionId: day.weatherId,
+                openWeatherIconCode: day.weatherIcon,
+                conditionMain: day.weatherMain,
+                conditionDescription: day.condition,
+                forecastTime:
+                    DateTime(day.date.year, day.date.month, day.date.day, 12),
+                size: 28,
+                semanticLabel: day.condition),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Text(day.condition,
+                    style: TextStyle(
+                        fontSize: 14,
+                        height: 1.45,
+                        color: colors.textSecondary))),
+          ]),
+          if (day.precipitationChanceKnown) ...[
+            const SizedBox(height: 7),
+            Padding(
+                padding: const EdgeInsets.only(left: 40),
+                child: Text('${day.precipitationChance}% precipitation',
+                    style: TextStyle(
+                        fontSize: 12, height: 1.3, color: colors.link))),
+          ],
+        ]));
   }
 }

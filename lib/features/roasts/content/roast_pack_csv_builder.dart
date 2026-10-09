@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'roast_pack_validator.dart';
-import 'weather_roast_models.dart';
+import 'roast_content_models.dart';
+import '../models/roast_mood.dart';
 
 const roastCsvHeaders = <String>[
   'id',
@@ -61,8 +62,8 @@ class RoastPackCsvBuilder {
 
   final RoastPackValidator validator;
 
-  static const defaultPackVersion = '2026.06.26.1';
-  static final defaultGeneratedAt = DateTime.utc(2026, 6, 26);
+  static const defaultPackVersion = '2026.10.09.1';
+  static final defaultGeneratedAt = DateTime.utc(2026, 10, 9);
 
   RoastPackCsvBuildResult build(
     String csvSource, {
@@ -152,7 +153,13 @@ class RoastPackCsvBuilder {
     final dayparts =
         _parseList(row['daypart']!).map(Daypart.parse).toList(growable: false);
 
+    final rawMood = _emptyToNull(row['mood']);
+    final mood = RoastMood.tryParse(rawMood);
+    if (rawMood != null && mood == null) {
+      throw FormatException('Unknown mood: $rawMood');
+    }
     return RoastLine(
+      mood: mood,
       id: row['id']!,
       persona: normalizeRoastPersonaId(row['persona']!),
       type: RoastType.parse(row['roast_type']!),

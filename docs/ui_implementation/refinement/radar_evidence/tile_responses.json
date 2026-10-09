@@ -1,0 +1,24 @@
+[
+  {
+    "name": "carto_before",
+    "url": "https://a.basemaps.cartocdn.com/rastertiles/voyager/10/242/391.png",
+    "status": 200,
+    "bytes": 2049,
+    "content_type": "image/png",
+    "cache_control": "public, max-age=2592000, immutable",
+    "expires": null,
+    "etag": "\"wm-da89c20e77c1-light\"",
+    "date": "Fri, 09 Oct 2026 22:25:50 GMT"
+  },
+  {
+    "name": "osm_after",
+    "url": "https://tile.openstreetmap.org/10/242/391.png",
+    "status": 200,
+    "bytes": 46378,
+    "content_type": "image/png",
+    "cache_control": "max-age=92460, stale-while-revalidate=604800, stale-if-error=604800",
+    "expires": "Sat, 10 Oct 2026 23:07:57 GMT",
+    "etag": "\"ab3e988ddd01f2eb1adadc63308eb243\"",
+    "date": "Fri, 09 Oct 2026 22:25:51 GMT"
+  }
+]

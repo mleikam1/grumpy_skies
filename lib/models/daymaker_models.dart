@@ -1,3 +1,4 @@
+import '../features/roasts/models/roast_mood.dart';
 import 'app_appearance.dart';
 export 'app_appearance.dart';
 import 'temperature_unit.dart';
@@ -256,6 +257,7 @@ class Roast {
   final String category;
   final DateTime createdAt;
   final int xpReward;
+  final RoastMood? mood;
 
   const Roast({
     required this.id,
@@ -265,7 +267,11 @@ class Roast {
     required this.category,
     required this.createdAt,
     required this.xpReward,
+    this.mood,
   });
+
+  RoastMood get resolvedMood => RoastMoodResolver.resolve(
+      personaId: personaId, text: text, explicitMood: mood);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -275,6 +281,7 @@ class Roast {
         'category': category,
         'createdAt': createdAt.toIso8601String(),
         'xpReward': xpReward,
+        if (mood != null) 'mood': mood!.name,
       };
 }
 

@@ -1,71 +1,53 @@
 import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
-
-import '../../../design/dm_colors.dart';
-import '../../../design/dm_spacing.dart';
+import '../../../design/dm_metric_colors.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 
 class ForecastMetricChips extends StatelessWidget {
-  const ForecastMetricChips({
-    super.key,
-    required this.weather,
-    this.rainAvailable = true,
-  });
-
+  const ForecastMetricChips(
+      {super.key, required this.weather, this.rainAvailable = true});
   final WeatherSnapshot weather;
   final bool rainAvailable;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const gap = DMSpacing.sm;
-        final width = constraints.maxWidth;
-        final columns = width >= 700
-            ? 3
-            : width >= 520
-                ? 2
-                : 1;
-        final itemWidth = (width - (gap * (columns - 1))) / columns;
-
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            SizedBox(
-              width: itemWidth,
-              child: DmMetricChip(
-                icon: Icons.water_drop_outlined,
-                label: 'Rain',
-                value: rainAvailable
-                    ? '${weather.rainChancePercent}% rain'
-                    : 'Unavailable',
-                accentColor: DMColors.rainTeal,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: DmMetricChip(
-                icon: Icons.air_rounded,
-                label: 'AQI',
-                value: weather.aqiLabel,
-                accentColor: DMColors.mintGreen,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: DmMetricChip(
-                icon: Icons.thermostat_outlined,
-                label: 'Feels',
-                value: forecastTemperature(
-                    weather.feelsLikeC, forecastTemperatureUnit(context)),
-                accentColor: DMColors.sunriseYellow,
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    final category = weather.aqiCategory.trim();
+    final aqiAvailable = weather.aqi > 0 ||
+        (weather.aqi == 0 &&
+            category.isNotEmpty &&
+            !['live', 'not supplied', 'unavailable']
+                .contains(category.toLowerCase()));
+    final tiles = [
+      DmMetricChip(
+          icon: Icons.water_drop_outlined,
+          label: 'Rain',
+          value:
+              rainAvailable ? '${weather.rainChancePercent}%' : 'Unavailable',
+          available: rainAvailable,
+          tone: DMMetricTone.water),
+      DmMetricChip(
+          icon: Icons.air_rounded,
+          label: 'AQI',
+          value: aqiAvailable ? '${weather.aqi}' : 'Unavailable',
+          status: aqiAvailable ? category : null,
+          available: aqiAvailable,
+          tone: DMMetricTone.air),
+      DmMetricChip(
+          icon: Icons.thermostat_outlined,
+          label: 'Feels like',
+          value: forecastTemperature(
+              weather.feelsLikeC, forecastTemperatureUnit(context)),
+          tone: DMMetricTone.warm),
+    ];
+    return LayoutBuilder(builder: (context, constraints) {
+      final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+      final columns = constraints.maxWidth >= 330 * scale ? 3 : 1;
+      const gap = 10.0;
+      final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+      return Wrap(spacing: gap, runSpacing: gap, children: [
+        for (final tile in tiles) SizedBox(width: width, child: tile),
+      ]);
+    });
   }
 }

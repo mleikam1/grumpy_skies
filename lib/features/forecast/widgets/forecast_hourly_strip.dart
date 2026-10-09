@@ -1,4 +1,5 @@
 import 'forecast_temperature.dart';
+import 'forecast_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:weather_icons_animated/weather_icons_animated.dart';
 
@@ -46,8 +47,10 @@ class ForecastHourlyStrip extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 5),
             itemBuilder: (context, index) {
               return _HourlyTile(
-                width:
-                    ((MediaQuery.sizeOf(context).width - 56) / 5).clamp(60, 90),
+                width: ((MediaQuery.sizeOf(context).width - 56) / 5)
+                        .clamp(60, 90) *
+                    (MediaQuery.textScalerOf(context).scale(14) / 14)
+                        .clamp(1, 2),
                 hour: items[index].hour,
                 label: items[index].label,
                 sunrise: sunrise,
@@ -61,23 +64,30 @@ class ForecastHourlyStrip extends StatelessWidget {
       children: [
         DmApprovedSectionHeader(
             title: 'Hourly forecast',
-            onAction: () => showModalBottomSheet<void>(
-                context: context,
-                showDragHandle: true,
-                builder: (ctx) => SafeArea(
-                        child: ListView(children: [
-                      for (final item in items)
-                        ListTile(
-                            title: Text(item.label),
-                            subtitle: Text(item.hour.condition),
-                            trailing: Text(forecastTemperature(
-                                item.hour.temperatureC,
-                                forecastTemperatureUnit(context))))
-                    ])))),
-        SizedBox(
-          height: 98 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 3,
-          child: child,
-        ),
+            onAction: items.isEmpty
+                ? null
+                : () => showForecastSheet(context,
+                        title: 'Hourly forecast',
+                        subtitle: 'Forecast times are local to this location.',
+                        children: [
+                          for (var i = 0; i < items.length; i++) ...[
+                            if (i > 0)
+                              Divider(
+                                  height: 1, color: context.dmColors.divider),
+                            _HourlyDetailRow(
+                                hour: items[i].hour, label: items[i].label),
+                          ]
+                        ])),
+        if (items.isEmpty)
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 98),
+            child: child,
+          )
+        else
+          SizedBox(
+            height: 98 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 3,
+            child: child,
+          ),
       ],
     );
   }
@@ -156,8 +166,6 @@ class _EmptyHourlyState extends StatelessWidget {
         child: Text(
           message ?? 'Hourly forecast unavailable',
           textAlign: TextAlign.center,
-          maxLines: 4,
-          overflow: TextOverflow.ellipsis,
           style: DMTypography.body.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
@@ -258,4 +266,38 @@ class _HourlyTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _HourlyDetailRow extends StatelessWidget {
+  const _HourlyDetailRow({required this.hour, required this.label});
+  final HourlyForecast hour;
+  final String label;
+  @override
+  Widget build(BuildContext context) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+              child: Text(label,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700))),
+          const SizedBox(width: 12),
+          Text(
+              forecastTemperature(
+                  hour.temperatureC, forecastTemperatureUnit(context)),
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        ]),
+        const SizedBox(height: 8),
+        Text(hour.condition,
+            style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: context.dmColors.textSecondary)),
+        if (hour.precipitationChanceKnown) ...[
+          const SizedBox(height: 6),
+          Text('${hour.precipitationChance}% precipitation',
+              style: TextStyle(fontSize: 12, color: context.dmColors.link)),
+        ],
+      ]));
 }

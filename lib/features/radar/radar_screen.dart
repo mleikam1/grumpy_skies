@@ -64,6 +64,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   var _frameLoadSerial = 0;
   var _chaosLoadSerial = 0;
   var _tileIssue = false;
+  var _basemapIssue = false;
   var _tileIssueUpdateQueued = false;
   var _tileIssueGeneration = 0;
   String? _frameLoadMessage;
@@ -142,6 +143,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
 
   void _handleLocationChanged() {
     _clearTileIssue();
+    _basemapIssue = false;
     _mode = _defaultModeFor(_locationController?.selectedLocation);
     _previousFrame = null;
     _chaosWeather = null;
@@ -539,18 +541,10 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
             final horizontal = width < 600 ? DMSpacing.sm : DMSpacing.xl;
             final sheetOpen = _sheetState == _RadarSheetState.open;
             final sheetMinimized = _sheetState == _RadarSheetState.minimized;
-            const minimizedSheetHeight = 52.0;
             final openSheetHeight = math.min(
               constraints.maxHeight * (width < 700 ? 0.36 : 0.34),
               width < 700 ? 280.0 : 300.0,
             );
-            final noticeOffset = (sheetOpen
-                    ? openSheetHeight
-                    : sheetMinimized
-                        ? minimizedSheetHeight
-                        : 0) +
-                bottomInset +
-                DMSpacing.x2;
             final chaosScore = _chaosWeather == null
                 ? null
                 : ChaosScoreService.evaluate(_chaosWeather!);
@@ -568,29 +562,40 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                   frame: frame,
                   previousFrame: _previousFrame,
                   onTileIssue: _handleTileIssue,
+                  onBasemapIssue: (hasIssue) {
+                    if (mounted && _basemapIssue != hasIssue) {
+                      setState(() => _basemapIssue = hasIssue);
+                    }
+                  },
                 ),
                 Positioned(
                   top: safeTop + DMSpacing.sm,
                   left: horizontal,
-                  right: 88,
-                  child: _RadarStatusStack(
-                    locationName: _locationLabel(location),
-                    frameLabel: frame.label,
-                    modeLabel: mode.modeChipLabel,
+                  right: horizontal + 60,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _RadarStatusStack(
+                        locationName: _locationLabel(location),
+                        frameLabel: frame.label,
+                        modeLabel: mode.modeChipLabel,
+                      ),
+                      if (_showChaosMeter && chaosWidth >= 168) ...[
+                        const SizedBox(height: DMSpacing.sm),
+                        SizedBox(
+                          width: chaosWidth,
+                          child: _ChaosMeterCard(
+                            score: chaosScore,
+                            loading: _loadingChaos,
+                            message: _chaosMessage,
+                            onClose: _closeChaosMeter,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                if (_showChaosMeter && chaosWidth >= 168)
-                  Positioned(
-                    top: safeTop + 62,
-                    left: horizontal,
-                    width: chaosWidth,
-                    child: _ChaosMeterCard(
-                      score: chaosScore,
-                      loading: _loadingChaos,
-                      message: _chaosMessage,
-                      onClose: _closeChaosMeter,
-                    ),
-                  ),
                 Positioned(
                   top: safeTop + DMSpacing.sm,
                   right: horizontal,
@@ -605,64 +610,66 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
                     onInfo: _toggleInfoSheet,
                   ),
                 ),
-                if (_tileIssue || _frameLoadMessage != null || _loadingFrames)
-                  Positioned(
-                    left: horizontal,
-                    right: horizontal,
-                    bottom: noticeOffset,
-                    child: _RadarNoticeBanner(
-                      message: _loadingFrames
-                          ? 'Loading radar frames...'
-                          : _tileIssue
-                              ? _tileIssueMessage(_tileIssueCode)
-                              : _frameLoadMessage!,
-                    ),
-                  ),
-                if (sheetOpen)
-                  Positioned(
-                    left: horizontal,
-                    right: horizontal,
-                    bottom: bottomInset + DMSpacing.sm,
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 900),
-                        child: _RadarBottomSheet(
-                          height: openSheetHeight,
-                          frame: frame,
-                          frames: _frames,
-                          timelineIndex: _timelineIndex,
-                          playing: _playing,
-                          mode: mode,
-                          locationName: _locationLabel(location),
-                          futureCastAvailable: _futureCastAvailable,
-                          futureCastMessage: _futureCastMessage,
-                          onModeChanged: _setMode,
-                          onTimelineChanged: _onTimelineChanged,
-                          onPlayPause: _togglePlayback,
-                          onLatest: _jumpToLatest,
-                          onMinimize: _minimizeInfoSheet,
-                          onClose: _closeInfoSheet,
-                        ),
+                Positioned(
+                  left: horizontal,
+                  right: horizontal,
+                  bottom: bottomInset + DMSpacing.sm,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 900),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RadarMapAttribution(source: frame.source),
+                          if (_basemapIssue ||
+                              _tileIssue ||
+                              _frameLoadMessage != null ||
+                              _loadingFrames) ...[
+                            const SizedBox(height: DMSpacing.xs),
+                            _RadarNoticeBanner(
+                              message: _basemapIssue
+                                  ? 'Base map tiles could not load. Check your connection and try moving the map.'
+                                  : _loadingFrames
+                                      ? 'Loading radar frames...'
+                                      : _tileIssue
+                                          ? _tileIssueMessage(_tileIssueCode)
+                                          : _frameLoadMessage!,
+                            ),
+                          ],
+                          if (sheetOpen) ...[
+                            const SizedBox(height: DMSpacing.xs),
+                            _RadarBottomSheet(
+                              height: openSheetHeight,
+                              frame: frame,
+                              frames: _frames,
+                              timelineIndex: _timelineIndex,
+                              playing: _playing,
+                              mode: mode,
+                              locationName: _locationLabel(location),
+                              futureCastAvailable: _futureCastAvailable,
+                              futureCastMessage: _futureCastMessage,
+                              onModeChanged: _setMode,
+                              onTimelineChanged: _onTimelineChanged,
+                              onPlayPause: _togglePlayback,
+                              onLatest: _jumpToLatest,
+                              onMinimize: _minimizeInfoSheet,
+                              onClose: _closeInfoSheet,
+                            ),
+                          ],
+                          if (sheetMinimized) ...[
+                            const SizedBox(height: DMSpacing.xs),
+                            _RadarSheetTab(
+                              frame: frame,
+                              mode: mode,
+                              onOpen: _openInfoSheet,
+                              onClose: _closeInfoSheet,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),
-                if (sheetMinimized)
-                  Positioned(
-                    left: horizontal,
-                    right: horizontal,
-                    bottom: bottomInset + DMSpacing.sm,
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: _RadarSheetTab(
-                          frame: frame,
-                          mode: mode,
-                          onOpen: _openInfoSheet,
-                          onClose: _closeInfoSheet,
-                        ),
-                      ),
-                    ),
-                  ),
+                ),
               ],
             );
           },
@@ -746,52 +753,36 @@ class _RadarStatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DmGlassCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DMSpacing.sm,
-        vertical: DMSpacing.xs,
-      ),
-      borderRadius: DMRadius.full,
-      gradient: DMGradients.glassNavy,
-      borderColor: context.dmColors.glassBorderStrong,
-      shadows: DMShadows.floating,
+      padding: const EdgeInsets.all(DMSpacing.sm),
+      borderRadius: DMRadius.large,
+      borderColor: context.dmColors.border,
+      blurSigma: 0,
+      shadows: DMShadows.soft,
       semanticLabel: 'Radar, $locationName, $modeLabel, $frameLabel',
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 430),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.radar,
-              color: DMColors.skyBlue,
-              size: DMSpacing.iconMd,
-            ),
-            const SizedBox(width: DMSpacing.xs),
-            const Text(
-              'Radar',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: DMTypography.labelLarge,
-            ),
-            const SizedBox(width: DMSpacing.xs),
-            Expanded(
-              flex: 2,
-              child: Text(
-                locationName,
-                maxLines: 1,
+            Row(children: [
+              Icon(Icons.radar, color: context.dmColors.textPrimary, size: 20),
+              const SizedBox(width: DMSpacing.xs),
+              Text('Radar',
+                  style: DMTypography.labelLarge
+                      .copyWith(color: context.dmColors.textPrimary)),
+            ]),
+            const SizedBox(height: 4),
+            Text(locationName,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: DMTypography.label.copyWith(
-                  color: DMColors.skyBlueSoft,
-                ),
-              ),
-            ),
-            const SizedBox(width: DMSpacing.xs),
-            Flexible(
-              child: _RadarFrameBadge(label: frameLabel),
-            ),
-            const SizedBox(width: DMSpacing.xs),
-            Flexible(
-              child: _RadarModeBadge(label: modeLabel),
-            ),
+                style: DMTypography.label
+                    .copyWith(color: context.dmColors.textSecondary)),
+            const SizedBox(height: DMSpacing.xs),
+            Wrap(spacing: DMSpacing.xs, runSpacing: 4, children: [
+              _RadarFrameBadge(label: frameLabel),
+              _RadarModeBadge(label: modeLabel),
+            ]),
           ],
         ),
       ),
@@ -808,7 +799,7 @@ class _RadarModeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: DMColors.opacity(DMColors.skyBlue, 0.18),
+        color: context.dmColors.surfaceRaised,
         borderRadius: DMRadius.full,
       ),
       child: Padding(
@@ -822,7 +813,7 @@ class _RadarModeBadge extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: DMTypography.labelSmall.copyWith(
-            color: DMColors.skyBlueSoft,
+            color: context.dmColors.textSecondary,
           ),
         ),
       ),
@@ -838,8 +829,8 @@ class _RadarFrameBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: DMColors.opacity(DMColors.sunriseYellow, 0.18),
+      decoration: const BoxDecoration(
+        color: DMColors.sunriseYellow,
         borderRadius: DMRadius.full,
       ),
       child: Padding(
@@ -853,7 +844,7 @@ class _RadarFrameBadge extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: DMTypography.labelSmall.copyWith(
-            color: DMColors.sunriseYellow,
+            color: DMColors.deepNavy,
           ),
         ),
       ),
@@ -900,7 +891,6 @@ class _RadarFloatingControls extends StatelessWidget {
           icon: const Icon(Icons.update),
           semanticLabel: 'Show latest radar frame',
           tooltip: 'Latest',
-          selected: true,
           onPressed: onLatest,
         ),
         const SizedBox(height: DMSpacing.xs),
@@ -908,7 +898,6 @@ class _RadarFloatingControls extends StatelessWidget {
           icon: const Icon(Icons.my_location),
           semanticLabel: 'Recenter radar map',
           tooltip: 'Recenter',
-          selected: true,
           onPressed: onRecenter,
         ),
         const SizedBox(height: DMSpacing.xs),
@@ -916,7 +905,6 @@ class _RadarFloatingControls extends StatelessWidget {
           icon: const Icon(Icons.add),
           semanticLabel: 'Zoom in',
           tooltip: 'Zoom in',
-          selected: true,
           onPressed: onZoomIn,
         ),
         const SizedBox(height: DMSpacing.xs),
@@ -924,7 +912,6 @@ class _RadarFloatingControls extends StatelessWidget {
           icon: const Icon(Icons.remove),
           semanticLabel: 'Zoom out',
           tooltip: 'Zoom out',
-          selected: true,
           onPressed: onZoomOut,
         ),
         const SizedBox(height: DMSpacing.xs),
@@ -932,7 +919,6 @@ class _RadarFloatingControls extends StatelessWidget {
           icon: const Icon(Icons.layers_outlined),
           semanticLabel: 'Radar layers',
           tooltip: 'Layers',
-          selected: true,
           onPressed: onLayers,
         ),
         const SizedBox(height: DMSpacing.xs),
@@ -940,7 +926,6 @@ class _RadarFloatingControls extends StatelessWidget {
           icon: const Icon(Icons.info_outline),
           semanticLabel: 'Radar legend and info',
           tooltip: 'Info',
-          selected: true,
           onPressed: onInfo,
         ),
       ],
@@ -1000,7 +985,7 @@ class _ChaosMeterCard extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 tooltip: 'Close Chaos Meter',
                 constraints:
-                    const BoxConstraints.tightFor(width: 28, height: 28),
+                    const BoxConstraints.tightFor(width: 44, height: 44),
                 icon: const Icon(Icons.close_rounded, size: 16),
                 color: context.dmColors.textMuted,
                 onPressed: onClose,
@@ -1022,7 +1007,7 @@ class _ChaosMeterCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: DMTypography.numeral.copyWith(
-                    color: DMColors.sunriseYellow,
+                    color: context.dmColors.textPrimary,
                   ),
                 ),
               const SizedBox(width: DMSpacing.xs),
@@ -1081,9 +1066,9 @@ class _RadarSheetTab extends StatelessWidget {
           IconButton(
             visualDensity: VisualDensity.compact,
             tooltip: 'Open radar controls',
-            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
             icon: const Icon(Icons.keyboard_arrow_up_rounded),
-            color: DMColors.skyBlue,
+            color: context.dmColors.textPrimary,
             onPressed: onOpen,
           ),
           const SizedBox(width: DMSpacing.xs),
@@ -1116,7 +1101,7 @@ class _RadarSheetTab extends StatelessWidget {
           IconButton(
             visualDensity: VisualDensity.compact,
             tooltip: 'Close radar controls',
-            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
             icon: const Icon(Icons.close_rounded),
             color: context.dmColors.textSecondary,
             onPressed: onClose,
@@ -1229,7 +1214,7 @@ class _SheetHandle extends StatelessWidget {
                 borderRadius: DMRadius.full,
                 onTap: onMinimize,
                 child: SizedBox(
-                  height: 22,
+                  height: 48,
                   child: Center(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -1247,7 +1232,7 @@ class _SheetHandle extends StatelessWidget {
         IconButton(
           visualDensity: VisualDensity.compact,
           tooltip: 'Minimize',
-          constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           color: context.dmColors.textSecondary,
           onPressed: onMinimize,
@@ -1255,7 +1240,7 @@ class _SheetHandle extends StatelessWidget {
         IconButton(
           visualDensity: VisualDensity.compact,
           tooltip: 'Close',
-          constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           icon: const Icon(Icons.close_rounded),
           color: context.dmColors.textSecondary,
           onPressed: onClose,
@@ -1553,7 +1538,7 @@ class _CompactRadarTimeline extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.labelSmall.copyWith(
-                  color: DMColors.sunriseYellow,
+                  color: context.dmColors.textSecondary,
                 ),
               ),
             ),
@@ -1600,7 +1585,8 @@ class _RadarInfoChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: DMColors.skyBlueSoft, size: DMSpacing.iconSm),
+            Icon(icon,
+                color: context.dmColors.textSecondary, size: DMSpacing.iconSm),
             const SizedBox(width: DMSpacing.xs),
             Flexible(
               child: Text(
@@ -1696,17 +1682,15 @@ class _RadarNoticeBanner extends StatelessWidget {
       shadows: DMShadows.floating,
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline,
-            color: DMColors.sunriseYellow,
+            color: context.dmColors.textPrimary,
             size: DMSpacing.iconMd,
           ),
           const SizedBox(width: DMSpacing.xs),
           Expanded(
             child: Text(
               message,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
               style: DMTypography.bodySmall.copyWith(
                 color: context.dmColors.textPrimary,
               ),
@@ -1748,7 +1732,7 @@ String _tileIssueMessage(String? code) {
     'openweather_key_rejected' ||
     'OPENWEATHER_API_KEY_UNAVAILABLE' ||
     'OPENWEATHER_API_KEY_MISSING' =>
-      'Radar product/API access issue. Check OpenWeather Maps access on the server key.',
+      'This radar layer is unavailable because the weather service has not authorized it.',
     'futurecast_unavailable' =>
       'FutureCast requires OpenWeather precipitation forecast map access.',
     'radar_frame_unavailable' => 'Radar frame unavailable.',

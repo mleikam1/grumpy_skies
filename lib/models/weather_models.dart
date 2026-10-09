@@ -641,16 +641,20 @@ class CurrentWeather {
   String get aqiLabel =>
       aqiCategory.isEmpty ? aqi.toString() : '$aqi $aqiCategory';
 
-  String get uvLabel => uvCategory.isEmpty
-      ? uvIndex.toStringAsFixed(0)
-      : '${uvIndex.toStringAsFixed(0)} $uvCategory';
+  String get uvLabel => !uvIndex.isFinite || uvIndex < 0
+      ? 'Unavailable'
+      : uvCategory.isEmpty
+          ? uvIndex.toStringAsFixed(0)
+          : '${uvIndex.toStringAsFixed(0)} $uvCategory';
 
   String get pressureLabel =>
       pressureHpa == null ? 'Unavailable' : '$pressureHpa hPa';
 
-  String get visibilityLabel => visibilityMiles == null
+  String get visibilityLabel => visibilityMeters == null
       ? 'Unavailable'
-      : '${visibilityMiles!.toStringAsFixed(1)} mi';
+      : units == 'imperial'
+          ? '${visibilityMiles!.toStringAsFixed(1)} mi'
+          : '${(visibilityMeters! / 1000).toStringAsFixed(1)} km';
 
   String get rainSnowLastHourLabel {
     final unit = units == 'imperial' ? 'in' : 'mm';
@@ -666,8 +670,6 @@ class CurrentWeather {
   }
 
   factory CurrentWeather.fromSnapshot(WeatherSnapshot snapshot) {
-    final observedAt = snapshot.observedAt;
-
     return CurrentWeather(
       locationName: snapshot.locationName,
       temperatureC: snapshot.temperatureC,
@@ -679,34 +681,10 @@ class CurrentWeather {
       precipitationChance: snapshot.rainChancePercent,
       aqi: snapshot.aqi,
       aqiCategory: snapshot.aqiCategory,
-      sunrise: DateTime(
-        observedAt.year,
-        observedAt.month,
-        observedAt.day,
-        5,
-        48,
-      ),
-      sunset: DateTime(
-        observedAt.year,
-        observedAt.month,
-        observedAt.day,
-        18,
-        45,
-      ),
-      moonrise: DateTime(
-        observedAt.year,
-        observedAt.month,
-        observedAt.day,
-        22,
-        10,
-      ),
-      moonset: DateTime(
-        observedAt.year,
-        observedAt.month,
-        observedAt.day,
-        4,
-        35,
-      ),
+      sunrise: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      sunset: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      moonrise: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      moonset: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       uvIndex: snapshot.uvIndex,
       uvCategory: snapshot.uvCategory,
       chaosMeterPercent: snapshot.chaosMeterPercent,
@@ -729,13 +707,17 @@ class CurrentWeather {
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
       precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
           json['precipitationChance'] is num,
-      aqi: ((json['aqi'] ?? 50) as num).toInt(),
+      aqi: ((json['aqi'] ?? 0) as num).toInt(),
       aqiCategory: (json['aqiCategory'] ?? '') as String,
-      sunrise: _safeParseDate(json['sunrise']) ?? DateTime.now(),
-      sunset: _safeParseDate(json['sunset']) ?? DateTime.now(),
-      moonrise: _safeParseDate(json['moonrise']) ?? DateTime.now(),
-      moonset: _safeParseDate(json['moonset']) ?? DateTime.now(),
-      uvIndex: ((json['uvIndex'] ?? 5) as num).toDouble(),
+      sunrise: _safeParseDate(json['sunrise']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      sunset: _safeParseDate(json['sunset']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      moonrise: _safeParseDate(json['moonrise']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      moonset: _safeParseDate(json['moonset']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      uvIndex: ((json['uvIndex'] ?? -1) as num).toDouble(),
       uvCategory: (json['uvCategory'] ?? '') as String,
       chaosMeterPercent: ((json['chaosMeterPercent'] ?? 0) as num).toInt(),
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../config/app_routes.dart';
 import '../../design/dm_theme.dart';
 import '../../features/roasts/models/roast_persona.dart';
+import '../../features/roasts/models/roast_mood.dart';
+import '../assets/persona_emotion_assets.dart';
 
 /// Shared geometry for the approved light layout and its dark surface treatment.
 class DmPageHeader extends StatelessWidget {
@@ -86,32 +88,42 @@ class DmApprovedSectionHeader extends StatelessWidget {
 
 class DmPersonaPortrait extends StatelessWidget {
   const DmPersonaPortrait(
-      {super.key, required this.personaId, this.width, this.height});
+      {super.key, required this.personaId, this.mood, this.width, this.height});
   final String personaId;
+  final RoastMood? mood;
   final double? width;
   final double? height;
 
-  static String pathFor(String id) =>
-      'assets/approved_v1/personas/${RoastPersonas.normalizeId(id)}_portrait.png';
+  static String pathFor(String id, {RoastMood? mood}) => mood == null
+      ? PersonaEmotionAssets.legacyPortrait(id)
+      : PersonaEmotionAssets.path(id, mood);
 
   @override
-  Widget build(BuildContext context) => Image.asset(
-        pathFor(personaId),
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        alignment: Alignment.topCenter,
-        filterQuality: FilterQuality.high,
-        semanticLabel: '${RoastPersonas.byId(personaId).displayName} portrait',
-        errorBuilder: (_, __, ___) => SizedBox(
-            width: width,
-            height: height,
-            child: Center(
-                child: Text('Portrait pending',
-                    style: TextStyle(
-                        fontSize: 11, color: context.dmColors.textSecondary),
-                    textAlign: TextAlign.center))),
-      );
+  Widget build(BuildContext context) {
+    final paths = PersonaEmotionAssets.fallbacks(personaId, mood);
+    Widget portrait(int index) => Image.asset(
+          paths[index],
+          width: width,
+          height: height,
+          fit: BoxFit.contain,
+          alignment: Alignment.topCenter,
+          filterQuality: FilterQuality.high,
+          semanticLabel: '${RoastPersonas.byId(personaId).displayName}'
+              '${mood == null ? '' : ', ${mood!.label}'} portrait',
+          errorBuilder: (_, __, ___) => index + 1 < paths.length
+              ? portrait(index + 1)
+              : SizedBox(
+                  width: width,
+                  height: height,
+                  child: Center(
+                      child: Text(RoastPersonas.byId(personaId).displayName,
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: context.dmColors.textSecondary),
+                          textAlign: TextAlign.center))),
+        );
+    return portrait(0);
+  }
 }
 
 class DmApprovedAction extends StatelessWidget {

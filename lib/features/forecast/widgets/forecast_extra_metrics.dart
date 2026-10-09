@@ -1,150 +1,113 @@
 import 'package:flutter/material.dart';
-
-import '../../../design/dm_colors.dart';
-import '../../../design/dm_spacing.dart';
+import '../../../design/dm_metric_colors.dart';
+import '../../../design/dm_theme.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
+import '../../../shared/widgets/dm_approved_components.dart';
 
 class ForecastExtraMetrics extends StatelessWidget {
-  const ForecastExtraMetrics({
-    super.key,
-    required this.weather,
-  });
-
+  const ForecastExtraMetrics({super.key, required this.weather});
   final CurrentWeather weather;
 
   @override
   Widget build(BuildContext context) {
-    final metrics = [
+    final atmosphere = [
       _MetricSpec(
-        icon: Icons.wb_sunny_outlined,
-        iconSlug: 'uv-index',
-        label: 'UV',
-        value: weather.uvLabel,
-        color: DMColors.sunriseYellow,
-      ),
+          Icons.wb_sunny_outlined,
+          'UV',
+          weather.uvIndex.isFinite && weather.uvIndex >= 0
+              ? weather.uvIndex.toStringAsFixed(0)
+              : 'Unavailable',
+          DMMetricTone.warm,
+          status: weather.uvCategory),
       _MetricSpec(
-        icon: Icons.opacity_rounded,
-        iconSlug: 'humidity',
-        label: 'Humidity',
-        value: '${weather.humidity}%',
-        color: DMColors.rainTeal,
-      ),
-      _MetricSpec(
-        icon: Icons.compress_rounded,
-        iconSlug: 'barometer',
-        label: 'Pressure',
-        value: weather.pressureLabel,
-        color: DMColors.skyBlueSoft,
-      ),
-      _MetricSpec(
-        icon: Icons.visibility_outlined,
-        iconSlug: 'horizon',
-        label: 'Visibility',
-        value: weather.visibilityLabel,
-        color: DMColors.frostCyan,
-      ),
-      _MetricSpec(
-        icon: Icons.grain_rounded,
-        iconSlug: 'raindrops',
-        label: 'Last hour',
-        value: weather.rainSnowLastHourLabel,
-        color: DMColors.lavenderGlass,
-      ),
-      _MetricSpec(
-        icon: Icons.wb_twilight_rounded,
-        iconSlug: 'sunrise',
-        label: 'Sunrise',
-        value: _formatTime(weather.sunrise),
-        color: DMColors.sunrisePeach,
-      ),
-      _MetricSpec(
-        icon: Icons.nights_stay_outlined,
-        iconSlug: 'sunset',
-        label: 'Sunset',
-        value: _formatTime(weather.sunset),
-        color: DMColors.lavenderMist,
-      ),
-      _MetricSpec(
-        icon: Icons.dark_mode_outlined,
-        iconSlug: 'moonrise',
-        label: 'Moonrise',
-        value: _formatTime(weather.moonrise),
-        color: DMColors.frostCyan,
-      ),
-      _MetricSpec(
-        icon: Icons.bedtime_outlined,
-        iconSlug: 'moonset',
-        label: 'Moonset',
-        value: _formatTime(weather.moonset),
-        color: DMColors.skyBlueSoft,
-      ),
+          Icons.opacity_rounded,
+          'Humidity',
+          weather.humidity >= 0 ? '${weather.humidity}%' : 'Unavailable',
+          DMMetricTone.water),
+      _MetricSpec(Icons.compress_rounded, 'Pressure', weather.pressureLabel,
+          DMMetricTone.cool),
+      _MetricSpec(Icons.visibility_outlined, 'Visibility',
+          weather.visibilityLabel, DMMetricTone.cool),
+      _MetricSpec(Icons.grain_rounded, 'Last hour',
+          weather.rainSnowLastHourLabel, DMMetricTone.water),
     ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DmSectionHeader(title: 'Details'),
-        const SizedBox(height: DMSpacing.sm),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            const gap = DMSpacing.sm;
-            final width = constraints.maxWidth;
-            final columns = width >= 760
-                ? 3
-                : width >= 480
-                    ? 2
-                    : 1;
-            final itemWidth = (width - (gap * (columns - 1))) / columns;
-
-            return Wrap(
-              spacing: gap,
-              runSpacing: gap,
-              children: [
-                for (final metric in metrics)
-                  SizedBox(
-                    width: itemWidth,
-                    child: DmMetricChip(
-                      icon: metric.icon,
-                      leading: DaymakerWeatherIcon(
-                        iconSlug: metric.iconSlug,
-                        size: DMSpacing.iconMd,
-                        semanticLabel: metric.label,
-                        color: metric.color,
-                      ),
-                      label: metric.label,
-                      value: metric.value,
-                      accentColor: metric.color,
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-      ],
-    );
+    final sky = [
+      _MetricSpec(Icons.wb_twilight_rounded, 'Sunrise',
+          _formatTime(weather.sunrise), DMMetricTone.warm),
+      _MetricSpec(Icons.wb_twilight_outlined, 'Sunset',
+          _formatTime(weather.sunset), DMMetricTone.warm),
+      _MetricSpec(Icons.dark_mode_outlined, 'Moonrise',
+          _formatTime(weather.moonrise), DMMetricTone.lunar),
+      _MetricSpec(Icons.bedtime_outlined, 'Moonset',
+          _formatTime(weather.moonset), DMMetricTone.lunar),
+    ];
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const DmApprovedSectionHeader(title: 'Details'),
+      const SizedBox(height: 12),
+      _MetricGrid(metrics: atmosphere),
+      const SizedBox(height: 22),
+      Text('Sun & moon',
+          style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: context.dmColors.textPrimary)),
+      const SizedBox(height: 10),
+      _MetricGrid(metrics: sky),
+    ]);
   }
 
-  static String _formatTime(DateTime time) {
-    final hours = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final minutes = time.minute.toString().padLeft(2, '0');
-    final suffix = time.hour >= 12 ? 'PM' : 'AM';
-    return '$hours:$minutes $suffix';
+  String _formatTime(DateTime time) {
+    if (time.millisecondsSinceEpoch <= 0) return 'Unavailable';
+    final offset = weather.timezoneOffset;
+    final local = offset == null
+        ? time.toLocal()
+        : DateTime.fromMillisecondsSinceEpoch(
+            time.toUtc().millisecondsSinceEpoch + offset * 1000,
+            isUtc: true);
+    final hours = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final minutes = local.minute.toString().padLeft(2, '0');
+    return '$hours:$minutes ${local.hour >= 12 ? 'PM' : 'AM'}';
   }
 }
 
-class _MetricSpec {
-  const _MetricSpec({
-    required this.icon,
-    required this.iconSlug,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+class _MetricGrid extends StatelessWidget {
+  const _MetricGrid({required this.metrics});
+  final List<_MetricSpec> metrics;
+  @override
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+        final columns = constraints.maxWidth >= 720 * scale
+            ? 3
+            : constraints.maxWidth >= 300 * scale
+                ? 2
+                : 1;
+        const gap = 10.0;
+        final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+        return Wrap(spacing: gap, runSpacing: gap, children: [
+          for (final metric in metrics)
+            SizedBox(
+                width: metric.label == 'Last hour' && columns == 2
+                    ? constraints.maxWidth
+                    : width,
+                child: DmMetricChip(
+                    icon: metric.icon,
+                    label: metric.label,
+                    value: metric.value,
+                    status: metric.status,
+                    available: metric.value != 'Unavailable',
+                    tone: metric.tone)),
+        ]);
+      });
+}
 
+class _MetricSpec {
+  const _MetricSpec(this.icon, this.label, this.value, this.tone,
+      {this.status});
   final IconData icon;
-  final String iconSlug;
   final String label;
   final String value;
-  final Color color;
+  final DMMetricTone tone;
+  final String? status;
 }

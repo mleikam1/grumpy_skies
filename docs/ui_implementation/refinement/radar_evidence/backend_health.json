@@ -1,0 +1,59 @@
+{
+  "checked_at": "2026-10-09T22:31:44.526912+00:00",
+  "checks": [
+    {
+      "source_requested": "noaa_mrms",
+      "http_status": 200,
+      "health": {
+        "source": "noaa_mrms",
+        "mode": "us-forecast",
+        "ok": true,
+        "upstreamStatus": 200,
+        "upstreamContentType": "image/png",
+        "upstreamContentLength": 334,
+        "firstBytesHex": "89504E470D0A1A0A",
+        "isImage": true,
+        "fallbackCode": null,
+        "humanReadableMessage": "NOAA MRMS radar is available.",
+        "latestFrameTimestamp": 1791584099,
+        "availableFrameCount": 14
+      }
+    },
+    {
+      "source_requested": "openweather_futurecast",
+      "http_status": 200,
+      "health": {
+        "source": "openweather_futurecast",
+        "mode": "futurecast",
+        "ok": false,
+        "upstreamStatus": 401,
+        "upstreamContentType": "application/json; charset=utf-8",
+        "upstreamContentLength": 107,
+        "firstBytesHex": "7B22636F64223A34",
+        "isImage": false,
+        "fallbackCode": "openweather_key_rejected",
+        "humanReadableMessage": "Radar source unavailable; base map still usable.",
+        "latestFrameTimestamp": 1791585000,
+        "availableFrameCount": 0
+      }
+    },
+    {
+      "source_requested": "openweather_global",
+      "http_status": 200,
+      "health": {
+        "source": "openweather_global",
+        "mode": "global",
+        "ok": false,
+        "upstreamStatus": 401,
+        "upstreamContentType": "application/json; charset=utf-8",
+        "upstreamContentLength": 107,
+        "firstBytesHex": "7B22636F64223A34",
+        "isImage": false,
+        "fallbackCode": "openweather_key_rejected",
+        "humanReadableMessage": "Radar source unavailable; base map still usable.",
+        "latestFrameTimestamp": 1791585000,
+        "availableFrameCount": 0
+      }
+    }
+  ]
+}

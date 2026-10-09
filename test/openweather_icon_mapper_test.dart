@@ -2,6 +2,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/core/weather/openweather_icon_mapper.dart';
 
 void main() {
+  test('missing sun events do not manufacture night and provider code wins',
+      () {
+    final missing = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    expect(
+        OpenWeatherIconMapper.resolveIsDay(
+          forecastTime: DateTime.utc(2026, 10, 9, 12),
+          sunrise: missing,
+          sunset: missing,
+        ),
+        isNull);
+    expect(
+        OpenWeatherIconMapper.resolveIsDay(
+          openWeatherIconCode: '01d',
+          forecastTime: DateTime.utc(2026, 10, 9, 12),
+          sunrise: missing,
+          sunset: missing,
+        ),
+        isTrue);
+  });
   group('OpenWeatherIconMapper', () {
     test('uses OpenWeather icon suffix for clear day and night variants', () {
       expect(
