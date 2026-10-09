@@ -17,13 +17,25 @@ void main() {
     await loadMemeFonts();
   });
 
-  test('all 15 templates render complete captions and genuine PNG images',
+  test('all 19 templates render editable captions and genuine PNG images',
       () async {
     final cache = MemeImageCache((_) async => null);
     addTearDown(cache.dispose);
     final samples = <Uint8List>[];
     for (final template in catalog.templates) {
       final document = template.createDocument();
+      expect(document.layers.length, template.safeTextZones.length,
+          reason: template.id);
+      for (final layer in document.layers) {
+        expect(layer.type, MemeLayerType.text, reason: template.id);
+        expect(
+            layer.text,
+            layer.role == 'top'
+                ? template.defaultCaption.top
+                : template.defaultCaption.bottom,
+            reason: template.id);
+      }
+      expect(document.background.assetRef, template.assetPath);
       await cache.prepare(document);
       expect(cache.missing, isEmpty, reason: template.id);
       expect(MemePainter(document, cache.images).exportWarnings, isEmpty,
@@ -33,7 +45,11 @@ void main() {
       samples.add(bytes);
       await _artifact('${template.id}.png', bytes);
     }
-    expect(samples.length, 15);
+    expect(samples.length, 19);
+    expect(
+        catalog.templates
+            .where((template) => template.id.startsWith('approved_')),
+        hasLength(4));
     await _contactSheet(catalog, samples);
   });
 
@@ -287,11 +303,11 @@ Future<void> _contactSheet(MemeCatalog catalog, List<Uint8List> samples) async {
     codec.dispose();
   }
   final picture = recorder.endRecording();
-  final image = await picture.toImage(1080, 2000);
+  final image = await picture.toImage(1080, ((samples.length + 2) ~/ 3) * 400);
   final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!
       .buffer
       .asUint8List();
-  await _artifact('all_15_rendered.png', bytes);
+  await _artifact('all_${samples.length}_rendered.png', bytes);
   image.dispose();
   picture.dispose();
 }

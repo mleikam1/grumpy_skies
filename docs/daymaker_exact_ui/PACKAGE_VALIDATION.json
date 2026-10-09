@@ -1,0 +1,13 @@
+{
+  "original_boards_verified": 2,
+  "native_crops_verified_exact_against_source": 44,
+  "gallery_prompt_exact": true,
+  "gallery_embedded_images_exact": 8,
+  "gallery_character_refs": 5,
+  "font_files_distributed": 0,
+  "comparison_identical_image_selftest": "PASS (separate prior run)",
+  "comparison_detects_changed_pixels": "PASS",
+  "comparison_rejects_nonuniform_stretch": "PASS",
+  "gallery_browser_navigation": "BLOCKED by container browser file URL policy; no browser-rendered verification claimed",
+  "flutter_app_build_and_runtime": "NOT PERFORMED - handoff delivery, not app implementation"
+}

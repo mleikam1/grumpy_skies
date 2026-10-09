@@ -1,3 +1,4 @@
+import '../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../design/dm_colors.dart';
@@ -34,7 +35,7 @@ class DmMetricChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: DMGradients.glassNavy,
           borderRadius: DMRadius.large,
-          border: Border.all(color: DMColors.glassBorder),
+          border: Border.all(color: context.dmColors.glassBorder),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(

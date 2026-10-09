@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../meme_catalog.dart';
+import '../../../../design/dm_theme.dart';
 import '../meme_editor_controller.dart';
 import '../meme_weather.dart';
 import '../models/meme_document.dart';
@@ -191,7 +192,7 @@ class MemeInspector extends StatelessWidget {
             itemBuilder: (context, i) {
               final s = catalog.stickers[i];
               return Material(
-                  color: const Color(0xffedf2ed),
+                  color: context.dmColors.surfaceSecondary,
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
                       borderRadius: BorderRadius.circular(12),
@@ -210,8 +211,9 @@ class MemeInspector extends StatelessWidget {
                             padding: const EdgeInsets.all(4),
                             child: Text(s.name,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    color: memeInk, fontSize: 11)))
+                                style: TextStyle(
+                                    color: context.dmColors.textPrimary,
+                                    fontSize: 11)))
                       ])));
             }),
       ];

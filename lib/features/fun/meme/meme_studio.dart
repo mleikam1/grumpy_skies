@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../config/app_routes.dart';
-import '../../../design/dm_colors.dart';
+import '../../../design/dm_theme.dart';
 import '../../../models/temperature_unit.dart';
 import '../../../monetization/monetization_controller.dart';
 import '../../../services/cache_service.dart';
@@ -28,10 +28,23 @@ import 'widgets/meme_inspector.dart';
 import 'widgets/meme_library.dart';
 
 class MemeStudio extends StatefulWidget {
-  const MemeStudio({super.key, this.initialRoast, this.store, this.exports});
+  const MemeStudio(
+      {super.key,
+      this.initialRoast,
+      this.initialTemplateId,
+      this.initialDocumentId,
+      this.store,
+      this.exports,
+      this.recoverLostImages = true});
   final DisplayedRoastSnapshot? initialRoast;
+  final String? initialTemplateId;
+  final String? initialDocumentId;
   final MemeStore? store;
   final MemeExportService? exports;
+
+  /// Preview/tests may disable native picker recovery without altering normal
+  /// draft recovery or the production default.
+  final bool recoverLostImages;
   @override
   State<MemeStudio> createState() => _MemeStudioState();
 }
@@ -71,7 +84,9 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
       setState(() => _catalog = catalog);
       await _reloadLibrary();
       try {
-        final recovered = await _imports.recoverLostImages();
+        final recovered = widget.recoverLostImages
+            ? await _imports.recoverLostImages()
+            : const <ImportedMemePhoto>[];
         for (final photo in recovered) {
           final d = MemeDocument.blank(name: 'Recovered photo').copyWith(
               background:
@@ -85,6 +100,25 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
         }
       } catch (error) {
         if (mounted) setState(() => _error = 'Photo recovery: $error');
+      }
+      if (widget.initialDocumentId != null && mounted) {
+        final matching = _drafts.where((d) => d.id == widget.initialDocumentId);
+        if (matching.isNotEmpty) {
+          _open(matching.first);
+          _openedFromSavedProject = true;
+        } else {
+          setState(
+              () => _error = 'This saved meme is unavailable on this device.');
+        }
+      }
+      if (widget.initialTemplateId != null && mounted) {
+        final template = catalog.templateById(widget.initialTemplateId!);
+        if (template != null) {
+          _open(template.createDocument());
+        } else {
+          setState(() => _error =
+              'That template is unavailable. Choose another template.');
+        }
       }
       if (widget.initialRoast != null && mounted) {
         final t = MemeSuggestions.chooseTemplate(
@@ -500,14 +534,7 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
             ]),
         resizeToAvoidBottomInset: true,
         extendBody: false,
-        backgroundGradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              DMColors.deepNavy,
-              DMColors.twilightNavy,
-              Color(0xff4a3868)
-            ]),
+        backgroundGradient: context.dmColors.heroGradient,
         bodyBuilder: (context, breakpoint) => Column(children: [
           if (_error != null)
             ConstrainedBox(
@@ -522,7 +549,7 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 8),
-                        color: const Color(0xff542b3f),
+                        color: Theme.of(context).colorScheme.errorContainer,
                         child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

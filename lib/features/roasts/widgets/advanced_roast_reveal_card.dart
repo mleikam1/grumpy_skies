@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -82,9 +83,10 @@ class _HiddenRoastContent extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
-              decoration: BoxDecoration(gradient: DMGradients.twilight),
+              decoration:
+                  BoxDecoration(gradient: context.dmColors.grandpaGradient),
             ),
           ),
           const Positioned(
@@ -113,7 +115,7 @@ class _HiddenRoastContent extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: DMColors.opacity(DMColors.cloudWhite, 0.16),
-                  border: Border.all(color: DMColors.glassBorderStrong),
+                  border: Border.all(color: context.dmColors.glassBorderStrong),
                 ),
               ),
             ),
@@ -129,7 +131,8 @@ class _HiddenRoastContent extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: DMColors.opacity(DMColors.deepNavy, 0.34),
                     shape: BoxShape.circle,
-                    border: Border.all(color: DMColors.glassBorderStrong),
+                    border:
+                        Border.all(color: context.dmColors.glassBorderStrong),
                   ),
                   child: const Icon(
                     Icons.cloud_queue_rounded,
@@ -178,12 +181,12 @@ class _RevealedRoastContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(minHeight: 308),
-      decoration: const BoxDecoration(gradient: DMGradients.premiumCard),
+      decoration: BoxDecoration(gradient: context.dmColors.grandpaGradient),
       padding: const EdgeInsets.all(DMSpacing.xl),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 560;
-          final avatar = _KarenAvatar(
+          final avatar = _PersonaAvatar(
             personaName: personaName,
             avatarAsset: avatarAsset,
           );
@@ -217,8 +220,8 @@ class _RevealedRoastContent extends StatelessWidget {
   }
 }
 
-class _KarenAvatar extends StatelessWidget {
-  const _KarenAvatar({
+class _PersonaAvatar extends StatelessWidget {
+  const _PersonaAvatar({
     required this.personaName,
     required this.avatarAsset,
   });
@@ -235,16 +238,17 @@ class _KarenAvatar extends StatelessWidget {
           width: 112,
           height: 112,
           padding: const EdgeInsets.all(3),
-          decoration: const BoxDecoration(
-            gradient: DMGradients.primaryAction,
-            shape: BoxShape.circle,
+          decoration: BoxDecoration(
+            color: context.dmColors.surfaceSecondary,
+            borderRadius: BorderRadius.circular(18),
           ),
           child: DmAssetImage(
             assetPath: avatarAsset,
             width: 106,
             height: 106,
             fit: BoxFit.cover,
-            borderRadius: DMRadius.full,
+            alignment: Alignment.topCenter,
+            borderRadius: BorderRadius.circular(16),
             semanticLabel: '$personaName avatar',
             placeholderGradient: DMGradients.sunrise,
             placeholderIcon: Icons.person_rounded,
@@ -256,7 +260,7 @@ class _KarenAvatar extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: DMTypography.labelLarge.copyWith(
-            color: DMColors.sunriseYellow,
+            color: context.dmColors.textPrimary,
           ),
         ),
       ],
@@ -292,28 +296,29 @@ class _RoastBody extends StatelessWidget {
           runSpacing: DMSpacing.sm,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Container(
-              constraints: const BoxConstraints(minHeight: 42),
-              padding: const EdgeInsets.symmetric(
-                horizontal: DMSpacing.md,
-                vertical: DMSpacing.xs,
-              ),
-              decoration: const BoxDecoration(
-                color: DMColors.mintGreen,
-                borderRadius: DMRadius.full,
-              ),
-              child: Center(
-                widthFactor: 1,
-                child: Text(
-                  '+$xpReward XP',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelLarge.copyWith(
-                    color: DMColors.deepNavy,
+            if (xpReward > 0)
+              Container(
+                constraints: const BoxConstraints(minHeight: 42),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DMSpacing.md,
+                  vertical: DMSpacing.xs,
+                ),
+                decoration: const BoxDecoration(
+                  color: DMColors.mintGreen,
+                  borderRadius: DMRadius.full,
+                ),
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    '+$xpReward XP',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DMTypography.labelLarge.copyWith(
+                      color: DMColors.deepNavy,
+                    ),
                   ),
                 ),
               ),
-            ),
             DmPillButton(
               label: 'Share',
               semanticLabel: 'Share revealed roast',

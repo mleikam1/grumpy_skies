@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -59,8 +60,9 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground =
-        persona.unlocked ? DMColors.textPrimary : DMColors.textMuted;
+    final foreground = persona.unlocked
+        ? context.dmColors.textPrimary
+        : context.dmColors.textMuted;
     final status =
         persona.unlocked ? 'Unlocked' : persona.lockLabel ?? 'Locked';
 
@@ -77,8 +79,8 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
             borderRadius: DMRadius.card,
             border: Border.all(
               color: persona.unlocked
-                  ? DMColors.glassBorderStrong
-                  : DMColors.outlineVariant,
+                  ? context.dmColors.glassBorderStrong
+                  : context.dmColors.outlineVariant,
             ),
             boxShadow: persona.unlocked ? DMShadows.soft : DMShadows.none,
           ),
@@ -95,7 +97,7 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient:
                           persona.unlocked ? DMGradients.primaryAction : null,
-                      color: persona.unlocked ? null : DMColors.glass,
+                      color: persona.unlocked ? null : context.dmColors.glass,
                     ),
                     child: DmAssetImage(
                       assetPath: persona.avatarAsset,
@@ -106,7 +108,8 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
                       semanticLabel: '${persona.name} avatar',
                       placeholderGradient: persona.placeholderGradient,
                       placeholderIcon: persona.placeholderIcon,
-                      color: persona.unlocked ? null : DMColors.textMuted,
+                      color:
+                          persona.unlocked ? null : context.dmColors.textMuted,
                       colorBlendMode:
                           persona.unlocked ? null : BlendMode.modulate,
                     ),
@@ -121,11 +124,11 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
                       ),
                     )
                   else
-                    const Positioned(
+                    Positioned(
                       right: -4,
                       bottom: -2,
                       child: _StatusDot(
-                        color: DMColors.surfaceRaised,
+                        color: context.dmColors.surfaceRaised,
                         icon: Icons.lock_rounded,
                       ),
                     ),
@@ -148,7 +151,7 @@ class _AdvancedRoastPersonaTile extends StatelessWidget {
                 style: DMTypography.labelSmall.copyWith(
                   color: persona.unlocked
                       ? DMColors.mintSoft
-                      : DMColors.textDisabled,
+                      : context.dmColors.textDisabled,
                 ),
               ),
             ],
@@ -182,7 +185,7 @@ class _StatusDot extends StatelessWidget {
         icon,
         color: color == DMColors.mintGreen
             ? DMColors.deepNavy
-            : DMColors.textMuted,
+            : context.dmColors.textMuted,
         size: 15,
       ),
     );

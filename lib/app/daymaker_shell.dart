@@ -19,20 +19,19 @@ class DaymakerShell extends StatefulWidget {
 
   static const tabLocations = <String>[
     AppRoutes.forecast,
-    AppRoutes.roasts,
     AppRoutes.radar,
+    AppRoutes.roasts,
     AppRoutes.fun,
-    AppRoutes.settings,
   ];
 
   @override
   State<DaymakerShell> createState() => _DaymakerShellState();
 
   static int indexForLocation(String location) {
-    if (location.startsWith(AppRoutes.roasts)) return 1;
-    if (location.startsWith(AppRoutes.radar)) return 2;
+    if (location.startsWith(AppRoutes.roasts)) return 2;
+    if (location.startsWith(AppRoutes.radar)) return 1;
     if (location.startsWith(AppRoutes.fun)) return 3;
-    if (location.startsWith(AppRoutes.settings)) return 4;
+    if (location.startsWith(AppRoutes.settings)) return -1;
     return 0;
   }
 }
@@ -67,7 +66,12 @@ class _DaymakerShellState extends State<DaymakerShell> {
         final width = constraints.maxWidth.isFinite
             ? constraints.maxWidth
             : MediaQuery.sizeOf(context).width;
-        final bottomReserve = DmBottomNav.reservedHeightFor(context, width);
+        final showNavigation = !location.startsWith(AppRoutes.settings) &&
+            !location.startsWith(AppRoutes.memeGenerator) &&
+            !location.startsWith(AppRoutes.roastReveal);
+        final bottomReserve = showNavigation
+            ? DmBottomNav.reservedHeightFor(context, width)
+            : 0.0;
 
         return ColoredBox(
           color: Theme.of(context).scaffoldBackgroundColor,
@@ -84,22 +88,23 @@ class _DaymakerShellState extends State<DaymakerShell> {
                   Expanded(child: child),
                 ]),
               ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                left: 0,
-                child: DmBottomNav(
-                  currentIndex: currentIndex,
-                  onDestinationSelected: (index) {
-                    final destination = DaymakerShell.tabLocations[index];
-                    if (location == destination) return;
-                    context
-                        .read<MonetizationController?>()
-                        ?.setRoute(destination);
-                    context.go(destination);
-                  },
+              if (showNavigation)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  left: 0,
+                  child: DmBottomNav(
+                    currentIndex: currentIndex,
+                    onDestinationSelected: (index) {
+                      final destination = DaymakerShell.tabLocations[index];
+                      if (location == destination) return;
+                      context
+                          .read<MonetizationController?>()
+                          ?.setRoute(destination);
+                      context.go(destination);
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
         );

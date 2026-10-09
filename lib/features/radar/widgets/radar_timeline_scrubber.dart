@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -87,7 +88,7 @@ class RadarTimelineScrubber extends StatelessWidget {
     return DmGlassCard(
       padding: const EdgeInsets.all(DMSpacing.md),
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       semanticLabel: 'Radar timeline scrubber',
       child: content,
     );
@@ -130,7 +131,7 @@ class _TimelineHeader extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.label.copyWith(
-                  color: DMColors.textMuted,
+                  color: context.dmColors.textMuted,
                 ),
               ),
               const SizedBox(height: DMSpacing.xxs),
@@ -185,13 +186,13 @@ class _TimelineTrack extends StatelessWidget {
           data: SliderTheme.of(context).copyWith(
             trackHeight: 6,
             activeTrackColor: DMColors.skyBlue,
-            inactiveTrackColor: DMColors.glassStrong,
+            inactiveTrackColor: context.dmColors.glassStrong,
             thumbColor: DMColors.sunriseYellow,
             overlayColor: DMColors.opacity(DMColors.sunriseYellow, 0.18),
-            valueIndicatorColor: DMColors.surfaceRaised,
+            valueIndicatorColor: context.dmColors.surfaceRaised,
             tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2),
             activeTickMarkColor: DMColors.deepNavy,
-            inactiveTickMarkColor: DMColors.textMuted,
+            inactiveTickMarkColor: context.dmColors.textMuted,
           ),
           child: Slider(
             value: value,
@@ -214,7 +215,7 @@ class _TimelineTrack extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.labelSmall.copyWith(
-                  color: DMColors.textMuted,
+                  color: context.dmColors.textMuted,
                 ),
               ),
             ),
@@ -236,7 +237,7 @@ class _TimelineTrack extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.labelSmall.copyWith(
-                  color: DMColors.textMuted,
+                  color: context.dmColors.textMuted,
                 ),
               ),
             ),

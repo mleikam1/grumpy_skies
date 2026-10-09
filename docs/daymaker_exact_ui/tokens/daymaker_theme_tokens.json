@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "status": "Implementation starting values inferred from approved raster references; not original design exports.",
+  "canonicalLayout": "light",
+  "canonicalCharacterArt": "light-reference shared across both themes",
+  "appearance": {
+    "options": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "newInstallDefault": "light",
+    "persistence": "extend existing settings; preserve unknown/legacy fields"
+  },
+  "layout": {
+    "referenceLogicalWidth": 390,
+    "compactBelow": 600,
+    "expandedFrom": 1024,
+    "desktopMaxContentWidth": 1180,
+    "pagePadding": 18,
+    "sectionGap": 16,
+    "cardPadding": 16,
+    "minimumTouchTarget": 48,
+    "bottomNavMinHeightExcludingSafeArea": 68,
+    "bottomNavHorizontalInset": 10,
+    "bottomNavBottomGapExcludingSafeArea": 8
+  },
+  "spacing": [
+    4,
+    6,
+    8,
+    12,
+    16,
+    18,
+    20,
+    24,
+    32,
+    40,
+    48
+  ],
+  "radius": {
+    "small": 12,
+    "control": 16,
+    "card": 22,
+    "largeCard": 26,
+    "navCapsule": 30,
+    "pill": 999
+  },
+  "typography": {
+    "fontNote": "Resolve against installed/licensed project or system fonts. Nunito is a candidate already declared in the repo, not an identified original. No fonts are distributed here.",
+    "weatherNumber": {
+      "size": 88,
+      "weight": 800,
+      "height": 0.96,
+      "letterSpacing": -4
+    },
+    "brand": {
+      "size": 27,
+      "weight": 800,
+      "height": 1.05,
+      "letterSpacing": -1.1
+    },
+    "screenTitle": {
+      "size": 25,
+      "weight": 800,
+      "height": 1.15,
+      "letterSpacing": -0.7
+    },
+    "featureHeadline": {
+      "size": 33,
+      "weight": 800,
+      "height": 1.1,
+      "letterSpacing": -1.0
+    },
+    "personaName": {
+      "size": 39,
+      "weight": 800,
+      "height": 1.05,
+      "letterSpacing": -1.2
+    },
+    "quote": {
+      "size": 21,
+      "weight": 700,
+      "height": 1.25,
+      "letterSpacing": -0.35
+    },
+    "sectionTitle": {
+      "size": 17,
+      "weight": 800,
+      "height": 1.2
+    },
+    "body": {
+      "size": 14,
+      "weight": 500,
+      "height": 1.4
+    },
+    "button": {
+      "size": 14,
+      "weight": 700,
+      "height": 1.15
+    },
+    "caption": {
+      "size": 12,
+      "weight": 500,
+      "height": 1.3
+    },
+    "eyebrow": {
+      "size": 10,
+      "weight": 800,
+      "height": 1.3,
+      "letterSpacing": 1.3
+    }
+  },
+  "motionMs": {
+    "press": 100,
+    "color": 180,
+    "selection": 180,
+    "sheet": 220,
+    "reduced": 0
+  },
+  "themes": {
+    "light": {
+      "brightness": "light",
+      "appBackground": "#F6FAFD",
+      "surface": "#FFFFFF",
+      "surfaceSecondary": "#EDF4F8",
+      "textPrimary": "#0B1C40",
+      "textSecondary": "#4B6286",
+      "textMuted": "#566A86",
+      "border": "#DCE6EE",
+      "divider": "#E6EEF3",
+      "primary": "#FFDF70",
+      "onPrimary": "#10213C",
+      "link": "#365F8F",
+      "focusRing": "#0769A8",
+      "navSurface": "#FFFFFF",
+      "navSelected": "#FFDF70",
+      "navSelectedForeground": "#10213C",
+      "navInactive": "#4B6286",
+      "karenSurface": "#FBE8F0",
+      "karenBorder": "#F1D4E1",
+      "grandpaSurface": "#FBEAEF",
+      "grandpaBorder": "#EFDAE2",
+      "insightSurface": "#FFFFFF",
+      "insightIcon": "#258D87",
+      "promoSurface": "#FFE8A4",
+      "promoText": "#10213C",
+      "promoAction": "#112442",
+      "onPromoAction": "#FFFFFF",
+      "heroGradient": [
+        "#F5FAFD",
+        "#DDF1FC",
+        "#F6FAFD"
+      ],
+      "karenGradient": [
+        "#FBE5EE",
+        "#FCEEF2"
+      ],
+      "grandpaGradient": [
+        "#FBECEF",
+        "#FBE8ED"
+      ],
+      "templateSun": "#FFF5D8",
+      "templateCoffee": "#E9E0F9",
+      "templateStorm": "#E0EFED",
+      "shadow": "#142D4A",
+      "shadowOpacity": 0.08,
+      "shadowBlur": 18,
+      "shadowOffsetY": 6
+    },
+    "dark": {
+      "brightness": "dark",
+      "appBackground": "#08162B",
+      "surface": "#10243D",
+      "surfaceSecondary": "#142C49",
+      "textPrimary": "#F6F8FF",
+      "textSecondary": "#B9CCE9",
+      "textMuted": "#A4BBDD",
+      "border": "#2C466A",
+      "divider": "#243B5A",
+      "primary": "#FFDF70",
+      "onPrimary": "#10213C",
+      "link": "#ADCDF6",
+      "focusRing": "#73DDFF",
+      "navSurface": "#0E223C",
+      "navSelected": "#FFDF70",
+      "navSelectedForeground": "#10213C",
+      "navInactive": "#B9CCE9",
+      "karenSurface": "#30223E",
+      "karenBorder": "#694A79",
+      "grandpaSurface": "#142740",
+      "grandpaBorder": "#2F4A70",
+      "insightSurface": "#122740",
+      "insightIcon": "#8BE3D6",
+      "promoSurface": "#10253F",
+      "promoText": "#F6F8FF",
+      "promoAction": "#FFDF70",
+      "onPromoAction": "#10213C",
+      "heroGradient": [
+        "#08162B",
+        "#153255",
+        "#08162B"
+      ],
+      "karenGradient": [
+        "#42263F",
+        "#211F38"
+      ],
+      "grandpaGradient": [
+        "#182941",
+        "#10243D"
+      ],
+      "templateSun": "#152D43",
+      "templateCoffee": "#233964",
+      "templateStorm": "#1D404A",
+      "shadow": "#000713",
+      "shadowOpacity": 0.22,
+      "shadowBlur": 18,
+      "shadowOffsetY": 6
+    }
+  },
+  "rules": [
+    "Theme colors never change geometry or content state.",
+    "Characters retain original colors in both themes.",
+    "Actual WCAG contrast must be checked on composed gradient/image backgrounds.",
+    "48-pixel hit areas can surround smaller visuals but must not overlap.",
+    "Never use the reference-size typography to suppress accessibility scaling."
+  ]
+}

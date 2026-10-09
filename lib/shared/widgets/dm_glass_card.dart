@@ -7,6 +7,7 @@ import '../../design/dm_gradients.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_shadows.dart';
 import '../../design/dm_spacing.dart';
+import '../../design/dm_theme.dart';
 
 class DmGlassCard extends StatefulWidget {
   const DmGlassCard({
@@ -54,11 +55,18 @@ class _DmGlassCardState extends State<DmGlassCard> {
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: widget.color,
-            gradient: widget.gradient,
+            color: widget.color ?? context.dmColors.surface,
+            gradient: widget.gradient == DMGradients.glass ||
+                    widget.gradient == DMGradients.glassNavy
+                ? null
+                : widget.gradient,
             borderRadius: widget.borderRadius,
             border: Border.all(
-              color: _focused ? DMColors.sunriseYellow : widget.borderColor,
+              color: _focused
+                  ? context.dmColors.focusRing
+                  : widget.borderColor == DMColors.glassBorder
+                      ? context.dmColors.border
+                      : widget.borderColor,
               width: _focused ? 2 : 1,
             ),
             boxShadow: _focused

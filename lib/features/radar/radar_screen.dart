@@ -1,3 +1,4 @@
+import '../../design/dm_theme.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -24,7 +25,10 @@ import '../../utils/radar_time.dart';
 import 'widgets/open_weather_radar_map.dart';
 
 class RadarScreen extends StatefulWidget {
-  const RadarScreen({super.key});
+  const RadarScreen({super.key, this.tileProvider});
+
+  /// Optional dependency for offline previews; production uses network tiles.
+  final TileProvider? tileProvider;
 
   @override
   State<RadarScreen> createState() => _RadarScreenState();
@@ -512,8 +516,8 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: DmAppBackground(
-        gradient: DMGradients.storm,
-        color: DMColors.deepNavy,
+        gradient: context.dmColors.heroGradient,
+        color: context.dmColors.appBackground,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth.isFinite
@@ -556,6 +560,7 @@ class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
               fit: StackFit.expand,
               children: [
                 OpenWeatherRadarMap(
+                  tileProvider: widget.tileProvider,
                   client: client,
                   mapController: _mapController,
                   location: location,
@@ -747,7 +752,7 @@ class _RadarStatusPill extends StatelessWidget {
       ),
       borderRadius: DMRadius.full,
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       shadows: DMShadows.floating,
       semanticLabel: 'Radar, $locationName, $modeLabel, $frameLabel',
       child: ConstrainedBox(
@@ -972,7 +977,7 @@ class _ChaosMeterCard extends StatelessWidget {
       ),
       borderRadius: DMRadius.large,
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       shadows: DMShadows.floating,
       semanticLabel: 'Chaos Meter',
       child: Column(
@@ -987,7 +992,7 @@ class _ChaosMeterCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: DMTypography.labelSmall.copyWith(
-                    color: DMColors.textMuted,
+                    color: context.dmColors.textMuted,
                   ),
                 ),
               ),
@@ -997,7 +1002,7 @@ class _ChaosMeterCard extends StatelessWidget {
                 constraints:
                     const BoxConstraints.tightFor(width: 28, height: 28),
                 icon: const Icon(Icons.close_rounded, size: 16),
-                color: DMColors.textMuted,
+                color: context.dmColors.textMuted,
                 onPressed: onClose,
               ),
             ],
@@ -1037,7 +1042,7 @@ class _ChaosMeterCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: DMTypography.labelSmall.copyWith(
-              color: DMColors.textSecondary,
+              color: context.dmColors.textSecondary,
             ),
           ),
         ],
@@ -1068,7 +1073,7 @@ class _RadarSheetTab extends StatelessWidget {
       ),
       borderRadius: DMRadius.full,
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       shadows: DMShadows.floating,
       semanticLabel: 'Minimized radar controls',
       child: Row(
@@ -1101,7 +1106,7 @@ class _RadarSheetTab extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: DMTypography.labelSmall.copyWith(
-                      color: DMColors.textMuted,
+                      color: context.dmColors.textMuted,
                     ),
                   ),
                 ],
@@ -1113,7 +1118,7 @@ class _RadarSheetTab extends StatelessWidget {
             tooltip: 'Close radar controls',
             constraints: const BoxConstraints.tightFor(width: 34, height: 34),
             icon: const Icon(Icons.close_rounded),
-            color: DMColors.textSecondary,
+            color: context.dmColors.textSecondary,
             onPressed: onClose,
           ),
         ],
@@ -1170,7 +1175,7 @@ class _RadarBottomSheet extends StatelessWidget {
         ),
         borderRadius: DMRadius.large,
         gradient: DMGradients.glassNavy,
-        borderColor: DMColors.glassBorderStrong,
+        borderColor: context.dmColors.glassBorderStrong,
         shadows: DMShadows.floating,
         semanticLabel: 'Radar timeline and information',
         child: Column(
@@ -1223,15 +1228,15 @@ class _SheetHandle extends StatelessWidget {
               child: InkWell(
                 borderRadius: DMRadius.full,
                 onTap: onMinimize,
-                child: const SizedBox(
+                child: SizedBox(
                   height: 22,
                   child: Center(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: DMColors.glassBorderStrong,
+                        color: context.dmColors.glassBorderStrong,
                         borderRadius: DMRadius.full,
                       ),
-                      child: SizedBox(width: 42, height: 4),
+                      child: const SizedBox(width: 42, height: 4),
                     ),
                   ),
                 ),
@@ -1244,7 +1249,7 @@ class _SheetHandle extends StatelessWidget {
           tooltip: 'Minimize',
           constraints: const BoxConstraints.tightFor(width: 34, height: 34),
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          color: DMColors.textSecondary,
+          color: context.dmColors.textSecondary,
           onPressed: onMinimize,
         ),
         IconButton(
@@ -1252,7 +1257,7 @@ class _SheetHandle extends StatelessWidget {
           tooltip: 'Close',
           constraints: const BoxConstraints.tightFor(width: 34, height: 34),
           icon: const Icon(Icons.close_rounded),
-          color: DMColors.textSecondary,
+          color: context.dmColors.textSecondary,
           onPressed: onClose,
         ),
       ],
@@ -1342,7 +1347,7 @@ class _ExpandedRadarSheetBody extends StatelessWidget {
               ? 'Radar © NOAA/NWS MRMS'
               : 'Radar © OpenWeather',
           style: DMTypography.labelSmall.copyWith(
-            color: DMColors.textMuted,
+            color: context.dmColors.textMuted,
           ),
         ),
       ],
@@ -1406,7 +1411,7 @@ class _RadarModeSelector extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: DMTypography.labelSmall.copyWith(
-                color: DMColors.textMuted,
+                color: context.dmColors.textMuted,
               ),
             ),
           ),
@@ -1484,7 +1489,7 @@ class _CompactRadarTimeline extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: DMTypography.labelSmall.copyWith(
-                      color: DMColors.textMuted,
+                      color: context.dmColors.textMuted,
                     ),
                   ),
                 ],
@@ -1507,10 +1512,10 @@ class _CompactRadarTimeline extends StatelessWidget {
           data: SliderTheme.of(context).copyWith(
             trackHeight: 6,
             activeTrackColor: DMColors.skyBlue,
-            inactiveTrackColor: DMColors.glassStrong,
+            inactiveTrackColor: context.dmColors.glassStrong,
             thumbColor: DMColors.sunriseYellow,
             overlayColor: DMColors.opacity(DMColors.sunriseYellow, 0.18),
-            valueIndicatorColor: DMColors.surfaceRaised,
+            valueIndicatorColor: context.dmColors.surfaceRaised,
             tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 0),
           ),
           child: SizedBox(
@@ -1537,7 +1542,7 @@ class _CompactRadarTimeline extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.labelSmall.copyWith(
-                  color: DMColors.textMuted,
+                  color: context.dmColors.textMuted,
                 ),
               ),
             ),
@@ -1559,7 +1564,7 @@ class _CompactRadarTimeline extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.labelSmall.copyWith(
-                  color: DMColors.textMuted,
+                  color: context.dmColors.textMuted,
                 ),
               ),
             ),
@@ -1585,7 +1590,7 @@ class _RadarInfoChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: DMColors.opacity(DMColors.cloudWhite, 0.08),
         borderRadius: DMRadius.full,
-        border: Border.all(color: DMColors.glassBorder),
+        border: Border.all(color: context.dmColors.glassBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -1603,7 +1608,7 @@ class _RadarInfoChip extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: DMTypography.labelSmall.copyWith(
-                  color: DMColors.textSecondary,
+                  color: context.dmColors.textSecondary,
                 ),
               ),
             ),
@@ -1631,7 +1636,8 @@ class _RadarLegend extends StatelessWidget {
       children: [
         Text(
           'Precipitation legend',
-          style: DMTypography.label.copyWith(color: DMColors.textSecondary),
+          style: DMTypography.label
+              .copyWith(color: context.dmColors.textSecondary),
         ),
         const SizedBox(height: DMSpacing.xs),
         Wrap(
@@ -1653,7 +1659,7 @@ class _RadarLegend extends StatelessWidget {
                   Text(
                     item.label,
                     style: DMTypography.labelSmall.copyWith(
-                      color: DMColors.textMuted,
+                      color: context.dmColors.textMuted,
                     ),
                   ),
                 ],
@@ -1702,7 +1708,7 @@ class _RadarNoticeBanner extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: DMTypography.bodySmall.copyWith(
-                color: DMColors.textPrimary,
+                color: context.dmColors.textPrimary,
               ),
             ),
           ),

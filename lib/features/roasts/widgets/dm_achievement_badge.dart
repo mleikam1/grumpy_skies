@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -29,7 +30,8 @@ class DmAchievementBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = unlocked ? DMColors.sunriseYellow : DMColors.slate;
-    final foreground = unlocked ? DMColors.textPrimary : DMColors.textMuted;
+    final foreground =
+        unlocked ? context.dmColors.textPrimary : context.dmColors.textMuted;
     final status = progressLabel ?? (unlocked ? 'Unlocked' : 'Locked');
 
     return Semantics(
@@ -47,11 +49,11 @@ class DmAchievementBadge extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: unlocked ? DMGradients.primaryAction : null,
-                  color: unlocked ? null : DMColors.glass,
+                  color: unlocked ? null : context.dmColors.glass,
                   border: Border.all(
                     color: unlocked
                         ? DMColors.opacity(DMColors.sunriseYellow, 0.82)
-                        : DMColors.glassBorder,
+                        : context.dmColors.glassBorder,
                   ),
                   boxShadow: unlocked ? DMShadows.sunGlow : DMShadows.none,
                 ),
@@ -83,13 +85,14 @@ class DmAchievementBadge extends StatelessWidget {
                           width: 22,
                           height: 22,
                           decoration: BoxDecoration(
-                            color: DMColors.glassNavy,
+                            color: context.dmColors.glassNavy,
                             shape: BoxShape.circle,
-                            border: Border.all(color: DMColors.glassBorder),
+                            border:
+                                Border.all(color: context.dmColors.glassBorder),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.lock_rounded,
-                            color: DMColors.textMuted,
+                            color: context.dmColors.textMuted,
                             size: 13,
                           ),
                         ),
@@ -119,7 +122,7 @@ class DmAchievementBadge extends StatelessWidget {
                   border: Border.all(
                     color: unlocked
                         ? DMColors.opacity(DMColors.mintGreen, 0.42)
-                        : DMColors.outlineVariant,
+                        : context.dmColors.outlineVariant,
                   ),
                 ),
                 child: Text(
@@ -127,7 +130,9 @@ class DmAchievementBadge extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: DMTypography.labelSmall.copyWith(
-                    color: unlocked ? DMColors.mintSoft : DMColors.textMuted,
+                    color: unlocked
+                        ? DMColors.mintSoft
+                        : context.dmColors.textMuted,
                   ),
                 ),
               ),

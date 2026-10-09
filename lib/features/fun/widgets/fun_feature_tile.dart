@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
+import '../../../design/dm_theme.dart';
 import '../../../design/dm_gradients.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_shadows.dart';
@@ -46,7 +47,7 @@ class FunFeatureTile extends StatelessWidget {
 
     return DmGlassCard(
       padding: EdgeInsets.all(featured ? DMSpacing.xl : DMSpacing.lg),
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.border,
       gradient: gradient ?? DMGradients.glassNavy,
       semanticLabel: semanticLabel ?? title,
       child: ConstrainedBox(

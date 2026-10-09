@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:grumpy_skies/app/daymaker_shell.dart';
 
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
@@ -22,17 +24,16 @@ void main() {
         await tester.pumpDayMakerApp(viewport: viewport);
 
         expectNoFlutterExceptions(tester);
-        expect(find.text('DayMaker'), findsOneWidget);
+        expect(find.text('daymaker.'), findsOneWidget);
         expect(find.text('Weather that brightens your day.'), findsOneWidget);
       });
     }
 
     const mainTabs = <String, String>{
-      'Forecast': AppRoutes.forecast,
-      'Roasts': AppRoutes.roasts,
+      'Today': AppRoutes.forecast,
       'Radar': AppRoutes.radar,
+      'Roasts': AppRoutes.roasts,
       'Fun': AppRoutes.fun,
-      'Settings': AppRoutes.settings,
     };
 
     for (final tab in mainTabs.entries) {
@@ -49,13 +50,65 @@ void main() {
       });
     }
 
+    testWidgets('four destinations keep the approved order and route mapping',
+        (tester) async {
+      await tester.pumpDayMakerRoute(initialLocation: AppRoutes.forecast);
+      expect(DmBottomNav.defaultItems.map((item) => item.label),
+          ['Today', 'Radar', 'Roasts', 'Fun']);
+      expect(DaymakerShell.tabLocations, mainTabs.values.toList());
+      for (var index = 0; index < DmBottomNav.defaultItems.length; index++) {
+        final item = DmBottomNav.defaultItems[index];
+        await tester.tap(find.bySemanticsLabel(item.semanticLabel));
+        await tester.pumpAndSettle();
+        final nav = tester.widget<DmBottomNav>(find.byType(DmBottomNav));
+        expect(nav.currentIndex, index);
+        final router = GoRouter.of(tester.element(find.byType(DmBottomNav)));
+        expect(router.routeInformationProvider.value.uri.path,
+            DaymakerShell.tabLocations[index]);
+        expectNoFlutterExceptions(tester);
+      }
+    });
+
+    testWidgets('header gear opens Settings and back restores Today navigation',
+        (tester) async {
+      await tester.pumpDayMakerRoute(initialLocation: AppRoutes.forecast);
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreenBody), findsOneWidget);
+      expect(find.byType(DmBottomNav), findsNothing);
+      final router =
+          GoRouter.of(tester.element(find.byType(SettingsScreenBody)));
+      expect(
+          GoRouterState.of(tester.element(find.byType(SettingsScreenBody)))
+              .uri
+              .path,
+          AppRoutes.settings);
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(
+          tester.widget<DmBottomNav>(find.byType(DmBottomNav)).currentIndex, 0);
+      expect(
+          router.routeInformationProvider.value.uri.path, AppRoutes.forecast);
+      expectNoFlutterExceptions(tester);
+    });
+
+    for (final route in [AppRoutes.settings, AppRoutes.about]) {
+      testWidgets('$route is a secondary screen without bottom navigation',
+          (tester) async {
+        await tester.pumpDayMakerRoute(initialLocation: route);
+        expect(find.byType(DmBottomNav), findsNothing);
+        expect(DaymakerShell.indexForLocation(route), -1);
+        expectNoFlutterExceptions(tester);
+      });
+    }
+
     testWidgets('forecast screen displays sample temperature and location',
         (tester) async {
       await tester.pumpDayMakerRoute(initialLocation: AppRoutes.forecast);
 
       expectNoFlutterExceptions(tester);
-      expect(find.text('72°F'), findsOneWidget);
-      expect(find.text('Demo City'), findsOneWidget);
+      expect(find.text('72°'), findsOneWidget);
+      expect(find.text('Demo City, US'), findsOneWidget);
     });
 
     testWidgets('roasts screen displays Karen', (tester) async {
@@ -78,11 +131,11 @@ void main() {
           tester.element(find.byType(RoastsScreen)).read<SettingsController>();
       expect(settings.selectedPersonaId, 'frat_bro');
 
-      await tester.tap(find.bySemanticsLabel('Forecast tab'));
+      await tester.tap(find.bySemanticsLabel('Today tab'));
       await tester.pumpAndSettle();
 
       expectNoFlutterExceptions(tester);
-      expect(find.text('Frat Bro'), findsOneWidget);
+      expect(find.text("Frat Bro's take"), findsOneWidget);
       expect(find.text('BAROMETER BRO'), findsOneWidget);
     });
 
@@ -120,7 +173,7 @@ void main() {
               .widget<MemeLibrary>(find.byType(MemeLibrary))
               .catalog
               .templates,
-          hasLength(15));
+          hasLength(19));
       await _scrollMemeGeneratorUntilVisible(tester, find.text('Blank Canvas'));
       await tester.tap(find.text('Blank Canvas'));
       await tester.pumpAndSettle();

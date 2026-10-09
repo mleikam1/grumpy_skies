@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -96,7 +97,7 @@ class _RadarAlertCard extends StatelessWidget {
     return DmGlassCard(
       padding: const EdgeInsets.all(DMSpacing.md),
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       semanticLabel: '${data.title}, ${data.value}',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +126,7 @@ class _RadarAlertCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: DMTypography.label.copyWith(
-                        color: DMColors.textMuted,
+                        color: context.dmColors.textMuted,
                       ),
                     ),
                     const SizedBox(height: DMSpacing.xxs),

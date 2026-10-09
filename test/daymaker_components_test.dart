@@ -12,7 +12,8 @@ void main() {
     );
   }
 
-  testWidgets('DmBottomNav exposes five semantic tabs', (tester) async {
+  testWidgets('DmBottomNav exposes four approved semantic tabs',
+      (tester) async {
     var selectedIndex = 0;
 
     await tester.pumpWidget(
@@ -33,16 +34,18 @@ void main() {
       ),
     );
 
-    expect(find.text('Forecast'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
     expect(find.text('Roasts'), findsOneWidget);
     expect(find.text('Radar'), findsOneWidget);
     expect(find.text('Fun'), findsOneWidget);
-    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Settings'), findsNothing);
+    expect(DmBottomNav.defaultItems.map((item) => item.label),
+        ['Today', 'Radar', 'Roasts', 'Fun']);
 
     await tester.tap(find.bySemanticsLabel('Radar tab'));
     await tester.pumpAndSettle();
 
-    expect(selectedIndex, 2);
+    expect(selectedIndex, 1);
   });
 
   testWidgets('DmAssetImage renders gradient placeholder for missing assets',

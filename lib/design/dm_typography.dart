@@ -19,34 +19,34 @@ abstract final class DMTypography {
   ];
 
   static const TextStyle displayWeather = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
-    fontSize: 76,
+    fontSize: 88,
     fontWeight: FontWeight.w800,
-    height: 0.95,
+    height: 0.96,
     letterSpacing: 0,
   );
 
   static const TextStyle brandDisplay = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
-    fontSize: 44,
+    fontSize: 27,
     fontWeight: FontWeight.w800,
-    height: 1.02,
+    height: 1.05,
     letterSpacing: 0,
   );
 
   static const TextStyle headingLarge = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: FontWeight.w800,
     height: 1.12,
     letterSpacing: 0,
   );
 
   static const TextStyle headingMedium = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 24,
     fontWeight: FontWeight.w700,
@@ -55,7 +55,7 @@ abstract final class DMTypography {
   );
 
   static const TextStyle headingSmall = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 20,
     fontWeight: FontWeight.w700,
@@ -64,16 +64,16 @@ abstract final class DMTypography {
   );
 
   static const TextStyle title = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: FontWeight.w700,
     height: 1.22,
     letterSpacing: 0,
   );
 
   static const TextStyle bodyLarge = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 17,
     fontWeight: FontWeight.w500,
@@ -82,16 +82,16 @@ abstract final class DMTypography {
   );
 
   static const TextStyle body = TextStyle(
-    color: DMColors.textSecondary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.4,
     letterSpacing: 0,
   );
 
   static const TextStyle bodySmall = TextStyle(
-    color: DMColors.textMuted,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 13,
     fontWeight: FontWeight.w500,
@@ -100,16 +100,16 @@ abstract final class DMTypography {
   );
 
   static const TextStyle labelLarge = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: FontWeight.w700,
     height: 1.2,
     letterSpacing: 0,
   );
 
   static const TextStyle label = TextStyle(
-    color: DMColors.textSecondary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 13,
     fontWeight: FontWeight.w700,
@@ -118,7 +118,7 @@ abstract final class DMTypography {
   );
 
   static const TextStyle labelSmall = TextStyle(
-    color: DMColors.textMuted,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 11,
     fontWeight: FontWeight.w700,
@@ -127,7 +127,7 @@ abstract final class DMTypography {
   );
 
   static const TextStyle numeral = TextStyle(
-    color: DMColors.textPrimary,
+    fontFamily: 'DaymakerSans',
     fontFamilyFallback: systemFontStack,
     fontSize: 28,
     fontWeight: FontWeight.w800,

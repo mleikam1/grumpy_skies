@@ -6,8 +6,8 @@ import '../../config/app_routes.dart';
 import '../../monetization/monetization_controller.dart';
 import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
-import '../../design/dm_gradients.dart';
-import '../../design/dm_radius.dart';
+import '../../design/dm_theme.dart';
+import '../../models/app_appearance.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../features/roasts/models/roast_persona.dart';
@@ -26,12 +26,12 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.transparent,
       body: DmAppBackground(
-        gradient: DMGradients.appBackground,
-        color: DMColors.deepNavy,
-        child: SafeArea(
+        gradient: context.dmColors.heroGradient,
+        color: context.dmColors.appBackground,
+        child: const SafeArea(
           child: SettingsScreenBody(),
         ),
       ),
@@ -208,12 +208,48 @@ class _PreferencesColumn extends StatelessWidget {
         ),
         SizedBox(height: gap),
         _SettingsSection(
+          title: 'Appearance',
+          child: DmSettingsRow(
+            icon: Icons.brightness_6_outlined,
+            accentColor: context.dmColors.link,
+            title: 'App appearance',
+            subtitle:
+                'Light, dark, or follow your device. Weather day and night stay independent.',
+            child: DmSegmentedControl<AppAppearance>(
+              semanticLabel: 'Appearance selector',
+              selectedValue: settings.appearance,
+              onChanged: settings.setAppearance,
+              segments: const [
+                DmSegment(value: AppAppearance.light, label: 'Light'),
+                DmSegment(value: AppAppearance.dark, label: 'Dark'),
+                DmSegment(value: AppAppearance.system, label: 'System'),
+              ],
+            ),
+          ),
+        ),
+        if (settings.lastError != null) ...[
+          const SizedBox(height: DMSpacing.sm),
+          Semantics(
+            liveRegion: true,
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Your latest preference could not be saved.',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              TextButton(
+                  onPressed: settings.retrySave,
+                  child: const Text('Retry saving')),
+            ]),
+          ),
+        ],
+        SizedBox(height: gap),
+        _SettingsSection(
           title: 'Default Persona',
           child: DmSettingsRow(
             leading: PersonaAvatar(persona: persona, size: 56),
             title: '${persona.name}, ${persona.badgeText}',
             subtitle: RoastPersonas.byId(persona.id).toneDescription,
             trailing: const _Chevron(),
+            onTap: () => context.go(AppRoutes.roasts),
             semanticLabel:
                 'Default persona ${persona.name} ${persona.badgeText}',
           ),
@@ -226,17 +262,14 @@ class _PreferencesColumn extends StatelessWidget {
             accentColor: DMColors.playfulPink,
             title: 'Daily weather nudges',
             subtitle: settings.notificationsEnabled
-                ? 'On, so the forecast can interrupt with purpose.'
-                : 'Off, for a quieter sky check.',
+                ? 'Preference on. Notification delivery is not available in this build.'
+                : 'Preference off. Notification delivery is not available in this build.',
             semanticLabel: 'Toggle daily weather notifications',
             trailing: Semantics(
               label: 'Toggle daily weather notifications',
               toggled: settings.notificationsEnabled,
               child: Switch.adaptive(
                 value: settings.notificationsEnabled,
-                activeThumbColor: DMColors.sunriseYellow,
-                activeTrackColor:
-                    DMColors.opacity(DMColors.sunriseYellow, 0.34),
                 onChanged: (enabled) {
                   // TODO(haptics): Add light selection feedback on mobile.
                   settings.setNotificationsEnabled(enabled);
@@ -321,7 +354,7 @@ class _LocationSettingsRow extends StatelessWidget {
               child: Text(
                 controller.message!,
                 style: DMTypography.bodySmall.copyWith(
-                  color: _statusColor(status),
+                  color: _statusColor(context, status),
                 ),
               ),
             ),
@@ -343,19 +376,20 @@ class _LocationSettingsRow extends StatelessWidget {
       );
   }
 
-  static Color _statusColor(LocationSelectionStatus status) {
+  static Color _statusColor(
+      BuildContext context, LocationSelectionStatus status) {
     return switch (status) {
       LocationSelectionStatus.permissionGranted ||
       LocationSelectionStatus.weatherLoaded =>
-        DMColors.mintSoft,
+        context.dmColors.insightIcon,
       LocationSelectionStatus.permissionDenied ||
       LocationSelectionStatus.permissionDeniedForever ||
       LocationSelectionStatus.locationServicesDisabled ||
       LocationSelectionStatus.locationTimeout ||
       LocationSelectionStatus.locationError ||
       LocationSelectionStatus.weatherError =>
-        DMColors.sunriseYellow,
-      _ => DMColors.textMuted,
+        Theme.of(context).colorScheme.error,
+      _ => context.dmColors.textMuted,
     };
   }
 
@@ -394,10 +428,7 @@ class _AppColumn extends StatelessWidget {
             title: 'Weather data sources',
             subtitle: 'Weather data © OpenWeather',
             trailing: const _Chevron(),
-            onTap: () => _showSnackBar(
-              context,
-              'Data source details are coming soon.',
-            ),
+            onTap: () => context.go(AppRoutes.about),
           ),
         ),
         SizedBox(height: gap),
@@ -445,48 +476,30 @@ class _SettingsHeader extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final compact = DMBreakpoints.isCompact(width);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            DMColors.opacity(DMColors.cloudWhite, 0.18),
-            DMColors.opacity(DMColors.skyBlue, 0.10),
-          ],
-        ),
-        borderRadius: DMRadius.card,
-        border: Border.all(color: DMColors.glassBorder),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(compact ? DMSpacing.lg : DMSpacing.xl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'DayMaker',
-              style: DMTypography.labelLarge.copyWith(
-                color: DMColors.sunriseYellow,
-              ),
-            ),
-            const SizedBox(height: DMSpacing.xs),
-            Text(
-              'Settings',
-              style: (compact
-                      ? DMTypography.headingLarge
-                      : DMTypography.brandDisplay)
-                  .copyWith(color: DMColors.textPrimary),
-            ),
-            const SizedBox(height: DMSpacing.xs),
-            Text(
-              'Customize your experience.',
-              style: DMTypography.bodyLarge.copyWith(
-                color: DMColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          IconButton(
+            tooltip: 'Back',
+            onPressed: () => context.canPop()
+                ? context.pop()
+                : context.go(AppRoutes.forecast),
+            icon: const Icon(Icons.arrow_back_rounded),
+          ),
+          const SizedBox(width: DMSpacing.xs),
+          Expanded(
+              child: Text('Settings',
+                  style: (compact
+                          ? DMTypography.headingLarge
+                          : DMTypography.brandDisplay)
+                      .copyWith(color: context.dmColors.textPrimary))),
+        ]),
+        const SizedBox(height: DMSpacing.xs),
+        Text('Customize your experience.',
+            style: DMTypography.bodyLarge
+                .copyWith(color: context.dmColors.textSecondary)),
+      ],
     );
   }
 }
@@ -513,7 +526,7 @@ class _SettingsSection extends StatelessWidget {
           child: Text(
             title,
             style: DMTypography.label.copyWith(
-              color: DMColors.textMuted,
+              color: context.dmColors.textMuted,
             ),
           ),
         ),
@@ -528,9 +541,9 @@ class _Chevron extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Icon(
+    return Icon(
       Icons.chevron_right_rounded,
-      color: DMColors.textMuted,
+      color: context.dmColors.textMuted,
       size: 28,
     );
   }

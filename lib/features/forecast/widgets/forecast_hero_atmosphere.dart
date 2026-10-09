@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -56,7 +57,7 @@ class ForecastHeroAtmosphere extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: DMColors.opacity(DMColors.cloudWhite, 0.2),
                   shape: BoxShape.circle,
-                  border: Border.all(color: DMColors.glassBorderStrong),
+                  border: Border.all(color: context.dmColors.glassBorderStrong),
                 ),
                 child: const Icon(
                   Icons.auto_awesome_rounded,

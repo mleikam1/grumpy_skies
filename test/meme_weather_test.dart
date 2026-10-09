@@ -320,8 +320,11 @@ void main() {
     final card =
         tester.widget<ForecastRoastCard>(find.byType(ForecastRoastCard));
     expect(registry.latestForecast!.text, card.roast.text);
-    await tester.ensureVisible(find.text('Share to Meme'));
-    await tester.tap(find.text('Share to Meme'));
+    await tester.ensureVisible(find.text('Share'));
+    await tester.tap(find.text('Share'));
+    await tester.pumpAndSettle();
+    expect(find.text(card.roast.text), findsOneWidget);
+    await tester.tap(find.text('Make a meme'));
     await tester.pumpAndSettle();
     expect(received!.id, card.roast.id);
     expect(received!.text, card.roast.text);

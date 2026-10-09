@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
+import 'package:grumpy_skies/shared/widgets/dm_approved_components.dart';
 
 void main() {
-  test('ASSET_MANIFEST.md matches app registry and shipped meme catalog', () {
+  test(
+      'ASSET_MANIFEST.md matches registry, approved artwork and retained assets',
+      () {
     final manifest = File('ASSET_MANIFEST.md').readAsStringSync();
 
     final registryPaths = _runtimeAssetPaths();
@@ -41,6 +45,31 @@ Set<String> _runtimeAssetPaths() {
           !path.startsWith('assets/meme_backgrounds/') &&
           !path.startsWith('assets/meme_stickers/'))
       .toSet();
+  // Approved screen illustrations include static references outside DmAssets.
+  // Include every such production reference so the manifest cannot omit a hero.
+  for (final file
+      in Directory('lib').listSync(recursive: true).whereType<File>()) {
+    if (!file.path.endsWith('.dart') || file.path.contains('/preview/')) {
+      continue;
+    }
+    paths.addAll(_assetPathsIn(file.readAsStringSync()).where((path) =>
+        path.startsWith('assets/approved_v1/') && !path.contains(r'$')));
+  }
+  // Resolve interpolated persona paths through the actual runtime function.
+  paths.addAll(RoastPersonas.supportedIds.map(DmPersonaPortrait.pathFor));
+  // These original portraits remain shipped for stored-document compatibility.
+  const retainedLegacyPortraits = {
+    'assets/personas/karen_roast_queen.png',
+    'assets/personas/frat_bro_barometer_bro.png',
+    'assets/personas/two_year_old_tiny_thunder.png',
+    'assets/personas/politician_spin_doctor.png',
+    'assets/personas/grandpa_cloud_historian.png',
+  };
+  for (final path in retainedLegacyPortraits) {
+    expect(File(path).existsSync(), isTrue,
+        reason: 'Retained legacy asset: $path');
+  }
+  paths.addAll(retainedLegacyPortraits);
   const contentPaths = [
     'assets/meme_content/weather_meme_catalog.v1.json',
     'assets/meme_content/weather_stickers.v1.json',

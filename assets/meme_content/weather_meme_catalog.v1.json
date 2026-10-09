@@ -1,16 +1,228 @@
 {
   "schemaVersion": 1,
   "packId": "daymaker_weather_meme_starters_v1",
-  "contentVersion": "2026-09-17",
+  "contentVersion": "2026-10-09",
   "reviewedRepositoryCommit": "4cdb79e568cc355d308cd7ee4925663a255dc7c0",
   "language": "en",
   "ratingIntent": "family_friendly",
-  "assetProvenance": "Original programmatically illustrated SVG placeholder artwork created for this request; no third-party photographs, logos, or stock meme images.",
+  "assetProvenance": "Approved_v1 entries are reconstructed from owner supplied approved boards; original entries retain their existing provenance. See docs/ui_implementation/ASSET_STATUS.md.",
   "defaultCanvas": {
     "width": 1080,
     "height": 1080
   },
   "templates": [
+    {
+      "id": "approved_current_mood",
+      "name": "Current mood",
+      "description": "Approved DayMaker illustrated template with editable caption.",
+      "tags": [
+        "clear"
+      ],
+      "assetPath": "assets/approved_v1/weather/sun_sunglasses.png",
+      "thumbnailPath": "assets/approved_v1/weather/sun_sunglasses.png",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.04,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.8,
+          "width": 0.88,
+          "height": 0.15
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "artworkStatus": "reconstructed_from_approved_reference",
+      "defaultCaptionId": "approved_current_mood_01",
+      "captionPairs": [
+        {
+          "id": "approved_current_mood_01",
+          "top": "Same forecast. Different attitude.",
+          "bottom": " ",
+          "persona": "neutral",
+          "tags": [
+            "clear"
+          ]
+        }
+      ],
+      "defaultTextStyle": {
+        "fontSizeNormalized": 0.046,
+        "fontWeight": 900,
+        "fill": "#0B1C40",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "approved_monday_energy",
+      "name": "Monday energy",
+      "description": "Approved DayMaker illustrated template with editable caption.",
+      "tags": [
+        "cloudy"
+      ],
+      "assetPath": "assets/approved_v1/weather/coffee_cloud.png",
+      "thumbnailPath": "assets/approved_v1/weather/coffee_cloud.png",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.04,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.8,
+          "width": 0.88,
+          "height": 0.15
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "artworkStatus": "reconstructed_from_approved_reference",
+      "defaultCaptionId": "approved_monday_energy_01",
+      "captionPairs": [
+        {
+          "id": "approved_monday_energy_01",
+          "top": "Cloudy with a chance of caffeine.",
+          "bottom": " ",
+          "persona": "neutral",
+          "tags": [
+            "cloudy"
+          ]
+        }
+      ],
+      "defaultTextStyle": {
+        "fontSizeNormalized": 0.046,
+        "fontWeight": 900,
+        "fill": "#0B1C40",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "approved_this_weather",
+      "name": "This weather\u2026",
+      "description": "Approved DayMaker illustrated template with editable caption.",
+      "tags": [
+        "thunderstorm"
+      ],
+      "assetPath": "assets/approved_v1/weather/storm_cloud.png",
+      "thumbnailPath": "assets/approved_v1/weather/storm_cloud.png",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.06,
+          "y": 0.04,
+          "width": 0.88,
+          "height": 0.17
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.8,
+          "width": 0.88,
+          "height": 0.15
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "artworkStatus": "reconstructed_from_approved_reference",
+      "defaultCaptionId": "approved_this_weather_01",
+      "captionPairs": [
+        {
+          "id": "approved_this_weather_01",
+          "top": "Looks serious. Just like my snacks.",
+          "bottom": " ",
+          "persona": "neutral",
+          "tags": [
+            "thunderstorm"
+          ]
+        }
+      ],
+      "defaultTextStyle": {
+        "fontSizeNormalized": 0.046,
+        "fontWeight": 900,
+        "fill": "#0B1C40",
+        "strokeWidthNormalized": 0,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
+    {
+      "id": "approved_beach_sun",
+      "name": "Forecast: no chill",
+      "description": "Approved DayMaker illustrated template with editable caption.",
+      "tags": [
+        "clear"
+      ],
+      "assetPath": "assets/approved_v1/memes/beach_sun_background.png",
+      "thumbnailPath": "assets/approved_v1/memes/beach_sun_background.png",
+      "width": 1080,
+      "height": 1080,
+      "safeTextZones": [
+        {
+          "role": "top",
+          "x": 0.53,
+          "y": 0.35,
+          "width": 0.43,
+          "height": 0.29
+        },
+        {
+          "role": "bottom",
+          "x": 0.06,
+          "y": 0.8,
+          "width": 0.88,
+          "height": 0.15
+        }
+      ],
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "artworkStatus": "reconstructed_from_approved_reference",
+      "defaultCaptionId": "approved_beach_sun_01",
+      "captionPairs": [
+        {
+          "id": "approved_beach_sun_01",
+          "top": "FORECAST: 100% CHANCE OF NO CHILL.",
+          "bottom": " ",
+          "persona": "neutral",
+          "tags": [
+            "clear"
+          ]
+        }
+      ],
+      "defaultTextStyle": {
+        "fontSizeNormalized": 0.046,
+        "fontWeight": 900,
+        "fill": "#FFFFFF",
+        "strokeWidthNormalized": 0.0045,
+        "alignment": "center",
+        "forceUppercase": false
+      }
+    },
     {
       "id": "storm_boss_cat",
       "name": "Storm Boss Cat",

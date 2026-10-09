@@ -76,6 +76,13 @@ class WeatherLocationController extends ChangeNotifier {
   String? get message => _message;
   bool get hasSelectedLocation => _selectedLocation != null;
 
+  /// Last received bundle only when it belongs to the current selection.
+  /// Other screens may reuse it without issuing a duplicate weather request.
+  WeatherBundle? get currentWeather => _selectedLocation != null &&
+          _safetyLocationKey == _locationKey(_selectedLocation!)
+      ? _safetyWeather
+      : null;
+
   WeatherSafetyStatus get safetyStatus {
     if (_selectedLocation == null ||
         _safetyLocationKey != _locationKey(_selectedLocation!)) {

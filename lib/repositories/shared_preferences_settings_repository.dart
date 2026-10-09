@@ -9,6 +9,7 @@ import 'settings_repository.dart';
 class SharedPreferencesSettingsRepository extends SettingsRepository {
   SharedPreferencesSettingsRepository(this._preferences);
 
+  static const _appearanceKey = 'settings.appearance';
   static const _temperatureUnitKey = 'settings.temperatureUnit';
   static const _selectedPersonaIdKey = 'settings.selectedPersonaId';
   static const _notificationsEnabledKey = 'settings.notificationsEnabled';
@@ -30,6 +31,7 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
     const defaults = DayMakerSampleData.userSettings;
 
     return defaults.copyWith(
+      appearance: _readAppearance(),
       temperatureUnit: _readTemperatureUnit() ?? defaults.temperatureUnit,
       selectedPersonaId: RoastPersonas.normalizeId(
         _preferences.getString(_selectedPersonaIdKey) ??
@@ -46,7 +48,8 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
 
   @override
   Future<void> saveSettings(UserSettings settings) async {
-    await Future.wait([
+    final saved = await Future.wait([
+      _preferences.setString(_appearanceKey, settings.appearance.name),
       _preferences.setString(
         _temperatureUnitKey,
         settings.temperatureUnit.name,
@@ -64,6 +67,31 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
       _preferences.setInt(_levelKey, settings.level),
       _preferences.setInt(_streakDaysKey, settings.streakDays),
     ]);
+    if (saved.any((success) => !success)) {
+      throw StateError('One or more settings could not be saved.');
+    }
+  }
+
+  AppAppearance _readAppearance() {
+    // Read-only compatibility: preserve legacy/unknown entries and every other
+    // preference. A later ordinary save writes the canonical appearance key.
+    for (final key in const [
+      _appearanceKey,
+      'settings.themeMode',
+      'themeMode',
+      'theme_mode',
+      'appearance',
+    ]) {
+      final parsed = AppAppearance.tryParse(_preferences.get(key));
+      if (parsed != null) return parsed;
+    }
+    for (final key in const ['settings.darkMode', 'darkMode', 'isDarkMode']) {
+      final legacy = _preferences.get(key);
+      if (legacy is bool) {
+        return legacy ? AppAppearance.dark : AppAppearance.light;
+      }
+    }
+    return AppAppearance.light;
   }
 
   TemperatureUnit? _readTemperatureUnit() {

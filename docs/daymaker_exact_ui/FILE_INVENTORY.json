@@ -1,0 +1,261 @@
+{
+  "note": "Inventory excludes this file and CHECKSUMS.json. Images are concept references, not app captures.",
+  "files": [
+    {
+      "path": "ACCEPTANCE_CHECKLIST.md",
+      "bytes": 9389
+    },
+    {
+      "path": "CHARACTER_AND_ASSET_BRIEF.md",
+      "bytes": 7457
+    },
+    {
+      "path": "CODEX_MASTER_PROMPT.txt",
+      "bytes": 10409
+    },
+    {
+      "path": "DESIGN_CONTRACT.md",
+      "bytes": 9414
+    },
+    {
+      "path": "FLUTTER_IMPLEMENTATION_PLAN.md",
+      "bytes": 13844
+    },
+    {
+      "path": "PACKAGE_QA.md",
+      "bytes": 2756
+    },
+    {
+      "path": "PACKAGE_VALIDATION.json",
+      "bytes": 605
+    },
+    {
+      "path": "SCREEN_SPECIFICATIONS.md",
+      "bytes": 14134
+    },
+    {
+      "path": "SOURCE_NOTES.md",
+      "bytes": 4738
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 4101
+    },
+    {
+      "path": "fixtures/approved_design_fixture.json",
+      "bytes": 3619
+    },
+    {
+      "path": "gallery.html",
+      "bytes": 8057095
+    },
+    {
+      "path": "references/REFERENCE_MANIFEST.json",
+      "bytes": 23693
+    },
+    {
+      "path": "references/approved/dark_board.png",
+      "bytes": 1978136
+    },
+    {
+      "path": "references/approved/light_board.png",
+      "bytes": 1821787
+    },
+    {
+      "path": "references/artwork/dark_weather_hero.png",
+      "bytes": 41073
+    },
+    {
+      "path": "references/artwork/light_coffee_cloud_template.png",
+      "bytes": 7509
+    },
+    {
+      "path": "references/artwork/light_fun_cloud.png",
+      "bytes": 38897
+    },
+    {
+      "path": "references/artwork/light_storm_cloud_template.png",
+      "bytes": 8640
+    },
+    {
+      "path": "references/artwork/light_sun_template.png",
+      "bytes": 8689
+    },
+    {
+      "path": "references/artwork/light_weather_hero.png",
+      "bytes": 34647
+    },
+    {
+      "path": "references/characters/light_frat_bro_avatar.png",
+      "bytes": 6252
+    },
+    {
+      "path": "references/characters/light_grandpa_avatar.png",
+      "bytes": 7012
+    },
+    {
+      "path": "references/characters/light_grandpa_face.png",
+      "bytes": 20321
+    },
+    {
+      "path": "references/characters/light_grandpa_portrait_context.png",
+      "bytes": 36421
+    },
+    {
+      "path": "references/characters/light_karen_avatar.png",
+      "bytes": 5970
+    },
+    {
+      "path": "references/characters/light_karen_portrait_context.png",
+      "bytes": 21683
+    },
+    {
+      "path": "references/characters/light_politician_avatar.png",
+      "bytes": 6535
+    },
+    {
+      "path": "references/characters/light_two_year_old_avatar.png",
+      "bytes": 6018
+    },
+    {
+      "path": "references/components/dark_bottom_navigation.png",
+      "bytes": 23992
+    },
+    {
+      "path": "references/components/dark_daily_rows.png",
+      "bytes": 27118
+    },
+    {
+      "path": "references/components/dark_fun_featured_meme.png",
+      "bytes": 63022
+    },
+    {
+      "path": "references/components/dark_fun_meme_promo.png",
+      "bytes": 103198
+    },
+    {
+      "path": "references/components/dark_fun_quick_templates.png",
+      "bytes": 65607
+    },
+    {
+      "path": "references/components/dark_hourly_strip.png",
+      "bytes": 37494
+    },
+    {
+      "path": "references/components/dark_persona_selector.png",
+      "bytes": 49371
+    },
+    {
+      "path": "references/components/dark_roasts_featured_card.png",
+      "bytes": 115316
+    },
+    {
+      "path": "references/components/dark_today_karen_card.png",
+      "bytes": 79221
+    },
+    {
+      "path": "references/components/light_bottom_navigation.png",
+      "bytes": 18765
+    },
+    {
+      "path": "references/components/light_daily_rows.png",
+      "bytes": 20766
+    },
+    {
+      "path": "references/components/light_fun_featured_meme.png",
+      "bytes": 62847
+    },
+    {
+      "path": "references/components/light_fun_meme_promo.png",
+      "bytes": 91951
+    },
+    {
+      "path": "references/components/light_fun_quick_templates.png",
+      "bytes": 58390
+    },
+    {
+      "path": "references/components/light_hourly_strip.png",
+      "bytes": 30560
+    },
+    {
+      "path": "references/components/light_persona_selector.png",
+      "bytes": 43727
+    },
+    {
+      "path": "references/components/light_roasts_featured_card.png",
+      "bytes": 112581
+    },
+    {
+      "path": "references/components/light_today_karen_card.png",
+      "bytes": 76942
+    },
+    {
+      "path": "references/screens/dark_fun_phone.png",
+      "bytes": 406115
+    },
+    {
+      "path": "references/screens/dark_fun_ui.png",
+      "bytes": 365869
+    },
+    {
+      "path": "references/screens/dark_roasts_phone.png",
+      "bytes": 377215
+    },
+    {
+      "path": "references/screens/dark_roasts_ui.png",
+      "bytes": 338673
+    },
+    {
+      "path": "references/screens/dark_today_phone.png",
+      "bytes": 373678
+    },
+    {
+      "path": "references/screens/dark_today_ui.png",
+      "bytes": 334693
+    },
+    {
+      "path": "references/screens/light_fun_phone.png",
+      "bytes": 368629
+    },
+    {
+      "path": "references/screens/light_fun_ui.png",
+      "bytes": 336793
+    },
+    {
+      "path": "references/screens/light_roasts_phone.png",
+      "bytes": 343572
+    },
+    {
+      "path": "references/screens/light_roasts_ui.png",
+      "bytes": 313025
+    },
+    {
+      "path": "references/screens/light_today_phone.png",
+      "bytes": 327434
+    },
+    {
+      "path": "references/screens/light_today_ui.png",
+      "bytes": 298347
+    },
+    {
+      "path": "tokens/contrast_diagnostics.json",
+      "bytes": 1940
+    },
+    {
+      "path": "tokens/daymaker_theme_tokens.json",
+      "bytes": 5545
+    },
+    {
+      "path": "tools/README.md",
+      "bytes": 1637
+    },
+    {
+      "path": "tools/compare_screenshots.py",
+      "bytes": 5360
+    },
+    {
+      "path": "tools/validate_package.py",
+      "bytes": 3189
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import '../../../design/dm_colors.dart';
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../design/dm_theme.dart';
 import '../../../shared/widgets/dm_glass_card.dart';
 
 class DmSettingsRow extends StatelessWidget {
@@ -54,17 +55,15 @@ class DmSettingsRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: DMTypography.title,
+                      style: DMTypography.title
+                          .copyWith(color: context.dmColors.textPrimary),
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: DMSpacing.xxs),
                       Text(
                         subtitle!,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: DMTypography.bodySmall,
+                        style: DMTypography.bodySmall
+                            .copyWith(color: context.dmColors.textSecondary),
                       ),
                     ],
                   ],
@@ -84,7 +83,12 @@ class DmSettingsRow extends StatelessWidget {
       ),
     );
 
-    return DmDarkGlassCard(
+    return DmGlassCard(
+      gradient: null,
+      color: context.dmColors.surface,
+      borderColor: context.dmColors.border,
+      shadows: context.dmColors.cardShadows,
+      blurSigma: 0,
       onTap: onTap,
       semanticLabel: semanticLabel ?? title,
       padding: const EdgeInsets.all(DMSpacing.md),
@@ -106,22 +110,15 @@ class _SettingsIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            DMColors.opacity(color, 0.9),
-            DMColors.opacity(DMColors.cloudWhite, 0.16),
-          ],
-        ),
+        color: context.dmColors.surfaceSecondary,
         borderRadius: DMRadius.medium,
-        border: Border.all(color: DMColors.opacity(DMColors.cloudWhite, 0.24)),
+        border: Border.all(color: context.dmColors.border),
       ),
       child: SizedBox.square(
         dimension: 48,
         child: Icon(
           icon,
-          color: DMColors.cloudWhite,
+          color: context.dmColors.link,
           size: DMSpacing.iconLg,
         ),
       ),

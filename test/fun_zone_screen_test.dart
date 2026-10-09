@@ -6,6 +6,7 @@ import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/fun/fun_zone_screen.dart';
 import 'package:grumpy_skies/monetization/widgets/ad_section.dart';
+import 'package:grumpy_skies/features/fun/meme/storage/meme_store.dart';
 
 void main() {
   Widget buildSubject() {
@@ -14,7 +15,8 @@ void main() {
       routes: [
         GoRoute(
           path: AppRoutes.fun,
-          builder: (context, state) => const FunZoneScreen(),
+          builder: (context, state) =>
+              FunZoneScreen(store: MemeStore(MemoryMemeBackend())),
         ),
         GoRoute(
           path: AppRoutes.memeGenerator,
@@ -49,11 +51,11 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Fun Zone'), findsOneWidget);
-    expect(find.text('Play. Predict. Laugh. Repeat.'), findsOneWidget);
-    expect(find.text('Weather Meme Generator'), findsOneWidget);
+    expect(find.text('Turn your forecast\ninto a punchline.'), findsOneWidget);
+    expect(find.text('Same skies.\nNew material.'), findsOneWidget);
     expect(find.text('Weather Fortune Cookie'), findsOneWidget);
     expect(
-      tester.getTopLeft(find.text('Weather Meme Generator')).dy,
+      tester.getTopLeft(find.text('Same skies.\nNew material.')).dy,
       lessThan(tester.getTopLeft(find.text('Weather Fortune Cookie')).dy),
     );
     expect(find.text('Crack a cookie. Get a playful fortune, just for fun.'),
@@ -105,6 +107,35 @@ void main() {
     expect(find.text('Sunbeam Instigator'), findsOneWidget);
   });
 
+  testWidgets('local tabs expose templates and an honest empty saved library',
+      (tester) async {
+    setSurfaceSize(tester, const Size(390, 844));
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Templates'));
+    for (var attempt = 0; attempt < 40; attempt++) {
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 25)));
+      await tester.pump();
+      if (find.text('Current mood').evaluate().isNotEmpty ||
+          find.text('Templates could not load.').evaluate().isNotEmpty) {
+        break;
+      }
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('Current mood'), findsOneWidget);
+    expect(find.text('Templates could not load.'), findsNothing);
+    expect(find.text('Weather Fortune Cookie'), findsNothing);
+    await tester.tap(find.text('My memes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your next great meme starts here.'), findsOneWidget);
+    expect(find.text('Saved on this device'), findsNothing);
+    await tester.tap(find.text('Create a meme'));
+    await tester.pumpAndSettle();
+    expect(find.text('Meme route reached'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('FunZoneScreen uses a two-column grid at medium width',
       (tester) async {
     setSurfaceSize(tester, const Size(800, 900));
@@ -121,7 +152,7 @@ void main() {
     expect((menaceOffset.dx - predictorOffset.dx).abs(), greaterThan(300));
   });
 
-  testWidgets('FunZoneScreen renders expanded masonry and navigates to memes',
+  testWidgets('FunZoneScreen expanded layout opens the meme editor',
       (tester) async {
     setSurfaceSize(tester, const Size(1200, 900));
 
@@ -130,11 +161,11 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Weather Menace'), findsOneWidget);
-    expect(find.text('Weather Meme Generator'), findsOneWidget);
+    expect(find.text('Same skies.\nNew material.'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Make a Meme'));
+    await tester.ensureVisible(find.text('Create a meme'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Make a Meme'));
+    await tester.tap(find.text('Create a meme'));
     await tester.pumpAndSettle();
 
     expect(find.text('Meme route reached'), findsOneWidget);

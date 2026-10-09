@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -24,7 +25,7 @@ class RoastCooldownCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: DMColors.opacity(DMColors.frostCyan, 0.14),
               borderRadius: DMRadius.large,
-              border: Border.all(color: DMColors.glassBorder),
+              border: Border.all(color: context.dmColors.glassBorder),
             ),
             child: const Icon(
               Icons.hourglass_top_rounded,

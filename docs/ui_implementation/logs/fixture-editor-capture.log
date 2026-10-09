@@ -1,0 +1,6 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/approved_preview_capture_test.dart
+00:00 +0: approved fixture light meme editor and export
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:04 +1: approved fixture dark meme editor and export
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:05 +2: All tests passed!

@@ -1,0 +1,129 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/approved_preview_capture_test.dart
+00:00 +0: production libraries never import approved preview fixtures
+00:00 +1: approved fixture light today at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:01 +2: approved fixture light roasts at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:02 +3: approved fixture light fun at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:02 +4: approved fixture light settings at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:03 +5: approved fixture light about at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:04 +6: approved fixture light radar at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather request failed host=preview.invalid path=/radar/noaaFrames: Radar is unavailable in the offline fixture preview.
+[GrumpySkies] weather request failed host=preview.invalid path=/radar/futureFrames: Radar is unavailable in the offline fixture preview.
+[GrumpySkies] weather request failed host=preview.invalid path=/radarHealth: Radar is unavailable in the offline fixture preview.
+00:05 +7: approved fixture light roast_reveal at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:05 +8: approved fixture light meme_library at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:06 +9: approved fixture light onboarding at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:07 +10: approved fixture light location_prompt
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:08 +11: approved fixture light weather_error
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] forecast error: Bad state: Synthetic unavailable weather fixture
+[GrumpySkies] weather fetch failed: Weather service is unavailable. Check your connection and try again.
+[GrumpySkies] forecast error: Bad state: Synthetic unavailable weather fixture
+00:08 +12: approved fixture light offline
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:09 +13: approved fixture light meme editor and export
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:10 +14: approved fixture dark today at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:11 +15: approved fixture dark roasts at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:12 +16: approved fixture dark fun at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:12 +17: approved fixture dark settings at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:13 +18: approved fixture dark about at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:14 +19: approved fixture dark radar at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather request failed host=preview.invalid path=/radar/noaaFrames: Radar is unavailable in the offline fixture preview.
+[GrumpySkies] weather request failed host=preview.invalid path=/radar/futureFrames: Radar is unavailable in the offline fixture preview.
+[GrumpySkies] weather request failed host=preview.invalid path=/radarHealth: Radar is unavailable in the offline fixture preview.
+00:14 +20: approved fixture dark roast_reveal at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:15 +21: approved fixture dark meme_library at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:16 +22: approved fixture dark onboarding at 390x930
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:17 +23: approved fixture dark location_prompt
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:17 +24: approved fixture dark weather_error
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] forecast error: Bad state: Synthetic unavailable weather fixture
+[GrumpySkies] weather fetch failed: Weather service is unavailable. Check your connection and try again.
+[GrumpySkies] forecast error: Bad state: Synthetic unavailable weather fixture
+00:18 +25: approved fixture dark offline
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:19 +26: approved fixture dark meme editor and export
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:20 +27: approved fixture reduced motion
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:20 +28: approved fixture today narrow
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:21 +29: approved fixture roasts narrow
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:22 +30: approved fixture fun narrow
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:22 +31: approved fixture today small
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:23 +32: approved fixture roasts small
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:24 +33: approved fixture fun small
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:24 +34: approved fixture today wide_phone
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:25 +35: approved fixture roasts wide_phone
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:26 +36: approved fixture fun wide_phone
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:26 +37: approved fixture today large_text
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:27 +38: approved fixture roasts large_text
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:28 +39: approved fixture fun large_text
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:28 +40: approved fixture today tablet
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:29 +41: approved fixture roasts tablet
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:30 +42: approved fixture fun tablet
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:31 +43: approved fixture today desktop
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+[GrumpySkies] weather fetch started source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+[GrumpySkies] weather fetch succeeded source=manual lat=38.982 lon=-94.671 name=Overland Park, KS, US
+00:32 +44: approved fixture roasts desktop
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:33 +45: approved fixture fun desktop
+[GrumpySkies] weather API baseUrl=https://preview.invalid emulator=false platform=override
+00:34 +46: All tests passed!

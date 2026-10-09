@@ -13,6 +13,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Map<String, dynamic> rawCatalog, rawStickers;
   late MemeCatalog catalog;
+  late MemeTemplate legacyTemplate;
 
   setUpAll(() {
     rawCatalog = jsonDecode(File(MemeCatalog.catalogAsset).readAsStringSync())
@@ -20,23 +21,43 @@ void main() {
     rawStickers = jsonDecode(File(MemeCatalog.stickersAsset).readAsStringSync())
         as Map<String, dynamic>;
     catalog = MemeCatalog.fromJson(rawCatalog, rawStickers);
+    legacyTemplate = catalog.templateById('storm_boss_cat')!;
   });
 
   group('bundled starter catalog', () {
     test(
-        'all original IDs, safe zones, 140 intact pairs and canonical personas',
+        'approved additions preserve all original IDs, safe zones and caption pairs',
         () {
-      expect(catalog.templates.length, 15);
+      expect(catalog.templates.length, 19);
+      const legacyIds = {
+        'storm_boss_cat',
+        'tiny_umbrella_big_storm',
+        'forecast_betrayal',
+        'sun_is_personal',
+        'wind_left_the_chat',
+        'fog_buffering',
+        'forecast_roulette',
+        'snow_day_victory',
+        'humidity_volume',
+        'cloud_side_eye',
+        'sidewalk_preheating',
+        'monday_drizzle',
+        'rainbow_plot_twist',
+        'pollen_boss_battle',
+        'temperature_whiplash',
+      };
+      final legacy = catalog.templates
+          .where((template) => !template.id.startsWith('approved_'))
+          .toList();
+      expect(legacy.map((template) => template.id).toSet(), legacyIds);
       expect(catalog.stickers.length, 24);
-      expect(
-          catalog.templates.expand((template) => template.captionPairs).length,
-          90);
+      expect(legacy.expand((template) => template.captionPairs).length, 90);
       expect(catalog.personaCaptions.length, 50);
-      expect(catalog.allCaptions.length, 140);
-      expect(catalog.allCaptions.map((pair) => pair.id).toSet().length, 140);
+      expect(catalog.allCaptions.length, 144);
+      expect(catalog.allCaptions.map((pair) => pair.id).toSet().length, 144);
       expect(catalog.personaCaptions.map((pair) => pair.personaId).toSet(),
           RoastPersonas.supportedIds.toSet());
-      for (final template in catalog.templates) {
+      for (final template in legacy) {
         expect(template.captionPairs.length, 6);
         expect(template.defaultCaption.id, '${template.id}_01');
         final document = template.createDocument();
@@ -62,23 +83,62 @@ void main() {
       expect(catalog.templateById('unknown'), isNull);
     });
 
+    test('four approved templates keep captions editable and legacy IDs usable',
+        () {
+      const ids = {
+        'approved_current_mood',
+        'approved_monday_energy',
+        'approved_this_weather',
+        'approved_beach_sun',
+      };
+      final approved = catalog.templates
+          .where((template) => template.id.startsWith('approved_'));
+      expect(approved.map((template) => template.id).toSet(), ids);
+      for (final template in approved) {
+        final document = template.createDocument();
+        expect(document.background.assetRef, template.assetPath);
+        expect(document.layers.length, template.safeTextZones.length);
+        expect(
+            document.layers.every((layer) => layer.type == MemeLayerType.text),
+            isTrue);
+        expect(document.layers.first.text, template.defaultCaption.top);
+        expect(document.layers.first.text, isNotEmpty);
+        final restored = MemeDocument.fromJson(_clone(document.toJson()));
+        expect(restored.toJson(), document.toJson());
+      }
+      expect(catalog.templateById('storm_boss_cat')!.assetPath,
+          'assets/meme_backgrounds/storm_boss_cat.webp');
+    });
+
     test(
         'every runtime image decodes, has expected dimensions and original hash',
         () async {
-      expect(catalog.assetPaths.length, 54);
+      expect(catalog.assetPaths.length, 58);
+      final approvedMetadata = (jsonDecode(
+              File('docs/ui_implementation/artwork/asset_metadata.json')
+                  .readAsStringSync()) as List)
+          .cast<Map<String, dynamic>>();
       for (final path in catalog.assetPaths) {
         expect(path.contains('examples'), isFalse);
         final file = File(path);
         expect(file.existsSync(), isTrue, reason: path);
         final codec = await ui.instantiateImageCodec(await file.readAsBytes());
         final image = (await codec.getNextFrame()).image;
+        final approved = approvedMetadata
+            .where((entry) => entry['path'] == path)
+            .firstOrNull;
         final size = path.contains('thumbnails')
             ? 288
             : path.contains('stickers')
                 ? 512
                 : 1080;
-        expect(image.width, size, reason: path);
-        expect(image.height, size, reason: path);
+        expect(image.width, approved?['width'] ?? size, reason: path);
+        expect(image.height, approved?['height'] ?? size, reason: path);
+        if (approved != null) {
+          expect(sha256.convert(await file.readAsBytes()).toString(),
+              approved['sha256'],
+              reason: path);
+        }
         if (path.contains('stickers')) {
           final rgba =
               await image.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -89,7 +149,8 @@ void main() {
         codec.dispose();
       }
       for (final raw in [
-        ...rawCatalog['templates'] as List,
+        ...(rawCatalog['templates'] as List).where(
+            (template) => !(template['id'] as String).startsWith('approved_')),
         ...rawStickers['stickers'] as List
       ]) {
         final bytes = File(raw['assetPath'] as String).readAsBytesSync();
@@ -123,9 +184,30 @@ void main() {
 
   group('immutable versioned document', () {
     test(
+        'approved artwork paths are local and cannot traverse or fetch remotely',
+        () {
+      for (final path in [
+        'assets/approved_v1/weather/sun_sunglasses.png',
+        'assets/approved_v1/memes/beach_sun_background.png',
+      ]) {
+        expect(validateMemeAssetRef(path), path);
+      }
+      for (final path in [
+        'https://example.com/assets/approved_v1/weather/sun.png',
+        'file:///private/photo.png',
+        'assets/approved_v1/weather/../../private.png',
+        'assets/approved_v1/memes/../weather/sun.png',
+        'assets/approved_v1/personas/karen_portrait.png',
+      ]) {
+        expect(() => validateMemeAssetRef(path), throwsFormatException,
+            reason: path);
+      }
+    });
+
+    test(
         'roundtrip preserves all layer types, Unicode, styles and photo transforms',
         () {
-      final document = catalog.templates.first.createDocument().copyWith(
+      final document = legacyTemplate.createDocument().copyWith(
             layers: [
               for (final type in MemeLayerType.values)
                 MemeLayer(
@@ -198,9 +280,9 @@ void main() {
     test(
         'version 1 migrates weather and background while future versions fail safely',
         () {
-      final old = catalog.templates.first.createDocument().toJson();
+      final old = legacyTemplate.createDocument().toJson();
       old['schemaVersion'] = 1;
-      old['background'] = catalog.templates.first.assetPath;
+      old['background'] = legacyTemplate.assetPath;
       old.remove('weatherSnapshot');
       old['weather'] = {'temperature': 12};
       old.remove('visualStyle');
@@ -215,7 +297,7 @@ void main() {
     test(
         'bad geometry, duplicate IDs, invalid paths, missing asset refs and privacy fields fail',
         () {
-      final original = catalog.templates.first.createDocument().toJson();
+      final original = legacyTemplate.createDocument().toJson();
       for (final field in ['x', 'y', 'width', 'height']) {
         final invalid = _clone(original);
         invalid['layers'][0][field] = double.nan;
@@ -273,8 +355,7 @@ void main() {
 
   group('logical history and transforms', () {
     late MemeEditorController editor;
-    setUp(() => editor =
-        MemeEditorController(catalog.templates.first.createDocument()));
+    setUp(() => editor = MemeEditorController(legacyTemplate.createDocument()));
     tearDown(() => editor.dispose());
 
     test('typing bursts and completed gestures undo as single operations', () {
@@ -376,19 +457,19 @@ void main() {
       expect(editor.document.layers.last.textStyle.fontFamily, 'MemeMono');
       expect(editor.document.layers.first.textStyle.fontFamily, 'MemeSans');
       final beforeBlocked = editor.document.toJson();
-      expect(() => editor.setCaptions(catalog.templates.first.captionPairs[1]),
+      expect(() => editor.setCaptions(legacyTemplate.captionPairs[1]),
           throwsStateError);
       expect(editor.document.toJson(), beforeBlocked);
       expect(editor.document.layers.first.text, original.text);
-      expect(editor.document.layers[1].text,
-          catalog.templates.first.defaultCaption.bottom);
+      expect(
+          editor.document.layers[1].text, legacyTemplate.defaultCaption.bottom);
       expect(editor.document.layers.last.id, duplicate.id);
       editor.updateLayer(editor.document.layers.first.copyWith(locked: false));
-      editor.setCaptions(catalog.templates.first.captionPairs[1]);
+      editor.setCaptions(legacyTemplate.captionPairs[1]);
       expect(editor.document.layers.first.text,
-          catalog.templates.first.captionPairs[1].top);
+          legacyTemplate.captionPairs[1].top);
       expect(editor.document.layers[1].text,
-          catalog.templates.first.captionPairs[1].bottom);
+          legacyTemplate.captionPairs[1].bottom);
     });
 
     test(
@@ -416,26 +497,26 @@ void main() {
       expect(duplicate.role, isNull);
       editor.reorderLayer(duplicate.id, 0);
       editor.reorderLayer(bottom.id, 1);
-      editor.setCaptions(catalog.templates.first.captionPairs[1]);
+      editor.setCaptions(legacyTemplate.captionPairs[1]);
       expect(editor.document.layers.first.text, top.text);
       expect(editor.document.layers.first.role, isNull);
       expect(
           editor.document.layers
               .firstWhere((layer) => layer.role == 'top')
               .text,
-          catalog.templates.first.captionPairs[1].top);
+          legacyTemplate.captionPairs[1].top);
       expect(
           editor.document.layers
               .firstWhere((layer) => layer.role == 'bottom')
               .text,
-          catalog.templates.first.captionPairs[1].bottom);
+          legacyTemplate.captionPairs[1].bottom);
       editor.deleteLayer(top.id);
-      editor.setCaptions(catalog.templates.first.captionPairs[2]);
+      editor.setCaptions(legacyTemplate.captionPairs[2]);
       expect(
           editor.document.layers
               .firstWhere((layer) => layer.role == 'top')
               .text,
-          catalog.templates.first.captionPairs[2].top);
+          legacyTemplate.captionPairs[2].top);
       expect(
           editor.document.layers
               .firstWhere((layer) => layer.role == 'bottom')
@@ -445,7 +526,7 @@ void main() {
       editor.deleteLayer(
           editor.document.layers.firstWhere((layer) => layer.role == 'top').id);
       editor.deleteLayer(bottom.id);
-      editor.setCaptions(catalog.templates.first.captionPairs[3]);
+      editor.setCaptions(legacyTemplate.captionPairs[3]);
       expect(editor.document.layers.first.text, top.text);
       expect(editor.document.layers.where((layer) => layer.role != null).length,
           2);

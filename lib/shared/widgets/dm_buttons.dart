@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../design/dm_colors.dart';
-import '../../design/dm_gradients.dart';
+import '../../design/dm_theme.dart';
 import '../../design/dm_motion.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_shadows.dart';
@@ -62,6 +62,7 @@ class _DmPillButtonState extends State<DmPillButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null && !widget.loading;
     final style = _DmPillStyle.resolve(
+      context,
       widget.variant,
       widget.selected,
       enabled,
@@ -70,8 +71,6 @@ class _DmPillButtonState extends State<DmPillButton> {
 
     final labelWidget = Text(
       widget.label,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
       style: DMTypography.labelLarge.copyWith(color: style.foreground),
     );
 
@@ -128,7 +127,6 @@ class _DmPillButtonState extends State<DmPillButton> {
       padding: widget.padding,
       decoration: BoxDecoration(
         color: style.background,
-        gradient: style.gradient,
         border: _focusedBorder(style.border, _focused),
         borderRadius: DMRadius.full,
         boxShadow: _focusedShadows(style.shadows, _focused),
@@ -195,6 +193,7 @@ class _DmIconButtonState extends State<DmIconButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
     final style = _DmIconStyle.resolve(
+      context,
       widget.variant,
       widget.selected,
       enabled,
@@ -268,54 +267,54 @@ List<BoxShadow> _focusedShadows(List<BoxShadow> shadows, bool focused) {
 }
 
 class _DmPillStyle {
-  const _DmPillStyle({
+  _DmPillStyle({
     required this.foreground,
     this.background,
-    this.gradient,
     this.border,
     this.shadows = DMShadows.none,
   });
 
   final Color foreground;
   final Color? background;
-  final Gradient? gradient;
   final BoxBorder? border;
   final List<BoxShadow> shadows;
 
   static _DmPillStyle resolve(
+    BuildContext context,
     DmPillButtonVariant variant,
     bool selected,
     bool enabled,
   ) {
     if (!enabled) {
-      return const _DmPillStyle(
-        foreground: DMColors.textDisabled,
-        background: DMColors.surfaceDisabled,
+      return _DmPillStyle(
+        foreground: context.dmColors.textDisabled,
+        background: context.dmColors.surfaceDisabled,
       );
     }
 
     return switch (variant) {
       DmPillButtonVariant.primary => _DmPillStyle(
           foreground: DMColors.deepNavy,
-          gradient: DMGradients.primaryAction,
+          background: context.dmColors.primary,
           shadows: selected ? DMShadows.skyGlow : DMShadows.soft,
         ),
-      DmPillButtonVariant.secondary => const _DmPillStyle(
+      DmPillButtonVariant.secondary => _DmPillStyle(
           foreground: DMColors.deepNavy,
           background: DMColors.sunriseYellow,
           shadows: DMShadows.sunGlow,
         ),
       DmPillButtonVariant.glass => _DmPillStyle(
-          foreground: DMColors.textPrimary,
-          background: selected ? DMColors.glassStrong : DMColors.glass,
-          border: Border.all(color: DMColors.glassBorder),
+          foreground: context.dmColors.textPrimary,
+          background:
+              selected ? context.dmColors.glassStrong : context.dmColors.glass,
+          border: Border.all(color: context.dmColors.glassBorder),
         ),
       DmPillButtonVariant.outline => _DmPillStyle(
-          foreground: DMColors.textPrimary,
+          foreground: context.dmColors.textPrimary,
           background: Colors.transparent,
-          border: Border.all(color: DMColors.glassBorderStrong),
+          border: Border.all(color: context.dmColors.glassBorderStrong),
         ),
-      DmPillButtonVariant.danger => const _DmPillStyle(
+      DmPillButtonVariant.danger => _DmPillStyle(
           foreground: DMColors.cloudWhite,
           background: DMColors.alertRed,
         ),
@@ -324,7 +323,7 @@ class _DmPillStyle {
 }
 
 class _DmIconStyle {
-  const _DmIconStyle({
+  _DmIconStyle({
     required this.foreground,
     required this.background,
     this.border,
@@ -337,33 +336,35 @@ class _DmIconStyle {
   final List<BoxShadow> shadows;
 
   static _DmIconStyle resolve(
+    BuildContext context,
     DmIconButtonVariant variant,
     bool selected,
     bool enabled,
   ) {
     if (!enabled) {
-      return const _DmIconStyle(
-        foreground: DMColors.textDisabled,
-        background: DMColors.surfaceDisabled,
+      return _DmIconStyle(
+        foreground: context.dmColors.textDisabled,
+        background: context.dmColors.surfaceDisabled,
       );
     }
 
     return switch (variant) {
       DmIconButtonVariant.glass => _DmIconStyle(
-          foreground: selected ? DMColors.deepNavy : DMColors.textPrimary,
-          background: selected ? DMColors.skyBlue : DMColors.glass,
-          border: Border.all(color: DMColors.glassBorder),
+          foreground:
+              selected ? DMColors.deepNavy : context.dmColors.textPrimary,
+          background: selected ? DMColors.skyBlue : context.dmColors.glass,
+          border: Border.all(color: context.dmColors.glassBorder),
           shadows: selected ? DMShadows.skyGlow : DMShadows.none,
         ),
-      DmIconButtonVariant.filled => const _DmIconStyle(
+      DmIconButtonVariant.filled => _DmIconStyle(
           foreground: DMColors.deepNavy,
           background: DMColors.sunriseYellow,
           shadows: DMShadows.sunGlow,
         ),
       DmIconButtonVariant.outline => _DmIconStyle(
-          foreground: DMColors.textPrimary,
+          foreground: context.dmColors.textPrimary,
           background: Colors.transparent,
-          border: Border.all(color: DMColors.glassBorderStrong),
+          border: Border.all(color: context.dmColors.glassBorderStrong),
         ),
     };
   }

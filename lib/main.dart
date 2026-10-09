@@ -10,7 +10,7 @@ import 'app/daymaker_router.dart';
 import 'features/fun/meme/meme_weather.dart';
 import 'features/roasts/content/roast_pack_repository.dart';
 import 'repositories/open_weather_repository.dart';
-import 'repositories/fake_roast_repository.dart';
+import 'repositories/pack_roast_repository.dart';
 import 'repositories/roast_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/shared_preferences_settings_repository.dart';
@@ -35,7 +35,7 @@ void main() async {
     cacheService: weatherCache,
   );
   final roastPackRepository = RoastPackRepository(cache: roastPackCache);
-  const roastRepository = FakeRoastRepository();
+  final roastRepository = PackRoastRepository(packs: roastPackRepository);
   final settingsRepository = await SharedPreferencesSettingsRepository.create();
   final settingsController = SettingsController(repository: settingsRepository);
   await settingsController.loadSettings();

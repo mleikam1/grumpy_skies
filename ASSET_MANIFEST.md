@@ -1,6 +1,6 @@
 # DayMaker Asset Manifest
 
-Canonical production manifest for generated DayMaker assets. Every required path here must match `lib/shared/assets/dm_assets.dart`, and every parent folder is declared in `pubspec.yaml`.
+Runtime manifest for registered assets, directly referenced approved illustrations, the meme catalog, and retained legacy portraits. Every parent folder is declared in `pubspec.yaml`; `test/asset_manifest_test.dart` verifies the complete path set. Reconstruction quality and source limitations are documented in `docs/ui_implementation/ASSET_STATUS.md`.
 
 Generated assets may be absent during development. UI must load these paths only through `DmAssetImage` or `DmSvgIcon` so the app keeps running with fallback visuals.
 
@@ -75,6 +75,26 @@ Generated assets may be absent during development. UI must load these paths only
 | `assets/personas/snarky_storm.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
 | `assets/personas/cloudy_cynic.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
 | `assets/personas/sunny_sass.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
+
+## Approved light/dark artwork
+
+The same portraits and weather artwork serve both app themes. These are reference-guided reconstructions with actual native pixel dimensions below; alpha edge limitations are recorded in [ASSET_STATUS.md](docs/ui_implementation/ASSET_STATUS.md). The five original persona files above remain shipped for stored-document compatibility. Flutter renders every label, caption, button, and card backdrop.
+
+| Required asset path | Screen usage | Format | Actual dimensions | Transparent background required |
+| --- | --- | --- | --- | --- |
+| `assets/approved_v1/personas/karen_portrait.png` | Today card, persona selector, Roasts | PNG | 1086x1448 px | Yes |
+| `assets/approved_v1/personas/frat_bro_portrait.png` | Persona selector, Today/Roasts selection | PNG | 1086x1448 px | Yes |
+| `assets/approved_v1/personas/politician_portrait.png` | Persona selector, Today/Roasts selection | PNG | 1086x1448 px | Yes |
+| `assets/approved_v1/personas/grandpa_portrait.png` | Roasts card, persona selector | PNG | 1086x1448 px | Yes |
+| `assets/approved_v1/personas/two_year_old_portrait.png` | Persona selector, Today/Roasts selection | PNG | 1086x1448 px | Yes |
+| `assets/approved_v1/weather/sun_grumpy_cloud.png` | Today partly-cloudy daytime hero | PNG | 1254x1254 px | Yes |
+| `assets/approved_v1/weather/sunglasses_cloud.png` | Fun Meme Studio promotion | PNG | 1254x1254 px | Yes |
+| `assets/approved_v1/weather/sun_sunglasses.png` | Current mood template and editable meme artwork | PNG | 1254x1254 px | Yes |
+| `assets/approved_v1/weather/coffee_cloud.png` | Monday energy template and editable meme artwork | PNG | 1254x1254 px | Yes |
+| `assets/approved_v1/weather/storm_cloud.png` | This weather template and editable meme artwork | PNG | 1254x1254 px | Yes |
+| `assets/approved_v1/memes/beach_sun_background.png` | Featured meme and editable textless beach backdrop | PNG | 2172x724 px | No |
+
+Meme document canvas dimensions remain independent of source artwork dimensions. The four approved additions use editable caption layers; all 15 legacy templates remain available.
 
 ## Icons
 
@@ -241,7 +261,7 @@ The Weather Meme Studio uses the following shipped artwork. The former sunny/rai
 
 | Required content/font path | Usage |
 | --- | --- |
-| `assets/meme_content/weather_meme_catalog.v1.json` | 15 templates, safe-text zones, 90 template pairs and 50 persona pairs. |
+| `assets/meme_content/weather_meme_catalog.v1.json` | 19 templates (15 legacy + 4 approved), safe-text zones, 94 template pairs and 50 persona pairs. |
 | `assets/meme_content/weather_stickers.v1.json` | 24 stable sticker IDs and provenance. |
 | `assets/meme_content/weather_meme_catalog.v1.schema.json` | Starter catalog schema; distinct from editor document schema. |
 | `assets/fonts/Nunito.ttf` | Locally bundled `MemeSans` font; license retained alongside. |

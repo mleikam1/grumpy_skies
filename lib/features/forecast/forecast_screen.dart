@@ -2,18 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/daymaker_sample_data.dart';
 import '../../config/app_routes.dart';
 import '../fun/meme/meme_weather.dart';
+import '../roasts/services/displayed_roast_share.dart';
 import '../../models/temperature_unit.dart';
 import '../../repositories/fake_weather_repository.dart';
 import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
-import '../../design/dm_gradients.dart';
+import '../../design/dm_theme.dart';
+import 'widgets/forecast_insight_card.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import '../../features/roasts/models/roast_persona.dart';
@@ -30,7 +31,6 @@ import '../../repositories/weather_repository.dart';
 import '../../services/open_weather_backend_client.dart';
 import '../../services/settings_controller.dart';
 import '../../services/weather_location_controller.dart';
-import '../../shared/assets/dm_assets.dart';
 import '../../shared/widgets/daymaker_components.dart';
 import '../../shared/widgets/weather_location_selector.dart';
 import 'widgets/forecast_dashboard_widgets.dart';
@@ -305,14 +305,6 @@ class _ForecastScreenState extends State<ForecastScreen>
     return '${location.lat.toStringAsFixed(4)},${location.lon.toStringAsFixed(4)}';
   }
 
-  void _showNotificationsMessage() {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Forecast notifications are on.')),
-      );
-  }
-
   void _showNextRoast(String personaId) {
     final weather = _weather;
     final pack = _roastPack;
@@ -335,33 +327,25 @@ class _ForecastScreenState extends State<ForecastScreen>
     });
   }
 
-  Future<void> _shareRoast(String personaId) async {
-    final weather = _weather;
-    final roast = weather == null
-        ? _fallbackRoastForPersona(personaId)
-        : _roastForWeather(weather, _snapshotForWeather(weather), personaId);
-    final persona = RoastPersonas.byId(personaId);
-    await Clipboard.setData(
-      ClipboardData(text: '${persona.displayName}: ${roast.text}'),
-    );
-    if (!mounted) return;
-
-    // TODO(haptics): Add success feedback after native share/copy completes.
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Roast copied for sharing.')),
-      );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: DmAppBackground(
-        gradient: DMGradients.appBackground,
-        color: DMColors.deepNavy,
-        foreground: const _ForecastBackdrop(),
+        gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            stops: const [
+              0,
+              .45,
+              1
+            ],
+            colors: [
+              context.dmColors.heroGradient.colors[1],
+              context.dmColors.appBackground,
+              context.dmColors.appBackground
+            ]),
+        color: context.dmColors.appBackground,
         child: SafeArea(
           child: _buildBody(),
         ),
@@ -413,11 +397,9 @@ class _ForecastScreenState extends State<ForecastScreen>
       if (!mounted) return;
       _readMemeRegistry()?.publish(memeSource, weather: weather);
     });
-    final location = _cityName(
-      weather.current.locationName.isNotEmpty
-          ? weather.current.locationName
-          : _locationController?.selectedLocation?.displayName ?? '',
-    );
+    final location = (weather.current.locationName.isNotEmpty
+        ? weather.current.locationName
+        : _locationController?.selectedLocation?.displayName ?? '');
 
     return RefreshIndicator(
       color: DMColors.deepNavy,
@@ -436,9 +418,9 @@ class _ForecastScreenState extends State<ForecastScreen>
 
           return ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: DMSpacing.pagePaddingForWidth(width).copyWith(
-              bottom: DMSpacing.x2,
-            ),
+            key: const PageStorageKey('today-scroll'),
+            padding: EdgeInsets.fromLTRB(
+                width >= 600 ? 24 : 18, 8, width >= 600 ? 24 : 18, 24),
             children: [
               Align(
                 alignment: Alignment.topCenter,
@@ -449,7 +431,11 @@ class _ForecastScreenState extends State<ForecastScreen>
                     children: [
                       ForecastHeader(
                         location: location,
-                        onNotificationsPressed: _showNotificationsMessage,
+                        status: cached
+                            ? 'Cached'
+                            : observationFresh
+                                ? 'Live'
+                                : 'Stale',
                         onChangeLocation: () {
                           setState(() => _showLocationSelector = true);
                         },
@@ -480,21 +466,31 @@ class _ForecastScreenState extends State<ForecastScreen>
                         SizedBox(height: gap),
                         WeatherAlertsPanel(alerts: relevantAlerts),
                       ],
-                      SizedBox(height: gap),
-                      _ForecastTopSection(
-                        weather: weather,
+                      ForecastCurrentWeatherCard(
+                        weather: weather.current,
                         now: now,
-                        gap: gap,
-                        expanded: breakpoint.isExpanded,
+                        today:
+                            weather.daily.isEmpty ? null : weather.daily.first,
                       ),
-                      SizedBox(height: gap),
-                      ShortTermPrecipitationCard(
-                        minutes: weather.minutePrecipitation,
-                        now: now,
-                        unavailable: !observationFresh || cached,
-                        units: weather.current.units,
-                      ),
-                      SizedBox(height: gap),
+                      const SizedBox(height: 8),
+                      ForecastInsightCard(
+                          weather: weather,
+                          now: now,
+                          unavailable: cached || !observationFresh),
+                      if (relevantAlerts.isEmpty) ...[
+                        const SizedBox(height: 10),
+                        ForecastRoastCard(
+                          persona: selectedPersona,
+                          roast: roast,
+                          sourceLabel:
+                              memeSource.isSample ? 'Sample roast' : null,
+                          onNewRoast: () => _showNextRoast(selectedPersona.id),
+                          onShare: () =>
+                              showDisplayedRoastShareSheet(context, memeSource),
+                          onShareToMeme: () => context
+                              .push(AppRoutes.memeGenerator, extra: memeSource),
+                        ),
+                      ],
                       ForecastHourlyStrip(
                         hourly: weather.hourly,
                         sunrise: weather.current.sunrise,
@@ -503,47 +499,47 @@ class _ForecastScreenState extends State<ForecastScreen>
                         timezoneOffset: weather.current.timezoneOffset,
                         errorMessage: weather.hourlyForecastMessage,
                       ),
+                      ForecastDailyGrid(
+                        daily: weather.daily,
+                        sunrise: weather.current.sunrise,
+                        sunset: weather.current.sunset,
+                        referenceTime: now,
+                        timezoneOffset: weather.current.timezoneOffset,
+                        errorMessage: weather.dailyForecastMessage,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                          _observationLabel(
+                              weather.current.displayUpdatedAt, now),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: context.dmColors.textSecondary)),
+                      const SizedBox(height: 16),
+                      ForecastMetricChips(
+                          weather: snapshot,
+                          rainAvailable: observationFresh &&
+                              !cached &&
+                              (weather.current.precipitationChanceKnown ||
+                                  weather.hourly.any((hour) =>
+                                      hour.precipitationChanceKnown &&
+                                      !hour.time.isBefore(now) &&
+                                      hour.time.isBefore(now
+                                          .add(const Duration(hours: 12)))))),
+                      const SizedBox(height: 16),
+                      ShortTermPrecipitationCard(
+                          minutes: weather.minutePrecipitation,
+                          now: now,
+                          unavailable: !observationFresh || cached,
+                          units: weather.current.units),
+                      const SizedBox(height: 16),
+                      ForecastExtraMetrics(weather: weather.current),
                       if (!_loading &&
                           !cached &&
                           observationFresh &&
                           relevantAlerts.isEmpty &&
                           _repository is! FakeWeatherRepository)
                         const AdSection(placement: AdPlacement.forecastBanner),
-                      if (relevantAlerts.isEmpty) ...[
-                        SizedBox(height: gap),
-                        ForecastRoastCard(
-                          persona: selectedPersona,
-                          roast: roast,
-                          sourceLabel:
-                              memeSource.isSample ? 'Sample roast' : null,
-                          onNewRoast: () => _showNextRoast(selectedPersona.id),
-                          onShare: () => _shareRoast(selectedPersona.id),
-                          onShareToMeme: () => context.push(
-                            AppRoutes.memeGenerator,
-                            extra: memeSource,
-                          ),
-                        ),
-                      ],
-                      SizedBox(height: gap),
-                      ForecastMetricChips(
-                        weather: snapshot,
-                        rainAvailable: observationFresh &&
-                            !cached &&
-                            (weather.current.precipitationChanceKnown ||
-                                weather.hourly.any((hour) =>
-                                    hour.precipitationChanceKnown &&
-                                    !hour.time.isBefore(now) &&
-                                    hour.time.isBefore(
-                                        now.add(const Duration(hours: 12))))),
-                      ),
-                      SizedBox(height: gap),
-                      _ForecastLowerSection(
-                        weather: weather,
-                        now: now,
-                        gap: gap,
-                        expanded: breakpoint.isExpanded,
-                      ),
-                      SizedBox(height: gap),
+                      const SizedBox(height: 16),
                       const _WeatherAttributionFooter(),
                     ],
                   ),
@@ -586,10 +582,17 @@ class _ForecastScreenState extends State<ForecastScreen>
     );
   }
 
-  static String _cityName(String locationName) {
-    final trimmed = locationName.trim();
-    if (trimmed.isEmpty) return 'Current location';
-    return trimmed.split(',').first.trim();
+  static String _observationLabel(DateTime updated, DateTime now) {
+    if (updated.millisecondsSinceEpoch <= 0) {
+      return 'Observation time unavailable';
+    }
+    final age = now.difference(updated);
+    if (age.isNegative) return 'Observation timestamp is ahead of device clock';
+    if (age.inMinutes < 1) return 'Observed just now';
+    if (age.inHours < 1) {
+      return 'Observed ${age.inMinutes} min ago${age > const Duration(minutes: 30) ? ' · Stale' : ''}';
+    }
+    return 'Observed ${age.inHours} hours ago · Stale';
   }
 
   Roast _roastForWeather(
@@ -775,105 +778,6 @@ class _StaleWeatherBanner extends StatelessWidget {
   }
 }
 
-class _ForecastTopSection extends StatelessWidget {
-  const _ForecastTopSection({
-    required this.weather,
-    required this.now,
-    required this.gap,
-    required this.expanded,
-  });
-
-  final WeatherBundle weather;
-  final DateTime now;
-  final double gap;
-  final bool expanded;
-
-  @override
-  Widget build(BuildContext context) {
-    final current = ForecastCurrentWeatherCard(
-      weather: weather.current,
-      now: now,
-    );
-    final hero = ForecastHeroAtmosphere(expanded: expanded);
-
-    if (!expanded) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          current,
-          SizedBox(height: gap),
-          hero,
-        ],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(flex: 5, child: current),
-        SizedBox(width: gap),
-        Expanded(flex: 7, child: hero),
-      ],
-    );
-  }
-}
-
-class _ForecastLowerSection extends StatelessWidget {
-  const _ForecastLowerSection({
-    required this.weather,
-    required this.now,
-    required this.gap,
-    required this.expanded,
-  });
-
-  final WeatherBundle weather;
-  final DateTime now;
-  final double gap;
-  final bool expanded;
-
-  @override
-  Widget build(BuildContext context) {
-    if (kDebugMode) {
-      debugPrint('Forecast UI hourly count: ${weather.hourly.length}');
-      debugPrint('Forecast UI daily count: ${weather.daily.length}');
-    }
-    final forecast = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ForecastDailyGrid(
-          daily: weather.daily,
-          sunrise: weather.current.sunrise,
-          sunset: weather.current.sunset,
-          referenceTime: now,
-          timezoneOffset: weather.current.timezoneOffset,
-          errorMessage: weather.dailyForecastMessage,
-        ),
-      ],
-    );
-    final details = ForecastExtraMetrics(weather: weather.current);
-
-    if (!expanded) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          forecast,
-          SizedBox(height: gap),
-          details,
-        ],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(flex: 7, child: forecast),
-        SizedBox(width: gap),
-        Expanded(flex: 4, child: details),
-      ],
-    );
-  }
-}
-
 class ShortTermPrecipitationCard extends StatelessWidget {
   const ShortTermPrecipitationCard({
     super.key,
@@ -922,7 +826,7 @@ class ShortTermPrecipitationCard extends StatelessWidget {
                           : Icons.info_outline,
                       color: coverage.coversNextHour
                           ? DMColors.mintGreen
-                          : DMColors.textMuted,
+                          : context.dmColors.textMuted,
                     ),
                   const SizedBox(width: DMSpacing.sm),
                   Expanded(
@@ -973,7 +877,8 @@ class _MinuteBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final amount = minute.precipitation.clamp(0, 0.25);
     final height = 8 + (amount / 0.25 * 58);
-    final color = minute.isWet ? DMColors.rainTeal : DMColors.glassStrong;
+    final color =
+        minute.isWet ? DMColors.rainTeal : context.dmColors.glassStrong;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -996,7 +901,7 @@ class _MinuteBar extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.clip,
           style: DMTypography.labelSmall.copyWith(
-            color: DMColors.textMuted,
+            color: context.dmColors.textMuted,
           ),
         ),
       ],
@@ -1055,7 +960,7 @@ class _WeatherAlertTile extends StatelessWidget {
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
           iconColor: DMColors.sunriseYellow,
-          collapsedIconColor: DMColors.textMuted,
+          collapsedIconColor: context.dmColors.textMuted,
           leading: const Icon(
             Icons.warning_amber_rounded,
             color: DMColors.alertOrange,
@@ -1121,7 +1026,7 @@ class _WeatherAttributionFooter extends StatelessWidget {
       'Weather data © OpenWeather',
       textAlign: TextAlign.center,
       style: DMTypography.bodySmall.copyWith(
-        color: DMColors.textMuted,
+        color: context.dmColors.textMuted,
       ),
     );
   }
@@ -1169,70 +1074,4 @@ class _ForecastStateMessage extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ForecastBackdrop extends StatelessWidget {
-  const _ForecastBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // TODO(assets): Drop generated forecast backgrounds into DmAssets so
-        // condition-specific art can replace the painted fallback.
-        DmAssetImage(
-          assetPath: DmAssets.backgrounds.forecast.clearDay,
-          fit: BoxFit.cover,
-          excludeFromSemantics: true,
-          placeholderBuilder: (_) => const SizedBox.shrink(),
-        ),
-        CustomPaint(painter: _ForecastBackdropPainter()),
-      ],
-    );
-  }
-}
-
-class _ForecastBackdropPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final topGlow = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          DMColors.opacity(DMColors.sunriseYellow, 0.26),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.78, size.height * 0.04),
-          radius: size.width * 0.46,
-        ),
-      );
-    canvas.drawCircle(
-      Offset(size.width * 0.78, size.height * 0.04),
-      size.width * 0.46,
-      topGlow,
-    );
-
-    final lowerGlow = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          DMColors.opacity(DMColors.rainTeal, 0.18),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.08, size.height * 0.64),
-          radius: size.width * 0.42,
-        ),
-      );
-    canvas.drawCircle(
-      Offset(size.width * 0.08, size.height * 0.64),
-      size.width * 0.42,
-      lowerGlow,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

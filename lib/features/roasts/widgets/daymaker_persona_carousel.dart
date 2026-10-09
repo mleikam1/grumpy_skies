@@ -1,176 +1,93 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-
-import '../../../design/dm_colors.dart';
-import '../../../design/dm_gradients.dart';
-import '../../../design/dm_motion.dart';
-import '../../../design/dm_radius.dart';
-import '../../../design/dm_shadows.dart';
-import '../../../design/dm_spacing.dart';
-import '../../../design/dm_typography.dart';
+import '../../../design/dm_theme.dart';
 import '../../../models/daymaker_models.dart';
-import 'persona_avatar.dart';
+import '../../../shared/widgets/dm_approved_components.dart';
 
 class DaymakerPersonaCarousel extends StatelessWidget {
-  const DaymakerPersonaCarousel({
-    super.key,
-    required this.personas,
-    required this.selectedPersonaId,
-    required this.onPersonaSelected,
-  });
-
+  const DaymakerPersonaCarousel(
+      {super.key,
+      required this.personas,
+      required this.selectedPersonaId,
+      required this.onPersonaSelected});
   final List<Persona> personas;
   final String selectedPersonaId;
   final ValueChanged<Persona> onPersonaSelected;
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final cardWidth = width >= 900
-            ? ((width - (DMSpacing.sm * 4)) / 5).clamp(176.0, 220.0)
-            : width >= 600
-                ? 264.0
-                : 244.0;
-
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(11) / 11;
+        final width = math.max(
+            ((constraints.maxWidth - 24) / 5).clamp(60.0, 100.0), 60 * scale);
+        final labelHeight = personas.map((persona) {
+          final painter = TextPainter(
+              text: TextSpan(
+                  text: persona.name,
+                  style: const TextStyle(
+                      fontSize: 10, height: 1.2, fontFamily: 'DaymakerSans')),
+              textScaler: MediaQuery.textScalerOf(context),
+              textDirection: Directionality.of(context))
+            ..layout(maxWidth: width);
+          final height = painter.height;
+          painter.dispose();
+          return height;
+        }).fold<double>(12, math.max);
         return SizedBox(
-          height: 224,
+          height: 84 + labelHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(vertical: DMSpacing.xs),
             itemCount: personas.length,
-            separatorBuilder: (context, index) => const SizedBox(
-              width: DMSpacing.sm,
-            ),
+            separatorBuilder: (_, __) => const SizedBox(width: 6),
             itemBuilder: (context, index) {
               final persona = personas[index];
-              return _PersonaCarouselCard(
-                key: ValueKey('persona-card-${persona.id}'),
-                persona: persona,
-                width: cardWidth,
-                selected: persona.id == selectedPersonaId,
-                onTap: () => onPersonaSelected(persona),
+              final selected = persona.id == selectedPersonaId;
+              return Semantics(
+                button: true,
+                selected: selected,
+                label: '${persona.name}, ${persona.title} persona',
+                child: ExcludeSemantics(
+                    child: SizedBox(
+                  key: ValueKey('persona-card-${persona.id}'),
+                  width: width,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => onPersonaSelected(persona),
+                    child: Column(children: [
+                      Container(
+                        height: 74,
+                        width: width,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: index == 0
+                              ? context.dmColors.karenSurface
+                              : context.dmColors.surfaceSecondary,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: selected
+                                  ? context.dmColors.focusRing
+                                  : context.dmColors.border,
+                              width: selected ? 2 : 1),
+                        ),
+                        child: DmPersonaPortrait(personaId: persona.id),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(persona.name,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 10,
+                              height: 1.2,
+                              fontWeight:
+                                  selected ? FontWeight.w800 : FontWeight.w500,
+                              color: selected
+                                  ? context.dmColors.textPrimary
+                                  : context.dmColors.textSecondary)),
+                    ]),
+                  ),
+                )),
               );
             },
           ),
         );
-      },
-    );
-  }
-}
-
-class _PersonaCarouselCard extends StatelessWidget {
-  const _PersonaCarouselCard({
-    super.key,
-    required this.persona,
-    required this.width,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final Persona persona;
-  final double width;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final motion = DMMotion.resolve(context, DMMotion.standard);
-    final borderColor =
-        selected ? DMColors.sunriseYellow : DMColors.glassBorder;
-    final foreground = selected ? DMColors.deepNavy : DMColors.textPrimary;
-    final titleColor = selected ? DMColors.sunriseYellow : DMColors.textPrimary;
-
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: '${persona.name}, ${persona.title} persona',
-      child: ExcludeSemantics(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: DMRadius.card,
-            onTap: onTap,
-            child: AnimatedContainer(
-              duration: motion,
-              curve: DMMotion.easeOut,
-              width: width,
-              padding: const EdgeInsets.all(DMSpacing.sm),
-              decoration: BoxDecoration(
-                gradient: selected ? DMGradients.glass : DMGradients.glassNavy,
-                borderRadius: DMRadius.card,
-                border: Border.all(color: borderColor, width: selected ? 2 : 1),
-                boxShadow: selected ? DMShadows.sunGlow : DMShadows.soft,
-              ),
-              child: Stack(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      PersonaAvatar(
-                        persona: persona,
-                        size: 104,
-                      ),
-                      const SizedBox(height: DMSpacing.sm),
-                      Text(
-                        persona.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: DMTypography.labelLarge.copyWith(
-                          color: titleColor,
-                        ),
-                      ),
-                      const SizedBox(height: DMSpacing.xs),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: DMSpacing.xs,
-                          vertical: DMSpacing.xxs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? DMColors.sunriseYellow
-                              : DMColors.opacity(DMColors.cloudWhite, 0.12),
-                          borderRadius: DMRadius.full,
-                          border: selected
-                              ? null
-                              : Border.all(color: DMColors.glassBorder),
-                        ),
-                        child: Text(
-                          persona.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: DMTypography.labelSmall.copyWith(
-                            color: foreground,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (selected)
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: const BoxDecoration(
-                          color: DMColors.sunriseYellow,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: DMColors.deepNavy,
-                          size: DMSpacing.iconMd,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+      });
 }

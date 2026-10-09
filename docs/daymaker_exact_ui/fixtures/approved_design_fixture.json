@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "fixtureOnly": true,
+  "source": "Synthetic content authored from visible concept values; not a provider observation.",
+  "productionUseForbidden": true,
+  "clock": {
+    "now": "2026-10-12T10:00:00-05:00",
+    "timezone": "America/Chicago",
+    "explanation": "A synthetic Monday selected to keep Today/Tue/Wed labels internally consistent."
+  },
+  "location": {
+    "displayName": "Overland Park, KS",
+    "latitude": 38.9822,
+    "longitude": -94.6708,
+    "precision": "illustrative fixture city coordinates"
+  },
+  "units": "fahrenheit",
+  "weather": {
+    "temperatureC": 22.22222222222222,
+    "feelsLikeC": 23.333333333333332,
+    "highC": 24.444444444444443,
+    "lowC": 16.11111111111111,
+    "condition": "Partly cloudy",
+    "conditionCode": 802,
+    "observedAt": "2026-10-12T09:58:00-05:00",
+    "alerts": []
+  },
+  "insight": {
+    "headline": "A little plot twist at 5 PM.",
+    "detail": "Rain chance rises to 40%.",
+    "forPreviewOnly": true
+  },
+  "hourly": [
+    {
+      "label": "Now",
+      "localTime": "2026-10-12T10:00:00-05:00",
+      "temperatureF": 72,
+      "condition": "partly_cloudy",
+      "precipProbability": null
+    },
+    {
+      "label": "11 AM",
+      "localTime": "2026-10-12T11:00:00-05:00",
+      "temperatureF": 74,
+      "condition": "clear",
+      "precipProbability": null
+    },
+    {
+      "label": "1 PM",
+      "localTime": "2026-10-12T13:00:00-05:00",
+      "temperatureF": 76,
+      "condition": "cloudy",
+      "precipProbability": null
+    },
+    {
+      "label": "3 PM",
+      "localTime": "2026-10-12T15:00:00-05:00",
+      "temperatureF": 73,
+      "condition": "cloudy",
+      "precipProbability": null
+    },
+    {
+      "label": "5 PM",
+      "localTime": "2026-10-12T17:00:00-05:00",
+      "temperatureF": 69,
+      "condition": "rain",
+      "precipProbability": 0.4
+    }
+  ],
+  "dailyVisible": [
+    {
+      "label": "Today",
+      "highF": 76,
+      "lowF": 61,
+      "condition": "clear"
+    },
+    {
+      "label": "Tue",
+      "highF": 71,
+      "lowF": 54,
+      "condition": "rain"
+    },
+    {
+      "label": "Wed",
+      "highF": 68,
+      "lowF": 52,
+      "condition": "cloudy"
+    }
+  ],
+  "dailyFixtureExtensionNote": "The board only shows three rows. Any further preview days must be explicitly authored synthetic records, not claimed as visible in the source.",
+  "personaDisplayOrder": [
+    "karen",
+    "frat_bro",
+    "politician",
+    "grandpa",
+    "two_year_old"
+  ],
+  "screens": {
+    "today": {
+      "selectedPersonaId": "karen",
+      "roastId": "preview-karen-001",
+      "quote": "I'd like to speak to the manager of this humidity."
+    },
+    "roasts": {
+      "selectedPersonaId": "grandpa",
+      "displayBadge": "WEATHER WISEGUY",
+      "roastId": "preview-grandpa-001",
+      "quote": "At my age, clouds just mean a good excuse for a nap.",
+      "crewPreview": {
+        "personaId": "karen",
+        "quote": "Sunshine? Cute. Let's see it last.",
+        "relativeTimeFixture": "1h ago"
+      }
+    },
+    "fun": {
+      "selectedLocalTab": "make_a_meme",
+      "promoTitle": "Same skies.\nNew material.",
+      "featuredCaption": "FORECAST: 100% CHANCE OF NO CHILL."
+    }
+  },
+  "testIsolation": [
+    "No fixture imports from production data services.",
+    "No fake fallback when a live API fails.",
+    "No telemetry, ad requests, or real progression writes in visual tests.",
+    "Capture reports label these screenshots as fixtures.",
+    "Use independent fixture setup per screen; the differing selected personas are separate test states, not a production synchronization bug."
+  ]
+}

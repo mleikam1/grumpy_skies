@@ -145,21 +145,24 @@ final class DmMascotAssets {
 final class DmPersonaAssets {
   const DmPersonaAssets._();
 
-  final String karenRoastQueen = 'assets/personas/karen_roast_queen.png';
+  final String karenRoastQueen =
+      'assets/approved_v1/personas/karen_portrait.png';
   final String fratBroBarometerBro =
-      'assets/personas/frat_bro_barometer_bro.png';
+      'assets/approved_v1/personas/frat_bro_portrait.png';
   final String twoYearOldTinyThunder =
-      'assets/personas/two_year_old_tiny_thunder.png';
+      'assets/approved_v1/personas/two_year_old_portrait.png';
   final String politicianSpinDoctor =
-      'assets/personas/politician_spin_doctor.png';
+      'assets/approved_v1/personas/politician_portrait.png';
   final String grandpaCloudHistorian =
-      'assets/personas/grandpa_cloud_historian.png';
+      'assets/approved_v1/personas/grandpa_portrait.png';
 
-  final String karen = 'assets/personas/karen_roast_queen.png';
-  final String fratBro = 'assets/personas/frat_bro_barometer_bro.png';
-  final String grandpa = 'assets/personas/grandpa_cloud_historian.png';
-  final String politician = 'assets/personas/politician_spin_doctor.png';
-  final String toddler = 'assets/personas/two_year_old_tiny_thunder.png';
+  final String karen = 'assets/approved_v1/personas/karen_portrait.png';
+  final String fratBro = 'assets/approved_v1/personas/frat_bro_portrait.png';
+  final String grandpa = 'assets/approved_v1/personas/grandpa_portrait.png';
+  final String politician =
+      'assets/approved_v1/personas/politician_portrait.png';
+  final String toddler =
+      'assets/approved_v1/personas/two_year_old_portrait.png';
   final String snarkyStorm = 'assets/personas/snarky_storm.png';
   final String cloudyCynic = 'assets/personas/cloudy_cynic.png';
   final String sunnySass = 'assets/personas/sunny_sass.png';

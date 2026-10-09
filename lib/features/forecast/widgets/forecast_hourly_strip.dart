@@ -1,9 +1,12 @@
 import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
+import 'package:weather_icons_animated/weather_icons_animated.dart';
 
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../design/dm_theme.dart';
+import '../../../shared/widgets/dm_approved_components.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 
@@ -37,12 +40,14 @@ class ForecastHourlyStrip extends StatelessWidget {
         : ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: DMSpacing.xs),
+            padding: EdgeInsets.zero,
             clipBehavior: Clip.none,
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: DMSpacing.sm),
+            separatorBuilder: (_, __) => const SizedBox(width: 5),
             itemBuilder: (context, index) {
               return _HourlyTile(
+                width:
+                    ((MediaQuery.sizeOf(context).width - 56) / 5).clamp(60, 90),
                 hour: items[index].hour,
                 label: items[index].label,
                 sunrise: sunrise,
@@ -54,10 +59,23 @@ class ForecastHourlyStrip extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const DmSectionHeader(title: 'Hourly'),
-        const SizedBox(height: DMSpacing.sm),
+        DmApprovedSectionHeader(
+            title: 'Hourly forecast',
+            onAction: () => showModalBottomSheet<void>(
+                context: context,
+                showDragHandle: true,
+                builder: (ctx) => SafeArea(
+                        child: ListView(children: [
+                      for (final item in items)
+                        ListTile(
+                            title: Text(item.label),
+                            subtitle: Text(item.hour.condition),
+                            trailing: Text(forecastTemperature(
+                                item.hour.temperatureC,
+                                forecastTemperatureUnit(context))))
+                    ])))),
         SizedBox(
-          height: 168,
+          height: 98 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 3,
           child: child,
         ),
       ],
@@ -163,6 +181,7 @@ class _HourlyTile extends StatelessWidget {
   const _HourlyTile({
     required this.hour,
     required this.label,
+    this.width = 66,
     this.sunrise,
     this.sunset,
   });
@@ -171,13 +190,14 @@ class _HourlyTile extends StatelessWidget {
   final String label;
   final DateTime? sunrise;
   final DateTime? sunset;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 108,
+      width: width,
       child: DmGlassCard(
-        padding: const EdgeInsets.all(DMSpacing.sm),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         borderRadius: DMRadius.large,
         shadows: const [],
         child: Column(
@@ -189,10 +209,17 @@ class _HourlyTile extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: DMTypography.label,
+              style: TextStyle(
+                  fontSize: 10,
+                  height: 1.1,
+                  fontWeight: FontWeight.w700,
+                  color: context.dmColors.textSecondary),
             ),
-            const SizedBox(height: DMSpacing.sm),
+            const SizedBox(height: 6),
             DaymakerWeatherIcon(
+              style: WeatherIconStyle.line,
+              color:
+                  hour.weatherId == 800 ? null : context.dmColors.textSecondary,
               conditionId: hour.weatherId,
               openWeatherIconCode: hour.weatherIcon,
               conditionMain: hour.weatherMain,
@@ -200,27 +227,31 @@ class _HourlyTile extends StatelessWidget {
               forecastTime: hour.time,
               sunrise: sunrise,
               sunset: sunset,
-              size: 32,
+              size: 25,
               semanticLabel: hour.condition,
             ),
-            const SizedBox(height: DMSpacing.xs),
+            const SizedBox(height: 4),
             Text(
               forecastTemperature(
                   hour.temperatureC, forecastTemperatureUnit(context)),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: DMTypography.numeral,
+              style: const TextStyle(
+                  fontSize: 18, height: 1.1, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: DMSpacing.xxs),
             Text(
-              hour.precipitationChanceKnown
-                  ? '${hour.precipitationChance}% rain'
-                  : 'Rain unavailable',
+              hour.precipitationChanceKnown && hour.precipitationChance > 0
+                  ? '${hour.precipitationChance}%'
+                  : '',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: DMTypography.bodySmall,
+              style: TextStyle(
+                  fontSize: 10,
+                  height: 1.1,
+                  color: context.dmColors.textSecondary),
             ),
           ],
         ),

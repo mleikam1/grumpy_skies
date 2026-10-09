@@ -1,3 +1,4 @@
+import '../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../design/dm_colors.dart';
@@ -34,9 +35,9 @@ class DmProgressPill extends StatelessWidget {
         borderRadius: DMRadius.full,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: DMColors.glass,
+            color: context.dmColors.glass,
             borderRadius: DMRadius.full,
-            border: Border.all(color: DMColors.glassBorder),
+            border: Border.all(color: context.dmColors.glassBorder),
           ),
           child: Stack(
             children: [
@@ -78,7 +79,7 @@ class DmProgressPill extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: DMTypography.label.copyWith(
-                        color: DMColors.textPrimary,
+                        color: context.dmColors.textPrimary,
                       ),
                     ),
                   ],

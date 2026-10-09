@@ -1,0 +1,176 @@
+[
+  {
+    "reference": "docs/daymaker_exact_ui/references/screens/light_today_ui.png",
+    "candidate": "docs/ui_implementation/screenshots/fixture/light_today.png",
+    "reference_native_size": [
+      340,
+      812
+    ],
+    "candidate_native_size": [
+      780,
+      1860
+    ],
+    "reference_uniformly_scaled_size": [
+      390,
+      931
+    ],
+    "candidate_uniformly_scaled_size": [
+      390,
+      930
+    ],
+    "comparison_canvas_size": [
+      390,
+      931
+    ],
+    "reference_bottom_padding_pixels": 0,
+    "candidate_bottom_padding_pixels": 1,
+    "alignment": "top-left; full content; uniform scaling only; gray bottom canvas padding",
+    "shared_region_mean_absolute_channel_difference": 23.775,
+    "interpretation": "Diagnostic only; not a match score. Generated dark references have differing geometry. Light reference geometry is authoritative for both app themes. Inspect spacing, typography, colors, content, and artwork manually."
+  },
+  {
+    "reference": "docs/daymaker_exact_ui/references/screens/light_roasts_ui.png",
+    "candidate": "docs/ui_implementation/screenshots/fixture/light_roasts.png",
+    "reference_native_size": [
+      342,
+      812
+    ],
+    "candidate_native_size": [
+      780,
+      1860
+    ],
+    "reference_uniformly_scaled_size": [
+      390,
+      926
+    ],
+    "candidate_uniformly_scaled_size": [
+      390,
+      930
+    ],
+    "comparison_canvas_size": [
+      390,
+      930
+    ],
+    "reference_bottom_padding_pixels": 4,
+    "candidate_bottom_padding_pixels": 0,
+    "alignment": "top-left; full content; uniform scaling only; gray bottom canvas padding",
+    "shared_region_mean_absolute_channel_difference": 25.645,
+    "interpretation": "Diagnostic only; not a match score. Generated dark references have differing geometry. Light reference geometry is authoritative for both app themes. Inspect spacing, typography, colors, content, and artwork manually."
+  },
+  {
+    "reference": "docs/daymaker_exact_ui/references/screens/light_fun_ui.png",
+    "candidate": "docs/ui_implementation/screenshots/fixture/light_fun.png",
+    "reference_native_size": [
+      339,
+      812
+    ],
+    "candidate_native_size": [
+      780,
+      1860
+    ],
+    "reference_uniformly_scaled_size": [
+      390,
+      934
+    ],
+    "candidate_uniformly_scaled_size": [
+      390,
+      930
+    ],
+    "comparison_canvas_size": [
+      390,
+      934
+    ],
+    "reference_bottom_padding_pixels": 0,
+    "candidate_bottom_padding_pixels": 4,
+    "alignment": "top-left; full content; uniform scaling only; gray bottom canvas padding",
+    "shared_region_mean_absolute_channel_difference": 33.236,
+    "interpretation": "Diagnostic only; not a match score. Generated dark references have differing geometry. Light reference geometry is authoritative for both app themes. Inspect spacing, typography, colors, content, and artwork manually."
+  },
+  {
+    "reference": "docs/daymaker_exact_ui/references/screens/dark_today_ui.png",
+    "candidate": "docs/ui_implementation/screenshots/fixture/dark_today.png",
+    "reference_native_size": [
+      345,
+      790
+    ],
+    "candidate_native_size": [
+      780,
+      1860
+    ],
+    "reference_uniformly_scaled_size": [
+      390,
+      893
+    ],
+    "candidate_uniformly_scaled_size": [
+      390,
+      930
+    ],
+    "comparison_canvas_size": [
+      390,
+      930
+    ],
+    "reference_bottom_padding_pixels": 37,
+    "candidate_bottom_padding_pixels": 0,
+    "alignment": "top-left; full content; uniform scaling only; gray bottom canvas padding",
+    "shared_region_mean_absolute_channel_difference": 34.796,
+    "interpretation": "Diagnostic only; not a match score. Generated dark references have differing geometry. Light reference geometry is authoritative for both app themes. Inspect spacing, typography, colors, content, and artwork manually."
+  },
+  {
+    "reference": "docs/daymaker_exact_ui/references/screens/dark_roasts_ui.png",
+    "candidate": "docs/ui_implementation/screenshots/fixture/dark_roasts.png",
+    "reference_native_size": [
+      343,
+      790
+    ],
+    "candidate_native_size": [
+      780,
+      1860
+    ],
+    "reference_uniformly_scaled_size": [
+      390,
+      898
+    ],
+    "candidate_uniformly_scaled_size": [
+      390,
+      930
+    ],
+    "comparison_canvas_size": [
+      390,
+      930
+    ],
+    "reference_bottom_padding_pixels": 32,
+    "candidate_bottom_padding_pixels": 0,
+    "alignment": "top-left; full content; uniform scaling only; gray bottom canvas padding",
+    "shared_region_mean_absolute_channel_difference": 33.88,
+    "interpretation": "Diagnostic only; not a match score. Generated dark references have differing geometry. Light reference geometry is authoritative for both app themes. Inspect spacing, typography, colors, content, and artwork manually."
+  },
+  {
+    "reference": "docs/daymaker_exact_ui/references/screens/dark_fun_ui.png",
+    "candidate": "docs/ui_implementation/screenshots/fixture/dark_fun.png",
+    "reference_native_size": [
+      340,
+      790
+    ],
+    "candidate_native_size": [
+      780,
+      1860
+    ],
+    "reference_uniformly_scaled_size": [
+      390,
+      906
+    ],
+    "candidate_uniformly_scaled_size": [
+      390,
+      930
+    ],
+    "comparison_canvas_size": [
+      390,
+      930
+    ],
+    "reference_bottom_padding_pixels": 24,
+    "candidate_bottom_padding_pixels": 0,
+    "alignment": "top-left; full content; uniform scaling only; gray bottom canvas padding",
+    "shared_region_mean_absolute_channel_difference": 49.679,
+    "interpretation": "Diagnostic only; not a match score. Generated dark references have differing geometry. Light reference geometry is authoritative for both app themes. Inspect spacing, typography, colors, content, and artwork manually."
+  }
+]

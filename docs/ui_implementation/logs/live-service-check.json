@@ -1,0 +1,70 @@
+{
+  "checked_at_utc": "2026-10-09T21:16:58.367339+00:00",
+  "scope": "Read-only deployed endpoints. Public Overland Park coordinates, independent of fixture; no app/device persistence.",
+  "results": [
+    {
+      "path": "/weather/forecast?lat=38.9822&lon=-94.6708&units=imperial",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 46087,
+      "top_level_keys": [
+        "latitude",
+        "longitude",
+        "timezone",
+        "timezoneOffset",
+        "current",
+        "minutes",
+        "hourly",
+        "daily",
+        "hourlyTimeline",
+        "dailyTimeline",
+        "forecastErrors",
+        "forecastSource",
+        "forecastLocationName",
+        "alerts",
+        "units"
+      ],
+      "provider_status": {}
+    },
+    {
+      "path": "/radar/health",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "path": "/radarFrames?lat=38.9822&lon=-94.6708&product=global",
+      "status": 200,
+      "bytes": 1608,
+      "top_level_keys": [
+        "product",
+        "mode",
+        "source",
+        "productLabel",
+        "latestTimestamp",
+        "minTimestamp",
+        "maxTimestamp",
+        "forecastAvailable",
+        "frames"
+      ],
+      "provider_status": {
+        "source": "openweather_global"
+      }
+    },
+    {
+      "path": "/radarHealth?lat=38.9822&lon=-94.6708&source=owm&time=1791580696",
+      "error": "HTTP Error 400: Bad Request"
+    },
+    {
+      "path": "/radarHealth?lat=38.9822&lon=-94.6708&source=openweather_global&time=1791580200",
+      "status": 200,
+      "provider_status": {
+        "ok": false,
+        "source": "openweather_global",
+        "humanReadableMessage": "Radar source unavailable; base map still usable.",
+        "availableFrameCount": 0,
+        "isImage": false,
+        "upstreamStatus": 401
+      }
+    }
+  ],
+  "note": "Initial radar probes used a wrong path then invalid source. They are diagnostic mistakes, not backend failures. Final probe uses source and timestamp returned by /radarFrames."
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
+import '../../design/dm_theme.dart';
 
 class DmAppBackground extends StatelessWidget {
   const DmAppBackground({
@@ -25,8 +26,11 @@ class DmAppBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color,
-        gradient: gradient,
+        color:
+            color == DMColors.deepNavy ? context.dmColors.appBackground : color,
+        gradient: gradient == DMGradients.appBackground
+            ? context.dmColors.heroGradient
+            : gradient,
         image: image,
       ),
       child: Stack(

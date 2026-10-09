@@ -1,0 +1,625 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.3.0 available)
+  async 2.12.0 (2.13.1 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.8 (2.0.0 available)
+  dbus 0.7.13 (0.8.0 available)
+  ffi 2.1.4 (2.2.0 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  flutter_map 8.3.0 (8.3.2 available)
+  geolocator 14.0.2 (14.1.1 available)
+  geolocator_android 5.0.3 (5.1.1+1 available)
+  geolocator_linux 0.2.4 (0.2.6 available)
+  geolocator_platform_interface 4.2.8 (4.4.0 available)
+  go_router 14.8.1 (18.0.2 available)
+  gsettings 0.2.8 (0.2.9 available)
+  hooks 2.0.2 (2.2.0 available)
+  idb_shim 2.9.9 (2.9.11 available)
+  image_picker 1.2.3 (1.2.4 available)
+  image_picker_android 0.8.13+23 (0.8.13+25 available)
+  image_picker_ios 0.8.13+7 (0.8.13+9 available)
+  image_picker_platform_interface 2.11.1 (2.11.2 available)
+  intl 0.20.2 (0.20.3 available)
+  jni 1.0.0 (1.1.0 available)
+  jni_flutter 1.0.1 (1.0.4+1 available)
+  latlong2 0.9.1 (0.10.1 available)
+  lints 4.0.0 (6.1.0 available)
+  lottie 3.4.0 (3.6.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.4.1 (9.6.2 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 9.0.1 (10.2.2 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  petitparser 7.0.2 (7.1.0 available)
+  platform 3.1.6 (3.2.0 available)
+  posix 6.5.0 (6.5.2 available)
+  pub_semver 2.2.0 (2.2.1 available)
+  record_use 0.6.0 (1.1.1 available)
+  sembast 3.8.10 (3.8.11 available)
+  share_plus 11.1.0 (13.3.1 available)
+  share_plus_platform_interface 6.1.0 (7.2.0 available)
+  shared_preferences 2.5.3 (2.5.6 available)
+  shared_preferences_android 2.4.13 (2.4.28 available)
+  shared_preferences_foundation 2.5.4 (2.5.7 available)
+  shared_preferences_platform_interface 2.4.1 (2.4.2 available)
+  source_span 1.10.1 (1.10.2 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.11 (0.7.14 available)
+  uuid 4.5.3 (4.6.0 available)
+  vector_graphics 1.2.2 (1.2.3 available)
+  vector_graphics_compiler 1.2.5 (1.3.0 available)
+  vector_math 2.2.0 (2.4.3 available)
+  vm_service 14.3.1 (15.3.0 available)
+  webview_flutter_wkwebview 3.26.1 (3.27.0 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 7.0.1 (7.1.0 available)
+  yaml 3.1.3 (3.1.4 available)
+Got dependencies!
+61 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart
+00:00 +0: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +1: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +2: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +3: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +4: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +5: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +6: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +7: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +8: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +9: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +10: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +11: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content JSON pack loads and validates
+00:00 +12: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: (setUpAll)
+00:00 +12: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content CSV builder validates and generates the bundled schema
+00:00 +13: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: saved revision identity ignores save clocks but includes real changes
+00:00 +14: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts/weather_roast_content_test.dart: roast pack content CSV builder fails on invalid placeholders
+00:00 +15: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +16: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +17: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +18: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +19: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +20: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +21: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +22: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:00 +23: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +23: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at small phone
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:01 +24: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +25: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +26: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +26: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_repositories_test.dart: OpenWeatherRepository rejects invalid coordinates before backend calls
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+00:01 +27: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +27: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_repositories_test.dart: OpenWeatherRepository does not fall back for invalid forecast requests
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+[GrumpySkies] weather display location=Overland Park, Kansas, US lat=38.974 lon=-94.685
+00:01 +28: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +28: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_repositories_test.dart: OpenWeatherRepository falls back when deployed forecast route is absent
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+[GrumpySkies] weather display location=Overland Park, Kansas, US lat=38.974 lon=-94.685
+[GrumpySkies] bundled forecast unavailable; using deployed legacy weather endpoints: Weather endpoint not found.
+00:01 +29: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +29: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_repositories_test.dart: OpenWeatherRepository falls back when deployed forecast route is absent
+[GrumpySkies] Forecast repository hourly count: 1 daily count: 0
+[GrumpySkies] daily forecast issue: Weather endpoint not found.
+00:01 +30: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +31: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +31: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_repositories_test.dart: OpenWeatherRepository uses bundled hourly and daily forecast arrays
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+[GrumpySkies] weather display location=Overland Park, Kansas, US lat=38.974 lon=-94.685
+[GrumpySkies] Forecast repository hourly count: 48 daily count: 8
+00:01 +32: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +32: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_repositories_test.dart: OpenWeatherRepository throttles forced auth retries
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+[GrumpySkies] weather display location=Overland Park, Kansas, US lat=38.974 lon=-94.685
+[GrumpySkies] bundled forecast unavailable; using deployed legacy weather endpoints: OpenWeather rejected the server key for One Call API 4.0.
+00:01 +33: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +34: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +35: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +36: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +37: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +38: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +39: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_ad_content_test.dart: publisher slot follows six in a completed row at 390.0
+00:01 +40: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_components_test.dart: DmBottomNav exposes five semantic tabs
+00:01 +41: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_components_test.dart: DmBottomNav exposes five semantic tabs
+00:01 +42: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_components_test.dart: DmBottomNav exposes five semantic tabs
+00:01 +43: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_components_test.dart: DmBottomNav exposes five semantic tabs
+00:01 +43: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at small phone
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+00:01 +44: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_components_test.dart: DmBottomNav exposes five semantic tabs
+00:01 +44: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at small phone
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:01 +45: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:01 +46: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:02 +47: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:02 +48: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:02 +49: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:02 +50: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:02 +51: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart: Share to Meme passes the exact displayed roast, never a reroll
+00:02 +52: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: meme generator renders without layout exceptions at small phone
+00:02 +53: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: meme generator renders without layout exceptions at small phone
+00:02 +54: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +55: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +56: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +57: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +57: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 390x844 phone
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:02 +58: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +59: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +60: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +60: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: location and device clock changes invalidate safety; resume retains warnings
+[GrumpySkies] weather fetch failed: Offline
+[GrumpySkies] selected manual location lat=41.000 lon=-91.000 name=Other, US
+00:02 +61: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +62: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +62: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: backend preserves alert metadata and never supplies current time for absent observation
+[GrumpySkies] weather API baseUrl=https://weather.invalid emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/forecast lat=40.000 lon=-90.000
+00:02 +63: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +63: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: offline repository fallback preserves observed and fetched times and marks cached
+[GrumpySkies] weather API baseUrl=https://weather.invalid emulator=false platform=override
+[GrumpySkies] weather display location=Test City, US lat=40.000 lon=-90.000
+[GrumpySkies] weather endpoint /weather/forecast lat=40.000 lon=-90.000
+[GrumpySkies] weather request failed host=weather.invalid path=/weather/forecast: ClientException: offline
+00:02 +64: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +65: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +66: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:02 +67: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/advanced_roast_reveal_screen_test.dart: renders advanced roast reveal screen on mobile
+00:03 +67: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at 390x844 phone
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+00:03 +68: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +68: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at 390x844 phone
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:03 +69: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +70: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +71: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +72: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +73: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +74: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +75: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +76: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +77: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +78: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: future observation never appears just observed
+00:03 +79: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +80: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +80: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at large phone
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:03 +80: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: late weather from previous location cannot replace selected location
+[GrumpySkies] weather fetch started source=manual lat=40.000 lon=-90.000 name=Test City, US
+00:03 +81: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +81: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: late weather from previous location cannot replace selected location
+[GrumpySkies] selected manual location lat=41.000 lon=-91.000 name=Other City, US
+[GrumpySkies] weather fetch started source=manual lat=41.000 lon=-91.000 name=Other City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.000 lon=-91.000 name=Other City, US
+00:03 +82: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +83: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +83: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: late weather from previous location cannot replace selected location
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:03 +83: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at large phone
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:03 +84: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +85: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +86: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_summary_card_test.dart: displays animated icon for clear conditions
+00:03 +87: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: shared warning stays readable at small width and large text; details set modal gate
+00:03 +88: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: shared warning stays readable at small width and large text; details set modal gate
+00:03 +89: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: shared warning stays readable at small width and large text; details set modal gate
+00:04 +90: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: meme generator renders without layout exceptions at large phone
+00:04 +91: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: current and all forecast values convert for Celsius preference
+00:04 +92: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: settings renders without layout exceptions at large phone
+00:04 +92: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: fresh ad-like pause and resume does not request extra weather
+[GrumpySkies] weather fetch started source=manual lat=40.000 lon=-90.000 name=Test City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=40.000 lon=-90.000 name=Test City, US
+00:04 +93: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: fresh ad-like pause and resume does not request extra weather
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +94: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: fresh ad-like pause and resume does not request extra weather
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +95: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: fresh ad-like pause and resume does not request extra weather
+00:04 +96: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: (setUpAll)
+00:04 +96: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 768x1024 tablet
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:04 +96: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: old weather stays old after app resume and fresh retrieval
+[GrumpySkies] weather fetch started source=manual lat=40.000 lon=-90.000 name=Test City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=40.000 lon=-90.000 name=Test City, US
+00:04 +96: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 768x1024 tablet
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +96: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: old weather stays old after app resume and fresh retrieval
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +96: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 768x1024 tablet
+00:04 +97: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 768x1024 tablet
+00:04 +98: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: old weather stays old after app resume and fresh retrieval
+00:04 +99: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: old weather stays old after app resume and fresh retrieval
+[GrumpySkies] weather fetch started source=manual lat=40.000 lon=-90.000 name=Test City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=40.000 lon=-90.000 name=Test City, US
+00:04 +100: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: old weather stays old after app resume and fresh retrieval
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +101: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: old weather stays old after app resume and fresh retrieval
+00:04 +102: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +103: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +104: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +105: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +105: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: official warnings precede conditions and suppress comedy
+[GrumpySkies] weather fetch started source=manual lat=40.000 lon=-90.000 name=Test City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=40.000 lon=-90.000 name=Test City, US
+00:04 +106: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +107: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +108: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +109: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +110: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +110: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_trust_test.dart: official warnings precede conditions and suppress comedy
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +111: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +112: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +113: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +114: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +115: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +115: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at 768x1024 tablet
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:04 +116: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +117: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +118: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +119: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +120: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +121: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +121: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 1024x768 tablet landscape
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:04 +122: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:04 +123: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:05 +124: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:05 +124: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at 1024x768 tablet landscape
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:05 +125: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:05 +126: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_rendering_test.dart: all 15 templates render complete captions and genuine PNG images
+00:05 +127: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/about_screen_test.dart: About screen renders DayMaker content across breakpoints
+00:05 +128: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/about_screen_test.dart: About screen renders DayMaker content across breakpoints
+00:05 +129: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/about_screen_test.dart: About screen renders DayMaker content across breakpoints
+00:05 +130: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/about_screen_test.dart: About screen renders DayMaker content across breakpoints
+00:05 +131: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +132: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +132: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast renders without layout exceptions at 1440x900 desktop
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:05 +133: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +134: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +135: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +136: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +137: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +138: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +139: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +140: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +141: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +141: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar renders without layout exceptions at 1440x900 desktop
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:05 +141: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:05 +142: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:05 +142: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:06 +143: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen renders DayMaker persona roasts on mobile
+00:06 +144: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +145: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +146: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +147: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:06 +148: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +149: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +150: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +150: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: forecast tolerates large text on a small phone
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:06 +151: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +152: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +153: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen renders DayMaker dashboard at 390x844
+00:06 +154: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen shows full carousel across expanded web width
+00:06 +155: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/roasts_screen_test.dart: RoastsScreen shows full carousel across expanded web width
+00:06 +155: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen centers usable web layout at expanded width
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:06 +155: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar tolerates large text on a small phone
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+00:06 +156: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen centers usable web layout at expanded width
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:06 +156: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: radar tolerates large text on a small phone
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:06 +157: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen centers usable web layout at expanded width
+00:06 +158: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: fun tolerates large text on a small phone
+00:06 +159: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: forecast carousels render 12 hourly and 7 daily cards
+00:06 +160: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: meme generator tolerates large text on a small phone
+00:06 +161: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/responsive_layout_test.dart: meme generator tolerates large text on a small phone
+00:06 +161: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen passes selected coordinates to weather fetch
+[GrumpySkies] weather fetch started source=device lat=12.346 lon=-98.765 name=Actual Place, IL, US
+[GrumpySkies] weather fetch succeeded source=device lat=12.346 lon=-98.765 name=Actual Place, IL, US
+Forecast UI hourly count: 1
+Forecast UI daily count: 1
+00:06 +162: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen passes selected coordinates to weather fetch
+00:06 +163: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +164: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +165: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +165: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/forecast_screen_test.dart: ForecastScreen does not show raw socket errors
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch failed: Could not reach the local weather service. Make sure the Firebase emulator is running.
+00:06 +166: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +167: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +168: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +169: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +170: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:06 +171: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +172: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +173: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +174: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +175: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +176: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +177: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +178: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +179: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +180: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +181: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +182: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +183: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +184: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +185: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +186: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:07 +186: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_screen_test.dart: RadarScreen renders compact DayMaker radar shell
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+00:08 +187: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +188: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +189: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +190: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +191: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +192: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +193: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +194: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +195: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +196: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +197: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +198: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +199: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +200: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +201: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +202: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +203: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +203: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Forecast
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:08 +204: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +204: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Forecast
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:08 +204: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_screen_test.dart: RadarScreen keeps controls and alert panel available on web
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+00:08 +204: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Forecast
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:08 +205: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +206: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before reroll
+00:08 +206: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_screen_test.dart: RadarScreen defaults map to city-level zoom
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+00:09 +207: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Roasts
+00:09 +208: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Roasts
+00:09 +208: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_screen_test.dart: RadarScreen shows one clean unavailable state for tile fallback
+[GrumpySkies] weather API baseUrl=https://example.com/api emulator=false platform=override
+00:09 +209: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +209: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Radar
+[GrumpySkies] weather API baseUrl=https://us-central1-wingman-interactive-live.cloudfunctions.net/api emulator=false platform=android project=wingman-interactive-live region=us-central1
+00:09 +210: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +210: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI bottom nav appears on Radar
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/noaaFrames?lat=41.8781&lon=-87.6298 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radar/futureFrames?lat=41.8781&lon=-87.6298&hours=1 status=400 contentType=unknown bodyPreview=
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-wingman-interactive-live.cloudfunctions.net/api/radarHealth?lat=41.8781&lon=-87.6298&source=noaa_mrms&time=1791577800 status=400 contentType=unknown bodyPreview=
+00:09 +211: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +212: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +213: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +213: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI forecast screen displays sample temperature and location
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:09 +214: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +215: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +216: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +217: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +218: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +219: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +220: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +220: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI Forecast and Roasts share the selected persona
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:09 +221: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +221: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI Forecast and Roasts share the selected persona
+Forecast UI hourly count: 6
+Forecast UI daily count: 7
+00:09 +222: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +223: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +224: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:09 +225: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +226: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +227: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +228: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +229: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +230: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +231: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +232: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +233: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +234: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +235: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +236: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +237: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +238: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +239: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +239: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_location_controller_test.dart: useCurrentLocation persists device coordinates from location service
+[GrumpySkies] selected device location lat=12.346 lon=-98.765 name=Device Town, IL, US
+00:10 +240: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +241: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +242: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +243: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: reopened custom captions require confirmation before exact roast transfer
+00:10 +244: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/fun_zone_screen_test.dart: FunZoneScreen renders the compact DayMaker fun stack
+00:10 +245: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/fun_zone_screen_test.dart: FunZoneScreen renders the compact DayMaker fun stack
+00:10 +246: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/fun_zone_screen_test.dart: FunZoneScreen renders the compact DayMaker fun stack
+00:10 +247: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI meme route opens the library and edits a blank caption
+00:10 +248: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/daymaker_ui_test.dart: DayMaker app UI meme route opens the library and edits a blank caption
+00:10 +249: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: locked caption refuses both replacement actions without changing pair or weather
+00:10 +250: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: locked caption refuses both replacement actions without changing pair or weather
+00:10 +251: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: locked caption refuses both replacement actions without changing pair or weather
+00:10 +252: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_caption_replacement_test.dart: locked caption refuses both replacement actions without changing pair or weather
+00:12 +253: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: first session and quick process restart cannot show
+00:12 +254: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: requires real foreground engagement and three durable revisions
+00:12 +255: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: background and external operation time do not count as engagement
+00:12 +256: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: ordinary 30-minute inactivity starts a new session
+00:12 +257: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: duplicate documents/revisions stay deduplicated across ads and restart
+00:12 +258: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: reservation is atomic and failures consume no caps or tasks
+00:12 +259: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: only one shown callback consumes caps, which survive restart
+00:12 +260: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: three shown in rolling 24 hours blocks next session across restart
+00:12 +261: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: configuration can only tighten immutable limits
+00:12 +262: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_policy_test.dart: backward and forward runtime clock changes suppress conservatively
+00:12 +263: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: exact ten of the100 stable buckets are in the initial holdout
+00:12 +264: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: exact ten of the100 stable buckets are in the initial holdout
+00:12 +265: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: exact ten of the100 stable buckets are in the initial holdout
+00:12 +266: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: exact ten of the100 stable buckets are in the initial holdout
+00:12 +267: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: exact ten of the100 stable buckets are in the initial holdout
+00:12 +268: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: deduplicated allocation and restart preserve the original bucket
+00:12 +269: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/holdout_assignment_test.dart: no measurement permission allocates no experiment data
+00:12 +270: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_time_test.dart: FutureCast frames start at Now and advance in 10-minute steps
+00:12 +271: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_time_test.dart: FutureCast frames start at Now and advance in 10-minute steps
+00:12 +272: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/radar_time_test.dart: FutureCast frames start at Now and advance in 10-minute steps
+00:12 +273: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_coordinator_test.dart: duplicate preloads issue one request; loaded is never shown or an impression
+00:12 +274: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_coordinator_test.dart: missing inventory continues immediately and late load is disposed
+00:12 +275: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_coordinator_test.dart: double taps and overlapping callbacks show once and continue once
+00:12 +276: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_coordinator_test.dart: failure releases reservation and preserves task count and caps
+00:12 +277: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: (setUpAll)
+00:12 +278: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: (setUpAll)
+00:12 +279: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: (setUpAll)
+00:12 +280: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: (setUpAll)
+00:12 +281: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: (setUpAll)
+00:12 +281: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/monetization/interstitial_coordinator_test.dart: location/consent changes during a load discard its callback
+00:12 +282: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:12 +283: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:12 +284: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +285: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +286: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +287: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +288: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +289: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +290: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: only a received image result enables explicit Done once
+00:13 +291: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: failed or denied image transfer never enables Done
+00:13 +292: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: failed or denied image transfer never enables Done
+00:13 +293: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: failed or denied image transfer never enables Done
+00:13 +294: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: failed or denied image transfer never enables Done
+00:13 +295: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: failed or denied image transfer never enables Done
+00:13 +296: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: failed or denied image transfer never enables Done
+00:13 +296: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient maps normalized One Call 4.0 current DTO fields
+[GrumpySkies] weather API baseUrl=https://example.test/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/current lat=38.867 lon=-94.652
+00:13 +297: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient maps normalized One Call 4.0 current DTO fields
+00:13 +298: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +298: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient maps bundled forecast hourly and daily DTO arrays
+[GrumpySkies] weather API baseUrl=https://example.test/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/forecast lat=38.867 lon=-94.652
+00:13 +299: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +299: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient maps One Call 4.0 hourly and daily timeline data arrays
+[GrumpySkies] weather API baseUrl=https://example.test/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/forecast lat=38.867 lon=-94.652
+00:13 +300: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +300: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient maps forecast timeline errors without hiding current weather
+[GrumpySkies] weather API baseUrl=https://example.test/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/forecast lat=38.867 lon=-94.652
+00:13 +301: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +301: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient does not expose raw socket exceptions to callers
+[GrumpySkies] weather API baseUrl=http://10.0.2.2:5001/wingman-interactive-live/us-central1/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/current lat=1.000 lon=2.000
+[GrumpySkies] weather request failed host=10.0.2.2 path=/wingman-interactive-live/us-central1/api/weather/current: ClientException: SocketConnection refused, address = 127.0.0.1, port = 5001
+00:13 +302: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +303: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +303: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient preserves safe backend error codes
+[GrumpySkies] weather API baseUrl=https://example.test/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/current lat=38.974 lon=-94.685
+00:13 +304: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +305: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +305: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient does not decode HTML backend responses as JSON
+[GrumpySkies] weather API baseUrl=https://us-central1-grumpy-skies.cloudfunctions.net/api emulator=false platform=override
+[GrumpySkies] weather endpoint /weather/current lat=38.974 lon=-94.685
+00:13 +306: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +306: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/weather_api_config_test.dart: OpenWeatherBackendClient does not decode HTML backend responses as JSON
+[GrumpySkies] weather backend returned non-JSON url=https://us-central1-grumpy-skies.cloudfunctions.net/api/weather/current?lat=38.974&lon=-94.685&units=imperial status=404 contentType=text/html; charset=UTF-8 bodyPreview=<html><head><title>404 Page not found</title></head></html>
+00:13 +307: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +308: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +309: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +310: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +311: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +312: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_export_preview_test.dart: PNG saves while the independent project backup is pending
+00:13 +313: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:13 +314: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:13 +315: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:13 +316: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:13 +317: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:13 +318: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:13 +319: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/settings_screen_test.dart: Fahrenheit/Celsius selector updates settings state
+00:14 +320: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 320px
+00:14 +321: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 320px
+00:14 +322: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 320px
+00:14 +323: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 320px
+00:15 +324: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 390px
+00:15 +325: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 430px
+00:16 +326: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 768px
+00:17 +327: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: library and template editor work at 1280px
+00:17 +328: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: same studio route removes publisher ad before editing a saved meme
+00:18 +329: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: phone landscape and a keyboard-open tool sheet remain editable
+00:19 +330: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: caption case, line breaks, undo and restart preserve a draft
+00:20 +331: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: favorites, search and empty My Memes are real local state
+00:21 +332: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: large text, reduced motion and keyboard leave captions usable
+00:22 +333: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: exact source snapshot enters editor without synthetic roast text
+00:22 +334: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: explicit completed Done dismisses result and reaches Fun once
+00:24 +335: /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_generator_screen_test.dart: export preview saves actual PNG and reports share cancellation
+00:26 +336: All tests passed!

@@ -1,9 +1,12 @@
 import 'forecast_temperature.dart';
 import 'package:flutter/material.dart';
+import 'package:weather_icons_animated/weather_icons_animated.dart';
 
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
+import '../../../design/dm_theme.dart';
+import '../../../shared/widgets/dm_approved_components.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 
@@ -32,43 +35,89 @@ class ForecastDailyGrid extends StatelessWidget {
       referenceTime ?? DateTime.now(),
       timezoneOffset,
     );
-    final child = days.isEmpty
-        ? _EmptyDailyState(message: errorMessage)
-        : ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: DMSpacing.xs),
-            clipBehavior: Clip.none,
-            itemCount: days.length,
-            separatorBuilder: (_, __) => const SizedBox(width: DMSpacing.sm),
-            itemBuilder: (context, index) {
-              return SizedBox(
-                width: 128,
-                child: _DailyTile(
-                  day: days[index],
-                  label: _dayLabel(
-                    days[index].date,
-                    referenceTime ?? DateTime.now(),
-                    timezoneOffset,
-                  ),
-                  sunrise: sunrise,
-                  sunset: sunset,
-                ),
-              );
-            },
-          );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DmSectionHeader(title: '7-day forecast'),
-        const SizedBox(height: DMSpacing.sm),
-        SizedBox(
-          height: 184,
-          child: child,
-        ),
-      ],
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      DmApprovedSectionHeader(
+          title:
+              days.isEmpty ? 'Daily forecast' : '${days.length}-day forecast',
+          onAction: days.isEmpty
+              ? null
+              : () => showModalBottomSheet<void>(
+                  context: context,
+                  showDragHandle: true,
+                  builder: (ctx) => SafeArea(
+                          child: ListView(children: [
+                        for (final day in days)
+                          ListTile(
+                              title: Text(_dayLabel(
+                                  day.date,
+                                  referenceTime ?? DateTime.now(),
+                                  timezoneOffset)),
+                              subtitle: Text(day.condition),
+                              trailing: Text(
+                                  '${forecastTemperature(day.maxTempC, forecastTemperatureUnit(context))} / ${forecastTemperature(day.minTempC, forecastTemperatureUnit(context))}'))
+                      ])))),
+      if (days.isEmpty)
+        _EmptyDailyState(message: errorMessage)
+      else
+        Container(
+            decoration: BoxDecoration(
+                color: context.dmColors.surface,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: context.dmColors.border)),
+            child: Column(children: [
+              for (var i = 0; i < days.length; i++) ...[
+                if (i > 0) Divider(height: 1, color: context.dmColors.divider),
+                Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                    child: Row(children: [
+                      Expanded(
+                          flex: 3,
+                          child: Text(
+                              _dayLabel(
+                                  days[i].date,
+                                  referenceTime ?? DateTime.now(),
+                                  timezoneOffset),
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w600))),
+                      Expanded(
+                          flex: 3,
+                          child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: DaymakerWeatherIcon(
+                                  style: WeatherIconStyle.line,
+                                  color: days[i].weatherId == 800
+                                      ? null
+                                      : context.dmColors.textSecondary,
+                                  conditionId: days[i].weatherId,
+                                  openWeatherIconCode: days[i].weatherIcon,
+                                  conditionMain: days[i].weatherMain,
+                                  conditionDescription: days[i].condition,
+                                  forecastTime: DateTime(days[i].date.year,
+                                      days[i].date.month, days[i].date.day, 12),
+                                  size: 23,
+                                  semanticLabel: days[i].condition))),
+                      Expanded(
+                          flex: 2,
+                          child: Text(
+                              forecastTemperature(days[i].maxTempC,
+                                  forecastTemperatureUnit(context)),
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w800))),
+                      Expanded(
+                          flex: 2,
+                          child: Text(
+                              forecastTemperature(days[i].minTempC,
+                                  forecastTemperatureUnit(context)),
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: context.dmColors.textSecondary))),
+                    ])),
+              ],
+            ])),
+    ]);
   }
 
   static List<DailyForecast> _visibleDays(
@@ -94,7 +143,6 @@ class ForecastDailyGrid extends StatelessWidget {
     final forecastDate = _calendarDate(date);
     final dayOffset = forecastDate.difference(today).inDays;
     if (dayOffset == 0) return 'Today';
-    if (dayOffset == 1) return 'Tomorrow';
     return _weekday(forecastDate);
   }
 
@@ -114,13 +162,13 @@ class ForecastDailyGrid extends StatelessWidget {
 
   static String _weekday(DateTime date) {
     const labels = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
     ];
     return labels[date.weekday - 1];
   }
@@ -147,71 +195,6 @@ class _EmptyDailyState extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DailyTile extends StatelessWidget {
-  const _DailyTile({
-    required this.day,
-    required this.label,
-    this.sunrise,
-    this.sunset,
-  });
-
-  final DailyForecast day;
-  final String label;
-  final DateTime? sunrise;
-  final DateTime? sunset;
-
-  @override
-  Widget build(BuildContext context) {
-    return DmGlassCard(
-      padding: const EdgeInsets.all(DMSpacing.sm),
-      borderRadius: DMRadius.large,
-      shadows: const [],
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DMTypography.labelLarge,
-          ),
-          const SizedBox(height: DMSpacing.sm),
-          DaymakerWeatherIcon(
-            conditionId: day.weatherId,
-            openWeatherIconCode: day.weatherIcon,
-            conditionMain: day.weatherMain,
-            conditionDescription: day.condition,
-            forecastTime:
-                DateTime(day.date.year, day.date.month, day.date.day, 12),
-            sunrise: sunrise,
-            sunset: sunset,
-            size: 30,
-            semanticLabel: day.condition,
-          ),
-          const SizedBox(height: DMSpacing.xs),
-          Text(
-            '${forecastTemperature(day.maxTempC, forecastTemperatureUnit(context))} / ${forecastTemperature(day.minTempC, forecastTemperatureUnit(context))}',
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DMTypography.labelLarge,
-          ),
-          const SizedBox(height: DMSpacing.xxs),
-          Text(
-            day.condition,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: DMTypography.bodySmall,
-          ),
-        ],
       ),
     );
   }

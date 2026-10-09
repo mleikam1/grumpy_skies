@@ -1,3 +1,5 @@
+import 'app_appearance.dart';
+export 'app_appearance.dart';
 import 'temperature_unit.dart';
 
 class WeatherSnapshot {
@@ -366,6 +368,7 @@ class RadarAlert {
 }
 
 class UserSettings {
+  final AppAppearance appearance;
   final TemperatureUnit temperatureUnit;
   final String selectedPersonaId;
   final bool notificationsEnabled;
@@ -375,6 +378,7 @@ class UserSettings {
   final int streakDays;
 
   const UserSettings({
+    this.appearance = AppAppearance.light,
     required this.temperatureUnit,
     required this.selectedPersonaId,
     required this.notificationsEnabled,
@@ -385,6 +389,7 @@ class UserSettings {
   });
 
   UserSettings copyWith({
+    AppAppearance? appearance,
     TemperatureUnit? temperatureUnit,
     String? selectedPersonaId,
     bool? notificationsEnabled,
@@ -394,6 +399,7 @@ class UserSettings {
     int? streakDays,
   }) {
     return UserSettings(
+      appearance: appearance ?? this.appearance,
       temperatureUnit: temperatureUnit ?? this.temperatureUnit,
       selectedPersonaId: selectedPersonaId ?? this.selectedPersonaId,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,

@@ -1,6 +1,6 @@
+import '../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
-import '../../design/dm_colors.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
 import 'dm_buttons.dart';
@@ -33,7 +33,7 @@ class DmHeaderBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: Colors.transparent,
-      foregroundColor: DMColors.textPrimary,
+      foregroundColor: context.dmColors.textPrimary,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,

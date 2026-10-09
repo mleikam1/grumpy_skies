@@ -49,7 +49,11 @@ final daymakerRouter = GoRouter(
             GoRoute(
               path: 'reveal',
               name: 'roastReveal',
-              builder: (context, state) => const AdvancedRoastRevealScreen(),
+              builder: (context, state) => AdvancedRoastRevealScreen(
+                initialRoast: state.extra is DisplayedRoastSnapshot
+                    ? state.extra as DisplayedRoastSnapshot
+                    : null,
+              ),
             ),
           ],
         ),
@@ -67,6 +71,8 @@ final daymakerRouter = GoRouter(
               path: 'meme',
               name: 'memeGenerator',
               builder: (context, state) => MemeGeneratorScreen(
+                initialTemplateId: state.uri.queryParameters['template'],
+                initialDocumentId: state.uri.queryParameters['document'],
                 initialRoast: state.extra is DisplayedRoastSnapshot
                     ? state.extra as DisplayedRoastSnapshot
                     : null,

@@ -594,6 +594,8 @@ String? validateMemeAssetRef(Object? value) {
     throw const FormatException('Invalid asset reference.');
   }
   if (RegExp(r'^media:[a-zA-Z0-9_-]{1,160}$').hasMatch(value) ||
+      RegExp(r'^assets/approved_v1/(weather|memes)/[a-z0-9_]+\.png$')
+          .hasMatch(value) ||
       RegExp(r'^assets/meme_(backgrounds|thumbnails|stickers)/[a-z0-9_]+\.(webp|png)$')
           .hasMatch(value)) {
     return value;

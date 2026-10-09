@@ -1,6 +1,6 @@
+import '../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
-import '../../design/dm_colors.dart';
 import '../../design/dm_gradients.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_spacing.dart';
@@ -96,7 +96,7 @@ class DmAssetImage extends StatelessWidget {
         child: Center(
           child: Icon(
             placeholderIcon,
-            color: DMColors.textSecondary,
+            color: context.dmColors.textSecondary,
             size: DMSpacing.iconLg,
           ),
         ),

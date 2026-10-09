@@ -260,13 +260,17 @@ void main() {
   });
 
   testWidgets('future observation never appears just observed', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-        theme: DMTheme.light,
-        home: Scaffold(
-            body: ForecastCurrentWeatherCard(
-                weather: _weather(observedAt: _now.add(const Duration(days: 1)))
-                    .current,
-                now: _now))));
+    final repository = _BundleRepository(
+        _weather(observedAt: _now.add(const Duration(days: 1))));
+    final controller = WeatherLocationController(
+        repository: repository, initialLocation: _location, clock: () => _now);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(ChangeNotifierProvider.value(
+        value: controller,
+        child: MaterialApp(
+            theme: DMTheme.light,
+            home: ForecastScreen(
+                weatherRepository: repository, clock: () => _now))));
     await tester.pumpAndSettle();
     expect(find.text('Observation timestamp is ahead of device clock'),
         findsOneWidget);
@@ -398,16 +402,18 @@ void main() {
               ], referenceTime: _now),
             ]))))));
     await tester.pumpAndSettle();
-    expect(find.text('22°C'), findsOneWidget);
+    expect(find.text('22°'), findsOneWidget);
     expect(find.text('23°'), findsWidgets);
     expect(find.text('10°'), findsOneWidget);
-    expect(find.text('20° / 5°'), findsOneWidget);
-    expect(find.text('72°F'), findsNothing);
+    expect(find.text('20°'), findsOneWidget);
+    expect(find.text('5°'), findsOneWidget);
+    expect(find.text('72°'), findsNothing);
     settings.setTemperatureUnit(TemperatureUnit.fahrenheit);
     await tester.pumpAndSettle();
-    expect(find.text('72°F'), findsOneWidget);
+    expect(find.text('72°'), findsOneWidget);
     expect(find.text('50°'), findsOneWidget);
-    expect(find.text('68° / 41°'), findsOneWidget);
+    expect(find.text('68°'), findsOneWidget);
+    expect(find.text('41°'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

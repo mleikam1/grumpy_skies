@@ -5,6 +5,7 @@ import '../../design/dm_motion.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
+import '../../design/dm_theme.dart';
 
 class DmSegment<T> {
   const DmSegment({
@@ -48,19 +49,22 @@ class DmSegmentedControl<T> extends StatelessWidget {
         ),
     ];
 
-    final row = Row(
-      mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
-      children: [
-        for (final child in children)
-          if (expanded) Expanded(child: child) else child,
-      ],
-    );
+    final row = MediaQuery.textScalerOf(context).scale(14) > 21
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch, children: children)
+        : Row(
+            mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+            children: [
+              for (final child in children)
+                if (expanded) Expanded(child: child) else child,
+            ],
+          );
 
     final control = DecoratedBox(
       decoration: BoxDecoration(
-        color: DMColors.glass,
+        color: context.dmColors.surfaceSecondary,
         borderRadius: DMRadius.full,
-        border: Border.all(color: DMColors.glassBorder),
+        border: Border.all(color: context.dmColors.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(DMSpacing.xxs),
@@ -105,7 +109,7 @@ class _DmSegmentTileState<T> extends State<_DmSegmentTile<T>> {
   Widget build(BuildContext context) {
     final duration = DMMotion.resolve(context, DMMotion.fast);
     final foreground =
-        widget.selected ? DMColors.deepNavy : DMColors.textSecondary;
+        widget.selected ? DMColors.deepNavy : context.dmColors.textSecondary;
     final background =
         widget.selected ? DMColors.sunriseYellow : Colors.transparent;
 
@@ -114,7 +118,7 @@ class _DmSegmentTileState<T> extends State<_DmSegmentTile<T>> {
       curve: DMMotion.easeOut,
       constraints: const BoxConstraints(minHeight: DMSpacing.tapTarget),
       padding: const EdgeInsets.symmetric(
-        horizontal: DMSpacing.md,
+        horizontal: 8,
         vertical: DMSpacing.xs,
       ),
       decoration: BoxDecoration(
@@ -139,8 +143,6 @@ class _DmSegmentTileState<T> extends State<_DmSegmentTile<T>> {
           Flexible(
             child: Text(
               widget.segment.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: DMTypography.label.copyWith(color: foreground),
             ),
           ),

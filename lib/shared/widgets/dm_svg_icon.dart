@@ -1,7 +1,7 @@
+import '../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../design/dm_colors.dart';
 import '../../design/dm_spacing.dart';
 
 class DmSvgIcon extends StatelessWidget {
@@ -44,7 +44,7 @@ class DmSvgIcon extends StatelessWidget {
 
   Widget _svgVisual(BuildContext context, String path) {
     final iconColor =
-        color ?? IconTheme.of(context).color ?? DMColors.textPrimary;
+        color ?? IconTheme.of(context).color ?? context.dmColors.textPrimary;
     return SvgPicture.asset(
       path,
       width: size,
@@ -61,7 +61,8 @@ class DmSvgIcon extends StatelessWidget {
     return Icon(
       fallbackIcon,
       size: size,
-      color: color ?? IconTheme.of(context).color ?? DMColors.textPrimary,
+      color:
+          color ?? IconTheme.of(context).color ?? context.dmColors.textPrimary,
     );
   }
 }

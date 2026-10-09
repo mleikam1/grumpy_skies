@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -45,7 +46,7 @@ class RoastHistoryList extends StatelessWidget {
           for (var index = 0; index < actualRoasts.length; index++) ...[
             DmGlassCard(
               gradient: DMGradients.glassNavy,
-              borderColor: DMColors.glassBorder,
+              borderColor: context.dmColors.glassBorder,
               padding: EdgeInsets.zero,
               child: _HistoryRow(
                 roast: actualRoasts[index],
@@ -64,7 +65,7 @@ class RoastHistoryList extends StatelessWidget {
         else
           DmGlassCard(
             gradient: DMGradients.glassNavy,
-            borderColor: DMColors.glassBorder,
+            borderColor: context.dmColors.glassBorder,
             padding: EdgeInsets.zero,
             child: roasts.isEmpty
                 ? const _EmptyHistory()
@@ -77,9 +78,9 @@ class RoastHistoryList extends StatelessWidget {
                           onShare: () => onShareRoast(roasts[index]),
                         ),
                         if (index != roasts.length - 1)
-                          const Divider(
+                          Divider(
                             height: 1,
-                            color: DMColors.divider,
+                            color: context.dmColors.divider,
                           ),
                       ],
                     ],

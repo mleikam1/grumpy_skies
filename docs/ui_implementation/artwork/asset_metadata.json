@@ -1,0 +1,219 @@
+[
+  {
+    "path": "assets/approved_v1/personas/karen_portrait.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a1225d-f955-77e3-ad55-1c67bd85a339/exec-d9aa1117-bc84-4d2c-867a-1bb592a8732b.png",
+    "reference": "characters/light_karen_portrait_context.png",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "285af5738fa04e8ae0c233c25408a0a78d0f4f1a354d8ed0141938aba632a435",
+    "intended_max_logical_slot": [
+      160,
+      220
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/personas/frat_bro_portrait.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-c2061035-876a-4c4c-83c2-7173b55cf69c.png",
+    "reference": "characters/light_frat_bro_avatar.png",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "6c085089faf0534cf832d586b4481de5cce6e90ac6e9419502856954315f3b3b",
+    "intended_max_logical_slot": [
+      160,
+      220
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/personas/politician_portrait.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-b1860732-a766-42fc-a022-e693f3cf4ea2.png",
+    "reference": "characters/light_politician_avatar.png",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "10bd5c550bb7946f6fc5375adbc9b730072c261825b3a540d793bc83c49dd204",
+    "intended_max_logical_slot": [
+      160,
+      220
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/personas/grandpa_portrait.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a1225d-f955-77e3-ad55-1c67bd85a339/exec-ac2392cc-4f63-4ed5-9d1d-d6f80612dafa.png",
+    "reference": "characters/light_grandpa_portrait_context.png",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "f6c05c580dc96871aaf0b5c9061f6cd0691f43c444b245c0712c7b4ad844bcd5",
+    "intended_max_logical_slot": [
+      160,
+      220
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/personas/two_year_old_portrait.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-de4147ba-6bc2-48f3-a6e7-20f945eecb98.png",
+    "reference": "characters/light_two_year_old_avatar.png",
+    "width": 1086,
+    "height": 1448,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "eb69d9d3699bc57c62aca73a1242cf0093305d41d10bdfcbe238155ccfbcc337",
+    "intended_max_logical_slot": [
+      160,
+      220
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/weather/sun_grumpy_cloud.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-d08a10aa-9b89-4c4b-a048-64e0a98c931e.png",
+    "reference": "artwork/light_weather_hero.png",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "a8f9d78489119b98604d77ba33b92bbb6a473696011dfc5021abc9c051a545ae",
+    "intended_max_logical_slot": [
+      200,
+      200
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/weather/sunglasses_cloud.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-0d4b77c2-5aaa-4881-ad36-5eac757124b1.png",
+    "reference": "artwork/light_fun_cloud.png",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "da0caf2b64cc4a1943800886e61604474a845c6164f07da0c9c2aec1ef636eae",
+    "intended_max_logical_slot": [
+      190,
+      190
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/weather/sun_sunglasses.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-f96300b3-b5e4-47fd-9b81-6f5fda644b05.png",
+    "reference": "artwork/light_sun_template.png",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "860a25f6350d1f06e9feab15d0c4eb3ab75c84bd0da3b27472fe4a0422007fe8",
+    "intended_max_logical_slot": [
+      90,
+      90
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/weather/coffee_cloud.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-2a289a21-346b-4d7b-97c4-ebd16a03bb57.png",
+    "reference": "artwork/light_coffee_cloud_template.png",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "5c4009af0f2e9ce8ff5335f645cc2da6c5911de5ec0a1104e2f660cf69855ab3",
+    "intended_max_logical_slot": [
+      90,
+      90
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/weather/storm_cloud.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-81ddf2f6-0675-4ee1-bb58-de601a9506ac.png",
+    "reference": "artwork/light_storm_cloud_template.png",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "3448abcd7347079c3acbd08f9d765c8580443a807267fd6cb501a9b69fa9f682",
+    "intended_max_logical_slot": [
+      90,
+      90
+    ],
+    "status": "review_required_alpha_edges"
+  },
+  {
+    "path": "assets/approved_v1/memes/beach_sun_background.png",
+    "classification": "reconstructed",
+    "tool": "builtin image_gen",
+    "source_generated_image": "~/.codex/generated_images/01a12278-8cdc-72e2-a6e9-dd23b17c6079/exec-20fb5ea1-6d67-4e2b-b56f-e847bca78436.png",
+    "reference": "components/light_fun_featured_meme.png",
+    "width": 2172,
+    "height": 724,
+    "mode": "RGB",
+    "alpha_range": null,
+    "sha256": "a6e881a0b8dc1dd05d3f312633dc3a2c4f2601523da726e38cc476409d451f7c",
+    "intended_max_logical_slot": [
+      350,
+      117
+    ],
+    "status": "textless_reconstruction"
+  }
+]

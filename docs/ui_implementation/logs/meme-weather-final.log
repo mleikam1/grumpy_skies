@@ -1,0 +1,12 @@
+00:00 +0: loading /Users/MattLeikam/Documents/Codex/2026-09-17/files-pasted-by-the-user-work/outputs/grumpy_skies/test/meme_weather_test.dart
+00:00 +0: freezes units, actual observation age, timezone and city opt-in
+00:00 +1: missing timezone or token values do not invent facts
+00:00 +2: cache-only adapter handles cache miss/corruption with no API traffic
+00:00 +3: source registry preserves exact case, lines, emoji and canonical persona
+00:00 +4: today suggestions require signals and never infer special phenomena
+00:00 +5: persona suggestions preserve pairs and exhaust fresh jokes first
+00:00 +6: persisted exhausted caption deck continues oldest-first after restart
+00:00 +7: Share to Meme passes the exact displayed roast, never a reroll
+[GrumpySkies] weather fetch started source=manual lat=41.878 lon=-87.630 name=Demo City, US
+[GrumpySkies] weather fetch succeeded source=manual lat=41.878 lon=-87.630 name=Demo City, US
+00:01 +8: All tests passed!

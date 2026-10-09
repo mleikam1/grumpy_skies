@@ -1,0 +1,24 @@
+{
+  "reference": "docs/daymaker_exact_ui/references/screens/light_today_ui.png",
+  "candidate": "docs/ui_implementation/screenshots/fixture/light_today.png",
+  "reference_box": [
+    0,
+    0,
+    340,
+    811
+  ],
+  "candidate_box": null,
+  "comparison_size": [
+    340,
+    811
+  ],
+  "original_candidate_crop_size": [
+    780,
+    1860
+  ],
+  "uniform_resampling_used": true,
+  "alpha_composited_on": "white",
+  "mean_absolute_channel_error_0_to_255": 23.7405,
+  "fraction_pixels_max_channel_error_above_16": 0.286175,
+  "interpretation": "Diagnostic only. No automatic design-acceptance score. Inspect layout, typography, assets and state. Concept boards are generated rasters, not original Flutter goldens. Uniform resampling may affect pixels."
+}

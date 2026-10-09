@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -22,6 +23,7 @@ class OpenWeatherRadarMap extends StatefulWidget {
     required this.frame,
     this.previousFrame,
     this.onTileIssue,
+    this.tileProvider,
   });
 
   final OpenWeatherBackendClient client;
@@ -31,6 +33,7 @@ class OpenWeatherRadarMap extends StatefulWidget {
   final RadarFrame frame;
   final RadarFrame? previousFrame;
   final ValueChanged<String?>? onTileIssue;
+  final TileProvider? tileProvider;
 
   @override
   State<OpenWeatherRadarMap> createState() => _OpenWeatherRadarMapState();
@@ -130,6 +133,7 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
       ),
       children: [
         TileLayer(
+          tileProvider: widget.tileProvider,
           urlTemplate:
               'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.grumpy_skies',
@@ -191,6 +195,7 @@ class _OpenWeatherRadarMapState extends State<OpenWeatherRadarMap> {
     final nativeMaxZoom = frame.source == 'noaa_mrms' ? 12 : 7;
 
     return TileLayer(
+      tileProvider: widget.tileProvider,
       key: ValueKey('radar-${frame.source}-${frame.timestamp}'),
       urlTemplate: radarTemplate,
       userAgentPackageName: 'com.example.grumpy_skies',
@@ -251,7 +256,7 @@ class _MapAttribution extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: DMColors.opacity(DMColors.deepNavy, 0.72),
+        color: context.dmColors.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
@@ -262,7 +267,7 @@ class _MapAttribution extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: DMColors.textSecondary,
+                color: context.dmColors.textSecondary,
               ),
         ),
       ),

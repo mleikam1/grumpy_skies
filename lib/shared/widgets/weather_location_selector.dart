@@ -1,3 +1,4 @@
+import '../../design/dm_theme.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -165,7 +166,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
 
     return DmGlassCard(
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -190,7 +191,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
           Text(
             'Grumpy Skies needs your location to show your local forecast, radar, alerts, and weather roasts.',
             style: DMTypography.body.copyWith(
-              color: DMColors.textSecondary,
+              color: context.dmColors.textSecondary,
             ),
           ),
           const SizedBox(height: DMSpacing.md),
@@ -266,7 +267,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
                 decoration: BoxDecoration(
                   color: DMColors.opacity(DMColors.cloudWhite, 0.07),
                   borderRadius: DMRadius.large,
-                  border: Border.all(color: DMColors.outlineVariant),
+                  border: Border.all(color: context.dmColors.outlineVariant),
                 ),
                 child: Column(
                   children: [
@@ -368,7 +369,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
     };
   }
 
-  static Color _statusColor(LocationSelectionStatus status) {
+  Color _statusColor(LocationSelectionStatus status) {
     return switch (status) {
       LocationSelectionStatus.permissionGranted ||
       LocationSelectionStatus.weatherLoaded =>
@@ -380,7 +381,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
       LocationSelectionStatus.locationError ||
       LocationSelectionStatus.weatherError =>
         DMColors.sunriseYellow,
-      _ => DMColors.textMuted,
+      _ => context.dmColors.textMuted,
     };
   }
 }
@@ -415,7 +416,7 @@ class _SearchField extends StatelessWidget {
       focusNode: focusNode,
       textInputAction: TextInputAction.search,
       textCapitalization: textCapitalization,
-      style: DMTypography.body.copyWith(color: DMColors.textPrimary),
+      style: DMTypography.body.copyWith(color: context.dmColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -478,8 +479,8 @@ class _LocationResultTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: showDivider
-                ? const Border(
-                    bottom: BorderSide(color: DMColors.outlineVariant),
+                ? Border(
+                    bottom: BorderSide(color: context.dmColors.outlineVariant),
                   )
                 : null,
           ),
@@ -504,9 +505,9 @@ class _LocationResultTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: DMSpacing.sm),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: DMColors.textMuted,
+                  color: context.dmColors.textMuted,
                 ),
               ],
             ),

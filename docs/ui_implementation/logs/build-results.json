@@ -1,0 +1,43 @@
+[
+  {
+    "target": "web",
+    "command": [
+      "flutter",
+      "build",
+      "web",
+      "--release",
+      "--no-pub"
+    ],
+    "started_utc": "2026-10-09T21:25:03.832972+00:00",
+    "finished_utc": "2026-10-09T21:25:38.698885+00:00",
+    "exit_code": 0
+  },
+  {
+    "target": "android",
+    "command": [
+      "flutter",
+      "build",
+      "apk",
+      "--debug",
+      "--no-pub"
+    ],
+    "started_utc": "2026-10-09T21:25:38.699602+00:00",
+    "finished_utc": "2026-10-09T21:25:58.592769+00:00",
+    "exit_code": 0
+  },
+  {
+    "target": "ios-simulator",
+    "command": [
+      "flutter",
+      "build",
+      "ios",
+      "--simulator",
+      "--debug",
+      "--no-codesign",
+      "--no-pub"
+    ],
+    "started_utc": "2026-10-09T21:25:58.593578+00:00",
+    "finished_utc": "2026-10-09T21:26:38.142744+00:00",
+    "exit_code": 0
+  }
+]

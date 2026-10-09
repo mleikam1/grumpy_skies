@@ -1,0 +1,89 @@
+{
+  "note": "Solid token pairs only; gradient/image/focus and actual rendered UI require separate testing.",
+  "pairs": [
+    {
+      "theme": "light",
+      "foreground": "textPrimary",
+      "background": "appBackground",
+      "ratio": 15.95,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 6.19,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textMuted",
+      "background": "surface",
+      "ratio": 5.52,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "light",
+      "foreground": "onPrimary",
+      "background": "primary",
+      "ratio": 12.29,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "light",
+      "foreground": "promoText",
+      "background": "promoSurface",
+      "ratio": 13.28,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "light",
+      "foreground": "onPromoAction",
+      "background": "promoAction",
+      "ratio": 15.5,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textPrimary",
+      "background": "appBackground",
+      "ratio": 17.06,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 9.6,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textMuted",
+      "background": "surface",
+      "ratio": 8.0,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "onPrimary",
+      "background": "primary",
+      "ratio": 12.29,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "promoText",
+      "background": "promoSurface",
+      "ratio": 14.57,
+      "atLeast4_5": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "onPromoAction",
+      "background": "promoAction",
+      "ratio": 12.29,
+      "atLeast4_5": true
+    }
+  ]
+}

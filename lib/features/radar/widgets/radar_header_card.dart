@@ -1,3 +1,4 @@
+import '../../../design/dm_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_colors.dart';
@@ -26,7 +27,7 @@ class RadarHeaderCard extends StatelessWidget {
     return DmGlassCard(
       padding: const EdgeInsets.all(DMSpacing.lg),
       gradient: DMGradients.glassNavy,
-      borderColor: DMColors.glassBorderStrong,
+      borderColor: context.dmColors.glassBorderStrong,
       semanticLabel: 'Radar, $locationName, $modeLabel, $timeLabel',
       child: Row(
         children: [
@@ -110,7 +111,7 @@ class _RadarBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: DMColors.opacity(DMColors.cloudWhite, 0.08),
         borderRadius: DMRadius.full,
-        border: Border.all(color: DMColors.outlineVariant),
+        border: Border.all(color: context.dmColors.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -122,7 +123,7 @@ class _RadarBadge extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: DMTypography.labelSmall.copyWith(
-            color: DMColors.textSecondary,
+            color: context.dmColors.textSecondary,
           ),
         ),
       ),

@@ -1,0 +1,86 @@
+ M ASSET_MANIFEST.md
+ M assets/meme_content/weather_meme_catalog.v1.json
+ M lib/app/daymaker_app.dart
+ M lib/app/daymaker_router.dart
+ M lib/app/daymaker_shell.dart
+ M lib/design/dm_theme.dart
+ M lib/design/dm_typography.dart
+ M lib/features/forecast/forecast_screen.dart
+ M lib/features/forecast/widgets/forecast_current_weather_card.dart
+ M lib/features/forecast/widgets/forecast_daily_grid.dart
+ M lib/features/forecast/widgets/forecast_header.dart
+ M lib/features/forecast/widgets/forecast_hero_atmosphere.dart
+ M lib/features/forecast/widgets/forecast_hourly_strip.dart
+ M lib/features/forecast/widgets/forecast_roast_card.dart
+ M lib/features/fun/fun_zone_screen.dart
+ M lib/features/fun/meme/meme_studio.dart
+ M lib/features/fun/meme/models/meme_document.dart
+ M lib/features/fun/meme/widgets/meme_inspector.dart
+ M lib/features/fun/meme/widgets/meme_library.dart
+ M lib/features/fun/meme_generator_screen.dart
+ M lib/features/fun/widgets/fun_feature_tile.dart
+ M lib/features/radar/radar_screen.dart
+ M lib/features/radar/widgets/open_weather_radar_map.dart
+ M lib/features/radar/widgets/radar_alert_cards.dart
+ M lib/features/radar/widgets/radar_header_card.dart
+ M lib/features/radar/widgets/radar_timeline_scrubber.dart
+ M lib/features/roasts/advanced_roast_reveal_screen.dart
+ M lib/features/roasts/roasts_screen.dart
+ M lib/features/roasts/widgets/advanced_roast_personas_row.dart
+ M lib/features/roasts/widgets/advanced_roast_reveal_card.dart
+ M lib/features/roasts/widgets/daymaker_persona_carousel.dart
+ M lib/features/roasts/widgets/dm_achievement_badge.dart
+ M lib/features/roasts/widgets/featured_roast_card.dart
+ M lib/features/roasts/widgets/persona_avatar.dart
+ M lib/features/roasts/widgets/roast_cooldown_card.dart
+ M lib/features/roasts/widgets/roast_history_list.dart
+ M lib/features/settings/about_screen.dart
+ M lib/features/settings/settings_screen.dart
+ M lib/features/settings/widgets/dm_settings_row.dart
+ M lib/features/splash/splash_screen.dart
+ M lib/main.dart
+ M lib/models/daymaker_models.dart
+ M lib/repositories/shared_preferences_settings_repository.dart
+ M lib/services/settings_controller.dart
+ M lib/services/weather_location_controller.dart
+ M lib/shared/assets/dm_assets.dart
+ M lib/shared/widgets/dm_app_background.dart
+ M lib/shared/widgets/dm_asset_image.dart
+ M lib/shared/widgets/dm_bottom_nav.dart
+ M lib/shared/widgets/dm_buttons.dart
+ M lib/shared/widgets/dm_glass_card.dart
+ M lib/shared/widgets/dm_header_bar.dart
+ M lib/shared/widgets/dm_metric_chip.dart
+ M lib/shared/widgets/dm_progress_pill.dart
+ M lib/shared/widgets/dm_segmented_control.dart
+ M lib/shared/widgets/dm_svg_icon.dart
+ M lib/shared/widgets/weather_location_selector.dart
+ M pubspec.yaml
+ M test/advanced_roast_reveal_screen_test.dart
+ M test/asset_manifest_test.dart
+ M test/daymaker_components_test.dart
+ M test/daymaker_ui_test.dart
+ M test/forecast_screen_test.dart
+ M test/fun_zone_screen_test.dart
+ M test/meme_domain_test.dart
+ M test/meme_rendering_test.dart
+ M test/meme_weather_test.dart
+ M test/roasts_screen_test.dart
+ M test/weather_trust_test.dart
+?? assets/approved_v1/
+?? assets/fonts/daymaker/
+?? docs/daymaker_exact_ui/
+?? docs/ui_implementation/
+?? lib/design/dm_semantic_colors.dart
+?? lib/features/forecast/widgets/forecast_insight_card.dart
+?? lib/features/fun/widgets/approved_fun_cards.dart
+?? lib/features/roasts/services/displayed_roast_share.dart
+?? lib/main_preview.dart
+?? lib/models/app_appearance.dart
+?? lib/preview/
+?? lib/repositories/pack_roast_repository.dart
+?? lib/shared/widgets/dm_approved_components.dart
+?? test/appearance_test.dart
+?? test/approved_accessibility_test.dart
+?? test/approved_preview_capture_test.dart
+?? tools/compare_approved_ui.py

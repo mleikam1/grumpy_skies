@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/data/daymaker_sample_data.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_current_weather_card.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
@@ -54,14 +55,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Demo City'), findsOneWidget);
-    expect(find.text('Partly Cloudy'), findsWidgets);
-    expect(find.text('72°F'), findsOneWidget);
+    expect(find.text('Demo City, US'), findsOneWidget);
+    expect(find.text('PARTLY CLOUDY'), findsWidgets);
+    expect(
+        find.descendant(
+            of: find.byType(ForecastCurrentWeatherCard),
+            matching: find.text('72°')),
+        findsOneWidget);
     expect(find.text('Observed 10 min ago'), findsOneWidget);
-    expect(find.text('Karen'), findsOneWidget);
+    expect(find.text("Karen's take"), findsOneWidget);
     expect(find.text('ROAST QUEEN'), findsOneWidget);
     expect(
-      find.text('It’s 72°F and somehow still making a scene.'),
+      find.text('“It’s 72°F and somehow still making a scene.”'),
       findsOneWidget,
     );
     expect(find.text('38% rain'), findsWidgets);
@@ -70,9 +75,8 @@ void main() {
     expect(find.text('7-day forecast'), findsOneWidget);
     await tester.ensureVisible(find.text('Weather data © OpenWeather'));
     expect(find.text('Weather data © OpenWeather'), findsOneWidget);
-    expect(find.bySemanticsLabel('Show a new weather roast'), findsOneWidget);
-    expect(
-        find.bySemanticsLabel('Share current weather roast'), findsOneWidget);
+    expect(find.bySemanticsLabel('Another'), findsOneWidget);
+    expect(find.bySemanticsLabel('Share'), findsOneWidget);
   });
 
   testWidgets('ForecastScreen centers usable web layout at expanded width',
@@ -88,12 +92,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Demo City'), findsOneWidget);
-    expect(find.text('Hourly'), findsOneWidget);
+    expect(find.text('Demo City, US'), findsOneWidget);
+    expect(find.text('Hourly forecast'), findsOneWidget);
     expect(find.text('Details'), findsOneWidget);
   });
 
-  testWidgets('forecast carousels render 12 hourly and 7 daily cards',
+  testWidgets('forecast renders 12 hourly tiles and 7 daily rows',
       (tester) async {
     tester.view.physicalSize = const Size(2200, 1000);
     tester.view.devicePixelRatio = 1;
@@ -157,11 +161,23 @@ void main() {
 
     expect(find.text('Now'), findsOneWidget);
     expect(find.text('1 PM'), findsOneWidget);
-    expect(find.textContaining('rain'), findsNWidgets(12));
+    expect(
+        find.descendant(
+            of: find.byType(ForecastHourlyStrip),
+            matching: find.textContaining(RegExp(r'^\d+%$'))),
+        findsNWidgets(11));
+    expect(find.text('11 PM'), findsOneWidget);
+    expect(find.text('12 AM'), findsNothing);
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Tomorrow'), findsOneWidget);
-    expect(find.text('Tuesday'), findsOneWidget);
-    expect(find.textContaining('° / '), findsNWidgets(7));
+    expect(find.text('Mon'), findsOneWidget);
+    expect(find.text('Tue'), findsOneWidget);
+    expect(
+        find.descendant(
+            of: find.byType(ForecastDailyGrid),
+            matching: find.textContaining('°')),
+        findsNWidgets(14));
+    expect(find.text('Sat'), findsOneWidget);
+    expect(find.text('Sun'), findsNothing);
   });
 
   testWidgets('forecast empty cards show timeline issue messages',
@@ -235,7 +251,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(repository.lastLatitude, closeTo(12.3456, 0.0001));
     expect(repository.lastLongitude, closeTo(-98.7654, 0.0001));
-    expect(find.text('Actual Place'), findsOneWidget);
+    expect(find.text('Actual Place, IL, US'), findsOneWidget);
   });
 
   testWidgets('ForecastScreen shows first-run location prompt without weather',
@@ -265,7 +281,7 @@ void main() {
     expect(find.text('Your local sky, not San Francisco.'), findsOneWidget);
     expect(find.text('Use my current location'), findsOneWidget);
     expect(find.text('Search manually'), findsOneWidget);
-    expect(find.text('Demo City'), findsNothing);
+    expect(find.text('Demo City, US'), findsNothing);
     expect(find.text('72°F'), findsNothing);
   });
 

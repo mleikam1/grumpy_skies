@@ -1,0 +1,57 @@
+Implement the approved DayMaker light-and-dark UI in my EXISTING Flutter app, mleikam1/grumpy_skies. Work in the local checkout selected in this Codex workspace. This is an implementation task, not a request for another proposal or a separate prototype. Use the local tools available to you to edit, run, test, capture, and refine the actual app.
+
+HANDOFF
+Locate the extracted daymaker_exact_ui folder, preferably docs/daymaker_exact_ui/ in the repo. If it is not there, look for daymaker_exact_ui_light_dark.zip or the extracted folder in the workspace and my Downloads/Desktop folders only. Inspect before extracting and do not overwrite unrelated files. Ask for the path only if these narrow checks cannot find it. Do not assume this conversation's sandbox paths exist on my computer.
+
+Read START_HERE.md, DESIGN_CONTRACT.md, SCREEN_SPECIFICATIONS.md, FLUTTER_IMPLEMENTATION_PLAN.md, CHARACTER_AND_ASSET_BRIEF.md, ACCEPTANCE_CHECKLIST.md, tokens/daymaker_theme_tokens.json, fixtures/approved_design_fixture.json, and references/REFERENCE_MANIFEST.json. Open both approved board PNGs and the individual screen/component/character crops with your image viewer. Do not implement from prose alone.
+
+FINAL VISUAL DECISION
+Use the NEW CHARACTERS PICTURED IN THE APPROVED DESIGNS: Karen, Frat Bro, Politician, Grandpa, and 2-Year-Old. Earlier instructions to preserve the app's old character artwork are superseded for appearance. Preserve their storage IDs, aliases, saved selection, content behavior, and existing user data.
+
+The LIGHT board is the source of truth for layout, hierarchy, static wording, character identity, card placement, image sizing, and component order. The approved DARK board is the color/surface treatment of that SAME UI. Use one shared layout and one canonical set of character assets in both themes. Ignore minor generated differences in the dark board's spacing, face drawings, labels, and icons. Do not use the earlier different Frat Bro dark concept or the older simple SVG character set.
+
+Do not redesign, simplify into generic cards, add a competing visual direction, or replace illustrated characters with emoji/stock photos/basic vector people. Implement only what is inside the phone screens, not the presentation-board headings, annotations, phone frames, mock 9:41 status bar, or concept footer.
+
+BASELINE AND SAFETY
+Read applicable AGENTS.md instructions and relevant project design docs, inspect git status/current branch and actual source, and record a baseline. Preserve all local changes. Create a feature branch when safe; never reset, delete, or silently stash my work. The handoff rechecked selected remote files around main d984b281; do not reset to that commit or assume it matches my local tree.
+
+Work only on this weather app; ignore unrelated project prompt packs that may be present. Reuse the existing Flutter/Provider/router/weather/cache/radar/roast/meme/monetization architecture. Avoid blanket dependency upgrades. Do not expose keys, change bundle IDs/Firebase projects, wipe app data, purchase tools, change billing/DNS/IAM, deploy production, submit to stores, or push publicly without specific approval. Full local access is not permission for those actions.
+
+IMPLEMENT THE THEMES PROPERLY
+The reviewed dm_theme.dart returned the same dark ThemeData from its light and dark getters, and daymaker_app.dart supplied only theme. Verify the current files and replace that with real separate lightTheme/darkTheme and a persisted Light/Dark/System preference through the existing settings architecture. New installs default to Light; preserve any explicit migrated preference. System follows device brightness only when selected. Prevent a startup flash with saved Dark mode.
+
+Use semantic ColorScheme/ThemeExtension tokens for surfaces, text, cards, gradients, borders, navigation, sheets, menus, inputs, editor controls and status bars. Audit hardcoded DMColors and text styles, not just scaffold colors. Share typography and geometry between themes. Switching mode must preserve route, scroll, selected persona, weather, current roast, and meme draft; it must not trigger another weather or AI request. App brightness is independent of meteorological day/night. Do not tint/invert the character artwork or recolor the user's meme document.
+
+MATCH THE APPROVED SCREENS
+Build Today first in Light and compare a real capture before propagating its components. Reproduce the header/wordmark/gear/location row; large left temperature with right sun/cloud artwork; weather insight card; pink Karen quote card with Another/Share; compact hourly tiles; row-based daily forecast; rounded bottom navigation. Use the approved reference proportions and typography, not a default Material dashboard.
+
+Bottom destinations, in order: Today, Radar, Roasts, Fun. Today keeps /forecast. Settings moves to the header gear while /settings remains accessible. Update shell mapping, bottom-nav assumptions, safe-area reservation, redirects and tests together. Preserve deep links, browser back behavior, weather-safety access, and monetization route/modal guards.
+
+Roasts must match its title, five-avatar selector, featured Grandpa example card, separate Another roast/Share buttons, and More from the crew rows. The fixture selects Grandpa; production respects the user's real selection. All five personas work in the same component and use the new approved artwork. Preserve exact displayed text when handing a roast to sharing or the meme editor.
+
+Fun must match its header, Make a meme/Templates/My memes selector, illustrated Meme Studio promotion, three Quick templates and featured meme. All controls must work. Preserve fortune/prediction/menace and other existing experiences below the pictured fold or in matching secondary collections; do not delete them to match a crop.
+
+Apply the same design system to Radar, forecast details, location selection, Settings, About/legal, onboarding, roast reveal, meme library/editor/export, and every loading/error/offline/permission state. These unpictured screens are derived extensions, not additional approved screenshot layouts. Implement both themes and keep existing functionality.
+
+ARTWORK PASS
+The supplied boards are flattened raster references, not layered source files. The reference crops are native-resolution extracts; several characters exist only as small thumbnails. They are not automatically clean high-resolution transparent assets.
+
+Find any larger matching originals in task-relevant project folders. Where missing, produce identity-matching static artwork with available approved tools, using the asset brief and reference images. Keep faces, hair, glasses, clothes, colors and style consistent. No silent new costumes or invented full-body designs. Record extracted versus reconstructed assets and actual dimensions in ASSET_STATUS.md. Create side-by-side character comparisons. Ask only when an essential missing capability/authorization or material design discrepancy cannot be resolved locally; continue independent UI work meanwhile.
+
+Do not ship a full-screen screenshot with invisible hotspots. Build all text, values, cards, navigation, lists and controls in Flutter. Static illustration only belongs in assets. Do not leave baked caption fragments, buttons, card borders or neighboring faces inside reusable portrait assets. Do not upscale thumbnail crops and claim they are recovered high-resolution originals. Temporary development assets may keep work moving but must be disclosed, never silently accepted as production complete.
+
+PROTECT REAL FUNCTIONALITY
+Keep real OpenWeather/backend/cache/location and radar behavior. Never use the sample 72-degree Overland Park fixture as a production fallback. Keep correct units, source/observation age, timezone and error labels. Only make time-specific weather claims supported by data. Preserve serious alert handling; no jokes or ads competing with critical warnings. Do not invent future-radar frames or provider coverage.
+
+Preserve existing meme documents, imported media, drafts, autosave/recovery, layers, undo/redo, editable captions and actual native/web export. Keep legacy asset references in saved documents working. Keep ad placement IDs, consent, fixed creative dimensions, frequency/eligibility and operation guards; do not add ads to the approved hero or editing canvas. Do not claim notifications, sharing, saving or exports succeeded when they did not.
+
+VISUAL QA AND COMPLETION
+Use the supplied fixture only in an isolated preview/test entrypoint with no production data side effects. Capture actual Today/Roasts/Fun in both themes at equivalent viewport width, text scale and state; keep all six captures. Also capture the important secondary screens in both modes. Compare against the approved UI regions using side-by-side views, overlays/differences and human-readable observations. Use tools/compare_screenshots.py as a diagnostic helper where appropriate; never distort the candidate image to force a match.
+
+Fix mismatched hierarchy, spacing, line wrapping, colors, illustration scale, card radii, buttons and navigation. Test 320/360/390/430 logical widths, tablet/desktop, large text, reduced motion, keyboard/focus and screen-reader labels. Use meaningful touch regions and avoid clipped content. Accessibility, real data and platform safe areas take priority over duplicating accidental raster defects.
+
+Run repository-appropriate formatting, flutter analyze, tests and available platform builds. Report actual commands/results and blockers honestly. Do not claim a device build, live-data check, or screenshot comparison you did not perform. Keep a durable PROGRESS.md and continue through the local phases rather than stopping after a plan or the first screen.
+
+Deliver the real changes plus docs/ui_implementation/BASELINE.md, PROGRESS.md, ASSET_STATUS.md, THEME_ARCHITECTURE.md, ACCEPTANCE_RESULTS.md, FINAL_REPORT.md, six primary captures, secondary-screen captures, visual diffs and local run instructions. Separate pre-existing failures from regressions, concepts from app screenshots, and fixture evidence from live-service checks. List remaining visual/asset differences and owner-only blockers. Do not call the app an exact or production-ready match while those remain unresolved.
+
+Start by inspecting the checkout and opening the two approved boards. Then implement, test, capture and refine the actual app.

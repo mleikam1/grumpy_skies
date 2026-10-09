@@ -7,6 +7,7 @@ import '../../../../monetization/widgets/ad_section.dart';
 import '../meme_catalog.dart';
 import '../models/meme_document.dart';
 import 'meme_inspector.dart';
+import '../../../../design/dm_theme.dart';
 
 class MemeLibrary extends StatefulWidget {
   const MemeLibrary(
@@ -96,7 +97,7 @@ class _MemeLibraryState extends State<MemeLibrary> {
                 fontSize: 34, height: 1.08, fontWeight: FontWeight.w900)),
         const SizedBox(height: 12),
         const Text(
-            '15 original templates. 24 tiny troublemakers. All yours to remix.'),
+            'Original templates and tiny troublemakers. All yours to remix.'),
         const SizedBox(height: 20),
         Wrap(spacing: 10, runSpacing: 10, children: [
           FilledButton.icon(
@@ -279,7 +280,7 @@ class _TemplateCard extends StatelessWidget {
   final VoidCallback onTap, onFavorite;
   @override
   Widget build(BuildContext context) => Material(
-      color: memeCream,
+      color: context.dmColors.surface,
       borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -293,6 +294,7 @@ class _TemplateCard extends StatelessWidget {
                     child: LayoutBuilder(
                         builder: (context, c) =>
                             Stack(fit: StackFit.expand, children: [
+                              const ColoredBox(color: memeCream),
                               Image.asset(template.thumbnailPath,
                                   fit: BoxFit.contain, cacheWidth: 480),
                               for (final zone in template.safeTextZones)
@@ -324,12 +326,13 @@ class _TemplateCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                         Text(template.name,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800, color: memeInk)),
-                        const Text('CURATED • TAP TO REMIX',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                color: context.dmColors.textPrimary)),
+                        Text('CURATED • TAP TO REMIX',
                             style: TextStyle(
                                 fontSize: 10,
-                                color: Color(0xff527081),
+                                color: context.dmColors.textSecondary,
                                 letterSpacing: 1))
                       ])),
                   IconButton(

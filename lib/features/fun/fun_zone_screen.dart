@@ -2,20 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/app_routes.dart';
-import '../../design/dm_breakpoints.dart';
+import 'package:provider/provider.dart';
+import '../../design/dm_theme.dart';
+import '../../shared/widgets/dm_approved_components.dart';
+import 'widgets/approved_fun_cards.dart';
+import 'meme/meme_catalog.dart';
+import 'meme/models/meme_document.dart';
+import 'meme/storage/meme_store.dart';
 import '../../design/dm_colors.dart';
-import '../../design/dm_gradients.dart';
 import '../../design/dm_radius.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
-import '../../shared/widgets/daymaker_components.dart';
 import '../../monetization/ad_placement.dart';
 import '../../monetization/widgets/ad_section.dart';
 import 'widgets/fun_feature_tile.dart';
 import 'widgets/fun_wheel_visual.dart';
 
 class FunZoneScreen extends StatefulWidget {
-  const FunZoneScreen({super.key});
+  const FunZoneScreen({super.key, this.store});
+  final MemeStore? store;
 
   @override
   State<FunZoneScreen> createState() => _FunZoneScreenState();
@@ -42,6 +47,32 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
     'Wind Gust Showoff',
     'Humidity Headliner',
   ];
+
+  int _tab = 0;
+  late final Future<MemeCatalog> _catalog = MemeCatalog.load();
+  MemeStore? _store;
+  Future<List<MemeDocument>>? _documents;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _store ??=
+        widget.store ?? context.read<MemeStore?>() ?? MemeStore.platform();
+  }
+
+  void _selectTab(int index) {
+    setState(() {
+      _tab = index;
+      if (index == 2) _documents = _store!.listDocuments();
+    });
+  }
+
+  Future<void> _openTemplate(String id) async {
+    await context.push('${AppRoutes.memeGenerator}?template=$id');
+    if (mounted && _tab == 2) {
+      setState(() => _documents = _store!.listDocuments());
+    }
+  }
 
   var _fortuneIndex = -1;
   var _predictionIndex = -1;
@@ -82,134 +113,225 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
   }
 
   void _openMemeGenerator() {
-    context.go(AppRoutes.memeGenerator);
+    context.push(AppRoutes.memeGenerator);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: DmAppBackground(
-        gradient: _funZoneGradient,
-        color: DMColors.deepNavy,
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth.isFinite
-                  ? constraints.maxWidth
-                  : MediaQuery.sizeOf(context).width;
-              final breakpoint = DMBreakpoints.fromWidth(width);
-              final maxWidth = switch (breakpoint) {
-                DMBreakpoint.compact => double.infinity,
-                DMBreakpoint.medium => 840.0,
-                DMBreakpoint.expanded => 1180.0,
-              };
-              final gap = breakpoint.isExpanded ? DMSpacing.xl : DMSpacing.md;
-
-              return ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: DMSpacing.pagePaddingForWidth(width).copyWith(
-                  bottom: DMSpacing.x2,
-                ),
-                children: [
-                  Align(
-                    alignment: Alignment.topCenter,
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.dmColors.appBackground,
+        body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 700;
+          return ListView(
+              key: const PageStorageKey('fun-scroll'),
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+              children: [
+                Center(
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: maxWidth),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const _FunZoneHeader(),
-                          SizedBox(height: gap),
-                          if (breakpoint.isCompact)
-                            _buildCompactLayout(gap)
-                          else if (breakpoint.isMedium)
-                            _buildMediumLayout(gap)
-                          else
-                            _buildExpandedLayout(gap),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
+                        constraints: const BoxConstraints(maxWidth: 960),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const DmPageHeader(title: 'Fun Zone'),
+                              const SizedBox(height: 16),
+                              Text('WEATHER + MEMES = BETTER DAYS',
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      height: 1.2,
+                                      letterSpacing: 1.4,
+                                      fontWeight: FontWeight.w800,
+                                      color: context.dmColors.insightIcon)),
+                              const SizedBox(height: 7),
+                              const Text(
+                                  'Turn your forecast\ninto a punchline.',
+                                  style: TextStyle(
+                                      fontSize: 32,
+                                      height: 1.05,
+                                      letterSpacing: -1,
+                                      fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 16),
+                              _tabs(),
+                              const SizedBox(height: 12),
+                              if (_tab == 0) ...[
+                                ApprovedFunPromo(
+                                    onCreate: () =>
+                                        _openTemplate('approved_current_mood')),
+                                DmApprovedSectionHeader(
+                                    title: 'Quick templates',
+                                    onAction: () => _selectTab(1)),
+                                _quickTemplates(),
+                                const SizedBox(height: 4),
+                                const SizedBox(
+                                    height: 36,
+                                    child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text('Featured meme',
+                                            style: TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w800)))),
+                                ApprovedFeaturedMeme(
+                                    onTap: () =>
+                                        _openTemplate('approved_beach_sun')),
+                                const SizedBox(height: 24),
+                                const DmApprovedSectionHeader(
+                                    title: 'More ways to make your day'),
+                                _fortuneTile(),
+                                const SizedBox(height: 16),
+                                if (_hasCrackedFortune)
+                                  const AdSection(
+                                      placement: AdPlacement.funHubMrec),
+                                if (wide)
+                                  Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(child: _predictorTile()),
+                                        const SizedBox(width: 16),
+                                        Expanded(child: _menaceTile())
+                                      ])
+                                else ...[
+                                  _predictorTile(),
+                                  const SizedBox(height: 16),
+                                  _menaceTile()
+                                ],
+                              ] else if (_tab == 1)
+                                _templateLibrary()
+                              else
+                                _savedMemes(),
+                            ]))),
+              ]);
+        })),
+      );
+
+  Widget _tabs() => Container(
+      decoration: BoxDecoration(
+          color: context.dmColors.surfaceSecondary,
+          borderRadius: BorderRadius.circular(26)),
+      padding: const EdgeInsets.all(3),
+      child: Row(children: [
+        for (var i = 0; i < 3; i++)
+          Expanded(
+              child: Semantics(
+                  selected: _tab == i,
+                  child: TextButton(
+                      onPressed: () => _selectTab(i),
+                      style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 8),
+                          backgroundColor: _tab == i
+                              ? context.dmColors.surface
+                              : Colors.transparent,
+                          foregroundColor: _tab == i
+                              ? context.dmColors.textPrimary
+                              : context.dmColors.textSecondary,
+                          textStyle: const TextStyle(
+                              fontFamily: 'DaymakerSans',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700)),
+                      child: Text(['Make a meme', 'Templates', 'My memes'][i],
+                          textAlign: TextAlign.center)))),
+      ]));
+
+  Widget _quickTemplates() {
+    final tiles = [
+      ApprovedTemplateTile(
+          title: 'Current mood',
+          caption: 'Same forecast. Different attitude.',
+          asset: 'assets/approved_v1/weather/sun_sunglasses.png',
+          color: context.dmColors.templateSun,
+          onTap: () => _openTemplate('approved_current_mood')),
+      ApprovedTemplateTile(
+          title: 'Monday energy',
+          caption: 'Cloudy with a chance of caffeine.',
+          asset: 'assets/approved_v1/weather/coffee_cloud.png',
+          color: context.dmColors.templateCoffee,
+          onTap: () => _openTemplate('approved_monday_energy')),
+      ApprovedTemplateTile(
+          title: 'This weather…',
+          caption: 'Looks serious. Just like my snacks.',
+          asset: 'assets/approved_v1/weather/storm_cloud.png',
+          color: context.dmColors.templateStorm,
+          onTap: () => _openTemplate('approved_this_weather')),
+    ];
+    if (MediaQuery.textScalerOf(context).scale(14) > 20) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        for (final tile in tiles)
+          Padding(padding: const EdgeInsets.only(bottom: 8), child: tile)
+      ]);
+    }
+    return IntrinsicHeight(
+        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      for (var i = 0; i < tiles.length; i++) ...[
+        if (i > 0) const SizedBox(width: 8),
+        Expanded(child: tiles[i])
+      ]
+    ]));
   }
 
-  Widget _buildCompactLayout(double gap) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _memeTile(featured: true),
-        SizedBox(height: gap),
-        _fortuneTile(),
-        SizedBox(height: gap),
-        if (_hasCrackedFortune)
-          const AdSection(placement: AdPlacement.funHubMrec),
-        _predictorTile(),
-        SizedBox(height: gap),
-        _menaceTile(),
-        SizedBox(height: gap),
-      ],
-    );
-  }
+  Widget _templateLibrary() => FutureBuilder<MemeCatalog>(
+      future: _catalog,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Column(children: [
+            const Text('Templates could not load.'),
+            TextButton(
+                onPressed: _openMemeGenerator,
+                child: const Text('Open Meme Studio'))
+          ]);
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Column(children: [
+          for (final template in snapshot.data!.templates)
+            Card(
+                child: ListTile(
+                    contentPadding: const EdgeInsets.all(12),
+                    leading: SizedBox(
+                        width: 64,
+                        height: 64,
+                        child: Image.asset(template.thumbnailPath,
+                            fit: BoxFit.contain)),
+                    title: Text(template.name),
+                    subtitle: Text(template.description),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _openTemplate(template.id)))
+        ]);
+      });
 
-  Widget _buildMediumLayout(double gap) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _memeTile(featured: true, minHeight: 284),
-        SizedBox(height: gap),
-        _fortuneTile(),
-        SizedBox(height: gap),
-        if (_hasCrackedFortune)
-          const AdSection(placement: AdPlacement.funHubMrec),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _predictorTile(compactWheel: true)),
-            SizedBox(width: gap),
-            Expanded(child: _menaceTile()),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildExpandedLayout(double gap) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _memeTile(featured: true, minHeight: 318),
-        SizedBox(height: gap),
-        _fortuneTile(),
-        SizedBox(height: gap),
-        if (_hasCrackedFortune)
-          const AdSection(placement: AdPlacement.funHubMrec),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _predictorTile(minHeight: 380),
-            ),
-            SizedBox(width: gap),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _menaceTile(minHeight: 206),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+  Widget _savedMemes() => FutureBuilder<List<MemeDocument>>(
+      future: _documents,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text(
+              'Saved memes could not be read. Open Meme Studio to retry.');
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.data!.isEmpty) {
+          return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Column(children: [
+                const Icon(Icons.photo_library_outlined, size: 42),
+                const SizedBox(height: 12),
+                const Text('Your next great meme starts here.'),
+                const SizedBox(height: 12),
+                FilledButton(
+                    onPressed: _openMemeGenerator,
+                    child: const Text('Create a meme'))
+              ]));
+        }
+        return Column(children: [
+          for (final document in snapshot.data!)
+            Card(
+                child: ListTile(
+                    title: Text(document.name),
+                    subtitle: const Text('Saved on this device'),
+                    trailing: const Icon(Icons.edit_outlined),
+                    onTap: () => context.push(
+                        '${AppRoutes.memeGenerator}?document=${Uri.encodeComponent(document.id)}')))
+        ]);
+      });
 
   Widget _fortuneTile({
     bool featured = false,
@@ -225,15 +347,7 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       accentColor: DMColors.sunriseYellow,
       featured: featured,
       minHeight: minHeight,
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          DMColors.surfaceElevated,
-          DMColors.twilightNavy,
-          DMColors.deepNavy,
-        ],
-      ),
+      gradient: context.dmColors.heroGradient,
       body: _RevealPill(
         label: _hasCrackedFortune ? 'Reveal' : 'Ready',
         value: _hasCrackedFortune
@@ -292,97 +406,6 @@ class _FunZoneScreenState extends State<FunZoneScreen> {
       ),
     );
   }
-
-  Widget _memeTile({double? minHeight, bool featured = false}) {
-    return FunFeatureTile(
-      icon: Icons.image_outlined,
-      title: 'Weather Meme Generator',
-      subtitle:
-          'The forecast is your punchline. 15 templates, endless weather drama.',
-      featured: featured,
-      actionLabel: 'Make a Meme',
-      actionSemanticLabel: 'Open meme generator',
-      onAction: _openMemeGenerator,
-      accentColor: DMColors.skyBlue,
-      minHeight: minHeight,
-      body: const _MemePreviewStrip(),
-    );
-  }
-}
-
-class _FunZoneHeader extends StatelessWidget {
-  const _FunZoneHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: DMRadius.large,
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            DMColors.opacity(DMColors.sunriseYellow, 0.22),
-            DMColors.opacity(DMColors.playfulPink, 0.18),
-            Colors.transparent,
-          ],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          DMSpacing.md,
-          DMSpacing.sm,
-          DMSpacing.md,
-          DMSpacing.sm,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: DMSpacing.tapTarget,
-              height: DMSpacing.tapTarget,
-              decoration: const BoxDecoration(
-                gradient: DMGradients.primaryAction,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: DMColors.sunGlow,
-                    blurRadius: 24,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.emoji_emotions_rounded,
-                color: DMColors.deepNavy,
-              ),
-            ),
-            const SizedBox(width: DMSpacing.md),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Fun Zone',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: DMTypography.brandDisplay,
-                  ),
-                  SizedBox(height: DMSpacing.xs),
-                  Text(
-                    'Play. Predict. Laugh. Repeat.',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: DMTypography.bodyLarge,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _RevealPill extends StatelessWidget {
@@ -429,30 +452,3 @@ class _RevealPill extends StatelessWidget {
     );
   }
 }
-
-class _MemePreviewStrip extends StatelessWidget {
-  const _MemePreviewStrip();
-  @override
-  Widget build(BuildContext context) => Row(children: [
-        for (final id in ['storm_boss_cat', 'sun_is_personal', 'fog_buffering'])
-          Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset('assets/meme_thumbnails/$id.webp',
-                          fit: BoxFit.contain, cacheWidth: 240)))),
-      ]);
-}
-
-const _funZoneGradient = LinearGradient(
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-  colors: [
-    DMColors.skyBlueDeep,
-    DMColors.lavenderDeep,
-    DMColors.playfulPink,
-    DMColors.deepNavy,
-  ],
-  stops: [0, 0.36, 0.68, 1],
-);
