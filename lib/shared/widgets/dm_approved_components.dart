@@ -87,12 +87,26 @@ class DmApprovedSectionHeader extends StatelessWidget {
 }
 
 class DmPersonaPortrait extends StatelessWidget {
-  const DmPersonaPortrait(
-      {super.key, required this.personaId, this.mood, this.width, this.height});
+  const DmPersonaPortrait({
+    super.key,
+    required this.personaId,
+    this.mood,
+    this.width,
+    this.height,
+    this.cacheWidth,
+    this.cacheHeight,
+    this.filterQuality = FilterQuality.high,
+  });
   final String personaId;
   final RoastMood? mood;
   final double? width;
   final double? height;
+
+  /// Optional physical-pixel decode dimensions for compact uses such as avatars.
+  /// Leaving them unset preserves the existing full-resolution hero behavior.
+  final int? cacheWidth;
+  final int? cacheHeight;
+  final FilterQuality filterQuality;
 
   static String pathFor(String id, {RoastMood? mood}) => mood == null
       ? PersonaEmotionAssets.legacyPortrait(id)
@@ -107,7 +121,9 @@ class DmPersonaPortrait extends StatelessWidget {
           height: height,
           fit: BoxFit.contain,
           alignment: Alignment.topCenter,
-          filterQuality: FilterQuality.high,
+          cacheWidth: cacheWidth,
+          cacheHeight: cacheHeight,
+          filterQuality: filterQuality,
           semanticLabel: '${RoastPersonas.byId(personaId).displayName}'
               '${mood == null ? '' : ', ${mood!.label}'} portrait',
           errorBuilder: (_, __, ___) => index + 1 < paths.length

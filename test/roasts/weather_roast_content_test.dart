@@ -17,7 +17,7 @@ void main() {
       expect(pack.schemaVersion, 1);
       expect(pack.packVersion, RoastPackCsvBuilder.defaultPackVersion);
       expect(pack.personas, containsAll(supportedWeatherRoastPersonas));
-      expect(pack.roasts, hasLength(530));
+      expect(pack.roasts, hasLength(615));
       expect(validation.errors, isEmpty);
     });
 
@@ -31,7 +31,7 @@ void main() {
               registry.map((r) => (r as Map).cast<String, dynamic>()).toList());
       final json = jsonDecode(result.toPrettyJson()) as Map<String, dynamic>;
 
-      expect(result.pack.roasts, hasLength(530));
+      expect(result.pack.roasts, hasLength(615));
       expect(result.warnings, isEmpty);
       expect(json['schema_version'], 1);
       expect(json['roasts'], isA<List<dynamic>>());

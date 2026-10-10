@@ -10,6 +10,32 @@ The original CSV columns remain supported. A CSV with `rule_id` or `family_id` o
 
 Rules separate required-all facts, any-of groups, forbidden facts, scope, age, required placeholders and numeric constraints with units. The CSV's legacy numeric/code/daypart constraints remain hard constraints as well. Do not use rain probability as observed rain, freezing rain as heavy rain, or a whole-day maximum as current conditions. Condition codes and AQI have provider-specific meaning: [OpenWeather conditions](https://openweathermap.org/api/weather-conditions), [OpenWeather AQI](https://openweathermap.org/api/air-pollution).
 
+The hourly timeline bundle `2026.10.10.2` contains 615 lines (123 per persona),
+including 85 new short hourly lines. Its rules cover comfortable sunshine, hot
+afternoons, freezing mornings, forecast rain, explicit rain probability, wind,
+adjacent-hour warming/cooling, and clear nights. Existing hourly clear/cloudy
+and probability alternatives remain in use. Mood metadata describes the actual
+line, including cozy or amused rain lines. All new copy is `machine_reviewed`.
+An explicit rule may use an empty `weather_tags` cell when no legacy tag fits;
+the rule remains mandatory and validated. Legacy rows still require tags.
+
+Timeline targets use absolute timestamps: the first normally follows two hours,
+then roughly four hours apart, with at least three elapsed hours and at most six
+cards in any rolling 24 hours. Nearby condition/temperature changes can shift a
+target. Missing hours are never invented. The local controller retains eligible
+engine choices, excludes pending IDs and normalized text, skips generic fallback
+and safety copy, and leaves exposure commits to visible cards. Selection uses
+real current time for freshness and a separate one-hour forecast window.
+
+Only supplied hourly fields enter these captions. The current hourly model has
+temperature, condition and precipitation probability; wind, humidity and
+feels-like remain unknown, so wind-specific catalog lines are correctly
+ineligible until those fields are actually supplied. Trends require the
+preceding absolute hour, two known temperatures and at least 2°C of change.
+Rain probability cannot establish rain occurrence and cannot select rain copy
+for unknown, snow, mixed or freezing-precipitation codes. Temperature text shares
+the forecast formatter and converts the original Celsius value before rounding.
+
 Allowed placeholders are `city`, `temp`, `temp_unit`, `feels_like`, `condition`, `humidity`, `wind_mph`, `precip_chance`, `daypart`. `temp`/`feels_like` follow the selected temperature unit; `wind_mph` is explicitly mph. Require every referenced token in the rule. Unknown or missing required tokens reject a line; the selector never substitutes invented zeroes or blank factual values. `fallback_text` is retained for legacy compatibility, must be a complete literal, and does not bypass eligibility. End-of-pool fallback is application-owned or an eligible mild context-free line.
 
 CSV notes/provenance/review status never enter public packs. Use `machine_reviewed` for automated work, `human_approved` only after actual human review, or `draft`. Only active rows with `active=TRUE` ship. Retired safety rows remain in source for audit; safety copy lives in application code. Cells beginning with `=`, `+`, `@`, or a non-numeric `-` require an apostrophe escape for spreadsheet safety; the builder removes that escape from displayed literal text.

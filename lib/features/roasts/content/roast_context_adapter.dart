@@ -89,6 +89,10 @@ WeatherRoastContext adaptRoastContext(
   var temp = isCurrent && current.temperatureKnown
       ? _number(current.temperatureF)?.round()
       : null;
+  var temperatureC = isCurrent && current.temperatureKnown
+      ? _number(current.temperatureC)
+      : null;
+  final extraFacts = <String>{};
   var feels = isCurrent && current.feelsLikeKnown
       ? _number(current.feelsLikeF)?.round()
       : null;
@@ -169,11 +173,48 @@ WeatherRoastContext adaptRoastContext(
         tags.add(WeatherRoastTag.severe);
       }
       if (samples.length == 1) {
+        final sample = samples.single;
+        temperatureC =
+            sample.temperatureKnown ? _number(sample.temperatureC) : null;
         temp = samples.single.temperatureKnown
             ? _number(samples.single.temperatureF)?.round()
             : null;
+        // A trend refers only to the preceding absolute forecast hour. Missing
+        // records, unknown values and DST clock labels never fabricate a trend.
+        final previous = weather.hourly.where(
+            (h) => sample.time.difference(h.time) == const Duration(hours: 1));
+        if (temperatureC != null &&
+            previous.length == 1 &&
+            previous.single.temperatureKnown &&
+            previous.single.temperatureC.isFinite) {
+          final change = temperatureC - previous.single.temperatureC;
+          if (change >= 2) extraFacts.add('forecast_warming');
+          if (change <= -2) extraFacts.add('forecast_cooling');
+        }
         condition = samples.single.condition;
         code = samples.single.weatherId;
+        if ({
+          300,
+          301,
+          302,
+          310,
+          311,
+          312,
+          313,
+          314,
+          321,
+          500,
+          501,
+          502,
+          503,
+          504,
+          520,
+          521,
+          522,
+          531
+        }.contains(code)) {
+          extraFacts.add('forecast_rain_condition');
+        }
         probability = samples.single.precipitationChanceKnown &&
                 samples.single.precipitationChance >= 0 &&
                 samples.single.precipitationChance <= 100
@@ -283,6 +324,7 @@ WeatherRoastContext adaptRoastContext(
     activity: activity,
     temperatureUnit: temperatureUnit,
     tempF: temp,
+    temperatureC: temperatureC,
     feelsLikeF: feels,
     humidity: humidity,
     windMph: wind,
@@ -302,6 +344,7 @@ WeatherRoastContext adaptRoastContext(
     aqi: isCurrent && current.aqi > 0 ? current.aqi : null,
     aqiScale: isCurrent ? current.aqiScale : null,
     aqiSource: isCurrent ? current.aqiSource : null,
+    extraFacts: Set.unmodifiable(extraFacts),
   );
 }
 

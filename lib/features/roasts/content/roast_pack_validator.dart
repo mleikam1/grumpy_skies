@@ -311,7 +311,7 @@ class RoastPackValidator {
     if (!roast.weight.isFinite || roast.weight <= 0 || roast.weight > 1000) {
       errors.add('Weight must be finite, > 0 and <= 1000 for ${roast.id}.');
     }
-    if (roast.tags.isEmpty) {
+    if (roast.tags.isEmpty && roast.ruleId == null) {
       errors.add('At least one weather tag is required for ${roast.id}.');
     }
     if (roast.dayparts.isEmpty) {
@@ -375,6 +375,9 @@ class RoastPackValidator {
       for (final tag in WeatherRoastTag.values) tag.wireValue,
       'observed_rain',
       'forecast_rain_probability',
+      'forecast_rain_condition',
+      'forecast_warming',
+      'forecast_cooling',
       'activity_walking',
       'activity_commuting',
       'activity_grilling',
@@ -398,6 +401,7 @@ class RoastPackValidator {
       {'clear', 'cloudy'},
       {'clear', 'partly_cloudy'},
       {'hot', 'cold'},
+      {'forecast_warming', 'forecast_cooling'},
       {'humid', 'dry'},
       {'light_rain', 'heavy_rain'}
     ]) {

@@ -1,7 +1,6 @@
 import 'forecast_temperature.dart';
 import 'forecast_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:weather_icons_animated/weather_icons_animated.dart';
 
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
@@ -86,17 +85,13 @@ class ForecastDailyGrid extends StatelessWidget {
                           child: Align(
                               alignment: Alignment.centerLeft,
                               child: DaymakerWeatherIcon(
-                                  style: WeatherIconStyle.line,
-                                  color: days[i].weatherId == 800
-                                      ? null
-                                      : context.dmColors.textSecondary,
                                   conditionId: days[i].weatherId,
                                   openWeatherIconCode: days[i].weatherIcon,
                                   conditionMain: days[i].weatherMain,
                                   conditionDescription: days[i].condition,
                                   forecastTime: DateTime(days[i].date.year,
                                       days[i].date.month, days[i].date.day, 12),
-                                  size: 23,
+                                  size: 32,
                                   semanticLabel: days[i].condition))),
                       Expanded(
                           flex: 2,
@@ -241,15 +236,13 @@ class _DailyDetailRow extends StatelessWidget {
           const SizedBox(height: 10),
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             DaymakerWeatherIcon(
-                style: WeatherIconStyle.line,
-                color: day.weatherId == 800 ? null : colors.textSecondary,
                 conditionId: day.weatherId,
                 openWeatherIconCode: day.weatherIcon,
                 conditionMain: day.weatherMain,
                 conditionDescription: day.condition,
                 forecastTime:
                     DateTime(day.date.year, day.date.month, day.date.day, 12),
-                size: 28,
+                size: 38,
                 semanticLabel: day.condition),
             const SizedBox(width: 12),
             Expanded(

@@ -78,7 +78,7 @@ class RoastPackCsvBuilder {
 
   final RoastPackValidator validator;
 
-  static const defaultPackVersion = '2026.10.10.1';
+  static const defaultPackVersion = '2026.10.10.2';
   static final defaultGeneratedAt = DateTime.utc(2026, 10, 10);
 
   RoastPackCsvBuildResult build(
@@ -302,6 +302,8 @@ class RoastPackCsvBuilder {
       'locale',
     ];
     return requiredFields
+        .where((field) =>
+            field != 'weather_tags' || (row['rule_id'] ?? '').trim().isEmpty)
         .where((field) => (row[field] ?? '').trim().isEmpty)
         .map((field) => 'Row $rowNumber is missing required field: $field.')
         .toList(growable: false);

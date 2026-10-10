@@ -3,16 +3,24 @@ import '../../../design/dm_theme.dart';
 import '../../../models/weather_models.dart';
 import 'forecast_sheet.dart';
 import 'forecast_hourly_strip.dart';
+import '../../roasts/controllers/local_roast_controller.dart';
+import '../models/hourly_timeline.dart';
 
 class ForecastInsightCard extends StatelessWidget {
   const ForecastInsightCard(
       {super.key,
       required this.weather,
       required this.now,
-      this.unavailable = false});
+      this.unavailable = false,
+      this.roasts,
+      this.personaId,
+      this.clock});
   final WeatherBundle weather;
   final DateTime now;
   final bool unavailable;
+  final LocalRoastController? roasts;
+  final String? personaId;
+  final DateTime Function()? clock;
   @override
   Widget build(BuildContext context) {
     final upcoming = weather.hourly
@@ -24,12 +32,10 @@ class ForecastInsightCard extends StatelessWidget {
         .toList()
       ..sort((a, b) => a.time.compareTo(b.time));
     final rain = !unavailable && upcoming.isNotEmpty ? upcoming.first : null;
-    final local = rain?.time
-        .toUtc()
-        .add(Duration(seconds: weather.current.timezoneOffset ?? 0));
-    final hour = local == null
+    final hour = rain == null
         ? ''
-        : '${local.hour % 12 == 0 ? 12 : local.hour % 12} ${local.hour >= 12 ? 'PM' : 'AM'}';
+        : forecastHourLabel(rain.time, weather.current.timezone,
+            weather.current.timezoneOffset);
     final title =
         rain == null ? 'Your next few hours.' : 'A little plot twist at $hour.';
     final detail = unavailable
@@ -49,6 +55,11 @@ class ForecastInsightCard extends StatelessWidget {
                       const SizedBox(height: 14),
                       ForecastHourlyStrip(
                           hourly: weather.hourly,
+                          weather: weather,
+                          roasts: roasts,
+                          personaId: personaId,
+                          clock: clock,
+                          timezone: weather.current.timezone,
                           sunrise: weather.current.sunrise,
                           sunset: weather.current.sunset,
                           referenceTime: now,

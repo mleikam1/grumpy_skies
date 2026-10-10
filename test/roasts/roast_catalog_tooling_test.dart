@@ -69,10 +69,10 @@ void main() {
         File('content/roasts/roasts_template.csv').readAsStringSync(),
         rules: _rules());
     expect(jsonDecode(result.toPrettyJson()), _json());
-    expect(result.pack.roasts.length, 530);
+    expect(result.pack.roasts.length, 615);
     expect(result.toPrettyJson(), isNot(contains('machine_reviewed')));
     for (final persona in supportedWeatherRoastPersonas) {
-      expect(result.pack.roasts.where((r) => r.persona == persona).length, 106);
+      expect(result.pack.roasts.where((r) => r.persona == persona).length, 123);
       for (final type in RoastType.values) {
         expect(
             result.pack.roasts.any((r) =>

@@ -12,8 +12,10 @@ import '../content/roast_local_preferences.dart';
 import '../content/roast_selector.dart';
 import '../content/weather_roast_models.dart';
 import '../services/local_roast_engine.dart';
+import '../services/hourly_timeline_roasts.dart';
 
 export '../content/roast_local_preferences.dart' show RoastFeedback;
+export '../services/hourly_timeline_roasts.dart' show HourlyTimelineRoast;
 
 /// Local presentation state. This boundary has no weather, ads, AI, geocoding,
 /// database or HTTP clients. Weather is published by the existing refresh path.
@@ -44,6 +46,7 @@ class LocalRoastController extends ChangeNotifier {
   bool _disposed = false;
   bool _savePending = false;
   final List<RoastSelection> _exposures = [];
+  final _timelinePlans = <String, List<HourlyTimelineRoast>>{};
   static const _historyKey = 'local_roast_history_v2';
   static const _activityKey = 'local_roast_activity_v1';
   static const _intensityKey = 'local_roast_intensity_v1';
@@ -150,6 +153,9 @@ class LocalRoastController extends ChangeNotifier {
     TemperatureUnit unit = TemperatureUnit.fahrenheit,
     String locale = 'en-US',
     bool another = false,
+    bool timelineOnly = false,
+    Set<String> reservedIds = const {},
+    Set<String> reservedTexts = const {},
   }) {
     _usedPersonas.add(normalizeRoastPersonaId(persona));
     final evaluation = now ?? DateTime.now();
@@ -182,17 +188,122 @@ class LocalRoastController extends ChangeNotifier {
             selectedLocation: location,
           );
     lastContext = roastContext;
+    final content = _pack ?? LocalRoastEngine.fallbackPack;
+    final excludedIds = <String>{...reservedIds};
+    if (timelineOnly) {
+      for (final line
+          in const RoastSelector().candidates(content, persona, type)) {
+        if (line.isFallback ||
+            line.isSevere ||
+            !roastContext.hasFreshWeather ||
+            !roastContext.forecastComplete ||
+            !roastContext.canRender(line.text) ||
+            roastContext.render(line.text).length > 140) {
+          excludedIds.add(line.id);
+        }
+      }
+    }
     final result = engine.select(
-      pack: _pack ?? LocalRoastEngine.fallbackPack,
+      pack: content,
       context: roastContext,
       persona: persona,
       type: type,
       maxLevel: intensity,
       disabledIds: repository.disabledIds,
+      excludedIds: excludedIds,
+      excludedTexts: reservedTexts,
       preferenceWeights: _localPreferences.weights,
       another: another,
+      slot: timelineOnly ? 'hourly_timeline' : null,
+      retainWhileEligible: timelineOnly,
       source: repository.sourceForPersona(persona, locale),
     );
+    return result;
+  }
+
+  /// Prepare stable, pending timeline choices from the already loaded bundle.
+  /// The caller commits only cards that become visible. No persistence or
+  /// network work occurs while scheduling or selecting these candidates.
+  List<HourlyTimelineRoast> selectHourlyTimeline({
+    required String persona,
+    List<HourlyForecast>? hours,
+    WeatherBundle? bundle,
+    DateTime? now,
+    TemperatureUnit unit = TemperatureUnit.fahrenheit,
+    String locale = 'en-US',
+  }) {
+    final source = bundle ?? weather;
+    if (source == null) return const [];
+    final evaluation = now ?? DateTime.now();
+    final records = hours ?? source.hourly;
+    final place = location ?? source.location;
+    final planKey = jsonEncode([
+      normalizeRoastPersonaId(persona),
+      locale,
+      place?.lat ?? source.current.latitude,
+      place?.lon ?? source.current.longitude,
+      place?.name ?? source.current.locationName,
+    ]);
+    RoastSelection? selectHour(
+        HourlyForecast hour, Set<String> ids, Set<String> texts) {
+      final selection = select(
+        persona: persona,
+        bundle: source,
+        scope: RoastScope.hourly,
+        type: RoastType.hourly,
+        targetTime: hour.time,
+        targetEnd: hour.time.add(const Duration(hours: 1)),
+        now: evaluation,
+        unit: unit,
+        locale: locale,
+        timelineOnly: true,
+        reservedIds: ids,
+        reservedTexts: texts,
+      );
+      return selection.source == 'application' ||
+              selection.line.isFallback ||
+              selection.line.isSevere
+          ? null
+          : selection;
+    }
+
+    final byTime = {
+      for (final hour in records) hour.time.millisecondsSinceEpoch: hour,
+    };
+    final previous = (_timelinePlans[planKey] ?? const <HourlyTimelineRoast>[])
+        .where((entry) =>
+            byTime.containsKey(entry.targetTime.millisecondsSinceEpoch) &&
+            isSelectionEligible(entry.selection,
+                bundle: source, now: evaluation, unit: unit))
+        .toList()
+      ..sort((a, b) => a.targetTime.compareTo(b.targetTime));
+    final retained = <HourlyTimelineRoast>[];
+    for (final entry in previous) {
+      final others = previous.where((other) => !identical(other, entry));
+      final ids = {
+        ...others.map((e) => e.selection.id),
+        ...retained.map((e) => e.selection.id)
+      };
+      final texts = {
+        ...others.map((e) => normalizeRoastText(e.selection.renderedText)),
+        ...retained.map((e) => normalizeRoastText(e.selection.renderedText))
+      };
+      final hour = byTime[entry.targetTime.millisecondsSinceEpoch]!;
+      final selection = selectHour(hour, ids, texts);
+      if (selection != null) {
+        retained.add(HourlyTimelineRoast(hour: hour, selection: selection));
+      }
+    }
+    final result = scheduleHourlyTimelineRoasts(
+      hours: records,
+      retained: retained,
+      select: selectHour,
+    );
+    _timelinePlans.remove(planKey);
+    _timelinePlans[planKey] = result;
+    while (_timelinePlans.length > 20) {
+      _timelinePlans.remove(_timelinePlans.keys.first);
+    }
     return result;
   }
 

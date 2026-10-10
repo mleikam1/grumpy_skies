@@ -475,6 +475,9 @@ class _ForecastScreenState extends State<ForecastScreen>
                       const SizedBox(height: 8),
                       ForecastInsightCard(
                           weather: weather,
+                          roasts: _localRoasts,
+                          personaId: selectedPersona.id,
+                          clock: widget.clock,
                           now: now,
                           unavailable: cached || !observationFresh),
                       if (relevantAlerts.isEmpty) ...[
@@ -493,6 +496,11 @@ class _ForecastScreenState extends State<ForecastScreen>
                       ],
                       ForecastHourlyStrip(
                         hourly: weather.hourly,
+                        weather: weather,
+                        roasts: _localRoasts,
+                        personaId: selectedPersona.id,
+                        clock: widget.clock,
+                        timezone: weather.current.timezone,
                         sunrise: weather.current.sunrise,
                         sunset: weather.current.sunset,
                         referenceTime: now,

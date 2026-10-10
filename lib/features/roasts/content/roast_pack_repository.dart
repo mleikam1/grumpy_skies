@@ -41,7 +41,7 @@ class RoastPackRepository {
   RoastPackRepository({
     AssetBundle? assetBundle,
     this.assetPath = 'assets/roasts/roast_pack_v1.json',
-    this.bundledRevision = '2026.10.10.1',
+    this.bundledRevision = '2026.10.10.2',
     RoastPackCache? cache,
     RoastRemotePackFetcher? remoteFetcher,
     RoastPackValidator validator = const RoastPackValidator(),

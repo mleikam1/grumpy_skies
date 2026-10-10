@@ -21,6 +21,85 @@ void main() {
         ),
         isTrue);
   });
+  test('future hours never reuse today solar events', () {
+    expect(
+      OpenWeatherIconMapper.resolveIsDay(
+        forecastTime: DateTime.utc(2026, 6, 22, 12),
+        forecastLocalTime: DateTime.utc(2026, 6, 22, 7),
+        sunrise: DateTime.utc(2026, 6, 21, 11),
+        sunset: DateTime.utc(2026, 6, 22, 1),
+      ),
+      isNull,
+    );
+  });
+
+  test('selected-local calendar handles sun events across UTC midnight', () {
+    expect(
+      OpenWeatherIconMapper.resolveIsDay(
+        forecastTime: DateTime.utc(2026, 6, 22, 1),
+        forecastLocalTime: DateTime.utc(2026, 6, 22, 11),
+        sunrise: DateTime.utc(2026, 6, 21, 20),
+        sunset: DateTime.utc(2026, 6, 22, 8),
+      ),
+      isTrue,
+    );
+    expect(
+      OpenWeatherIconMapper.resolveIsDay(
+        forecastTime: DateTime.utc(2026, 6, 22, 11),
+        forecastLocalTime: DateTime.utc(2026, 6, 22, 21),
+        sunrise: DateTime.utc(2026, 6, 21, 20),
+        sunset: DateTime.utc(2026, 6, 22, 8),
+      ),
+      isFalse,
+    );
+  });
+
+  test('provider hour day/night wins over phone time and another day events',
+      () {
+    expect(
+      OpenWeatherIconMapper.map(
+        conditionId: 801,
+        openWeatherIconCode: '02n',
+        forecastTime: DateTime.utc(2026, 6, 30, 17),
+        forecastLocalTime: DateTime.utc(2026, 6, 30, 12),
+        sunrise: DateTime.utc(2026, 6, 21, 6),
+        sunset: DateTime.utc(2026, 6, 21, 20),
+      ),
+      'partly-cloudy-night',
+    );
+  });
+
+  test('unknown ids are not passed through a WMO mapper or made sunny', () {
+    expect(OpenWeatherIconMapper.map(conditionId: 0), 'not-available');
+    expect(OpenWeatherIconMapper.map(conditionId: 63), 'not-available');
+    expect(OpenWeatherIconMapper.map(conditionId: 9999), 'not-available');
+    expect(OpenWeatherIconMapper.resolveIsDay(openWeatherIconCode: 'invalid'),
+        isNull);
+    expect(OpenWeatherIconMapper.map(conditionId: 801), 'cloudy');
+  });
+
+  test('all common OpenWeather weather families remain distinct', () {
+    const cases = <int, String>{
+      200: 'thunderstorms',
+      300: 'drizzle',
+      501: 'rain',
+      600: 'snow',
+      611: 'sleet',
+      701: 'fog',
+      711: 'smoke',
+      721: 'haze',
+      741: 'fog',
+      761: 'dust',
+      771: 'wind',
+      781: 'tornado',
+      803: 'cloudy',
+      804: 'overcast',
+    };
+    for (final entry in cases.entries) {
+      expect(OpenWeatherIconMapper.map(conditionId: entry.key), entry.value);
+    }
+  });
+
   group('OpenWeatherIconMapper', () {
     test('uses OpenWeather icon suffix for clear day and night variants', () {
       expect(
@@ -94,7 +173,7 @@ void main() {
           conditionMain: 'Mist',
           conditionDescription: 'mist',
         ),
-        'mist',
+        'fog',
       );
 
       expect(

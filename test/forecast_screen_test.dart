@@ -109,11 +109,11 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    final reference = DateTime(2026, 6, 21, 12, 30);
+    final reference = DateTime.utc(2026, 6, 21, 12, 30);
     final hourly = List.generate(
       20,
       (index) => HourlyForecast(
-        time: DateTime(2026, 6, 21, 12).add(Duration(hours: index)),
+        time: DateTime.utc(2026, 6, 21, 12).add(Duration(hours: index)),
         temperatureC: (76 + index - 32) * 5 / 9,
         condition: 'Clear',
         precipitationChance: index * 3,
@@ -148,10 +148,12 @@ void main() {
                   ForecastHourlyStrip(
                     hourly: hourly,
                     referenceTime: reference,
+                    timezoneOffset: 0,
                   ),
                   ForecastDailyGrid(
                     daily: daily,
                     referenceTime: reference,
+                    timezoneOffset: 0,
                   ),
                 ],
               ),

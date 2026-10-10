@@ -60,18 +60,33 @@ class LocalRoastEngine {
       required RoastType type,
       RoastLevel maxLevel = RoastLevel.medium,
       Set<String> disabledIds = const {},
+      Set<String> excludedIds = const {},
+      Set<String> excludedTexts = const {},
       Map<String, double> preferenceWeights = const {},
       bool another = false,
       String? slot,
+      bool retainWhileEligible = false,
       String source = 'bundled'}) {
     final id = normalizeRoastPersonaId(persona);
+    // Pending timeline choices must be hard exclusions, never repetition hints
+    // that the selector can relax when a pool becomes small.
+    final unavailableIds = <String>{...disabledIds, ...excludedIds};
+    if (excludedTexts.isNotEmpty) {
+      for (final line in _selector.candidates(pack, id, type)) {
+        if (context.canRender(line.text) &&
+            excludedTexts
+                .contains(normalizeRoastText(context.render(line.text)))) {
+          unavailableIds.add(line.id);
+        }
+      }
+    }
     final key =
-        '${slot ?? ''}|${context.stableSlot(id, type)}|${maxLevel.name}';
+        '${slot ?? ''}|${context.stableSlot(id, type, includeWeather: !retainWhileEligible)}|${retainWhileEligible ? 'eligible' : maxLevel.name}';
     final cached = _slots[key];
     if (!another &&
         cached != null &&
         _slotPackVersions[key] == pack.packVersion &&
-        !disabledIds.contains(cached.id)) {
+        !unavailableIds.contains(cached.id)) {
       if (cached.source == 'application') {
         if ((cached.reason == 'application_safety_gate') ==
                 context.requiresSafetyMessage &&
@@ -84,7 +99,7 @@ class LocalRoastEngine {
                         persona: id,
                         type: type,
                         maxLevel: maxLevel,
-                        disabledIds: disabledIds)
+                        disabledIds: unavailableIds)
                     .isEmpty))) {
           return _refreshContext(key, cached, context);
         }
@@ -98,7 +113,7 @@ class LocalRoastEngine {
                   persona: id,
                   type: type,
                   maxLevel: maxLevel,
-                  disabledIds: disabledIds)
+                  disabledIds: unavailableIds)
               .isEmpty) {
         // Facts in text update without selecting a new punchline or exposure.
         if (context.render(cached.line.text) == cached.renderedText) {
@@ -132,7 +147,7 @@ class LocalRoastEngine {
         persona: id,
         type: type,
         maxLevel: maxLevel,
-        disabledIds: disabledIds,
+        disabledIds: unavailableIds,
         recentRoastIds: ids.entries
             .where((e) => now.difference(e.value) < const Duration(days: 7))
             .map((e) => e.key),
@@ -305,3 +320,11 @@ class LocalRoastEngine {
 
   List<RoastSelection> get displayedSelections => List.unmodifiable(_exposures);
 }
+
+/// Compare displayed text after punctuation/spacing normalization, so a second
+/// catalog ID cannot sneak the same joke into one prepared timeline.
+String normalizeRoastText(String text) => text
+    .toLowerCase()
+    .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();

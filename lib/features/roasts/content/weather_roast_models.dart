@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import '../../../core/weather/temperature_format.dart';
 import '../../../models/temperature_unit.dart';
 import '../../../models/weather_models.dart';
 import '../../../models/weather_safety.dart';
@@ -47,6 +48,7 @@ class WeatherRoastContext {
   const WeatherRoastContext({
     required this.city,
     this.tempF,
+    this.temperatureC,
     this.feelsLikeF,
     this.condition,
     this.humidity,
@@ -82,6 +84,9 @@ class WeatherRoastContext {
   final TemperatureUnit temperatureUnit;
   final String city;
   final int? tempF;
+
+  /// Original provider value, before Fahrenheit threshold rounding.
+  final double? temperatureC;
   final int? feelsLikeF;
   final String? condition;
   final int? humidity;
@@ -152,16 +157,28 @@ class WeatherRoastContext {
                   616
                 }.contains(conditionCode)))
           'observed_rain',
-        if (precipChance != null) 'forecast_rain_probability',
+        if (_supportsRainProbability) 'forecast_rain_probability',
         if (activity != null) activity!.fact,
       };
+
+  // Provider POP covers all precipitation. Snow/mixed/freezing precipitation
+  // must not silently become a rain prediction; unknown codes cannot identify
+  // the precipitation type either.
+  bool get _supportsRainProbability =>
+      precipChance != null &&
+      knownRoastConditionCodes.contains(conditionCode) &&
+      !(conditionCode! >= 600 && conditionCode! < 700) &&
+      conditionCode != 511;
 
   /// Three-state evidence: absence of an input is never evidence of absence.
   bool? factValue(String fact) {
     if (facts.contains(fact)) return true;
     if (fact.startsWith('activity_')) return activity == null ? null : false;
     if (fact == 'forecast_rain_probability') {
-      return precipChance == null ? null : true;
+      return precipChance == null ||
+              !knownRoastConditionCodes.contains(conditionCode)
+          ? null
+          : _supportsRainProbability;
     }
     if ({'hot', 'cold'}.contains(fact)) return tempF == null ? null : false;
     if (fact == 'dry') return humidity == null ? null : false;
@@ -249,7 +266,11 @@ class WeatherRoastContext {
 
   Map<String, String> get placeholderValues => {
         if (city.trim().isNotEmpty) 'city': city,
-        if (tempF != null) 'temp': _displayTemperature(tempF)!,
+        if (temperatureC != null)
+          'temp': forecastTemperature(temperatureC!, temperatureUnit)
+              .replaceFirst('°', '')
+        else if (tempF != null)
+          'temp': _displayTemperature(tempF)!,
         'temp_unit': '°${temperatureUnit.suffix}',
         if (feelsLikeF != null) 'feels_like': _displayTemperature(feelsLikeF)!,
         if (condition != null &&
@@ -281,7 +302,9 @@ class WeatherRoastContext {
   }
 
   /// Broad weather buckets keep display slots stable across tiny value changes.
-  String stableSlot(String persona, RoastType type) => [
+  String stableSlot(String persona, RoastType type,
+          {bool includeWeather = true}) =>
+      [
         normalizeRoastPersonaId(persona),
         sha256.convert(utf8.encode(placeId ?? city)).toString(),
         scope.name,
@@ -292,18 +315,20 @@ class WeatherRoastContext {
         daypart.name,
         if (scope != RoastScope.current)
           windowStart?.toUtc().toIso8601String() ?? 'unknown-window',
-        ...(tags.map((tag) => tag.wireValue).toList()..sort()),
-        precipChance == null
-            ? 'unknown-pop'
-            : precipChance! < 30
-                ? 'low-pop'
-                : precipChance! < 60
-                    ? 'moderate-pop'
-                    : 'high-pop',
-        freshness.name,
-        safetyStatus.name,
+        if (includeWeather)
+          ...(tags.map((tag) => tag.wireValue).toList()..sort()),
+        if (includeWeather)
+          precipChance == null
+              ? 'unknown-pop'
+              : precipChance! < 30
+                  ? 'low-pop'
+                  : precipChance! < 60
+                      ? 'moderate-pop'
+                      : 'high-pop',
+        if (includeWeather) freshness.name,
+        if (includeWeather) safetyStatus.name,
         locale,
-        activity?.name ?? '',
+        if (includeWeather) activity?.name ?? '',
       ].join('|');
 
   Map<String, Object?> get diagnostics => {

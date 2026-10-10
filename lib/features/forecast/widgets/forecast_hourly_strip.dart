@@ -1,7 +1,9 @@
 import 'forecast_temperature.dart';
 import 'forecast_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:weather_icons_animated/weather_icons_animated.dart';
+import '../models/hourly_timeline.dart';
+import 'forecast_hourly_timeline.dart';
+import '../../roasts/controllers/local_roast_controller.dart';
 
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
@@ -20,6 +22,11 @@ class ForecastHourlyStrip extends StatelessWidget {
     this.referenceTime,
     this.timezoneOffset,
     this.errorMessage,
+    this.timezone,
+    this.weather,
+    this.roasts,
+    this.personaId,
+    this.clock,
   });
 
   final List<HourlyForecast> hourly;
@@ -28,14 +35,24 @@ class ForecastHourlyStrip extends StatelessWidget {
   final DateTime? referenceTime;
   final int? timezoneOffset;
   final String? errorMessage;
+  final String? timezone;
+  final WeatherBundle? weather;
+  final LocalRoastController? roasts;
+  final String? personaId;
+  final DateTime Function()? clock;
 
   @override
   Widget build(BuildContext context) {
-    final items = _visibleItems(
-      hourly,
-      referenceTime ?? DateTime.now(),
-      timezoneOffset,
-    );
+    final now = referenceTime ?? DateTime.now();
+    final allHours = forecastTimelineHours(hourly, now);
+    final items = allHours
+        .take(12)
+        .map((hour) => _HourlyForecastItem(
+            hour: hour,
+            label: forecastIsCurrentHour(hour.time, now)
+                ? 'Now'
+                : forecastHourLabel(hour.time, timezone, timezoneOffset)))
+        .toList();
     final child = items.isEmpty
         ? _EmptyHourlyState(message: errorMessage)
         : ListView.separated(
@@ -47,14 +64,20 @@ class ForecastHourlyStrip extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 5),
             itemBuilder: (context, index) {
               return _HourlyTile(
+                key: ValueKey(
+                    items[index].hour.time.toUtc().millisecondsSinceEpoch),
                 width: ((MediaQuery.sizeOf(context).width - 56) / 5)
                         .clamp(60, 90) *
                     (MediaQuery.textScalerOf(context).scale(14) / 14)
                         .clamp(1, 2),
                 hour: items[index].hour,
                 label: items[index].label,
-                sunrise: sunrise,
-                sunset: sunset,
+                latitude: weather?.current.latitude,
+                longitude: weather?.current.longitude,
+                localTime: timezone == null && timezoneOffset == null
+                    ? null
+                    : forecastLocalTime(
+                        items[index].hour.time, timezone, timezoneOffset),
               );
             },
           );
@@ -67,86 +90,34 @@ class ForecastHourlyStrip extends StatelessWidget {
             onAction: items.isEmpty
                 ? null
                 : () => showForecastSheet(context,
-                        title: 'Hourly forecast',
-                        subtitle: 'Forecast times are local to this location.',
-                        children: [
-                          for (var i = 0; i < items.length; i++) ...[
-                            if (i > 0)
-                              Divider(
-                                  height: 1, color: context.dmColors.divider),
-                            _HourlyDetailRow(
-                                hour: items[i].hour, label: items[i].label),
-                          ]
-                        ])),
+                    title: 'Hourly forecast',
+                    subtitle: timezone == null && timezoneOffset == null
+                        ? 'Location time unavailable · times shown in UTC.'
+                        : timezone == null
+                            ? 'Forecast times are local to this location, using the provider’s current UTC offset.'
+                            : 'Forecast times are local to this location.',
+                    bodyBuilder: (context, controller) =>
+                        ForecastHourlyTimeline(
+                          scrollController: controller,
+                          hourly: hourly,
+                          weather: weather,
+                          roasts: roasts,
+                          personaId: personaId,
+                          timezone: timezone,
+                          timezoneOffset: timezoneOffset,
+                          clock: clock,
+                        ))),
         if (items.isEmpty)
           ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 98),
+            constraints: const BoxConstraints(minHeight: 110),
             child: child,
           )
         else
           SizedBox(
-            height: 98 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 3,
+            height: 110 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 3,
             child: child,
           ),
       ],
-    );
-  }
-
-  static List<_HourlyForecastItem> _visibleItems(
-    List<HourlyForecast> hourly,
-    DateTime referenceTime,
-    int? timezoneOffset,
-  ) {
-    final sorted = hourly.toList()
-      ..sort((left, right) => left.time.compareTo(right.time));
-    final thresholdUtc =
-        referenceTime.toUtc().subtract(const Duration(minutes: 30));
-    final visible = sorted
-        .where((hour) => !hour.time.toUtc().isBefore(thresholdUtc))
-        .take(12)
-        .toList(growable: false);
-
-    return [
-      for (var index = 0; index < visible.length; index++)
-        _HourlyForecastItem(
-          hour: visible[index],
-          label: index == 0 &&
-                  _isSameLocalHour(
-                    visible[index].time,
-                    referenceTime,
-                    timezoneOffset,
-                  )
-              ? 'Now'
-              : _formatHour(visible[index].time, timezoneOffset),
-        ),
-    ];
-  }
-
-  static bool _isSameLocalHour(
-    DateTime left,
-    DateTime right,
-    int? timezoneOffset,
-  ) {
-    final localLeft = _forecastClockTime(left, timezoneOffset);
-    final localRight = _forecastClockTime(right, timezoneOffset);
-    return localLeft.year == localRight.year &&
-        localLeft.month == localRight.month &&
-        localLeft.day == localRight.day &&
-        localLeft.hour == localRight.hour;
-  }
-
-  static String _formatHour(DateTime time, int? timezoneOffset) {
-    final local = _forecastClockTime(time, timezoneOffset);
-    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-    final suffix = local.hour >= 12 ? 'PM' : 'AM';
-    return '$hour $suffix';
-  }
-
-  static DateTime _forecastClockTime(DateTime time, int? timezoneOffset) {
-    if (timezoneOffset == null) return time.toLocal();
-    return DateTime.fromMillisecondsSinceEpoch(
-      time.toUtc().millisecondsSinceEpoch + timezoneOffset * 1000,
-      isUtc: true,
     );
   }
 }
@@ -187,17 +158,20 @@ class _HourlyForecastItem {
 
 class _HourlyTile extends StatelessWidget {
   const _HourlyTile({
+    super.key,
     required this.hour,
     required this.label,
     this.width = 66,
-    this.sunrise,
-    this.sunset,
+    required this.localTime,
+    this.latitude,
+    this.longitude,
   });
 
   final HourlyForecast hour;
   final String label;
-  final DateTime? sunrise;
-  final DateTime? sunset;
+  final DateTime? localTime;
+  final double? latitude;
+  final double? longitude;
   final double width;
 
   @override
@@ -225,23 +199,23 @@ class _HourlyTile extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             DaymakerWeatherIcon(
-              style: WeatherIconStyle.line,
-              color:
-                  hour.weatherId == 800 ? null : context.dmColors.textSecondary,
               conditionId: hour.weatherId,
               openWeatherIconCode: hour.weatherIcon,
               conditionMain: hour.weatherMain,
               conditionDescription: hour.condition,
               forecastTime: hour.time,
-              sunrise: sunrise,
-              sunset: sunset,
-              size: 25,
+              forecastLocalTime: localTime,
+              latitude: latitude,
+              longitude: longitude,
+              size: 36,
               semanticLabel: hour.condition,
             ),
             const SizedBox(height: 4),
             Text(
-              forecastTemperature(
-                  hour.temperatureC, forecastTemperatureUnit(context)),
+              hour.temperatureKnown && hour.temperatureC.isFinite
+                  ? forecastTemperature(
+                      hour.temperatureC, forecastTemperatureUnit(context))
+                  : '—',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -266,38 +240,4 @@ class _HourlyTile extends StatelessWidget {
       ),
     );
   }
-}
-
-class _HourlyDetailRow extends StatelessWidget {
-  const _HourlyDetailRow({required this.hour, required this.label});
-  final HourlyForecast hour;
-  final String label;
-  @override
-  Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(
-              child: Text(label,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700))),
-          const SizedBox(width: 12),
-          Text(
-              forecastTemperature(
-                  hour.temperatureC, forecastTemperatureUnit(context)),
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-        ]),
-        const SizedBox(height: 8),
-        Text(hour.condition,
-            style: TextStyle(
-                fontSize: 14,
-                height: 1.45,
-                color: context.dmColors.textSecondary)),
-        if (hour.precipitationChanceKnown) ...[
-          const SizedBox(height: 6),
-          Text('${hour.precipitationChance}% precipitation',
-              style: TextStyle(fontSize: 12, color: context.dmColors.link)),
-        ],
-      ]));
 }

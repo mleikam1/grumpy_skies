@@ -718,6 +718,119 @@
       "scopes": [
         "current"
       ]
+    },
+    {
+      "required_all": [
+        "forecast_rain_probability"
+      ],
+      "placeholders": [
+        "precip_chance"
+      ],
+      "numeric": [
+        {
+          "fact": "precip_chance",
+          "unit": "percent",
+          "min": 30
+        }
+      ],
+      "id": "timeline_chance",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "cold"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "id": "timeline_cold",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "forecast_cooling"
+      ],
+      "id": "timeline_cooling",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "hot"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "id": "timeline_hot",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "clear"
+      ],
+      "id": "timeline_night",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "forecast_rain_condition"
+      ],
+      "id": "timeline_rain",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "clear",
+        "nice"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "id": "timeline_sunny",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "forecast_warming"
+      ],
+      "id": "timeline_warming",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "required_all": [
+        "windy"
+      ],
+      "id": "timeline_wind",
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
     }
   ]
 }

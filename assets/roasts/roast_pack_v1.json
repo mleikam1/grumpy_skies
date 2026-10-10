@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "pack_version": "2026.10.10.1",
+  "pack_version": "2026.10.10.2",
   "generated_at": "2026-10-10T00:00:00Z",
   "personas": [
     "frat_bro",
@@ -558,6 +558,119 @@
       "scopes": [
         "current"
       ]
+    },
+    {
+      "id": "timeline_chance",
+      "required_all": [
+        "forecast_rain_probability"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180,
+      "placeholders": [
+        "precip_chance"
+      ],
+      "numeric": [
+        {
+          "fact": "precip_chance",
+          "unit": "percent",
+          "min": 30.0
+        }
+      ]
+    },
+    {
+      "id": "timeline_cold",
+      "required_all": [
+        "cold"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180,
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ]
+    },
+    {
+      "id": "timeline_cooling",
+      "required_all": [
+        "forecast_cooling"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "id": "timeline_hot",
+      "required_all": [
+        "hot"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180,
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ]
+    },
+    {
+      "id": "timeline_night",
+      "required_all": [
+        "clear"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "id": "timeline_rain",
+      "required_all": [
+        "forecast_rain_condition"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "id": "timeline_sunny",
+      "required_all": [
+        "clear",
+        "nice"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180,
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ]
+    },
+    {
+      "id": "timeline_warming",
+      "required_all": [
+        "forecast_warming"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
+    },
+    {
+      "id": "timeline_wind",
+      "required_all": [
+        "windy"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 180
     }
   ],
   "rule_schema_version": 1,
@@ -2476,6 +2589,306 @@
       "text": "It's {temp}{temp_unit} and humid. The air is doing burpees, bro.",
       "temp_min_f": 90,
       "humidity_min": 65,
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_chance_001",
+      "mood": "confident",
+      "family_id": "frat_bro_timeline_chance_001",
+      "rule_id": "timeline_chance",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{precip_chance}% rain chance. The clouds are still deciding whether to pull up.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_cold_001",
+      "mood": "cozy",
+      "family_id": "frat_bro_timeline_cold_001",
+      "rule_id": "timeline_cold",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} for the morning. Hoodie season just made varsity.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_cold_002",
+      "mood": "complaining",
+      "family_id": "frat_bro_timeline_cold_002",
+      "rule_id": "timeline_cold",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A freezing morning, bro. My motivation is still under the duvet.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_cooling_001",
+      "mood": "cozy",
+      "family_id": "frat_bro_timeline_cooling_001",
+      "rule_id": "timeline_cooling",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Cooler than the previous hour. Hoodie stocks are looking strong.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_cooling_002",
+      "mood": "happy",
+      "family_id": "frat_bro_timeline_cooling_002",
+      "rule_id": "timeline_cooling",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is cooling down. The thermometer has found its recovery playlist.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_hot_001",
+      "mood": "complaining",
+      "family_id": "frat_bro_timeline_hot_001",
+      "rule_id": "timeline_hot",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit}, bro. The afternoon has entered toaster mode.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_hot_002",
+      "mood": "annoyed",
+      "family_id": "frat_bro_timeline_hot_002",
+      "rule_id": "timeline_hot",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A hot hour on deck. Even my imaginary hype man needs shade.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_night_001",
+      "mood": "cozy",
+      "family_id": "frat_bro_timeline_night_001",
+      "rule_id": "timeline_night",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Clear night on the schedule. The sky booked an acoustic set.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_night_002",
+      "mood": "happy",
+      "family_id": "frat_bro_timeline_night_002",
+      "rule_id": "timeline_night",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A clear night forecast, bro. Space has excellent floor seats.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_rain_001",
+      "mood": "happy",
+      "family_id": "frat_bro_timeline_rain_001",
+      "rule_id": "timeline_rain",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Rain in the hourly forecast. The clouds are dropping their new single.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_rain_002",
+      "mood": "complaining",
+      "family_id": "frat_bro_timeline_rain_002",
+      "rule_id": "timeline_rain",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A rainy hour is scheduled. Nature brought its own water feature.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_sunny_001",
+      "mood": "hyped",
+      "family_id": "frat_bro_timeline_sunny_001",
+      "rule_id": "timeline_sunny",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} and sunny. The forecast just stuck the landing.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_sunny_002",
+      "mood": "happy",
+      "family_id": "frat_bro_timeline_sunny_002",
+      "rule_id": "timeline_sunny",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Comfortable sunshine, bro. Nature actually understood the assignment.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_warming_001",
+      "mood": "hyped",
+      "family_id": "frat_bro_timeline_warming_001",
+      "rule_id": "timeline_warming",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Warmer than the last hour. The thermometer has started its warm-up set.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_warming_002",
+      "mood": "happy",
+      "family_id": "frat_bro_timeline_warming_002",
+      "rule_id": "timeline_warming",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is warming up, bro. Numbers are climbing the leaderboard.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_wind_001",
+      "mood": "hyped",
+      "family_id": "frat_bro_timeline_wind_001",
+      "rule_id": "timeline_wind",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Wind in the forecast, bro. The atmosphere is doing cardio.",
+      "locale": "en-US"
+    },
+    {
+      "id": "frat_bro_timeline_wind_002",
+      "mood": "annoyed",
+      "family_id": "frat_bro_timeline_wind_002",
+      "rule_id": "timeline_wind",
+      "persona": "frat_bro",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A windy hour ahead. Every hairstyle gets the same remix.",
       "locale": "en-US"
     },
     {
@@ -4438,6 +4851,306 @@
       "locale": "en-US"
     },
     {
+      "id": "grandpa_timeline_chance_001",
+      "mood": "confident",
+      "family_id": "grandpa_timeline_chance_001",
+      "rule_id": "timeline_chance",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{precip_chance}% chance of rain. Even a maybe deserves a place for the umbrella.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_cold_001",
+      "mood": "cozy",
+      "family_id": "grandpa_timeline_cold_001",
+      "rule_id": "timeline_cold",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} in the morning forecast. A sensible sweater never needed a software update.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_cold_002",
+      "mood": "complaining",
+      "family_id": "grandpa_timeline_cold_002",
+      "rule_id": "timeline_cold",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A freezing morning. This is why I kept the good socks.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_cooling_001",
+      "mood": "cozy",
+      "family_id": "grandpa_timeline_cooling_001",
+      "rule_id": "timeline_cooling",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Cooler than the previous hour. Now the sweater drawer feels vindicated.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_cooling_002",
+      "mood": "complaining",
+      "family_id": "grandpa_timeline_cooling_002",
+      "rule_id": "timeline_cooling",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is cooling down. I knew that extra layer would have its moment.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_hot_001",
+      "mood": "complaining",
+      "family_id": "grandpa_timeline_hot_001",
+      "rule_id": "timeline_hot",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit}. The forecast has mistaken the yard for a casserole.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_hot_002",
+      "mood": "annoyed",
+      "family_id": "grandpa_timeline_hot_002",
+      "rule_id": "timeline_hot",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A hot hour coming. The thermometer used to have better manners.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_night_001",
+      "mood": "cozy",
+      "family_id": "grandpa_timeline_night_001",
+      "rule_id": "timeline_night",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Clear night forecast. The sky has turned the big light off properly.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_night_002",
+      "mood": "happy",
+      "family_id": "grandpa_timeline_night_002",
+      "rule_id": "timeline_night",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A clear night ahead. No subscription required for the sky’s old movies.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_rain_001",
+      "mood": "cozy",
+      "family_id": "grandpa_timeline_rain_001",
+      "rule_id": "timeline_rain",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Rain is forecast this hour. A good excuse for the kettle to feel important.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_rain_002",
+      "mood": "happy",
+      "family_id": "grandpa_timeline_rain_002",
+      "rule_id": "timeline_rain",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A rainy hour ahead. The roof may finally get its percussion solo.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_sunny_001",
+      "mood": "happy",
+      "family_id": "grandpa_timeline_sunny_001",
+      "rule_id": "timeline_sunny",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} and sunny. A fine hour to let the porch earn its keep.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_sunny_002",
+      "mood": "happy",
+      "family_id": "grandpa_timeline_sunny_002",
+      "rule_id": "timeline_sunny",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Comfortable sunshine. Even my old lawn chair can recognize a good offer.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_warming_001",
+      "mood": "happy",
+      "family_id": "grandpa_timeline_warming_001",
+      "rule_id": "timeline_warming",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Warmer than the last hour. The old thermometer still knows how to climb.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_warming_002",
+      "mood": "confident",
+      "family_id": "grandpa_timeline_warming_002",
+      "rule_id": "timeline_warming",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is warming up. One fewer excuse for the heavy cardigan.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_wind_001",
+      "mood": "annoyed",
+      "family_id": "grandpa_timeline_wind_001",
+      "rule_id": "timeline_wind",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A windy hour is forecast. The air has forgotten its indoor voice.",
+      "locale": "en-US"
+    },
+    {
+      "id": "grandpa_timeline_wind_002",
+      "mood": "confident",
+      "family_id": "grandpa_timeline_wind_002",
+      "rule_id": "timeline_wind",
+      "persona": "grandpa",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Wind in the outlook. A hat’s retirement plan should include a chin strap.",
+      "locale": "en-US"
+    },
+    {
       "id": "karen_batch01_activity_001",
       "mood": "happy",
       "family_id": "karen_batch01_activity_001",
@@ -6349,6 +7062,306 @@
       "condition_codes": [
         801
       ],
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_chance_001",
+      "mood": "annoyed",
+      "family_id": "karen_timeline_chance_001",
+      "rule_id": "timeline_chance",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{precip_chance}% chance of rain. I prefer complaints with firmer commitments.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_cold_001",
+      "mood": "cozy",
+      "family_id": "karen_timeline_cold_001",
+      "rule_id": "timeline_cold",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Morning forecast: {temp}{temp_unit}. My cardigan has been promoted to management.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_cold_002",
+      "mood": "complaining",
+      "family_id": "karen_timeline_cold_002",
+      "rule_id": "timeline_cold",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A freezing morning? I specifically ordered the warm welcome.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_cooling_001",
+      "mood": "cozy",
+      "family_id": "karen_timeline_cooling_001",
+      "rule_id": "timeline_cooling",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Cooler than the previous hour. My layers have finally found their purpose.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_cooling_002",
+      "mood": "annoyed",
+      "family_id": "karen_timeline_cooling_002",
+      "rule_id": "timeline_cooling",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is cooling down. Even the temperature is withdrawing its support.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_hot_001",
+      "mood": "complaining",
+      "family_id": "karen_timeline_hot_001",
+      "rule_id": "timeline_hot",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit}? This hour needs a refund policy.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_hot_002",
+      "mood": "annoyed",
+      "family_id": "karen_timeline_hot_002",
+      "rule_id": "timeline_hot",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The heat is forecast to exceed my very reasonable expectations.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_night_001",
+      "mood": "cozy",
+      "family_id": "karen_timeline_night_001",
+      "rule_id": "timeline_night",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A clear night forecast. Finally, a ceiling that respects quiet hours.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_night_002",
+      "mood": "confident",
+      "family_id": "karen_timeline_night_002",
+      "rule_id": "timeline_night",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "This clear night forecast will require an individual review of the stars.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_rain_001",
+      "mood": "annoyed",
+      "family_id": "karen_timeline_rain_001",
+      "rule_id": "timeline_rain",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Rain in this hour’s forecast. The ceiling has failed its inspection.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_rain_002",
+      "mood": "complaining",
+      "family_id": "karen_timeline_rain_002",
+      "rule_id": "timeline_rain",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast booked rain without consulting my calendar.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_sunny_001",
+      "mood": "happy",
+      "family_id": "karen_timeline_sunny_001",
+      "rule_id": "timeline_sunny",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} and sunny. Fine, the sky may keep its five-star rating.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_sunny_002",
+      "mood": "confident",
+      "family_id": "karen_timeline_sunny_002",
+      "rule_id": "timeline_sunny",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Comfortable sunshine? I will allow this without a supervisor.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_warming_001",
+      "mood": "annoyed",
+      "family_id": "karen_timeline_warming_001",
+      "rule_id": "timeline_warming",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Warmer than the previous hour. Who gave the thermostat editing privileges?",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_warming_002",
+      "mood": "complaining",
+      "family_id": "karen_timeline_warming_002",
+      "rule_id": "timeline_warming",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is warming up. I did not authorize the upgrade.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_wind_001",
+      "mood": "annoyed",
+      "family_id": "karen_timeline_wind_001",
+      "rule_id": "timeline_wind",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Forecast wind: unsolicited feedback from every direction.",
+      "locale": "en-US"
+    },
+    {
+      "id": "karen_timeline_wind_002",
+      "mood": "complaining",
+      "family_id": "karen_timeline_wind_002",
+      "rule_id": "timeline_wind",
+      "persona": "karen",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A windy hour. I would like the air to stop rearranging things.",
       "locale": "en-US"
     },
     {
@@ -8266,6 +9279,306 @@
       "text": "Humidity is {humidity}%. I will answer no further questions about the air.",
       "temp_min_f": 75,
       "humidity_min": 65,
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_chance_001",
+      "mood": "confident",
+      "family_id": "politician_timeline_chance_001",
+      "rule_id": "timeline_chance",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{precip_chance}% rain probability. The clouds refuse to concede either outcome.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_cold_001",
+      "mood": "cozy",
+      "family_id": "politician_timeline_cold_001",
+      "rule_id": "timeline_cold",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Morning forecast: {temp}{temp_unit}. I support a robust scarf infrastructure.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_cold_002",
+      "mood": "complaining",
+      "family_id": "politician_timeline_cold_002",
+      "rule_id": "timeline_cold",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A freezing morning. Our warm rhetoric has achieved very little.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_cooling_001",
+      "mood": "cozy",
+      "family_id": "politician_timeline_cooling_001",
+      "rule_id": "timeline_cooling",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Cooler than the last hour. Cardigan funding has cleared the committee.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_cooling_002",
+      "mood": "annoyed",
+      "family_id": "politician_timeline_cooling_002",
+      "rule_id": "timeline_cooling",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is cooling down. Our heated debate has lost its primary sponsor.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_hot_001",
+      "mood": "complaining",
+      "family_id": "politician_timeline_hot_001",
+      "rule_id": "timeline_hot",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit}. We are reviewing the sun’s executive authority.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_hot_002",
+      "mood": "annoyed",
+      "family_id": "politician_timeline_hot_002",
+      "rule_id": "timeline_hot",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A hot afternoon is projected. The shade caucus has gained several seats.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_night_001",
+      "mood": "cozy",
+      "family_id": "politician_timeline_night_001",
+      "rule_id": "timeline_night",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A clear night is forecast. The stars may proceed without a permit.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_night_002",
+      "mood": "confident",
+      "family_id": "politician_timeline_night_002",
+      "rule_id": "timeline_night",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Clear night skies. Transparency remains a central part of our platform.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_rain_001",
+      "mood": "confident",
+      "family_id": "politician_timeline_rain_001",
+      "rule_id": "timeline_rain",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Rain in this hour’s forecast. The clouds have passed their spending bill.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_rain_002",
+      "mood": "annoyed",
+      "family_id": "politician_timeline_rain_002",
+      "rule_id": "timeline_rain",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A rainy hour is projected. Our outdoor podium strategy requires revision.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_sunny_001",
+      "mood": "happy",
+      "family_id": "politician_timeline_sunny_001",
+      "rule_id": "timeline_sunny",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} and sunny. My office will, naturally, accept the credit.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_sunny_002",
+      "mood": "confident",
+      "family_id": "politician_timeline_sunny_002",
+      "rule_id": "timeline_sunny",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Comfortable sunshine has secured unanimous support from the imaginary committee.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_warming_001",
+      "mood": "confident",
+      "family_id": "politician_timeline_warming_001",
+      "rule_id": "timeline_warming",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Warmer than the previous hour. My office has already drafted a victory speech.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_warming_002",
+      "mood": "happy",
+      "family_id": "politician_timeline_warming_002",
+      "rule_id": "timeline_warming",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is warming up. These rising numbers will feature in the brochure.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_wind_001",
+      "mood": "confident",
+      "family_id": "politician_timeline_wind_001",
+      "rule_id": "timeline_wind",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A windy hour is forecast. We support air circulation across party lines.",
+      "locale": "en-US"
+    },
+    {
+      "id": "politician_timeline_wind_002",
+      "mood": "complaining",
+      "family_id": "politician_timeline_wind_002",
+      "rule_id": "timeline_wind",
+      "persona": "politician",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Wind in the outlook. The atmosphere is filibustering again.",
       "locale": "en-US"
     },
     {
@@ -10248,6 +11561,306 @@
         621,
         622
       ],
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_chance_001",
+      "mood": "annoyed",
+      "family_id": "two_year_old_timeline_chance_001",
+      "rule_id": "timeline_chance",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{precip_chance}% chance of rain. I asked for a yes-or-no answer, cloud.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_cold_001",
+      "mood": "cozy",
+      "family_id": "two_year_old_timeline_cold_001",
+      "rule_id": "timeline_cold",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Morning forecast: {temp}{temp_unit}. Need blanket. Bigger blanket.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_cold_002",
+      "mood": "annoyed",
+      "family_id": "two_year_old_timeline_cold_002",
+      "rule_id": "timeline_cold",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "cold"
+      ],
+      "dayparts": [
+        "morning"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Freezing morning? No thank you, outside refrigerator.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_cooling_001",
+      "mood": "cozy",
+      "family_id": "two_year_old_timeline_cooling_001",
+      "rule_id": "timeline_cooling",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Cooler than the last hour. Blanket, this is your big moment.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_cooling_002",
+      "mood": "complaining",
+      "family_id": "two_year_old_timeline_cooling_002",
+      "rule_id": "timeline_cooling",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is cooling down. Who left the sky fridge open?",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_hot_001",
+      "mood": "annoyed",
+      "family_id": "two_year_old_timeline_hot_001",
+      "rule_id": "timeline_hot",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit}? Too hot. Tell the sun to use its little voice.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_hot_002",
+      "mood": "complaining",
+      "family_id": "two_year_old_timeline_hot_002",
+      "rule_id": "timeline_hot",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "hot"
+      ],
+      "dayparts": [
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Hot afternoon coming. My pretend snowman has packed a suitcase.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_night_001",
+      "mood": "cozy",
+      "family_id": "two_year_old_timeline_night_001",
+      "rule_id": "timeline_night",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Clear night coming. The sky is ready for its bedtime story.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_night_002",
+      "mood": "happy",
+      "family_id": "two_year_old_timeline_night_002",
+      "rule_id": "timeline_night",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "clear"
+      ],
+      "dayparts": [
+        "night"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A clear night forecast! Plenty of room for my pretend moon dragon.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_rain_001",
+      "mood": "excited",
+      "family_id": "two_year_old_timeline_rain_001",
+      "rule_id": "timeline_rain",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Rain in this hour’s forecast! The clouds are pouring pretend tea.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_rain_002",
+      "mood": "complaining",
+      "family_id": "two_year_old_timeline_rain_002",
+      "rule_id": "timeline_rain",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "light_rain"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Rain is on the schedule. I did not say splash time yet.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_sunny_001",
+      "mood": "happy",
+      "family_id": "two_year_old_timeline_sunny_001",
+      "rule_id": "timeline_sunny",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "{temp}{temp_unit} and sunny! The sky gets my biggest sticker.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_sunny_002",
+      "mood": "excited",
+      "family_id": "two_year_old_timeline_sunny_002",
+      "rule_id": "timeline_sunny",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "clear",
+        "nice"
+      ],
+      "dayparts": [
+        "morning",
+        "afternoon"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Comfy sunshine! I want to put it in my pocket.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_warming_001",
+      "mood": "happy",
+      "family_id": "two_year_old_timeline_warming_001",
+      "rule_id": "timeline_warming",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Warmer than the last hour! The thermometer is standing on tiptoes.",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_warming_002",
+      "mood": "excited",
+      "family_id": "two_year_old_timeline_warming_002",
+      "rule_id": "timeline_warming",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "The forecast is warming up. Numbers go up like my blocks!",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_wind_001",
+      "mood": "excited",
+      "family_id": "two_year_old_timeline_wind_001",
+      "rule_id": "timeline_wind",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "Wind is coming this hour. The air has zoomies!",
+      "locale": "en-US"
+    },
+    {
+      "id": "two_year_old_timeline_wind_002",
+      "mood": "annoyed",
+      "family_id": "two_year_old_timeline_wind_002",
+      "rule_id": "timeline_wind",
+      "persona": "two_year_old",
+      "type": "hourly",
+      "tags": [
+        "windy"
+      ],
+      "dayparts": [
+        "any"
+      ],
+      "level": "mild",
+      "weight": 2.0,
+      "text": "A windy forecast. Stop touching all the leaves, sky.",
       "locale": "en-US"
     }
   ]
