@@ -1,0 +1,2 @@
+# Preserve literal space-prefixed blank context lines in the captured unified diff.
+docs/roasts/ui_evidence/final3/protected-source.diff -whitespace

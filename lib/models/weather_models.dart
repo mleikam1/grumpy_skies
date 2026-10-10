@@ -58,7 +58,7 @@ class LocationCandidate {
     return LocationCandidate(
       name: (json['name'] ?? 'Selected location') as String,
       state: json['state'] as String?,
-      country: (json['country'] ?? 'US') as String,
+      country: (json['country'] ?? '') as String,
       lat: (json['lat'] as num).toDouble(),
       lon: (json['lon'] as num).toDouble(),
       source: (json['source'] ?? 'city') as String,
@@ -170,7 +170,7 @@ class WeatherLocation extends LocationCandidate {
     return WeatherLocation(
       name: (json['name'] ?? 'Selected location') as String,
       state: json['state'] as String?,
-      country: (json['country'] ?? 'US') as String,
+      country: (json['country'] ?? '') as String,
       latitude: latitude,
       longitude: longitude,
       source: WeatherLocationSourceX.parse(json['source']),
@@ -497,6 +497,15 @@ class RadarFrameSet {
 }
 
 class CurrentWeather {
+  final String? aqiScale;
+  final String? aqiSource;
+  final bool temperatureKnown;
+  final bool feelsLikeKnown;
+  final bool humidityKnown;
+  final bool windKnown;
+  final bool uvKnown;
+  final bool sunriseKnown;
+  final bool sunsetKnown;
   final String locationName;
   final double? latitude;
   final double? longitude;
@@ -535,6 +544,15 @@ class CurrentWeather {
   final String units;
 
   const CurrentWeather({
+    this.aqiScale,
+    this.aqiSource,
+    this.temperatureKnown = true,
+    this.feelsLikeKnown = true,
+    this.humidityKnown = true,
+    this.windKnown = true,
+    this.uvKnown = true,
+    this.sunriseKnown = true,
+    this.sunsetKnown = true,
     this.locationName = '',
     this.latitude,
     this.longitude,
@@ -574,6 +592,15 @@ class CurrentWeather {
   });
 
   Map<String, dynamic> toJson() => {
+        'aqiScale': aqiScale,
+        'aqiSource': aqiSource,
+        'temperatureKnown': temperatureKnown,
+        'feelsLikeKnown': feelsLikeKnown,
+        'humidityKnown': humidityKnown,
+        'windKnown': windKnown,
+        'uvKnown': uvKnown,
+        'sunriseKnown': sunriseKnown,
+        'sunsetKnown': sunsetKnown,
         'locationName': locationName,
         'latitude': latitude,
         'longitude': longitude,
@@ -671,6 +698,8 @@ class CurrentWeather {
 
   factory CurrentWeather.fromSnapshot(WeatherSnapshot snapshot) {
     return CurrentWeather(
+      sunriseKnown: false,
+      sunsetKnown: false,
       locationName: snapshot.locationName,
       temperatureC: snapshot.temperatureC,
       condition: snapshot.condition,
@@ -694,16 +723,29 @@ class CurrentWeather {
 
   factory CurrentWeather.fromJson(Map<String, dynamic> json) {
     return CurrentWeather(
+      aqiScale: json['aqiScale'] as String?,
+      aqiSource: json['aqiSource'] as String?,
+      temperatureKnown:
+          json['temperatureKnown'] as bool? ?? json['temperatureC'] is num,
+      feelsLikeKnown:
+          json['feelsLikeKnown'] as bool? ?? json['feelsLikeC'] is num,
+      humidityKnown: json['humidityKnown'] as bool? ?? json['humidity'] is num,
+      windKnown: json['windKnown'] as bool? ?? json['windKph'] is num,
+      uvKnown: json['uvKnown'] as bool? ?? json['uvIndex'] is num,
+      sunriseKnown: json['sunriseKnown'] as bool? ??
+          _safeParseDate(json['sunrise']) != null,
+      sunsetKnown: json['sunsetKnown'] as bool? ??
+          _safeParseDate(json['sunset']) != null,
       locationName: (json['locationName'] ?? '') as String,
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       timezoneOffset: (json['timezoneOffset'] as num?)?.round(),
-      temperatureC: (json['temperatureC'] as num).toDouble(),
+      temperatureC: (json['temperatureC'] as num? ?? 0).toDouble(),
       condition: json['condition'] as String,
-      feelsLikeC: (json['feelsLikeC'] as num).toDouble(),
-      windKph: (json['windKph'] as num).toDouble(),
+      feelsLikeC: (json['feelsLikeC'] as num? ?? 0).toDouble(),
+      windKph: (json['windKph'] as num? ?? 0).toDouble(),
       windDirection: (json['windDirection'] ?? '') as String,
-      humidity: (json['humidity'] as num).toInt(),
+      humidity: (json['humidity'] as num? ?? 0).toInt(),
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
       precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
           json['precipitationChance'] is num,
@@ -744,6 +786,7 @@ class CurrentWeather {
 class HourlyForecast {
   final DateTime time;
   final double temperatureC;
+  final bool temperatureKnown;
   final String condition;
   final int precipitationChance;
   final bool precipitationChanceKnown;
@@ -755,6 +798,7 @@ class HourlyForecast {
     required this.time,
     required this.temperatureC,
     required this.condition,
+    this.temperatureKnown = true,
     this.precipitationChance = 0,
     this.precipitationChanceKnown = true,
     this.weatherIcon,
@@ -777,6 +821,7 @@ class HourlyForecast {
         'time': time.toIso8601String(),
         'temperatureC': temperatureC,
         'condition': condition,
+        'temperatureKnown': temperatureKnown,
         'precipitationChance': precipitationChance,
         'precipitationChanceKnown': precipitationChanceKnown,
         'weatherIcon': weatherIcon,
@@ -787,8 +832,10 @@ class HourlyForecast {
   factory HourlyForecast.fromJson(Map<String, dynamic> json) {
     return HourlyForecast(
       time: DateTime.parse(json['time'] as String),
-      temperatureC: (json['temperatureC'] as num).toDouble(),
+      temperatureC: (json['temperatureC'] as num? ?? 0).toDouble(),
       condition: json['condition'] as String,
+      temperatureKnown:
+          json['temperatureKnown'] as bool? ?? json['temperatureC'] is num,
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
       precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
           json['precipitationChance'] is num,
@@ -803,6 +850,7 @@ class DailyForecast {
   final DateTime date;
   final double minTempC;
   final double maxTempC;
+  final bool temperatureKnown;
   final String condition;
   final int precipitationChance;
   final bool precipitationChanceKnown;
@@ -815,6 +863,7 @@ class DailyForecast {
     required this.minTempC,
     required this.maxTempC,
     required this.condition,
+    this.temperatureKnown = true,
     this.precipitationChance = 0,
     this.precipitationChanceKnown = true,
     this.weatherIcon,
@@ -841,6 +890,7 @@ class DailyForecast {
         'minTempC': minTempC,
         'maxTempC': maxTempC,
         'condition': condition,
+        'temperatureKnown': temperatureKnown,
         'precipitationChance': precipitationChance,
         'precipitationChanceKnown': precipitationChanceKnown,
         'weatherIcon': weatherIcon,
@@ -851,9 +901,11 @@ class DailyForecast {
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
     return DailyForecast(
       date: DateTime.parse(json['date'] as String),
-      minTempC: (json['minTempC'] as num).toDouble(),
-      maxTempC: (json['maxTempC'] as num).toDouble(),
+      minTempC: (json['minTempC'] as num? ?? 0).toDouble(),
+      maxTempC: (json['maxTempC'] as num? ?? 0).toDouble(),
       condition: json['condition'] as String,
+      temperatureKnown: json['temperatureKnown'] as bool? ??
+          (json['minTempC'] is num && json['maxTempC'] is num),
       precipitationChance: ((json['precipitationChance'] ?? 0) as num).toInt(),
       precipitationChanceKnown: json['precipitationChanceKnown'] as bool? ??
           json['precipitationChance'] is num,

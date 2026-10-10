@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../models/temperature_unit.dart';
@@ -6,6 +9,7 @@ import '../../../services/cache_service.dart';
 import '../../../services/weather_location_controller.dart';
 import '../../roasts/models/roast_persona.dart';
 import '../../roasts/models/roast_mood.dart';
+import '../../roasts/content/roast_selector.dart';
 
 enum MemeWindUnit { mph, kph }
 
@@ -72,12 +76,15 @@ abstract final class MemeWeather {
       if (offset != null) 'timezoneOffsetSeconds': offset,
       'temperatureUnit': temperatureUnit.name,
       'windUnit': windUnit.name,
-      if (temperature.isFinite) 'temperature': temperature,
-      if (feelsLike.isFinite) 'feelsLike': feelsLike,
+      if (weather.temperatureKnown && temperature.isFinite)
+        'temperature': temperature,
+      if (weather.feelsLikeKnown && feelsLike.isFinite) 'feelsLike': feelsLike,
       if (weather.condition.trim().isNotEmpty) 'condition': weather.condition,
-      if (weather.humidity >= 0 && weather.humidity <= 100)
+      if (weather.humidityKnown &&
+          weather.humidity >= 0 &&
+          weather.humidity <= 100)
         'humidity': weather.humidity,
-      if (wind.isFinite && wind >= 0) 'wind': wind,
+      if (weather.windKnown && wind.isFinite && wind >= 0) 'wind': wind,
       if (local != null) 'day': _dayName(local.weekday),
       if (includeCity && city.isNotEmpty) 'city': city,
       'tags': List.unmodifiable(_tags(weather)),
@@ -194,45 +201,124 @@ class DisplayedRoastSnapshot {
     required this.sourceLabel,
     required this.isSample,
     RoastMood? mood,
+    this.selection,
     Map<String, dynamic>? weatherSnapshot,
     DateTime? capturedAt,
   })  : mood = RoastMoodResolver.resolve(
             personaId: personaId, text: text, explicitMood: mood),
         personaId = RoastPersonas.normalizeId(personaId),
         weatherSnapshot =
-            weatherSnapshot == null ? null : Map.unmodifiable(weatherSnapshot),
+            weatherSnapshot == null ? null : _freezeSnapshot(weatherSnapshot),
         capturedAt = capturedAt ?? DateTime.now();
 
   final String id;
   final String text;
   final String personaId;
   final RoastMood mood;
+  final RoastSelection? selection;
   final String sourceKey;
   final String sourceLabel;
   final bool isSample;
   final Map<String, dynamic>? weatherSnapshot;
   final DateTime capturedAt;
 
+  /// Small, versioned provenance saved alongside an existing meme document.
+  /// Never contains coordinates or editorial rules/review notes.
+  Map<String, dynamic> get provenance => Map.unmodifiable({
+        'id': id,
+        'text': text,
+        'persona': personaId,
+        'mood': mood.name,
+        if (selection != null) ...{
+          'familyId': selection!.familyId,
+          'packVersion': selection!.packVersion,
+          'scope': selection!.scope.name,
+          'reason': selection!.reason,
+          'source': selection!.source,
+          if (selection!.weatherTimestamp != null)
+            'weatherTimestamp':
+                selection!.weatherTimestamp!.toUtc().toIso8601String(),
+          if (selection!.windowStart != null)
+            'windowStart': selection!.windowStart!.toUtc().toIso8601String(),
+          if (selection!.windowEnd != null)
+            'windowEnd': selection!.windowEnd!.toUtc().toIso8601String(),
+        },
+      });
+
   String get chooserLabel =>
       '$sourceLabel · ${RoastPersonas.byId(personaId).displayName}'
       '${isSample ? ' · Sample roast' : ''}';
 }
 
-/// Retains one exact, most recently displayed choice per source across routes.
-/// This in-memory registry intentionally never persists captions or locations.
+/// The existing display registry is the single owner of frozen share/reveal/
+/// meme snapshots. Optional local history is bounded; no network or coordinates.
 class DisplayedRoastRegistry extends ChangeNotifier {
+  DisplayedRoastRegistry({SharedPreferences? preferences})
+      : _preferences = preferences;
+  static const _storageKey = 'displayed_roast_snapshots_v1';
+  static const historyLimit = 50;
+  final SharedPreferences? _preferences;
   final Map<String, DisplayedRoastSnapshot> _choices = {};
+  final Map<String, DisplayedRoastSnapshot> _history = {};
   WeatherBundle? _cachedWeather;
+  Future<void> _writes = Future<void>.value();
 
+  static Future<DisplayedRoastRegistry> restore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final registry = DisplayedRoastRegistry(preferences: prefs);
+      final raw = prefs.getString(_storageKey);
+      if (raw != null && raw.length <= 512 * 1024) {
+        final entries = jsonDecode(raw);
+        if (entries is List) {
+          for (final item in entries.take(historyLimit)) {
+            try {
+              final j = (item as Map).cast<String, dynamic>();
+              final selection = j['selection'] == null
+                  ? null
+                  : RoastSelection.fromJson(
+                      (j['selection'] as Map).cast<String, dynamic>());
+              final snapshot = DisplayedRoastSnapshot(
+                  id: j['id'] as String,
+                  text: j['text'] as String,
+                  personaId: j['persona'] as String,
+                  sourceKey: j['sourceKey'] as String,
+                  sourceLabel: j['sourceLabel'] as String,
+                  isSample: j['isSample'] == true,
+                  mood: RoastMood.tryParse(j['mood']),
+                  selection: selection,
+                  weatherSnapshot:
+                      (j['weather'] as Map?)?.cast<String, dynamic>(),
+                  capturedAt: DateTime.parse(j['capturedAt'] as String));
+              if (selection != null) {
+                registry._history[selectionKey(selection)] = snapshot;
+              }
+            } catch (_) {/* One damaged optional entry cannot block launch. */}
+          }
+        }
+      }
+      return registry;
+    } catch (_) {
+      return DisplayedRoastRegistry();
+    }
+  }
+
+  static String selectionKey(RoastSelection selection) =>
+      '${selection.selectionId}|${selection.weatherTimestamp?.toUtc().toIso8601String()}|${selection.renderedText}';
+
+  DisplayedRoastSnapshot? forSelection(RoastSelection? selection) =>
+      selection == null ? null : _history[selectionKey(selection)];
   List<DisplayedRoastSnapshot> get choices =>
       List.unmodifiable(_choices.values.toList().reversed);
   DisplayedRoastSnapshot? get latestForecast => _choices['forecast'];
   WeatherBundle? get cachedWeather => _cachedWeather;
+  Future<void> get pendingWrites => _writes;
 
   void publish(DisplayedRoastSnapshot snapshot, {WeatherBundle? weather}) {
     if (weather != null) _cachedWeather = weather;
     final old = _choices[snapshot.sourceKey];
     if (old != null &&
+        identical(old.selection, snapshot.selection) &&
         old.id == snapshot.id &&
         old.text == snapshot.text &&
         old.personaId == snapshot.personaId &&
@@ -247,11 +333,60 @@ class DisplayedRoastRegistry extends ChangeNotifier {
     }
     _choices.remove(snapshot.sourceKey);
     _choices[snapshot.sourceKey] = snapshot;
+    final selection = snapshot.selection;
+    if (selection != null) {
+      final key = selectionKey(selection);
+      // Keep the exact weather/text originally displayed for each exposure.
+      _history.putIfAbsent(key, () => snapshot);
+      while (_history.length > historyLimit) {
+        _history.remove(_history.keys.first);
+      }
+      _persist();
+    }
     notifyListeners();
+  }
+
+  void _persist() {
+    if (_preferences == null) return;
+    final raw = jsonEncode([
+      for (final s in _history.values)
+        {
+          'id': s.id,
+          'text': s.text,
+          'persona': s.personaId,
+          'mood': s.mood.name,
+          'sourceKey': s.sourceKey,
+          'sourceLabel': s.sourceLabel,
+          'isSample': s.isSample,
+          'weather': s.weatherSnapshot,
+          'capturedAt': s.capturedAt.toUtc().toIso8601String(),
+          'selection': s.selection?.toJson(),
+        }
+    ]);
+    _writes = _writes.then((_) async {
+      try {
+        await _preferences!.setString(_storageKey, raw);
+      } catch (_) {/* Local display still works. */}
+    });
+    unawaited(_writes);
   }
 
   void clearSource(String sourceKey) {
     if (sourceKey == 'forecast') _cachedWeather = null;
     if (_choices.remove(sourceKey) != null) notifyListeners();
   }
+}
+
+Map<String, dynamic> _freezeSnapshot(Map<String, dynamic> source) =>
+    Map.unmodifiable({
+      for (final entry in source.entries)
+        entry.key: _freezeSnapshotValue(entry.value),
+    });
+Object? _freezeSnapshotValue(Object? value) {
+  if (value is Map) return _freezeSnapshot(value.cast<String, dynamic>());
+  if (value is List) return List.unmodifiable(value.map(_freezeSnapshotValue));
+  if (value == null || value is String || value is bool || value is num) {
+    return value;
+  }
+  throw const FormatException('Invalid displayed weather snapshot.');
 }

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/weather_api_config.dart';
 import '../models/weather_models.dart';
+import 'network_counters.dart';
 
 class RadarHealth {
   const RadarHealth({
@@ -89,7 +90,9 @@ class OpenWeatherBackendClient {
     http.Client? httpClient,
     String? baseUrl,
     WeatherApiConfig? config,
-  })  : _httpClient = httpClient ?? http.Client(),
+    NetworkCounters? counters,
+  })  : counters = counters ?? NetworkCounters.instance,
+        _httpClient = httpClient ?? http.Client(),
         baseUrl = _normalizeBaseUrl(
           baseUrl ?? (config ?? WeatherApiConfig.current).baseUrl,
         ) {
@@ -106,6 +109,8 @@ class OpenWeatherBackendClient {
     return WeatherApiConfig.current.baseUrl;
   }
 
+  final NetworkCounters counters;
+  final Map<String, Future<Map<String, dynamic>>> _inflight = {};
   final http.Client _httpClient;
   final String baseUrl;
 
@@ -347,8 +352,29 @@ class OpenWeatherBackendClient {
   Future<Map<String, dynamic>> _getJson(
     String path,
     Map<String, String> query,
-  ) async {
+  ) {
     final uri = _uri(path, query);
+    final key = uri.toString();
+    final pending = _inflight[key];
+    if (pending != null) {
+      counters.increment('backendDeduplicated');
+      return pending;
+    }
+    return _inflight[key] = _requestJson(path, query, uri).whenComplete(() {
+      _inflight.remove(key);
+    });
+  }
+
+  Future<Map<String, dynamic>> _requestJson(
+    String path,
+    Map<String, String> query,
+    Uri uri,
+  ) async {
+    counters.increment(path.startsWith('/location/')
+        ? 'geocodingBackendRequests'
+        : path.startsWith('/weather/')
+            ? 'weatherBackendRequests'
+            : 'radarBackendRequests');
     _debugWeatherEndpoint(path, query);
     final http.Response response;
     try {
@@ -358,6 +384,7 @@ class OpenWeatherBackendClient {
       throw OpenWeatherBackendException(_connectionFailureMessage(uri));
     }
 
+    counters.increment('backendResponseBytes', response.bodyBytes.length);
     final contentType = response.headers['content-type'] ?? '';
     if (!_isJsonContentType(contentType)) {
       _debugNonJsonResponse(uri, response);
@@ -482,6 +509,13 @@ class OpenWeatherBackendClient {
       sourceUpdatedAt: sourceUpdatedAt,
       fetchedAt: fetchedAt,
       units: dtoUnits,
+      temperatureKnown: json['temp'] is num,
+      feelsLikeKnown: json['feelsLike'] is num,
+      windKnown: json['windSpeed'] is num,
+      humidityKnown: json['humidity'] is num,
+      uvKnown: json['uvi'] is num,
+      sunriseKnown: sunrise != null,
+      sunsetKnown: sunset != null,
       temperatureC: _temperatureToC(temp, dtoUnits),
       condition: _titleCase(
         weatherDescription ?? weatherMain ?? 'Current conditions',
@@ -492,8 +526,10 @@ class OpenWeatherBackendClient {
       humidity: (json['humidity'] as num?)?.round() ?? 0,
       precipitationChance: 0,
       precipitationChanceKnown: false,
-      aqi: 0,
-      aqiCategory: '',
+      aqi: (json['aqi'] as num?)?.round() ?? 0,
+      aqiCategory: json['aqiCategory'] as String? ?? '',
+      aqiScale: json['aqiScale'] as String?,
+      aqiSource: json['aqiSource'] as String?,
       sunrise: sunrise ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       sunset: sunset ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       moonrise: _dateFromJson(json['moonrise']) ??
@@ -648,6 +684,7 @@ class OpenWeatherBackendClient {
     final rawTime = _dateFromJson(json['time'] ?? json['dt']);
     return HourlyForecast(
       time: rawTime ?? current.lastUpdated,
+      temperatureKnown: rawTemp is num,
       temperatureC: rawTemp == null
           ? current.temperatureC
           : _temperatureToC((rawTemp as num).toDouble(), units),
@@ -692,6 +729,7 @@ class OpenWeatherBackendClient {
         timezoneOffset,
         current.lastUpdated,
       ),
+      temperatureKnown: rawMin is num && rawMax is num,
       minTempC: rawMin == null
           ? current.temperatureC
           : _temperatureToC((rawMin as num).toDouble(), units),
@@ -836,19 +874,14 @@ class OpenWeatherBackendClient {
     Map<String, String> query,
   ) {
     if (!kDebugMode || !path.startsWith('/weather/')) return;
-    final lat = double.tryParse(query['lat'] ?? '');
-    final lon = double.tryParse(query['lon'] ?? '');
-    final coordinateLabel = lat == null || lon == null
-        ? ''
-        : ' lat=${lat.toStringAsFixed(3)} lon=${lon.toStringAsFixed(3)}';
-    debugPrint('[GrumpySkies] weather endpoint $path$coordinateLabel');
+    debugPrint('[GrumpySkies] weather endpoint $path');
   }
 
   static void _debugWeatherFailure(Uri uri, Object error) {
     if (!kDebugMode) return;
     debugPrint(
       '[GrumpySkies] weather request failed '
-      'host=${uri.host} path=${uri.path}: $error',
+      'host=${uri.host} path=${uri.path}: ${error.runtimeType}',
     );
   }
 
@@ -856,9 +889,9 @@ class OpenWeatherBackendClient {
     if (!kDebugMode) return;
     debugPrint(
       '[GrumpySkies] weather backend returned non-JSON '
-      'url=$uri status=${response.statusCode} '
+      'host=${uri.host} path=${uri.path} status=${response.statusCode} '
       'contentType=${response.headers['content-type'] ?? 'unknown'} '
-      'bodyPreview=${_safeBodyPreview(response.body)}',
+      'responseBytes=${response.bodyBytes.length}',
     );
   }
 
@@ -870,17 +903,9 @@ class OpenWeatherBackendClient {
     if (!kDebugMode) return;
     debugPrint(
       '[GrumpySkies] weather backend returned invalid JSON '
-      'url=$uri status=${response.statusCode} '
+      'host=${uri.host} path=${uri.path} status=${response.statusCode} '
       'contentType=${response.headers['content-type'] ?? 'unknown'} '
-      'bodyPreview=${_safeBodyPreview(response.body)} error=$error',
+      'responseBytes=${response.bodyBytes.length} error=${error.runtimeType}',
     );
-  }
-
-  static String _safeBodyPreview(String body) {
-    final compact = body
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '')
-        .trim();
-    return compact.length <= 240 ? compact : '${compact.substring(0, 240)}...';
   }
 }

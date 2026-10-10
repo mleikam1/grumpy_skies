@@ -1,0 +1,763 @@
+{
+  "source": "flutter test --no-pub --coverage --reporter expanded",
+  "overall": {
+    "covered": 11014,
+    "lines": 13373,
+    "percent": 82.36,
+    "files": 149
+  },
+  "roast_core": {
+    "covered": 1877,
+    "lines": 2096,
+    "percent": 89.55,
+    "files": 15
+  },
+  "records": [
+    {
+      "file": "lib/services/open_weather_backend_client.dart",
+      "covered": 346,
+      "lines": 431
+    },
+    {
+      "file": "lib/services/network_counters.dart",
+      "covered": 5,
+      "lines": 5
+    },
+    {
+      "file": "lib/services/cache_service.dart",
+      "covered": 25,
+      "lines": 33
+    },
+    {
+      "file": "lib/features/roasts/controllers/local_roast_controller.dart",
+      "covered": 85,
+      "lines": 129
+    },
+    {
+      "file": "lib/models/temperature_unit.dart",
+      "covered": 1,
+      "lines": 3
+    },
+    {
+      "file": "lib/models/weather_models.dart",
+      "covered": 448,
+      "lines": 523
+    },
+    {
+      "file": "lib/features/roasts/content/roast_pack_repository.dart",
+      "covered": 154,
+      "lines": 176
+    },
+    {
+      "file": "lib/features/roasts/content/roast_local_preferences.dart",
+      "covered": 41,
+      "lines": 42
+    },
+    {
+      "file": "lib/features/roasts/content/roast_selector.dart",
+      "covered": 247,
+      "lines": 268
+    },
+    {
+      "file": "lib/features/roasts/content/weather_roast_models.dart",
+      "covered": 177,
+      "lines": 184
+    },
+    {
+      "file": "lib/features/roasts/services/local_roast_engine.dart",
+      "covered": 176,
+      "lines": 179
+    },
+    {
+      "file": "lib/features/fun/meme/models/meme_document.dart",
+      "covered": 343,
+      "lines": 359
+    },
+    {
+      "file": "lib/features/fun/meme/platform/meme_raster.dart",
+      "covered": 109,
+      "lines": 120
+    },
+    {
+      "file": "lib/features/fun/meme/storage/meme_backend.dart",
+      "covered": 19,
+      "lines": 22
+    },
+    {
+      "file": "lib/features/fun/meme/storage/meme_backend_io.dart",
+      "covered": 32,
+      "lines": 35
+    },
+    {
+      "file": "lib/features/fun/meme/storage/meme_indexeddb_backend.dart",
+      "covered": 22,
+      "lines": 27
+    },
+    {
+      "file": "lib/features/fun/meme/storage/meme_store.dart",
+      "covered": 161,
+      "lines": 165
+    },
+    {
+      "file": "lib/features/roasts/content/roast_http_client.dart",
+      "covered": 0,
+      "lines": 1
+    },
+    {
+      "file": "lib/features/roasts/content/roast_pack_cache.dart",
+      "covered": 75,
+      "lines": 93
+    },
+    {
+      "file": "lib/features/roasts/content/roast_pack_validator.dart",
+      "covered": 235,
+      "lines": 283
+    },
+    {
+      "file": "lib/features/roasts/content/roast_update_sync.dart",
+      "covered": 132,
+      "lines": 139
+    },
+    {
+      "file": "lib/features/roasts/content/roast_content_models.dart",
+      "covered": 129,
+      "lines": 153
+    },
+    {
+      "file": "lib/design/dm_colors.dart",
+      "covered": 3,
+      "lines": 12
+    },
+    {
+      "file": "lib/design/dm_gradients.dart",
+      "covered": 0,
+      "lines": 9
+    },
+    {
+      "file": "lib/features/roasts/models/roast_mood.dart",
+      "covered": 28,
+      "lines": 28
+    },
+    {
+      "file": "lib/features/roasts/content/roast_rule_models.dart",
+      "covered": 43,
+      "lines": 43
+    },
+    {
+      "file": "lib/features/roasts/content/roast_context_adapter.dart",
+      "covered": 208,
+      "lines": 217
+    },
+    {
+      "file": "lib/models/weather_safety.dart",
+      "covered": 13,
+      "lines": 13
+    },
+    {
+      "file": "lib/features/roasts/models/roast_persona.dart",
+      "covered": 67,
+      "lines": 67
+    },
+    {
+      "file": "lib/models/daymaker_models.dart",
+      "covered": 126,
+      "lines": 148
+    },
+    {
+      "file": "lib/shared/assets/dm_assets.dart",
+      "covered": 27,
+      "lines": 28
+    },
+    {
+      "file": "lib/features/roasts/services/roast_safety.dart",
+      "covered": 8,
+      "lines": 8
+    },
+    {
+      "file": "lib/models/app_appearance.dart",
+      "covered": 13,
+      "lines": 13
+    },
+    {
+      "file": "lib/shared/assets/persona_emotion_assets.dart",
+      "covered": 9,
+      "lines": 9
+    },
+    {
+      "file": "lib/app/daymaker_shell.dart",
+      "covered": 45,
+      "lines": 48
+    },
+    {
+      "file": "lib/monetization/monetization_controller.dart",
+      "covered": 87,
+      "lines": 232
+    },
+    {
+      "file": "lib/shared/widgets/dm_bottom_nav.dart",
+      "covered": 51,
+      "lines": 51
+    },
+    {
+      "file": "lib/shared/widgets/weather_safety_banner.dart",
+      "covered": 61,
+      "lines": 62
+    },
+    {
+      "file": "lib/config/weather_api_config.dart",
+      "covered": 33,
+      "lines": 38
+    },
+    {
+      "file": "lib/core/weather/openweather_icon_mapper.dart",
+      "covered": 96,
+      "lines": 120
+    },
+    {
+      "file": "lib/data/daymaker_sample_data.dart",
+      "covered": 71,
+      "lines": 85
+    },
+    {
+      "file": "lib/design/dm_breakpoints.dart",
+      "covered": 11,
+      "lines": 22
+    },
+    {
+      "file": "lib/design/dm_metric_colors.dart",
+      "covered": 16,
+      "lines": 16
+    },
+    {
+      "file": "lib/design/dm_theme.dart",
+      "covered": 163,
+      "lines": 176
+    },
+    {
+      "file": "lib/design/dm_motion.dart",
+      "covered": 4,
+      "lines": 4
+    },
+    {
+      "file": "lib/design/dm_radius.dart",
+      "covered": 0,
+      "lines": 8
+    },
+    {
+      "file": "lib/design/dm_semantic_colors.dart",
+      "covered": 45,
+      "lines": 88
+    },
+    {
+      "file": "lib/design/dm_spacing.dart",
+      "covered": 5,
+      "lines": 14
+    },
+    {
+      "file": "lib/design/dm_typography.dart",
+      "covered": 2,
+      "lines": 11
+    },
+    {
+      "file": "lib/features/forecast/forecast_screen.dart",
+      "covered": 386,
+      "lines": 483
+    },
+    {
+      "file": "lib/features/fun/meme/meme_weather.dart",
+      "covered": 188,
+      "lines": 206
+    },
+    {
+      "file": "lib/features/roasts/services/displayed_roast_share.dart",
+      "covered": 26,
+      "lines": 36
+    },
+    {
+      "file": "lib/repositories/fake_weather_repository.dart",
+      "covered": 3,
+      "lines": 5
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_insight_card.dart",
+      "covered": 34,
+      "lines": 42
+    },
+    {
+      "file": "lib/models/precipitation_coverage.dart",
+      "covered": 26,
+      "lines": 26
+    },
+    {
+      "file": "lib/monetization/ad_placement.dart",
+      "covered": 15,
+      "lines": 17
+    },
+    {
+      "file": "lib/monetization/widgets/ad_section.dart",
+      "covered": 143,
+      "lines": 144
+    },
+    {
+      "file": "lib/repositories/settings_repository.dart",
+      "covered": 0,
+      "lines": 3
+    },
+    {
+      "file": "lib/repositories/pack_roast_repository.dart",
+      "covered": 36,
+      "lines": 46
+    },
+    {
+      "file": "lib/repositories/weather_repository.dart",
+      "covered": 4,
+      "lines": 8
+    },
+    {
+      "file": "lib/services/settings_controller.dart",
+      "covered": 61,
+      "lines": 68
+    },
+    {
+      "file": "lib/services/weather_location_controller.dart",
+      "covered": 152,
+      "lines": 184
+    },
+    {
+      "file": "lib/shared/widgets/weather_location_selector.dart",
+      "covered": 50,
+      "lines": 204
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_current_weather_card.dart",
+      "covered": 46,
+      "lines": 47
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_temperature.dart",
+      "covered": 5,
+      "lines": 5
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_daily_grid.dart",
+      "covered": 134,
+      "lines": 134
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_sheet.dart",
+      "covered": 26,
+      "lines": 26
+    },
+    {
+      "file": "lib/shared/widgets/dm_approved_components.dart",
+      "covered": 59,
+      "lines": 73
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_extra_metrics.dart",
+      "covered": 57,
+      "lines": 58
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_header.dart",
+      "covered": 17,
+      "lines": 17
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_hero_atmosphere.dart",
+      "covered": 0,
+      "lines": 23
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_hourly_strip.dart",
+      "covered": 123,
+      "lines": 123
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_metric_chips.dart",
+      "covered": 23,
+      "lines": 23
+    },
+    {
+      "file": "lib/features/forecast/widgets/forecast_roast_card.dart",
+      "covered": 49,
+      "lines": 49
+    },
+    {
+      "file": "lib/shared/widgets/dm_roast_mood_badge.dart",
+      "covered": 21,
+      "lines": 21
+    },
+    {
+      "file": "lib/features/fun/fun_zone_screen.dart",
+      "covered": 165,
+      "lines": 184
+    },
+    {
+      "file": "lib/features/fun/widgets/approved_fun_cards.dart",
+      "covered": 81,
+      "lines": 81
+    },
+    {
+      "file": "lib/features/fun/meme/meme_catalog.dart",
+      "covered": 148,
+      "lines": 151
+    },
+    {
+      "file": "lib/features/fun/widgets/fun_feature_tile.dart",
+      "covered": 58,
+      "lines": 58
+    },
+    {
+      "file": "lib/features/fun/widgets/fun_wheel_visual.dart",
+      "covered": 16,
+      "lines": 16
+    },
+    {
+      "file": "lib/features/fun/meme/meme_completion.dart",
+      "covered": 11,
+      "lines": 11
+    },
+    {
+      "file": "lib/features/fun/meme/meme_editor_controller.dart",
+      "covered": 167,
+      "lines": 181
+    },
+    {
+      "file": "lib/features/fun/meme/meme_studio.dart",
+      "covered": 302,
+      "lines": 457
+    },
+    {
+      "file": "lib/features/fun/meme/meme_suggestions.dart",
+      "covered": 44,
+      "lines": 44
+    },
+    {
+      "file": "lib/features/fun/meme/platform/meme_import_service.dart",
+      "covered": 36,
+      "lines": 47
+    },
+    {
+      "file": "lib/features/fun/meme/platform/meme_export_service.dart",
+      "covered": 15,
+      "lines": 15
+    },
+    {
+      "file": "lib/features/fun/meme/rendering/meme_renderer.dart",
+      "covered": 243,
+      "lines": 256
+    },
+    {
+      "file": "lib/features/fun/meme/widgets/meme_document_canvas.dart",
+      "covered": 39,
+      "lines": 88
+    },
+    {
+      "file": "lib/features/fun/meme/widgets/meme_export_preview.dart",
+      "covered": 100,
+      "lines": 106
+    },
+    {
+      "file": "lib/features/fun/meme/widgets/meme_inspector.dart",
+      "covered": 112,
+      "lines": 374
+    },
+    {
+      "file": "lib/features/fun/meme/widgets/meme_library.dart",
+      "covered": 145,
+      "lines": 166
+    },
+    {
+      "file": "lib/features/fun/meme/platform/meme_drop_zone_stub.dart",
+      "covered": 3,
+      "lines": 3
+    },
+    {
+      "file": "lib/features/fun/meme/platform/meme_export_io.dart",
+      "covered": 38,
+      "lines": 47
+    },
+    {
+      "file": "lib/features/fun/meme/platform/meme_export_types.dart",
+      "covered": 10,
+      "lines": 10
+    },
+    {
+      "file": "lib/features/fun/meme_generator_screen.dart",
+      "covered": 9,
+      "lines": 9
+    },
+    {
+      "file": "lib/features/radar/radar_screen.dart",
+      "covered": 643,
+      "lines": 742
+    },
+    {
+      "file": "lib/services/chaos_score_service.dart",
+      "covered": 68,
+      "lines": 69
+    },
+    {
+      "file": "lib/utils/radar_time.dart",
+      "covered": 45,
+      "lines": 47
+    },
+    {
+      "file": "lib/features/radar/widgets/open_weather_radar_map.dart",
+      "covered": 134,
+      "lines": 153
+    },
+    {
+      "file": "lib/features/roasts/advanced_roast_reveal_screen.dart",
+      "covered": 74,
+      "lines": 80
+    },
+    {
+      "file": "lib/features/roasts/widgets/advanced_roast_reveal_card.dart",
+      "covered": 97,
+      "lines": 107
+    },
+    {
+      "file": "lib/features/roasts/roasts_screen.dart",
+      "covered": 288,
+      "lines": 342
+    },
+    {
+      "file": "lib/features/roasts/widgets/daymaker_persona_carousel.dart",
+      "covered": 47,
+      "lines": 47
+    },
+    {
+      "file": "lib/features/roasts/widgets/featured_roast_card.dart",
+      "covered": 48,
+      "lines": 48
+    },
+    {
+      "file": "lib/features/roasts/widgets/persona_avatar.dart",
+      "covered": 19,
+      "lines": 19
+    },
+    {
+      "file": "lib/shared/widgets/dm_asset_image.dart",
+      "covered": 37,
+      "lines": 44
+    },
+    {
+      "file": "lib/features/settings/about_screen.dart",
+      "covered": 41,
+      "lines": 44
+    },
+    {
+      "file": "lib/features/settings/privacy_information.dart",
+      "covered": 0,
+      "lines": 5
+    },
+    {
+      "file": "lib/features/settings/widgets/dm_settings_row.dart",
+      "covered": 42,
+      "lines": 42
+    },
+    {
+      "file": "lib/features/settings/settings_screen.dart",
+      "covered": 172,
+      "lines": 213
+    },
+    {
+      "file": "lib/shared/widgets/dm_app_background.dart",
+      "covered": 15,
+      "lines": 18
+    },
+    {
+      "file": "lib/shared/widgets/dm_buttons.dart",
+      "covered": 91,
+      "lines": 117
+    },
+    {
+      "file": "lib/shared/widgets/dm_segmented_control.dart",
+      "covered": 52,
+      "lines": 57
+    },
+    {
+      "file": "lib/shared/widgets/dm_glass_card.dart",
+      "covered": 42,
+      "lines": 71
+    },
+    {
+      "file": "lib/features/splash/splash_screen.dart",
+      "covered": 43,
+      "lines": 44
+    },
+    {
+      "file": "lib/models/persona.dart",
+      "covered": 0,
+      "lines": 6
+    },
+    {
+      "file": "lib/monetization/ad_config.dart",
+      "covered": 41,
+      "lines": 62
+    },
+    {
+      "file": "lib/monetization/interstitial_policy.dart",
+      "covered": 173,
+      "lines": 176
+    },
+    {
+      "file": "lib/monetization/ad_reporting.dart",
+      "covered": 8,
+      "lines": 10
+    },
+    {
+      "file": "lib/monetization/consent_controller.dart",
+      "covered": 43,
+      "lines": 45
+    },
+    {
+      "file": "lib/monetization/holdout_assignment.dart",
+      "covered": 16,
+      "lines": 16
+    },
+    {
+      "file": "lib/monetization/interstitial_coordinator.dart",
+      "covered": 93,
+      "lines": 103
+    },
+    {
+      "file": "lib/monetization/platform/native_display_adapter.dart",
+      "covered": 1,
+      "lines": 37
+    },
+    {
+      "file": "lib/monetization/platform/native_interstitial_adapter.dart",
+      "covered": 0,
+      "lines": 34
+    },
+    {
+      "file": "lib/monetization/platform/web_ad_consent.dart",
+      "covered": 0,
+      "lines": 5
+    },
+    {
+      "file": "lib/monetization/sponsor_copy.dart",
+      "covered": 74,
+      "lines": 77
+    },
+    {
+      "file": "lib/monetization/platform/web_display_adapter_stub.dart",
+      "covered": 0,
+      "lines": 3
+    },
+    {
+      "file": "lib/preview/approved_fixture.dart",
+      "covered": 90,
+      "lines": 97
+    },
+    {
+      "file": "lib/repositories/fake_roast_repository.dart",
+      "covered": 15,
+      "lines": 29
+    },
+    {
+      "file": "lib/services/location_service.dart",
+      "covered": 11,
+      "lines": 33
+    },
+    {
+      "file": "lib/preview/approved_preview.dart",
+      "covered": 90,
+      "lines": 91
+    },
+    {
+      "file": "lib/repositories/in_memory_settings_repository.dart",
+      "covered": 9,
+      "lines": 9
+    },
+    {
+      "file": "lib/services/persona_roast_service.dart",
+      "covered": 2,
+      "lines": 11
+    },
+    {
+      "file": "lib/shared/widgets/dm_header_bar.dart",
+      "covered": 26,
+      "lines": 26
+    },
+    {
+      "file": "lib/shared/widgets/dm_metric_chip.dart",
+      "covered": 34,
+      "lines": 38
+    },
+    {
+      "file": "lib/shared/widgets/dm_progress_pill.dart",
+      "covered": 0,
+      "lines": 31
+    },
+    {
+      "file": "lib/shared/widgets/dm_responsive_scaffold.dart",
+      "covered": 39,
+      "lines": 42
+    },
+    {
+      "file": "lib/shared/widgets/dm_section_header.dart",
+      "covered": 15,
+      "lines": 20
+    },
+    {
+      "file": "lib/shared/widgets/dm_svg_icon.dart",
+      "covered": 21,
+      "lines": 25
+    },
+    {
+      "file": "lib/shared/widgets/daymaker_weather_icon.dart",
+      "covered": 71,
+      "lines": 112
+    },
+    {
+      "file": "lib/features/roasts/widgets/roast_history_list.dart",
+      "covered": 60,
+      "lines": 63
+    },
+    {
+      "file": "lib/features/roasts/content/roast_pack_csv_builder.dart",
+      "covered": 167,
+      "lines": 181
+    },
+    {
+      "file": "lib/app.dart",
+      "covered": 1,
+      "lines": 1
+    },
+    {
+      "file": "lib/app/daymaker_app.dart",
+      "covered": 12,
+      "lines": 14
+    },
+    {
+      "file": "lib/app/daymaker_router.dart",
+      "covered": 24,
+      "lines": 46
+    },
+    {
+      "file": "lib/monetization/ad_modal_observer.dart",
+      "covered": 12,
+      "lines": 17
+    },
+    {
+      "file": "lib/repositories/open_weather_repository.dart",
+      "covered": 157,
+      "lines": 195
+    },
+    {
+      "file": "lib/widgets/weather_summary_card.dart",
+      "covered": 46,
+      "lines": 51
+    },
+    {
+      "file": "lib/repositories/shared_preferences_settings_repository.dart",
+      "covered": 42,
+      "lines": 43
+    }
+  ],
+  "note": "Final pre-merge run: 585 tests. Dart VM instrumented lines; browser tests separate. Raw LCOV remains local/generated and in delivery evidence, not committed."
+}

@@ -15,18 +15,23 @@ void main() {
       final validation = const RoastPackValidator().validatePack(pack);
 
       expect(pack.schemaVersion, 1);
-      expect(pack.packVersion, '2026.10.09.1');
+      expect(pack.packVersion, RoastPackCsvBuilder.defaultPackVersion);
       expect(pack.personas, containsAll(supportedWeatherRoastPersonas));
-      expect(pack.roasts, hasLength(35));
+      expect(pack.roasts, hasLength(530));
       expect(validation.errors, isEmpty);
     });
 
     test('CSV builder validates and generates the bundled schema', () {
       final csv = File('content/roasts/roasts_template.csv').readAsStringSync();
-      final result = const RoastPackCsvBuilder().build(csv);
+      final registry =
+          (jsonDecode(File('content/roasts/rules_v1.json').readAsStringSync())
+              as Map)['rules'] as List;
+      final result = const RoastPackCsvBuilder().build(csv,
+          rules:
+              registry.map((r) => (r as Map).cast<String, dynamic>()).toList());
       final json = jsonDecode(result.toPrettyJson()) as Map<String, dynamic>;
 
-      expect(result.pack.roasts, hasLength(35));
+      expect(result.pack.roasts, hasLength(530));
       expect(result.warnings, isEmpty);
       expect(json['schema_version'], 1);
       expect(json['roasts'], isA<List<dynamic>>());
@@ -106,13 +111,12 @@ void main() {
         tags: {WeatherRoastTag.nice},
       );
 
-      final rendered = context.render(
-        '{city}: {temp}{temp_unit}, feels {feels_like}, {unknown}.',
-      );
-
-      expect(rendered, 'your area: 72°F, feels 74.');
-      expect(rendered, isNot(contains('null')));
-      expect(rendered, isNot(contains('{unknown}')));
+      expect(() => context.render('{city}: {temp}{temp_unit}'),
+          throwsFormatException);
+      expect(() => context.render('{temp}{temp_unit}, {unknown}'),
+          throwsFormatException);
+      expect(context.render('{temp}{temp_unit}, feels {feels_like}.'),
+          '72°F, feels 74.');
     });
 
     test('selector uses persona fallback when weather copy is unavailable', () {
@@ -157,8 +161,10 @@ void main() {
         seed: 'severe',
       );
 
-      expect(selection.line.id, 'karen_severe_today_001');
-      expect(selection.renderedText, contains('Check alerts'));
+      expect(selection.reason, 'application_safety_gate');
+      expect(selection.source, 'application');
+      expect(selection.mood, RoastMood.worried);
+      expect(selection.renderedText, contains('official alerts'));
     });
 
     test('selector excludes disabled IDs', () {
@@ -300,6 +306,7 @@ CurrentWeather _currentWeather({
     humidity: humidity,
     precipitationChance: precipitationChance,
     aqi: aqi,
+    aqiScale: 'us_epa',
     aqiCategory: aqiCategory,
     sunrise: DateTime(2026, 6, 26, 5, 45),
     sunset: DateTime(2026, 6, 26, 20, 30),

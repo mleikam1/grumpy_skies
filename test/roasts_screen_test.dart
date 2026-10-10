@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:grumpy_skies/services/network_counters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +23,7 @@ import 'package:grumpy_skies/services/settings_controller.dart';
 import 'package:grumpy_skies/services/weather_location_controller.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<
@@ -228,14 +231,50 @@ void main() {
     }
   });
 
+  testWidgets(
+      '100 Another actions, persona and theme changes preserve zero incremental requests',
+      (tester) async {
+    final state = await pump(tester, fixture: false);
+    final counters = NetworkCounters.instance;
+    counters.reset();
+    expect(state.weather.calls, 1);
+    final first =
+        tester.widget<FeaturedRoastCard>(find.byType(FeaturedRoastCard)).roast;
+    for (var i = 0; i < 100; i++) {
+      await tester.ensureVisible(find.text('Another roast'));
+      await tester.tap(find.text('Another roast'));
+      await tester.pumpAndSettle();
+      if (i % 10 == 0) {
+        state.settings.setAppearance(
+            i % 20 == 0 ? AppAppearance.dark : AppAppearance.light);
+        state.settings.setSelectedPersonaId(i % 20 == 0 ? 'karen' : 'grandpa');
+        await tester.pumpAndSettle();
+      }
+    }
+    final shown =
+        tester.widget<FeaturedRoastCard>(find.byType(FeaturedRoastCard)).roast;
+    final snapshot = state.registry.choices.first;
+    expect(snapshot.id, shown.id);
+    expect(snapshot.text, shown.text);
+    expect(snapshot.mood, shown.resolvedMood);
+    expect(snapshot.selection, same(shown.selection));
+    expect(shown.selection!.selectionId, isNot(first.selection!.selectionId));
+    expect(state.weather.calls, 1);
+    expect(counters.snapshot, isEmpty,
+        reason:
+            'Roast gestures must not request weather, content, AI, database or ads.');
+    expect(tester.takeException(), isNull);
+  });
+
   test(
-      'pack requires real context, avoids repeat, and records only displayed history',
+      'pack uses no-weather fallback, avoids repeat, and records only displayed history',
       () async {
-    final repository = PackRoastRepository(packs: _Packs());
-    expect(
-        () => repository.getDailyRoast(
-            personaId: 'grandpa', weatherSnapshotId: 'none'),
-        throwsStateError);
+    final repository =
+        PackRoastRepository(packs: _Packs(), clock: () => ApprovedFixture.now);
+    final unavailable = await repository.getDailyRoast(
+        personaId: 'grandpa', weatherSnapshotId: 'none');
+    expect(unavailable.selection!.source, 'application');
+    expect(unavailable.text, isNot(contains('°')));
     repository.setWeather(ApprovedFixture.weather, TemperatureUnit.celsius);
     final first = await repository.getDailyRoast(
         personaId: 'grandpa', weatherSnapshotId: 'actual');

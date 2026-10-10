@@ -1,0 +1,952 @@
+diff --git a/lib/features/forecast/forecast_screen.dart b/lib/features/forecast/forecast_screen.dart
+index ad44dfc..924a317 100644
+--- a/lib/features/forecast/forecast_screen.dart
++++ b/lib/features/forecast/forecast_screen.dart
+@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+ import 'package:go_router/go_router.dart';
+ 
+-import '../../data/daymaker_sample_data.dart';
+ import '../../config/app_routes.dart';
+ import '../fun/meme/meme_weather.dart';
+ import '../roasts/services/displayed_roast_share.dart';
+@@ -19,14 +18,14 @@ import '../../design/dm_spacing.dart';
+ import '../../design/dm_typography.dart';
+ import '../../features/roasts/models/roast_persona.dart';
+ import '../../features/roasts/content/roast_pack_repository.dart';
+-import '../../features/roasts/content/roast_selector.dart';
+-import '../../features/roasts/content/weather_roast_models.dart';
+ import '../../models/weather_models.dart';
+ import '../../models/weather_safety.dart';
+ import '../../models/precipitation_coverage.dart';
+ import '../../monetization/ad_placement.dart';
+ import '../../monetization/widgets/ad_section.dart';
+ import '../../repositories/settings_repository.dart';
++import '../../repositories/pack_roast_repository.dart';
++import '../roasts/controllers/local_roast_controller.dart';
+ import '../../repositories/weather_repository.dart';
+ import '../../services/open_weather_backend_client.dart';
+ import '../../services/settings_controller.dart';
+@@ -95,18 +94,15 @@ class _ForecastScreenState extends State<ForecastScreen>
+   SettingsRepository? _settingsRepository;
+   WeatherLocationController? _locationController;
+   WeatherBundle? _weather;
+-  RoastPack? _roastPack;
++  late LocalRoastController _localRoasts;
++  bool _ownsRoastController = false;
+   Object? _error;
+   Timer? _autoRefreshTimer;
+   String? _activeLocationKey;
+   var _loading = true;
+-  var _loadingRoastPack = false;
+-  var _roastIndex = 0;
+   var _loadedRepository = false;
+   var _showLocationSelector = false;
+   var _selectedPersonaId = RoastPersonas.defaultPersona.id;
+-  final _recentRoastIds = <String>[];
+-  final _roastSelector = const RoastSelector();
+ 
+   @override
+   void didChangeDependencies() {
+@@ -115,6 +111,11 @@ class _ForecastScreenState extends State<ForecastScreen>
+ 
+     _repository = widget.weatherRepository ?? context.read<WeatherRepository>();
+     _roastPackRepository = _readRoastPackRepository() ?? RoastPackRepository();
++    final sharedRoasts = context.read<LocalRoastController?>();
++    _ownsRoastController = sharedRoasts == null;
++    _localRoasts =
++        sharedRoasts ?? LocalRoastController(repository: _roastPackRepository);
++    _localRoasts.addListener(_onRoastContentChanged);
+     _settingsRepository = _readSettingsRepository();
+     _locationController = _readLocationController() ??
+         WeatherLocationController(
+@@ -162,6 +163,8 @@ class _ForecastScreenState extends State<ForecastScreen>
+ 
+   @override
+   void dispose() {
++    _localRoasts.removeListener(_onRoastContentChanged);
++    if (_ownsRoastController) _localRoasts.dispose();
+     WidgetsBinding.instance.removeObserver(this);
+     _autoRefreshTimer?.cancel();
+     _locationController?.removeListener(_handleLocationChanged);
+@@ -203,20 +206,12 @@ class _ForecastScreenState extends State<ForecastScreen>
+     }
+   }
+ 
++  void _onRoastContentChanged() {
++    if (mounted) setState(() {});
++  }
++
+   Future<void> _loadRoastPack() async {
+-    if (_loadingRoastPack || _roastPack != null) return;
+-    _loadingRoastPack = true;
+-    try {
+-      final pack = await _roastPackRepository!.loadPack();
+-      if (!mounted) return;
+-      setState(() => _roastPack = pack);
+-    } catch (error) {
+-      if (kDebugMode) {
+-        debugPrint('[GrumpySkies] roast pack load error: $error');
+-      }
+-    } finally {
+-      _loadingRoastPack = false;
+-    }
++    await _localRoasts.initialize();
+   }
+ 
+   void _startAutoRefresh() {
+@@ -287,6 +282,7 @@ class _ForecastScreenState extends State<ForecastScreen>
+         location: location,
+       );
+       if (!mounted || requestSerial != _requestSerial) return;
++      _localRoasts.publishWeather(weather, location);
+       setState(() => _weather = weather);
+       _locationController?.updateWeatherSafety(weather, location);
+       _locationController?.markWeatherLoaded();
+@@ -306,25 +302,14 @@ class _ForecastScreenState extends State<ForecastScreen>
+   }
+ 
+   void _showNextRoast(String personaId) {
+-    final weather = _weather;
+-    final pack = _roastPack;
+-    if (weather != null && pack != null) {
+-      final snapshot = _snapshotForWeather(weather);
+-      final selection = _selectWeatherRoast(
+-        pack,
+-        weather,
+-        snapshot,
+-        personaId,
+-      );
+-      _recentRoastIds.add(selection.line.id);
+-      if (_recentRoastIds.length > 8) {
+-        _recentRoastIds.removeRange(0, _recentRoastIds.length - 8);
+-      }
+-    }
+-
+-    setState(() {
+-      _roastIndex++;
+-    });
++    _localRoasts.select(
++        persona: personaId,
++        bundle: _weather,
++        now: _now,
++        unit: context.read<SettingsController?>()?.temperatureUnit ??
++            TemperatureUnit.fahrenheit,
++        another: true);
++    setState(() {});
+   }
+ 
+   @override
+@@ -394,8 +379,18 @@ class _ForecastScreenState extends State<ForecastScreen>
+     final roast = _roastForWeather(weather, snapshot, selectedPersona.id);
+     final memeSource = _memeSource(roast, weather);
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+-      if (!mounted) return;
++      if (!mounted || !identical(_weather, weather) ||
++          RoastPersonas.normalizeId(context.read<SettingsController?>()?.selectedPersonaId ?? _selectedPersonaId) != selectedPersona.id || _showLocationSelector) {
++        return;
++      }
++      if (relevantAlerts.isNotEmpty) {
++        _readMemeRegistry()?.clearSource('forecast');
++        return;
++      }
+       _readMemeRegistry()?.publish(memeSource, weather: weather);
++      if (roast.selection != null) {
++        _localRoasts.commitDisplayed(roast.selection!);
++      }
+     });
+     final location = (weather.current.locationName.isNotEmpty
+         ? weather.current.locationName
+@@ -572,13 +567,15 @@ class _ForecastScreenState extends State<ForecastScreen>
+       text: roast.text,
+       personaId: roast.personaId,
+       mood: roast.resolvedMood,
++      selection: roast.selection,
+       sourceKey: 'forecast',
+       sourceLabel: 'Home forecast',
+-      isSample: _roastPack == null || _repository is FakeWeatherRepository,
++      isSample: _repository is FakeWeatherRepository,
+       weatherSnapshot: MemeWeather.freeze(
+         weather,
+         temperatureUnit: unit,
+         isSample: _repository is FakeWeatherRepository,
++        now: _now,
+       ),
+     );
+   }
+@@ -597,61 +594,15 @@ class _ForecastScreenState extends State<ForecastScreen>
+   }
+ 
+   Roast _roastForWeather(
+-    WeatherBundle weather,
+-    WeatherSnapshot snapshot,
+-    String personaId,
+-  ) {
+-    final pack = _roastPack;
+-    if (pack == null) {
+-      return _fallbackRoastForPersona(personaId);
+-    }
+-
+-    final selection = _selectWeatherRoast(pack, weather, snapshot, personaId);
+-    return Roast(
+-      id: selection.line.id,
+-      personaId: selection.line.persona,
+-      weatherSnapshotId: snapshot.id,
+-      text: selection.renderedText,
+-      category: selection.line.type.name,
+-      mood: selection.line.mood,
+-      createdAt: weather.current.displayUpdatedAt,
+-      xpReward: 15,
+-    );
+-  }
+-
+-  RoastSelection _selectWeatherRoast(
+-    RoastPack pack,
+-    WeatherBundle weather,
+-    WeatherSnapshot snapshot,
+-    String personaId,
+-  ) {
+-    final roastContext = WeatherRoastContext.fromWeatherBundle(
+-      weather,
+-      now: _now,
+-      temperatureUnit: context.read<SettingsController?>()?.temperatureUnit ??
+-          TemperatureUnit.fahrenheit,
+-    );
+-    return _roastSelector.select(
+-      pack: pack,
+-      context: roastContext,
+-      persona: personaId,
+-      type: RoastType.today,
+-      maxLevel: RoastLevel.medium,
+-      recentRoastIds: _recentRoastIds,
+-      seed:
+-          '${snapshot.id}|$personaId|${weather.current.displayUpdatedAt}|$_roastIndex',
+-    );
+-  }
+-
+-  Roast _fallbackRoastForPersona(String personaId) {
+-    final normalized = RoastPersonas.normalizeId(personaId);
+-    final matches = DayMakerSampleData.roastHistory
+-        .where(
+-          (roast) => RoastPersonas.normalizeId(roast.personaId) == normalized,
+-        )
+-        .toList(growable: false);
+-    if (matches.isEmpty) return DayMakerSampleData.roast;
+-    return matches[_roastIndex % matches.length];
++      WeatherBundle weather, WeatherSnapshot snapshot, String personaId) {
++    final selection = _localRoasts.select(
++        persona: personaId,
++        bundle: weather,
++        now: _now,
++        unit: context.read<SettingsController?>()?.temperatureUnit ??
++            TemperatureUnit.fahrenheit);
++    return PackRoastRepository.fromSelection(selection,
++        weatherSnapshotId: snapshot.id);
+   }
+ 
+   static WeatherSnapshot _snapshotForWeather(WeatherBundle weather) {
+@@ -957,6 +908,8 @@ class _WeatherAlertTile extends StatelessWidget {
+       child: Material(
+         type: MaterialType.transparency,
+         child: ExpansionTile(
++          // Separate expansion state from the enclosing forecast scroll offset.
++          key: PageStorageKey<String>('weather-alert:${alert.senderName}|${alert.event}|${alert.start}|${alert.end}|${alert.area}'),
+           initiallyExpanded: true,
+           tilePadding: EdgeInsets.zero,
+           childrenPadding: EdgeInsets.zero,
+diff --git a/lib/features/fun/meme/meme_studio.dart b/lib/features/fun/meme/meme_studio.dart
+index ed8b192..3eb00dd 100644
+--- a/lib/features/fun/meme/meme_studio.dart
++++ b/lib/features/fun/meme/meme_studio.dart
+@@ -422,7 +422,9 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
+           bottom: roast.text,
+           personaId: roast.personaId));
+       e.apply(e.document.copyWith(
+-          personaId: roast.personaId, weatherSnapshot: roast.weatherSnapshot));
++          personaId: roast.personaId,
++          weatherSnapshot: roast.weatherSnapshot,
++          roastSnapshot: roast.provenance));
+     } finally {
+       e.endGesture();
+     }
+diff --git a/lib/features/fun/meme/meme_weather.dart b/lib/features/fun/meme/meme_weather.dart
+index 9db4851..0c7c52b 100644
+--- a/lib/features/fun/meme/meme_weather.dart
++++ b/lib/features/fun/meme/meme_weather.dart
+@@ -1,3 +1,6 @@
++import 'dart:async';
++import 'dart:convert';
++import 'package:shared_preferences/shared_preferences.dart';
+ import 'package:flutter/foundation.dart';
+ 
+ import '../../../models/temperature_unit.dart';
+@@ -6,6 +9,7 @@ import '../../../services/cache_service.dart';
+ import '../../../services/weather_location_controller.dart';
+ import '../../roasts/models/roast_persona.dart';
+ import '../../roasts/models/roast_mood.dart';
++import '../../roasts/content/roast_selector.dart';
+ 
+ enum MemeWindUnit { mph, kph }
+ 
+@@ -72,12 +76,15 @@ abstract final class MemeWeather {
+       if (offset != null) 'timezoneOffsetSeconds': offset,
+       'temperatureUnit': temperatureUnit.name,
+       'windUnit': windUnit.name,
+-      if (temperature.isFinite) 'temperature': temperature,
+-      if (feelsLike.isFinite) 'feelsLike': feelsLike,
++      if (weather.temperatureKnown && temperature.isFinite)
++        'temperature': temperature,
++      if (weather.feelsLikeKnown && feelsLike.isFinite) 'feelsLike': feelsLike,
+       if (weather.condition.trim().isNotEmpty) 'condition': weather.condition,
+-      if (weather.humidity >= 0 && weather.humidity <= 100)
++      if (weather.humidityKnown &&
++          weather.humidity >= 0 &&
++          weather.humidity <= 100)
+         'humidity': weather.humidity,
+-      if (wind.isFinite && wind >= 0) 'wind': wind,
++      if (weather.windKnown && wind.isFinite && wind >= 0) 'wind': wind,
+       if (local != null) 'day': _dayName(local.weekday),
+       if (includeCity && city.isNotEmpty) 'city': city,
+       'tags': List.unmodifiable(_tags(weather)),
+@@ -194,45 +201,124 @@ class DisplayedRoastSnapshot {
+     required this.sourceLabel,
+     required this.isSample,
+     RoastMood? mood,
++    this.selection,
+     Map<String, dynamic>? weatherSnapshot,
+     DateTime? capturedAt,
+   })  : mood = RoastMoodResolver.resolve(
+             personaId: personaId, text: text, explicitMood: mood),
+         personaId = RoastPersonas.normalizeId(personaId),
+         weatherSnapshot =
+-            weatherSnapshot == null ? null : Map.unmodifiable(weatherSnapshot),
++            weatherSnapshot == null ? null : _freezeSnapshot(weatherSnapshot),
+         capturedAt = capturedAt ?? DateTime.now();
+ 
+   final String id;
+   final String text;
+   final String personaId;
+   final RoastMood mood;
++  final RoastSelection? selection;
+   final String sourceKey;
+   final String sourceLabel;
+   final bool isSample;
+   final Map<String, dynamic>? weatherSnapshot;
+   final DateTime capturedAt;
+ 
++  /// Small, versioned provenance saved alongside an existing meme document.
++  /// Never contains coordinates or editorial rules/review notes.
++  Map<String, dynamic> get provenance => Map.unmodifiable({
++        'id': id,
++        'text': text,
++        'persona': personaId,
++        'mood': mood.name,
++        if (selection != null) ...{
++          'familyId': selection!.familyId,
++          'packVersion': selection!.packVersion,
++          'scope': selection!.scope.name,
++          'reason': selection!.reason,
++          'source': selection!.source,
++          if (selection!.weatherTimestamp != null)
++            'weatherTimestamp':
++                selection!.weatherTimestamp!.toUtc().toIso8601String(),
++          if (selection!.windowStart != null)
++            'windowStart': selection!.windowStart!.toUtc().toIso8601String(),
++          if (selection!.windowEnd != null)
++            'windowEnd': selection!.windowEnd!.toUtc().toIso8601String(),
++        },
++      });
++
+   String get chooserLabel =>
+       '$sourceLabel · ${RoastPersonas.byId(personaId).displayName}'
+       '${isSample ? ' · Sample roast' : ''}';
+ }
+ 
+-/// Retains one exact, most recently displayed choice per source across routes.
+-/// This in-memory registry intentionally never persists captions or locations.
++/// The existing display registry is the single owner of frozen share/reveal/
++/// meme snapshots. Optional local history is bounded; no network or coordinates.
+ class DisplayedRoastRegistry extends ChangeNotifier {
++  DisplayedRoastRegistry({SharedPreferences? preferences})
++      : _preferences = preferences;
++  static const _storageKey = 'displayed_roast_snapshots_v1';
++  static const historyLimit = 50;
++  final SharedPreferences? _preferences;
+   final Map<String, DisplayedRoastSnapshot> _choices = {};
++  final Map<String, DisplayedRoastSnapshot> _history = {};
+   WeatherBundle? _cachedWeather;
++  Future<void> _writes = Future<void>.value();
++
++  static Future<DisplayedRoastRegistry> restore() async {
++    try {
++      final prefs = await SharedPreferences.getInstance();
++      final registry = DisplayedRoastRegistry(preferences: prefs);
++      final raw = prefs.getString(_storageKey);
++      if (raw != null && raw.length <= 512 * 1024) {
++        final entries = jsonDecode(raw);
++        if (entries is List) {
++          for (final item in entries.take(historyLimit)) {
++            try {
++              final j = (item as Map).cast<String, dynamic>();
++              final selection = j['selection'] == null
++                  ? null
++                  : RoastSelection.fromJson(
++                      (j['selection'] as Map).cast<String, dynamic>());
++              final snapshot = DisplayedRoastSnapshot(
++                  id: j['id'] as String,
++                  text: j['text'] as String,
++                  personaId: j['persona'] as String,
++                  sourceKey: j['sourceKey'] as String,
++                  sourceLabel: j['sourceLabel'] as String,
++                  isSample: j['isSample'] == true,
++                  mood: RoastMood.tryParse(j['mood']),
++                  selection: selection,
++                  weatherSnapshot:
++                      (j['weather'] as Map?)?.cast<String, dynamic>(),
++                  capturedAt: DateTime.parse(j['capturedAt'] as String));
++              if (selection != null) {
++                registry._history[selectionKey(selection)] = snapshot;
++              }
++            } catch (_) {/* One damaged optional entry cannot block launch. */}
++          }
++        }
++      }
++      return registry;
++    } catch (_) {
++      return DisplayedRoastRegistry();
++    }
++  }
+ 
++  static String selectionKey(RoastSelection selection) =>
++      '${selection.selectionId}|${selection.weatherTimestamp?.toUtc().toIso8601String()}|${selection.renderedText}';
++
++  DisplayedRoastSnapshot? forSelection(RoastSelection? selection) =>
++      selection == null ? null : _history[selectionKey(selection)];
+   List<DisplayedRoastSnapshot> get choices =>
+       List.unmodifiable(_choices.values.toList().reversed);
+   DisplayedRoastSnapshot? get latestForecast => _choices['forecast'];
+   WeatherBundle? get cachedWeather => _cachedWeather;
++  Future<void> get pendingWrites => _writes;
+ 
+   void publish(DisplayedRoastSnapshot snapshot, {WeatherBundle? weather}) {
+     if (weather != null) _cachedWeather = weather;
+     final old = _choices[snapshot.sourceKey];
+     if (old != null &&
++        identical(old.selection, snapshot.selection) &&
+         old.id == snapshot.id &&
+         old.text == snapshot.text &&
+         old.personaId == snapshot.personaId &&
+@@ -247,11 +333,60 @@ class DisplayedRoastRegistry extends ChangeNotifier {
+     }
+     _choices.remove(snapshot.sourceKey);
+     _choices[snapshot.sourceKey] = snapshot;
++    final selection = snapshot.selection;
++    if (selection != null) {
++      final key = selectionKey(selection);
++      // Keep the exact weather/text originally displayed for each exposure.
++      _history.putIfAbsent(key, () => snapshot);
++      while (_history.length > historyLimit) {
++        _history.remove(_history.keys.first);
++      }
++      _persist();
++    }
+     notifyListeners();
+   }
+ 
++  void _persist() {
++    if (_preferences == null) return;
++    final raw = jsonEncode([
++      for (final s in _history.values)
++        {
++          'id': s.id,
++          'text': s.text,
++          'persona': s.personaId,
++          'mood': s.mood.name,
++          'sourceKey': s.sourceKey,
++          'sourceLabel': s.sourceLabel,
++          'isSample': s.isSample,
++          'weather': s.weatherSnapshot,
++          'capturedAt': s.capturedAt.toUtc().toIso8601String(),
++          'selection': s.selection?.toJson(),
++        }
++    ]);
++    _writes = _writes.then((_) async {
++      try {
++        await _preferences!.setString(_storageKey, raw);
++      } catch (_) {/* Local display still works. */}
++    });
++    unawaited(_writes);
++  }
++
+   void clearSource(String sourceKey) {
+     if (sourceKey == 'forecast') _cachedWeather = null;
+     if (_choices.remove(sourceKey) != null) notifyListeners();
+   }
+ }
++
++Map<String, dynamic> _freezeSnapshot(Map<String, dynamic> source) =>
++    Map.unmodifiable({
++      for (final entry in source.entries)
++        entry.key: _freezeSnapshotValue(entry.value),
++    });
++Object? _freezeSnapshotValue(Object? value) {
++  if (value is Map) return _freezeSnapshot(value.cast<String, dynamic>());
++  if (value is List) return List.unmodifiable(value.map(_freezeSnapshotValue));
++  if (value == null || value is String || value is bool || value is num) {
++    return value;
++  }
++  throw const FormatException('Invalid displayed weather snapshot.');
++}
+diff --git a/lib/features/fun/meme/models/meme_document.dart b/lib/features/fun/meme/models/meme_document.dart
+index a29571e..30a916b 100644
+--- a/lib/features/fun/meme/models/meme_document.dart
++++ b/lib/features/fun/meme/models/meme_document.dart
+@@ -389,6 +389,7 @@ class MemeDocument {
+     this.background = const MemeBackground(),
+     List<MemeLayer> layers = const [],
+     Map<String, dynamic>? weatherSnapshot,
++    Map<String, dynamic>? roastSnapshot,
+     this.personaId,
+     this.captionId,
+     this.visualStyle = 'cute',
+@@ -396,6 +397,8 @@ class MemeDocument {
+     required this.createdAt,
+     required this.updatedAt,
+   })  : layers = List.unmodifiable(layers),
++        roastSnapshot =
++            roastSnapshot == null ? null : _freezeMap(roastSnapshot),
+         weatherSnapshot =
+             weatherSnapshot == null ? null : _freezeMap(weatherSnapshot);
+ 
+@@ -406,6 +409,7 @@ class MemeDocument {
+   final MemeBackground background;
+   final List<MemeLayer> layers;
+   final Map<String, dynamic>? weatherSnapshot;
++  final Map<String, dynamic>? roastSnapshot;
+   final String visualStyle;
+   final bool watermark;
+   final DateTime createdAt, updatedAt;
+@@ -456,6 +460,7 @@ class MemeDocument {
+     MemeBackground? background,
+     List<MemeLayer>? layers,
+     Object? weatherSnapshot = _unset,
++    Object? roastSnapshot = _unset,
+     Object? personaId = _unset,
+     Object? captionId = _unset,
+     String? visualStyle,
+@@ -475,6 +480,9 @@ class MemeDocument {
+         weatherSnapshot: identical(weatherSnapshot, _unset)
+             ? this.weatherSnapshot
+             : weatherSnapshot as Map<String, dynamic>?,
++        roastSnapshot: identical(roastSnapshot, _unset)
++            ? this.roastSnapshot
++            : roastSnapshot as Map<String, dynamic>?,
+         personaId: identical(personaId, _unset)
+             ? this.personaId
+             : personaId as String?,
+@@ -496,6 +504,7 @@ class MemeDocument {
+         'background': background.toJson(),
+         'layers': layers.map((layer) => layer.toJson()).toList(),
+         'weatherSnapshot': weatherSnapshot,
++        if (roastSnapshot != null) 'roastSnapshot': roastSnapshot,
+         'personaId': personaId,
+         'captionId': captionId,
+         'visualStyle': visualStyle,
+@@ -566,6 +575,32 @@ class MemeDocument {
+       }
+     }
+     if (weather != null) _validateWeather(weather);
++    final roast =
++        json['roastSnapshot'] == null ? null : _map(json['roastSnapshot']);
++    if (roast != null) {
++      const allowed = {
++        'id',
++        'text',
++        'persona',
++        'mood',
++        'familyId',
++        'packVersion',
++        'scope',
++        'reason',
++        'source',
++        'weatherTimestamp',
++        'windowStart',
++        'windowEnd'
++      };
++      if (jsonEncode(roast).length > 8000 ||
++          roast.keys.any((key) => !allowed.contains(key)) ||
++          roast.values.any((v) => v is! String)) {
++        throw const FormatException('Invalid roast provenance.');
++      }
++      for (final field in ['weatherTimestamp', 'windowStart', 'windowEnd']) {
++        if (roast.containsKey(field)) _date(roast, field);
++      }
++    }
+     return MemeDocument(
+       id: _id(json, 'id'),
+       name: _string(json, 'name', max: 160),
+@@ -574,6 +609,7 @@ class MemeDocument {
+       background: MemeBackground.fromJson(_map(json['background'])),
+       layers: layers,
+       weatherSnapshot: weather,
++      roastSnapshot: roast,
+       personaId: json['personaId'] == null ? null : _id(json, 'personaId'),
+       captionId: json['captionId'] == null ? null : _id(json, 'captionId'),
+       visualStyle: style,
+diff --git a/lib/features/roasts/advanced_roast_reveal_screen.dart b/lib/features/roasts/advanced_roast_reveal_screen.dart
+index b465e6b..34b4df6 100644
+--- a/lib/features/roasts/advanced_roast_reveal_screen.dart
++++ b/lib/features/roasts/advanced_roast_reveal_screen.dart
+@@ -8,6 +8,7 @@ import '../../services/weather_location_controller.dart';
+ import '../fun/meme/meme_weather.dart';
+ import 'models/roast_persona.dart';
+ import 'services/displayed_roast_share.dart';
++import 'services/roast_safety.dart';
+ import 'widgets/advanced_roast_reveal_card.dart';
+ 
+ /// Reveal is a presentation of an already displayed roast, never a new request.
+@@ -48,8 +49,12 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
+   @override
+   Widget build(BuildContext context) {
+     final source = _source;
+-    final alert = context.watch<WeatherLocationController?>()?.safetyStatus ==
+-        WeatherSafetyStatus.activeAlert;
++    final location = context.watch<WeatherLocationController?>();
++    final officialAlert =
++        location?.safetyStatus == WeatherSafetyStatus.activeAlert;
++    final alert = officialAlert ||
++        roastHumorBlocked(location?.currentWeather,
++            selection: source?.selection);
+     final persona =
+         source == null ? null : RoastPersonas.byId(source.personaId);
+     final city = source?.weatherSnapshot?['city'];
+@@ -77,9 +82,11 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
+                   const SizedBox(height: 18),
+                   if (alert)
+                     _state(context,
+-                        title: 'Weather alerts take priority',
++                        title: officialAlert
++                            ? 'Weather alerts take priority'
++                            : 'Weather safety takes priority',
+                         message:
+-                            'Roasts are paused while alerts are active. Read the official warning and local guidance.',
++                            'Roasts are paused for these conditions. Check the current weather and official guidance.',
+                         action: 'View weather',
+                         onAction: () => context.go(AppRoutes.forecast))
+                   else if (source == null)
+diff --git a/lib/features/roasts/roasts_screen.dart b/lib/features/roasts/roasts_screen.dart
+index b50f3ff..7320b6d 100644
+--- a/lib/features/roasts/roasts_screen.dart
++++ b/lib/features/roasts/roasts_screen.dart
+@@ -18,6 +18,7 @@ import '../../shared/widgets/dm_approved_components.dart';
+ import '../fun/meme/meme_weather.dart';
+ import 'models/roast_persona.dart';
+ import 'services/displayed_roast_share.dart';
++import 'services/roast_safety.dart';
+ import 'widgets/daymaker_persona_carousel.dart';
+ import 'widgets/featured_roast_card.dart';
+ 
+@@ -40,7 +41,28 @@ class RoastsScreen extends StatefulWidget {
+   State<RoastsScreen> createState() => _RoastsScreenState();
+ }
+ 
+-class _RoastsScreenState extends State<RoastsScreen> {
++class _RoastsScreenState extends State<RoastsScreen>
++    with WidgetsBindingObserver {
++  Timer? _contextTimer;
++  bool _foreground = true;
++
++  @override
++  void initState() {
++    super.initState();
++    WidgetsBinding.instance.addObserver(this);
++    _contextTimer = Timer.periodic(const Duration(minutes: 1), (_) {
++      if (mounted && _foreground) setState(() {});
++    });
++  }
++
++  @override
++  void didChangeAppLifecycleState(AppLifecycleState state) {
++    _foreground = state == AppLifecycleState.resumed;
++    if (_foreground && mounted) {
++      setState(() {}); // Local truth/daypart revalidation only.
++    }
++  }
++
+   late RoastRepository _repository;
+   SettingsRepository? _settingsRepository;
+   SettingsController? _settings;
+@@ -107,12 +129,18 @@ class _RoastsScreenState extends State<RoastsScreen> {
+       unawaited(_load());
+     } else if (_location?.currentWeather != null && mounted) {
+       // Safety may update without changing location; never refetch from a theme.
+-      setState(() => _weather = _location!.currentWeather);
++      if (!identical(_weather, _location!.currentWeather) && !_loading) {
++        unawaited(_load()); // Reuses currentWeather; this branch cannot fetch.
++      } else {
++        setState(() => _weather = _location!.currentWeather);
++      }
+     }
+   }
+ 
+   @override
+   void dispose() {
++    _contextTimer?.cancel();
++    WidgetsBinding.instance.removeObserver(this);
+     _location?.removeListener(_onLocationChanged);
+     _settings?.removeListener(_onSettingsChanged);
+     super.dispose();
+@@ -196,34 +224,41 @@ class _RoastsScreenState extends State<RoastsScreen> {
+ 
+   bool get _alertsActive =>
+       _weather?.current.alertIds.isNotEmpty == true ||
+-      _weather?.alerts.any((alert) => alert.isRelevantAt(_now)) == true;
++      _weather?.alerts.any((alert) => alert.isRelevantAt(_now)) == true ||
++      roastHumorBlocked(_weather, now: _now);
+ 
+   void _rememberDisplayed() {
+     final roast = _roasts[_selectedId];
+     final weather = _weather;
+     if (roast == null || weather == null || _alertsActive) return;
++    bool stillShown() => mounted && !_alertsActive && identical(_weather, weather) &&
++        _selectedId == roast.personaId && _roasts[_selectedId]?.text == roast.text &&
++        identical(_roasts[_selectedId]?.selection, roast.selection);
+     final source = DisplayedRoastSnapshot(
+       id: roast.id,
+       text: roast.text,
+       personaId: roast.personaId,
+       mood: roast.resolvedMood,
++      selection: roast.selection,
+       sourceKey: 'roasts',
+       sourceLabel: 'Roasts',
+       isSample: widget.isSample,
+       weatherSnapshot: MemeWeather.freeze(weather,
+-          temperatureUnit: _unit, isSample: widget.isSample),
++          temperatureUnit: _unit, isSample: widget.isSample, now: _now),
+       capturedAt: _now,
+     );
+-    _sources['${roast.id}|${roast.text}'] = source;
++    _sources[_sourceKey(roast)] = source;
+     if (_repository case final PackRoastRepository repository) {
+-      repository.recordDisplayed(roast);
++      WidgetsBinding.instance.addPostFrameCallback((_) {
++        if (stillShown()) { repository.recordDisplayed(roast); }
++      });
+       _history = [
+         roast,
+         ..._history.where((r) => r.id != roast.id || r.text != roast.text)
+       ].take(50).toList();
+     }
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+-      if (mounted) {
++      if (stillShown()) {
+         context
+             .read<DisplayedRoastRegistry?>()
+             ?.publish(source, weather: weather);
+@@ -291,15 +326,51 @@ class _RoastsScreenState extends State<RoastsScreen> {
+     }
+   }
+ 
++  String _sourceKey(Roast roast) => roast.selection == null
++      ? '${roast.id}|${roast.text}|${roast.createdAt.toUtc().toIso8601String()}'
++      : DisplayedRoastRegistry.selectionKey(roast.selection!);
++
+   Future<void> _share(Roast roast) async {
+-    final source = _sources['${roast.id}|${roast.text}'];
+-    if (source == null || _alertsActive) return;
++    final source = context
++            .read<DisplayedRoastRegistry?>()
++            ?.forSelection(roast.selection) ??
++        _sources[_sourceKey(roast)] ??
++        DisplayedRoastSnapshot(
++            id: roast.id,
++            text: roast.text,
++            personaId: roast.personaId,
++            mood: roast.resolvedMood,
++            selection: roast.selection,
++            sourceKey: 'history',
++            sourceLabel: 'Roast history',
++            isSample: widget.isSample,
++            capturedAt: roast.createdAt);
++    if (_alertsActive) return;
+     await showDisplayedRoastShareSheet(context, source);
+   }
+ 
+   @override
+   Widget build(BuildContext context) {
+     context.watch<SettingsController?>();
++    if (_repository case final PackRoastRepository repository) {
++      final weather = _weather;
++      if (weather != null) {
++        _roasts = {
++          for (final persona in _personas)
++            persona.id: PackRoastRepository.fromSelection(
++                repository.controller.select(
++                    persona: persona.id,
++                    bundle: weather,
++                    unit: _unit,
++                    now: _now),
++                weatherSnapshotId: weather.snapshot?.id ??
++                    'weather-${weather.current.displayUpdatedAt.millisecondsSinceEpoch}')
++        };
++        WidgetsBinding.instance.addPostFrameCallback((_) {
++          if (mounted) _rememberDisplayed();
++        });
++      }
++    }
+     final colors = context.dmColors;
+     return Scaffold(
+         body: SafeArea(
+@@ -350,8 +421,12 @@ class _RoastsScreenState extends State<RoastsScreen> {
+                         else if (_alertsActive)
+                           _status(
+                               context,
+-                              'Weather alerts take priority',
+-                              'Roasts are paused while alerts are active. Check the official warning and local guidance.',
++                              _weather!.alerts
++                                          .any((a) => a.isRelevantAt(_now)) ||
++                                      _weather!.current.alertIds.isNotEmpty
++                                  ? 'Weather alerts take priority'
++                                  : 'Weather safety takes priority',
++                              'Roasts are paused for these conditions. Check the current weather and official guidance.',
+                               'View weather',
+                               () => context.go(AppRoutes.forecast))
+                         else if (_roasts[_selectedId] == null)
+diff --git a/lib/features/roasts/services/displayed_roast_share.dart b/lib/features/roasts/services/displayed_roast_share.dart
+index 619ac94..34d5b71 100644
+--- a/lib/features/roasts/services/displayed_roast_share.dart
++++ b/lib/features/roasts/services/displayed_roast_share.dart
+@@ -8,6 +8,7 @@ import '../../../config/app_routes.dart';
+ import '../../../monetization/monetization_controller.dart';
+ import '../../../services/weather_location_controller.dart';
+ import '../../fun/meme/meme_weather.dart';
++import 'roast_safety.dart';
+ 
+ /// All destinations receive the same immutable text/weather displayed by the
+ /// caller. This function never requests weather, generates text or changes it.
+@@ -15,9 +16,13 @@ Future<void> showDisplayedRoastShareSheet(
+   BuildContext context,
+   DisplayedRoastSnapshot source,
+ ) async {
+-  bool alertActive() =>
+-      context.read<WeatherLocationController?>()?.safetyStatus ==
+-      WeatherSafetyStatus.activeAlert;
++  bool alertActive() {
++    final location = context.read<WeatherLocationController?>();
++    return location?.safetyStatus == WeatherSafetyStatus.activeAlert ||
++        roastHumorBlocked(location?.currentWeather,
++            selection: source.selection);
++  }
++
+   if (alertActive()) return;
+   final action = await showModalBottomSheet<String>(
+     context: context,
+diff --git a/lib/main.dart b/lib/main.dart
+index 18724f7..5e66baf 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -9,6 +9,9 @@ import 'app.dart';
+ import 'app/daymaker_router.dart';
+ import 'features/fun/meme/meme_weather.dart';
+ import 'features/roasts/content/roast_pack_repository.dart';
++import 'features/roasts/controllers/local_roast_controller.dart';
++import 'features/roasts/services/roast_debug_inspector.dart';
++import 'features/roasts/widgets/roast_foreground_sync.dart';
+ import 'repositories/open_weather_repository.dart';
+ import 'repositories/pack_roast_repository.dart';
+ import 'repositories/roast_repository.dart';
+@@ -29,20 +32,30 @@ void main() async {
+ 
+   final weatherClient = OpenWeatherBackendClient();
+   final weatherCache = await CacheService.create();
+-  final roastPackCache = await SharedPreferencesRoastPackCache.create();
++  final roastPackCache = await DurableRoastPackCache.create();
+   final weatherRepository = OpenWeatherRepository(
+     client: weatherClient,
+     cacheService: weatherCache,
+   );
+   final roastPackRepository = RoastPackRepository(cache: roastPackCache);
+-  final roastRepository = PackRoastRepository(packs: roastPackRepository);
++  final localRoasts = LocalRoastController(repository: roastPackRepository);
++  // Pack initialization runs independently; an application-owned fallback is
++  // available immediately and optional updates remain disabled by default.
++  unawaited(localRoasts.initialize());
++  final roastRepository =
++      PackRoastRepository(packs: roastPackRepository, controller: localRoasts);
+   final settingsRepository = await SharedPreferencesSettingsRepository.create();
+   final settingsController = SettingsController(repository: settingsRepository);
+   await settingsController.loadSettings();
+   final locationController = await WeatherLocationController.create(
+     repository: weatherRepository,
+   );
+-  final roastService = PersonaRoastService();
++  final roastService = PersonaRoastService(controller: localRoasts);
++  final displayedRoasts = await DisplayedRoastRegistry.restore();
++  assert(() {
++    registerRoastInspector(localRoasts, displayedRoasts);
++    return true;
++  }());
+   final xpService = await XpService.create();
+   final achievementService = await AchievementService.create();
+ 
+@@ -68,10 +81,10 @@ void main() async {
+         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
+         Provider<WeatherRepository>.value(value: weatherRepository),
+         Provider<CacheService>.value(value: weatherCache),
+-        ChangeNotifierProvider<DisplayedRoastRegistry>(
+-          create: (_) => DisplayedRoastRegistry(),
+-        ),
++        ChangeNotifierProvider<DisplayedRoastRegistry>.value(
++            value: displayedRoasts),
+         Provider<RoastPackRepository>.value(value: roastPackRepository),
++        ChangeNotifierProvider<LocalRoastController>.value(value: localRoasts),
+         Provider<RoastRepository>.value(value: roastRepository),
+         Provider<SettingsRepository>.value(value: settingsRepository),
+         Provider<PersonaRoastService>.value(value: roastService),
+@@ -84,7 +97,8 @@ void main() async {
+           value: settingsController,
+         ),
+       ],
+-      child: const GrumpySkiesApp(),
++      child: RoastForegroundSync(
++          controller: localRoasts, child: const GrumpySkiesApp()),
+     ),
+   );
+   WidgetsBinding.instance.addPostFrameCallback((_) {
+diff --git a/pubspec.lock b/pubspec.lock
+index e2ab0f2..a9ee7fb 100644
+--- a/pubspec.lock
++++ b/pubspec.lock
+@@ -916,6 +916,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "0.7.11"
++  timezone:
++    dependency: "direct main"
++    description:
++      name: timezone
++      sha256: dd14a3b83cfd7cb19e7888f1cbc20f258b8d71b54c06f79ac585f14093a287d1
++      url: "https://pub.dev"
++    source: hosted
++    version: "0.10.1"
+   typed_data:
+     dependency: transitive
+     description:
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 573c7b9..87071bc 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -11,10 +11,12 @@ dependencies:
+     sdk: flutter
+ 
+   # HTTP & storage
+-  http: ^1.2.0
++  http: ^1.6.0
+   shared_preferences: ^2.2.3
+   geolocator: ^14.0.2
+   crypto: ^3.0.7
++  # Selected-location IANA/DST conversion; no location or network access.
++  timezone: ^0.10.1
+   # Local meme documents, personal media, and platform export (no backend).
+   path_provider: ^2.1.6
+   idb_shim: ^2.9.9

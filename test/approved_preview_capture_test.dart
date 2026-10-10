@@ -132,8 +132,12 @@ void main() {
         await _save(tester, boundary, '${theme}_${route.key}');
         expect(tester.takeException(), isNull);
         if (route.value == AppRoutes.forecast) {
+          // The strict engine uses the recorded context-free fallback for this
+          // synthetic input. Do not alter fixture weather or old golden images.
           expect(
-              find.textContaining(ApprovedFixture.karenQuote), findsOneWidget);
+              find.textContaining(
+                  'I have opinions. The suggestion box has been warned.'),
+              findsOneWidget);
           expect(session.weather.requestCount, 1);
         }
         if (route.value == AppRoutes.roasts) {

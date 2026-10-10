@@ -11,10 +11,12 @@ dependencies:
     sdk: flutter
 
   # HTTP & storage
-  http: ^1.2.0
+  http: ^1.6.0
   shared_preferences: ^2.2.3
   geolocator: ^14.0.2
   crypto: ^3.0.7
+  # Selected-location IANA/DST conversion; no location or network access.
+  timezone: ^0.10.1
   # Local meme documents, personal media, and platform export (no backend).
   path_provider: ^2.1.6
   idb_shim: ^2.9.9

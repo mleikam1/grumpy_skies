@@ -1,5 +1,7 @@
 # DayMaker UI Developer Notes
 
+> Historical runtime notes: the sample/fake-repository descriptions below are superseded. Production `lib/main.dart` injects `OpenWeatherRepository` and `PackRoastRepository`. See [current production baseline](docs/roasts/UI_BASELINE.md) and [theme architecture](docs/ui_implementation/THEME_ARCHITECTURE.md).
+
 DayMaker is the polished Flutter UI layer for `grumpy_skies`. It currently runs on local sample data, fallback-aware placeholder assets, and fake repositories so product work can continue before live weather, radar, and share/export services are connected.
 
 ## Design System Overview

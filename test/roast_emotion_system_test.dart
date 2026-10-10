@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -12,7 +13,6 @@ import 'package:grumpy_skies/features/fun/meme/meme_weather.dart';
 import 'package:grumpy_skies/features/roasts/content/roast_pack_csv_builder.dart';
 import 'package:grumpy_skies/features/roasts/content/roast_pack_repository.dart';
 import 'package:grumpy_skies/features/roasts/content/weather_roast_models.dart';
-import 'package:grumpy_skies/features/roasts/models/roast_mood.dart';
 import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
 import 'package:grumpy_skies/features/roasts/widgets/featured_roast_card.dart';
 import 'package:grumpy_skies/models/daymaker_models.dart';
@@ -34,6 +34,7 @@ Roast example(String id, String text, {RoastMood? mood}) => Roast(
     mood: mood);
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   TestWidgetsFlutterBinding.ensureInitialized();
   test('all fifty bundled emotion assets are distinct native transparent art',
       () async {
@@ -127,7 +128,12 @@ void main() {
       expect(RoastLine.fromJson(legacy).mood, isNull);
     }
     final csv = const RoastPackCsvBuilder()
-        .build(File('content/roasts/roasts_template.csv').readAsStringSync())
+        .build(File('content/roasts/roasts_template.csv').readAsStringSync(),
+            rules: ((jsonDecode(
+                        File('content/roasts/rules_v1.json').readAsStringSync())
+                    as Map)['rules'] as List)
+                .map((r) => (r as Map).cast<String, dynamic>())
+                .toList())
         .pack;
     expect(csv.roasts.map((r) => r.mood), pack.roasts.map((r) => r.mood));
     final r = example('toddler', 'Yay!', mood: RoastMood.happy);

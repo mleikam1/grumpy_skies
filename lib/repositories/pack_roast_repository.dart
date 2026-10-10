@@ -1,38 +1,28 @@
 import '../data/daymaker_sample_data.dart';
 import '../features/roasts/content/roast_pack_repository.dart';
 import '../features/roasts/content/roast_selector.dart';
-import '../features/roasts/content/weather_roast_models.dart';
+import '../features/roasts/controllers/local_roast_controller.dart';
 import '../features/roasts/models/roast_persona.dart';
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
 import 'roast_repository.dart';
 
-/// Local editorial content, selected against the real weather bundle.
-/// Catalog art/features are static; no sample weather or invented history enters
-/// this repository. Selecting another line makes no weather or AI request.
+/// Compatibility adapter for the approved screens. Both Today and Roasts share
+/// the same local engine; reading history never selects or requests weather.
 class PackRoastRepository implements RoastRepository {
   PackRoastRepository(
-      {required RoastPackRepository packs, DateTime Function()? clock})
-      : _packs = packs,
+      {required RoastPackRepository packs,
+      LocalRoastController? controller,
+      DateTime Function()? clock})
+      : controller = controller ?? LocalRoastController(repository: packs),
         _clock = clock ?? DateTime.now;
-  final RoastPackRepository _packs;
+  final LocalRoastController controller;
   final DateTime Function() _clock;
-  Future<RoastPack>? _pack;
-  WeatherBundle? _weather;
   TemperatureUnit _unit = TemperatureUnit.fahrenheit;
-  final _daily = <String, Roast>{};
-  final _recent = <String, List<String>>{};
-  final _history = <Roast>[];
 
   void setWeather(WeatherBundle weather, TemperatureUnit unit) {
-    if (_weather?.current.displayUpdatedAt !=
-            weather.current.displayUpdatedAt ||
-        _weather?.current.locationName != weather.current.locationName ||
-        _unit != unit) {
-      _daily.clear();
-    }
-    _weather = weather;
     _unit = unit;
+    controller.publishWeather(weather, weather.location ?? controller.location);
   }
 
   @override
@@ -53,65 +43,54 @@ class PackRoastRepository implements RoastRepository {
   @override
   Future<Roast> getDailyRoast(
       {required String personaId, required String weatherSnapshotId}) async {
-    final id = RoastPersonas.normalizeId(personaId);
-    return _daily[id] ??=
-        await nextRoast(personaId: id, weatherSnapshotId: weatherSnapshotId);
+    await controller.initialize();
+    return fromSelection(
+        controller.select(persona: personaId, unit: _unit, now: _clock()),
+        weatherSnapshotId: weatherSnapshotId);
   }
 
   Future<Roast> nextRoast(
       {required String personaId, required String weatherSnapshotId}) async {
-    final weather = _weather;
-    if (weather == null) {
-      throw StateError('Weather is required to select a roast.');
-    }
-    final id = RoastPersonas.normalizeId(personaId);
-    final recent = _recent.putIfAbsent(id, () => []);
-    final RoastPack pack;
-    try {
-      pack = await (_pack ??= _packs.loadPack());
-    } catch (_) {
-      _pack = null;
-      rethrow;
-    }
-    final selection = const RoastSelector().select(
-      pack: pack,
-      context: WeatherRoastContext.fromWeatherBundle(weather,
-          temperatureUnit: _unit),
-      persona: id,
-      type: RoastType.today,
-      recentRoastIds: recent,
-      seed: '$weatherSnapshotId|$id|${recent.length}',
-    );
-    recent.add(selection.line.id);
-    if (recent.length > 12) recent.removeAt(0);
-    final roast = Roast(
-        id: selection.line.id,
-        personaId: id,
-        weatherSnapshotId: weatherSnapshotId,
-        text: selection.renderedText,
-        category: selection.line.type.name,
-        mood: selection.line.mood,
-        createdAt: _clock(),
-        xpReward: 0);
-    _daily[id] = roast;
-    return roast;
+    await controller.initialize();
+    return fromSelection(
+        controller.select(
+            persona: personaId, unit: _unit, now: _clock(), another: true),
+        weatherSnapshotId: weatherSnapshotId);
   }
 
+  static final _presentations = Expando<Roast>();
+
+  static Roast fromSelection(RoastSelection selection,
+          {required String weatherSnapshotId}) =>
+      _presentations[selection] ??= Roast(
+          id: selection.id,
+          personaId: selection.persona,
+          weatherSnapshotId: weatherSnapshotId,
+          text: selection.renderedText,
+          category: selection.line.type.name,
+          mood: selection.mood,
+          createdAt: selection.selectedAt ??
+              selection.weatherTimestamp ??
+              DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+          xpReward: 0,
+          selection: selection);
+
   void recordDisplayed(Roast roast) {
-    if (_history.isNotEmpty &&
-        _history.first.id == roast.id &&
-        _history.first.text == roast.text) {
-      return;
-    }
-    _history.insert(0, roast);
-    if (_history.length > 50) _history.removeLast();
+    final selection = roast.selection;
+    if (selection != null) controller.commitDisplayed(selection);
   }
 
   @override
   Future<List<Roast>> getRoastHistory({String? personaId}) async =>
-      List.unmodifiable(_history.where((roast) =>
-          personaId == null ||
-          roast.personaId == RoastPersonas.normalizeId(personaId)));
+      List.unmodifiable([
+        for (final selection in controller.exposures)
+          if (personaId == null ||
+              selection.persona == RoastPersonas.normalizeId(personaId))
+            fromSelection(selection,
+                weatherSnapshotId:
+                    selection.weatherTimestamp?.toIso8601String() ??
+                        'unavailable')
+      ]);
   @override
   Future<List<Achievement>> getAchievements() async =>
       DayMakerSampleData.achievements;

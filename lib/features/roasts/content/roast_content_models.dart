@@ -1,5 +1,8 @@
 // Pure editorial models shared by the Flutter app and the Dart CSV build tool.
 import '../models/roast_mood.dart';
+import 'roast_rule_models.dart';
+export '../models/roast_mood.dart';
+export 'roast_rule_models.dart';
 
 const supportedWeatherRoastPersonas = <String>{
   'karen',
@@ -11,6 +14,9 @@ const supportedWeatherRoastPersonas = <String>{
 
 const legacyWeatherRoastPersonaAliases = <String, String>{
   'frat-bro': 'frat_bro',
+  'fratbro': 'frat_bro',
+  '2_year_old': 'two_year_old',
+  '2-year-old': 'two_year_old',
   'old_grandpa': 'grandpa',
   'two-year-old': 'two_year_old',
   'toddler': 'two_year_old',
@@ -127,6 +133,8 @@ class RoastPack {
     required this.generatedAt,
     required this.personas,
     required this.roasts,
+    this.rules = const [],
+    this.ruleSchemaVersion = 1,
   });
 
   final int schemaVersion;
@@ -134,30 +142,38 @@ class RoastPack {
   final DateTime generatedAt;
   final List<String> personas;
   final List<RoastLine> roasts;
+  final List<RoastRule> rules;
+  final int ruleSchemaVersion;
 
   Map<String, dynamic> toJson() => {
         'schema_version': schemaVersion,
         'pack_version': packVersion,
         'generated_at': _iso8601Seconds(generatedAt.toUtc()),
         'personas': personas,
+        if (rules.isNotEmpty) 'rules': rules.map((r) => r.toJson()).toList(),
+        if (rules.isNotEmpty) 'rule_schema_version': ruleSchemaVersion,
         'roasts': roasts.map((roast) => roast.toJson()).toList(),
       };
 
   factory RoastPack.fromJson(Map<String, dynamic> json) {
     return RoastPack(
       schemaVersion: (json['schema_version'] as num).round(),
+      ruleSchemaVersion: (json['rule_schema_version'] as num?)?.toInt() ?? 1,
+      rules: List<RoastRule>.unmodifiable([
+        for (final rule in json['rules'] ?? const [])
+          RoastRule.fromJson((rule as Map).cast<String, dynamic>())
+      ]),
       packVersion: json['pack_version'] as String,
       generatedAt: DateTime.parse(json['generated_at'] as String),
-      personas: ((json['personas'] as List?) ?? const [])
-          .map((persona) => persona.toString())
-          .toList(growable: false),
-      roasts: ((json['roasts'] as List?) ?? const [])
-          .map(
-            (item) => RoastLine.fromJson(
-              (item as Map).cast<String, dynamic>(),
-            ),
-          )
-          .toList(growable: false),
+      personas: List<String>.unmodifiable(
+          ((json['personas'] as List?) ?? const [])
+              .map((persona) => persona.toString())),
+      roasts: List<RoastLine>.unmodifiable(
+          ((json['roasts'] as List?) ?? const []).map(
+        (item) => RoastLine.fromJson(
+          (item as Map).cast<String, dynamic>(),
+        ),
+      )),
     );
   }
 }
@@ -173,7 +189,6 @@ class RoastLine {
     required this.weight,
     required this.text,
     this.fallbackText,
-    this.mood,
     this.conditionCodes = const [],
     this.tempMinF,
     this.tempMaxF,
@@ -181,6 +196,13 @@ class RoastLine {
     this.windMinMph,
     this.precipMinPercent,
     this.locale = 'en-US',
+    this.mood,
+    this.familyId,
+    this.ruleId,
+    this.status = 'active',
+    this.validFrom,
+    this.validUntil,
+    this.regions = const [],
   });
 
   final String id;
@@ -192,7 +214,6 @@ class RoastLine {
   final double weight;
   final String text;
   final String? fallbackText;
-  final RoastMood? mood;
   final List<int> conditionCodes;
   final int? tempMinF;
   final int? tempMaxF;
@@ -200,6 +221,18 @@ class RoastLine {
   final double? windMinMph;
   final int? precipMinPercent;
   final String locale;
+  final RoastMood? mood;
+  final String? familyId;
+  final String? ruleId;
+  final String status;
+  final DateTime? validFrom;
+  final DateTime? validUntil;
+  final List<String> regions;
+
+  String get effectiveFamilyId => familyId ?? id;
+  // Preserve the current content-first legacy inference and expression registry.
+  RoastMood get effectiveMood => RoastMoodResolver.resolve(
+      personaId: persona, text: text, explicitMood: mood);
 
   bool get isFallback => tags.contains(WeatherRoastTag.fallback);
 
@@ -208,6 +241,14 @@ class RoastLine {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (mood != null) 'mood': mood!.name,
+      if (familyId != null) 'family_id': familyId,
+      if (ruleId != null) 'rule_id': ruleId,
+      if (status != 'active') 'status': status,
+      if (validFrom != null) 'valid_from': validFrom!.toUtc().toIso8601String(),
+      if (validUntil != null)
+        'valid_until': validUntil!.toUtc().toIso8601String(),
+      if (regions.isNotEmpty) 'regions': regions,
       'persona': persona,
       'type': type.name,
       'tags': tags.map((tag) => tag.wireValue).toList(),
@@ -215,7 +256,6 @@ class RoastLine {
       'level': level.name,
       'weight': weight,
       'text': text,
-      if (mood != null) 'mood': mood!.name,
       if (fallbackText != null && fallbackText!.trim().isNotEmpty)
         'fallback_text': fallbackText,
       if (conditionCodes.isNotEmpty) 'condition_codes': conditionCodes,
@@ -232,16 +272,27 @@ class RoastLine {
     final rawDayparts = (json['dayparts'] ?? json['daypart']) as Object?;
     return RoastLine(
       id: json['id'] as String,
+      mood: RoastMood.tryParse(json['mood']),
+      familyId: json['family_id'] as String?,
+      ruleId: json['rule_id'] as String?,
+      status: (json['status'] as String?) ?? 'active',
+      validFrom: json['valid_from'] == null
+          ? null
+          : DateTime.parse(json['valid_from'] as String),
+      validUntil: json['valid_until'] == null
+          ? null
+          : DateTime.parse(json['valid_until'] as String),
+      regions: List<String>.unmodifiable(json['regions'] ?? const []),
       persona: normalizeRoastPersonaId(json['persona'] as String),
       type: RoastType.parse(json['type'] as String),
-      tags: _parseTags(json['tags']),
-      dayparts: _parseDayparts(rawDayparts),
+      tags: List.unmodifiable(_parseTags(json['tags'])),
+      dayparts: List.unmodifiable(_parseDayparts(rawDayparts)),
       level: RoastLevel.parse(json['level'] as String),
       weight: ((json['weight'] ?? 1) as num).toDouble(),
       text: json['text'] as String,
-      mood: RoastMood.tryParse(json['mood']),
       fallbackText: json['fallback_text'] as String?,
-      conditionCodes: _parseConditionCodes(json['condition_codes']),
+      conditionCodes:
+          List.unmodifiable(_parseConditionCodes(json['condition_codes'])),
       tempMinF: (json['temp_min_f'] as num?)?.round(),
       tempMaxF: (json['temp_max_f'] as num?)?.round(),
       humidityMin: (json['humidity_min'] as num?)?.round(),

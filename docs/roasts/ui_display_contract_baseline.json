@@ -1,0 +1,14 @@
+{
+  "source": "6f67fb11ff4030ae3a1cb1074c7f7b028769bd80",
+  "method": "read-only git show from authoritative clean starting revision; additional reveal/share/appearance contracts",
+  "sha256": {
+    "lib/features/roasts/advanced_roast_reveal_screen.dart": "a21c345e98230e846b8dc8450f874fcdad41da793502b050c72782ed730b8297",
+    "lib/features/roasts/services/displayed_roast_share.dart": "d2da65f31865a13bf41386e4eb82daca53ff8fbdcaaadc3224954a4273edf789",
+    "lib/features/roasts/models/roast_mood.dart": "d89d679db5fd39cff1e38598a114d85853abbea89f57daa7ee858c5efaed5b09",
+    "lib/features/roasts/models/roast_persona.dart": "c046f912e76e1d957488cfe355cf8d4d2b26c0a299ccf6830eed0e2d61dbc031",
+    "lib/app.dart": "9e7ff519f2de5f4c0cb02dc2a5d98e1faf423046e0f4a1f0394b7828ed6f7352",
+    "lib/models/app_appearance.dart": "fac2e64f8eda949fd9aafc65c7954261b83ac3592a510732fc60818dd1bc5a9a",
+    "lib/services/settings_controller.dart": "7207b4c10130e44d35c6359ec2817e60f81f3089eeea7300e6e23c32f582577c",
+    "lib/repositories/shared_preferences_settings_repository.dart": "6f9fc491eba50db7c02dbdd080612af60f4b330e43d191e852b3066383f81c2c"
+  }
+}

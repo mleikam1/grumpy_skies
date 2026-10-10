@@ -8,6 +8,7 @@ import '../../services/weather_location_controller.dart';
 import '../fun/meme/meme_weather.dart';
 import 'models/roast_persona.dart';
 import 'services/displayed_roast_share.dart';
+import 'services/roast_safety.dart';
 import 'widgets/advanced_roast_reveal_card.dart';
 
 /// Reveal is a presentation of an already displayed roast, never a new request.
@@ -48,8 +49,12 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
   @override
   Widget build(BuildContext context) {
     final source = _source;
-    final alert = context.watch<WeatherLocationController?>()?.safetyStatus ==
-        WeatherSafetyStatus.activeAlert;
+    final location = context.watch<WeatherLocationController?>();
+    final officialAlert =
+        location?.safetyStatus == WeatherSafetyStatus.activeAlert;
+    final alert = officialAlert ||
+        roastHumorBlocked(location?.currentWeather,
+            selection: source?.selection);
     final persona =
         source == null ? null : RoastPersonas.byId(source.personaId);
     final city = source?.weatherSnapshot?['city'];
@@ -77,9 +82,11 @@ class _AdvancedRoastRevealScreenState extends State<AdvancedRoastRevealScreen> {
                   const SizedBox(height: 18),
                   if (alert)
                     _state(context,
-                        title: 'Weather alerts take priority',
+                        title: officialAlert
+                            ? 'Weather alerts take priority'
+                            : 'Weather safety takes priority',
                         message:
-                            'Roasts are paused while alerts are active. Read the official warning and local guidance.',
+                            'Roasts are paused for these conditions. Check the current weather and official guidance.',
                         action: 'View weather',
                         onAction: () => context.go(AppRoutes.forecast))
                   else if (source == null)

@@ -98,7 +98,27 @@ type RadarFrameProbe = {
 
 const jsonCache = new Map<string, CacheEntry>();
 const jsonInflight = new Map<string, Promise<unknown>>();
+const nwsInflight = new Map<string, Promise<unknown>>();
 const upstreamAuthFailures = new Map<string, ErrorCacheEntry>();
+const upstreamRecentFailures = new Map<string, ErrorCacheEntry>();
+const networkCounts: Record<string, number> = {};
+
+// Process-local diagnostic counters, never location/text/per-impression records.
+export function weatherNetworkCounters(): Readonly<Record<string, number>> {
+  return {...networkCounts};
+}
+function countNetwork(category: string) {
+  networkCounts[category] = (networkCounts[category] ?? 0) + 1;
+}
+function countUpstream(url: URL) {
+  const category = url.hostname.endsWith("openweathermap.org") ?
+    "openweatherUpstreamRequests" : url.hostname === "api.weather.gov" ?
+      "nwsUpstreamRequests" : "noaaUpstreamRequests";
+  countNetwork(category);
+  // Aggregate these existing function logs for actual provider totals, including
+  // retry attempts. Do not infer upstream totals from backend route counts.
+  logger.info("Weather upstream request", {category});
+}
 
 class PublicHttpError extends Error {
   constructor(
@@ -147,6 +167,7 @@ export const api = onRequest(
       return;
     }
 
+    countNetwork("backendRequests");
     const path = normalizedApiPath(request);
 
     try {
@@ -346,7 +367,7 @@ async function handleReverse(request: Request, response: Response) {
     sendJson(response, 200, {
       location: {
         name: "Current location",
-        country: "US",
+        country: "",
         lat,
         lon,
         source: "device",
@@ -1421,11 +1442,17 @@ async function openWeatherJson(
   const cacheKey = weatherCacheKey(pathname, params, routeLabel);
   const cached = jsonCache.get(cacheKey);
   if (cached !== undefined && cached.expiresAtMs > Date.now()) {
+    countNetwork("providerCacheHits");
     return cached.value;
+  }
+  const failure = upstreamRecentFailures.get(cacheKey);
+  if (failure !== undefined && failure.expiresAtMs > Date.now()) {
+    throw failure.error;
   }
 
   const pending = jsonInflight.get(cacheKey);
   if (pending !== undefined) {
+    countNetwork("providerDeduplicated");
     return pending;
   }
 
@@ -1446,7 +1473,20 @@ async function openWeatherJson(
       expiresAtMs: Date.now() + cacheTtlMs(routeLabel),
       value: json,
     });
+    // Bounded per-instance cache; eviction affects cost, never geography.
+    if (jsonCache.size > 5000) jsonCache.delete(jsonCache.keys().next().value!);
     return json;
+  } catch (error) {
+    if (error instanceof PublicHttpError) {
+      upstreamRecentFailures.set(cacheKey, {
+        expiresAtMs: Date.now() + 60 * 1000,
+        error,
+      });
+      if (upstreamRecentFailures.size > 5000) {
+        upstreamRecentFailures.delete(upstreamRecentFailures.keys().next().value!);
+      }
+    }
+    throw error;
   } finally {
     jsonInflight.delete(cacheKey);
   }
@@ -1538,6 +1578,7 @@ async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), openWeatherTimeoutMs);
   try {
+    countUpstream(url);
     return await fetch(url, {signal: controller.signal});
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
@@ -1558,9 +1599,22 @@ async function fetchWithTimeout(url: URL): Promise<globalThis.Response> {
 }
 
 async function nwsJson(url: URL): Promise<unknown> {
+  const key = url.toString();
+  const pending = nwsInflight.get(key);
+  if (pending !== undefined) {
+    countNetwork("providerDeduplicated");
+    return pending;
+  }
+  const request = fetchNwsJson(url);
+  nwsInflight.set(key, request);
+  try { return await request; } finally { nwsInflight.delete(key); }
+}
+
+async function fetchNwsJson(url: URL): Promise<unknown> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), nwsTimeoutMs);
   try {
+    countUpstream(url);
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
@@ -2174,25 +2228,15 @@ export function weatherCacheKey(
   params: Record<string, string | number | undefined>,
   routeLabel: string,
 ): string {
-  const precision = coordinatePrecision(routeLabel);
   const entries = Object.entries(params)
     .filter((entry): entry is [string, string | number] =>
       entry[1] !== undefined)
-    .map(([name, value]) => {
-      if ((name === "lat" || name === "lon") && typeof value === "number") {
-        return [name, value.toFixed(precision)] as const;
-      }
-      return [name, String(value).trim().toLowerCase()] as const;
-    })
+    // Coordinates/endpoint parameters already passed route validation. Preserve
+    // exact values: arbitrary decimal buckets merge microclimates/alert areas.
+    .map(([name, value]) => [name, String(value)] as const)
     .sort(([left], [right]) => left.localeCompare(right));
   const query = entries.map(([name, value]) => `${name}=${value}`).join("&");
   return `${routeLabel}:${pathname}:${query}`;
-}
-
-function coordinatePrecision(routeLabel: string): number {
-  return routeLabel.includes("minute") || routeLabel.includes("radar") ?
-    3 :
-    2;
 }
 
 function cacheTtlMs(routeLabel: string): number {
@@ -2203,7 +2247,7 @@ function cacheTtlMs(routeLabel: string): number {
 }
 
 function shouldRetryUpstream(status: number): boolean {
-  return status === 429 || status >= 500;
+  return status >= 500; // 429 is not retried; the per-key cooldown applies.
 }
 
 function backoffDelayMs(): number {
@@ -2498,7 +2542,8 @@ function normalizeLocation(
     "Selected location";
   const normalized: JsonRecord = {
     name,
-    country: country ?? "US",
+    // Missing provider metadata is unknown, never an inferred region.
+    country: country ?? "",
     lat,
     lon,
     source,

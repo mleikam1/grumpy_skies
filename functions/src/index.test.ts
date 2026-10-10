@@ -1,7 +1,12 @@
 import * as assert from "node:assert/strict";
 import {test} from "node:test";
+import {createServer, get} from "node:http";
+import express = require("express");
+import type {Request} from "firebase-functions/v2/https";
 
 import {
+  api,
+  openWeatherApiKey,
   normalizeCurrentWeather,
   normalizeForecastWeather,
   normalizeLegacyForecastWeather,
@@ -687,7 +692,7 @@ test("maps National Weather Service forecast periods into hourly and 7 daily DTO
   assert.equal(firstDailyTemp.min, 62);
 });
 
-test("weather cache key rounds location and includes units", () => {
+test("weather cache key preserves exact place, endpoint and units", () => {
   const first = weatherCacheKey(
     "/data/2.5/weather",
     {lat: 38.861, lon: -94.652, units: "imperial", lang: "en"},
@@ -704,10 +709,14 @@ test("weather cache key rounds location and includes units", () => {
     "weather/current",
   );
 
-  assert.equal(first, sameBucket);
+  assert.notEqual(first, sameBucket);
   assert.notEqual(first, metric);
-  assert.match(first, /lat=38\.86/);
-  assert.match(first, /lon=-94\.65/);
+  assert.equal(first, weatherCacheKey("/data/2.5/weather",
+    {lang: "en", units: "imperial", lon: -94.652, lat: 38.861}, "weather/current"));
+  assert.notEqual(first, weatherCacheKey("/data/2.5/forecast",
+    {lat: 38.861, lon: -94.652, units: "imperial", lang: "en"}, "weather/current"));
+  assert.match(first, /lat=38\.861/);
+  assert.match(first, /lon=-94\.652/);
 });
 
 test("NOAA radar helpers snap to 5 minutes and build Web Mercator bboxes", () => {
@@ -801,4 +810,68 @@ test("weather trust keeps explicit alert coverage and warning instructions", () 
   assert.equal(normalizeForecastWeather({current: {dt: 1789632000}}).alertCoverageVerified, false);
   assert.equal(normalizeForecastWeather({alerts: []}).alertCoverageVerified, true);
   assert.notEqual(normalizeOneCallTimelineForecast({}, {}, {}).alertCoverageVerified, true);
+});
+
+
+test("location routes keep unknown countries unknown and retain provider countries", async (t) => {
+  t.mock.method(openWeatherApiKey, "value", () => "local-country-test-key");
+  const upstreamPaths: string[] = [];
+  t.mock.method(globalThis, "fetch", async (input: URL) => {
+    upstreamPaths.push(input.pathname);
+    if (input.pathname === "/geo/1.0/direct") {
+      return globalThis.Response.json([
+        {name: "Missing country", lat: 48.85, lon: 2.35},
+        {name: "Blank country", country: "   ", lat: 48.86, lon: 2.36},
+        {name: "Null country", country: null, lat: 48.87, lon: 2.37},
+        {name: "Known country", country: "FR", state: "Ile-de-France", lat: 48.88, lon: 2.38},
+        {name: "Known US", country: "US", lat: 41.88, lon: -87.63},
+      ]);
+    }
+    if (input.pathname === "/geo/1.0/zip") {
+      assert.equal(input.searchParams.get("zip"), "75001,FR");
+      return globalThis.Response.json({name: "Postal result", lat: 48.86, lon: 2.34});
+    }
+    assert.equal(input.pathname, "/geo/1.0/reverse");
+    return globalThis.Response.json([]);
+  });
+  const app = express();
+  app.use((request, response) => api(request as Request, response));
+  const server = createServer(app);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => new Promise<void>((resolve, reject) => {
+    server.close((error) => error ? reject(error) : resolve());
+  }));
+  const address = server.address();
+  assert.ok(address !== null && typeof address !== "string");
+  const port = address.port;
+  async function request(path: string): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+      get(`http://127.0.0.1:${port}${path}`, (response) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk: Buffer) => chunks.push(chunk));
+        response.on("error", reject);
+        response.on("end", () => {
+          try {
+            assert.equal(response.statusCode, 200);
+            resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }).on("error", reject);
+    });
+  }
+  const cities = await request("/location/geocode?q=country-metadata-regression");
+  const locations = cities.locations as Array<Record<string, unknown>>;
+  assert.deepEqual(locations.map((location) => location.country), ["", "", "", "FR", "US"]);
+  assert.equal(locations[3].state, "Ile-de-France");
+  const postal = await request("/location/zip?zip=75001&country=FR");
+  assert.equal((postal.location as Record<string, unknown>).country, "");
+  const reverse = await request("/location/reverse?lat=-33.86&lon=151.2");
+  const deviceLocation = reverse.location as Record<string, unknown>;
+  assert.equal(deviceLocation.country, "");
+  assert.equal(deviceLocation.lat, -33.86);
+  assert.equal(deviceLocation.lon, 151.2);
+  assert.equal(deviceLocation.source, "device");
+  assert.deepEqual(upstreamPaths, ["/geo/1.0/direct", "/geo/1.0/zip", "/geo/1.0/reverse"]);
 });

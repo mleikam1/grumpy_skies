@@ -422,7 +422,9 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
           bottom: roast.text,
           personaId: roast.personaId));
       e.apply(e.document.copyWith(
-          personaId: roast.personaId, weatherSnapshot: roast.weatherSnapshot));
+          personaId: roast.personaId,
+          weatherSnapshot: roast.weatherSnapshot,
+          roastSnapshot: roast.provenance));
     } finally {
       e.endGesture();
     }

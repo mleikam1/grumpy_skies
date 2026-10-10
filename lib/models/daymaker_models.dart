@@ -1,3 +1,4 @@
+import '../features/roasts/content/roast_selector.dart';
 import '../features/roasts/models/roast_mood.dart';
 import 'app_appearance.dart';
 export 'app_appearance.dart';
@@ -259,6 +260,9 @@ class Roast {
   final int xpReward;
   final RoastMood? mood;
 
+  /// Exact immutable local selection used by display, history and share.
+  final RoastSelection? selection;
+
   const Roast({
     required this.id,
     required this.personaId,
@@ -268,6 +272,7 @@ class Roast {
     required this.createdAt,
     required this.xpReward,
     this.mood,
+    this.selection,
   });
 
   RoastMood get resolvedMood => RoastMoodResolver.resolve(

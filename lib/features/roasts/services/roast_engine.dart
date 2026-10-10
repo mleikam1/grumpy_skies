@@ -1,59 +1,32 @@
+import '../content/roast_selector.dart';
+import '../content/weather_roast_models.dart';
 import '../models/persona.dart';
 import '../models/roast.dart';
 
 class RoastEngine {
   const RoastEngine();
 
-  Roast _buildRoast(String type, Persona persona, String text) {
-    return Roast(
-      id: '${persona.id}-$type-${DateTime.now().millisecondsSinceEpoch}',
-      personaId: persona.id,
-      text: text,
-      timestamp: DateTime.now(),
-      type: type,
+  Roast _legacy(Persona persona, RoastType type) {
+    final selection = const RoastSelector().applicationSelection(
+      WeatherRoastContext.unavailable(),
+      normalizeRoastPersonaId(persona.id),
+      type,
+      reason: 'legacy_without_weather',
     );
+    return Roast(
+        id: selection.id,
+        personaId: selection.persona,
+        text: selection.renderedText,
+        timestamp: selection.selectedAt ?? DateTime.now(),
+        type: type.name);
   }
 
-  Roast generateDailyRoast(Persona p) {
-    return _buildRoast(
-        'daily', p, "You're somehow managing to annoy the weather today.");
-  }
-
-  Roast generateMorningRoast(Persona p) {
-    return _buildRoast('morning', p, 'Rise and shine, or at least try to.');
-  }
-
-  Roast generateAfternoonRoast(Persona p) {
-    return _buildRoast(
-        'afternoon', p, 'Afternoon check-in: still chaotic, still you.');
-  }
-
-  Roast generateNightRoast(Persona p) {
-    return _buildRoast('night', p, 'The stars are judging you quietly.');
-  }
-
-  Roast generateMoodRoast(Persona p) {
-    return _buildRoast(
-        'mood', p, 'Your mood is as predictable as a surprise drizzle.');
-  }
-
-  Roast generateCommuteRoast(Persona p) {
-    return _buildRoast(
-        'commute', p, 'Traffic and your playlist both need help.');
-  }
-
-  Roast generateWeekendRoast(Persona p) {
-    return _buildRoast(
-        'weekend', p, 'Weekend plans? The weather rolls its eyes.');
-  }
-
-  List<Roast> generateHourlyRoasts(Persona p) {
-    return List.generate(3, (index) {
-      return _buildRoast(
-        'hourly',
-        p,
-        'Hourly update #${index + 1}: you and the clouds are in a mood.',
-      );
-    });
-  }
+  Roast generateDailyRoast(Persona p) => _legacy(p, RoastType.today);
+  Roast generateMorningRoast(Persona p) => _legacy(p, RoastType.mood);
+  Roast generateAfternoonRoast(Persona p) => _legacy(p, RoastType.mood);
+  Roast generateNightRoast(Persona p) => _legacy(p, RoastType.mood);
+  Roast generateMoodRoast(Persona p) => _legacy(p, RoastType.mood);
+  Roast generateCommuteRoast(Persona p) => _legacy(p, RoastType.commute);
+  Roast generateWeekendRoast(Persona p) => _legacy(p, RoastType.weekend);
+  List<Roast> generateHourlyRoasts(Persona p) => [_legacy(p, RoastType.hourly)];
 }

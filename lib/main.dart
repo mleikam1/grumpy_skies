@@ -9,6 +9,9 @@ import 'app.dart';
 import 'app/daymaker_router.dart';
 import 'features/fun/meme/meme_weather.dart';
 import 'features/roasts/content/roast_pack_repository.dart';
+import 'features/roasts/controllers/local_roast_controller.dart';
+import 'features/roasts/services/roast_debug_inspector.dart';
+import 'features/roasts/widgets/roast_foreground_sync.dart';
 import 'repositories/open_weather_repository.dart';
 import 'repositories/pack_roast_repository.dart';
 import 'repositories/roast_repository.dart';
@@ -29,20 +32,30 @@ void main() async {
 
   final weatherClient = OpenWeatherBackendClient();
   final weatherCache = await CacheService.create();
-  final roastPackCache = await SharedPreferencesRoastPackCache.create();
+  final roastPackCache = await DurableRoastPackCache.create();
   final weatherRepository = OpenWeatherRepository(
     client: weatherClient,
     cacheService: weatherCache,
   );
   final roastPackRepository = RoastPackRepository(cache: roastPackCache);
-  final roastRepository = PackRoastRepository(packs: roastPackRepository);
+  final localRoasts = LocalRoastController(repository: roastPackRepository);
+  // Pack initialization runs independently; an application-owned fallback is
+  // available immediately and optional updates remain disabled by default.
+  unawaited(localRoasts.initialize());
+  final roastRepository =
+      PackRoastRepository(packs: roastPackRepository, controller: localRoasts);
   final settingsRepository = await SharedPreferencesSettingsRepository.create();
   final settingsController = SettingsController(repository: settingsRepository);
   await settingsController.loadSettings();
   final locationController = await WeatherLocationController.create(
     repository: weatherRepository,
   );
-  final roastService = PersonaRoastService();
+  final roastService = PersonaRoastService(controller: localRoasts);
+  final displayedRoasts = await DisplayedRoastRegistry.restore();
+  assert(() {
+    registerRoastInspector(localRoasts, displayedRoasts);
+    return true;
+  }());
   final xpService = await XpService.create();
   final achievementService = await AchievementService.create();
 
@@ -68,10 +81,10 @@ void main() async {
         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
         Provider<WeatherRepository>.value(value: weatherRepository),
         Provider<CacheService>.value(value: weatherCache),
-        ChangeNotifierProvider<DisplayedRoastRegistry>(
-          create: (_) => DisplayedRoastRegistry(),
-        ),
+        ChangeNotifierProvider<DisplayedRoastRegistry>.value(
+            value: displayedRoasts),
         Provider<RoastPackRepository>.value(value: roastPackRepository),
+        ChangeNotifierProvider<LocalRoastController>.value(value: localRoasts),
         Provider<RoastRepository>.value(value: roastRepository),
         Provider<SettingsRepository>.value(value: settingsRepository),
         Provider<PersonaRoastService>.value(value: roastService),
@@ -84,7 +97,8 @@ void main() async {
           value: settingsController,
         ),
       ],
-      child: const GrumpySkiesApp(),
+      child: RoastForegroundSync(
+          controller: localRoasts, child: const GrumpySkiesApp()),
     ),
   );
   WidgetsBinding.instance.addPostFrameCallback((_) {

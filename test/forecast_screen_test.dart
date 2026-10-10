@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ import 'package:grumpy_skies/services/weather_location_controller.dart';
 import 'helpers/daymaker_test_helpers.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   Widget buildSubject() {
     const repository = FakeWeatherRepository();
     final locationController = WeatherLocationController(
@@ -66,7 +68,7 @@ void main() {
     expect(find.text("Karen's take"), findsOneWidget);
     expect(find.text('ROAST QUEEN'), findsOneWidget);
     expect(
-      find.text('“It’s 72°F and somehow still making a scene.”'),
+      find.text('“I have opinions. The suggestion box has been warned.”'),
       findsOneWidget,
     );
     expect(find.text('38%'), findsWidgets);

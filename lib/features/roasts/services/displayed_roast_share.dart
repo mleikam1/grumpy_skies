@@ -8,6 +8,7 @@ import '../../../config/app_routes.dart';
 import '../../../monetization/monetization_controller.dart';
 import '../../../services/weather_location_controller.dart';
 import '../../fun/meme/meme_weather.dart';
+import 'roast_safety.dart';
 
 /// All destinations receive the same immutable text/weather displayed by the
 /// caller. This function never requests weather, generates text or changes it.
@@ -15,9 +16,13 @@ Future<void> showDisplayedRoastShareSheet(
   BuildContext context,
   DisplayedRoastSnapshot source,
 ) async {
-  bool alertActive() =>
-      context.read<WeatherLocationController?>()?.safetyStatus ==
-      WeatherSafetyStatus.activeAlert;
+  bool alertActive() {
+    final location = context.read<WeatherLocationController?>();
+    return location?.safetyStatus == WeatherSafetyStatus.activeAlert ||
+        roastHumorBlocked(location?.currentWeather,
+            selection: source.selection);
+  }
+
   if (alertActive()) return;
   final action = await showModalBottomSheet<String>(
     context: context,

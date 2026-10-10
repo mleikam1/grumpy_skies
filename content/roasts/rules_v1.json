@@ -1,0 +1,723 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "id": "activity_commuting",
+      "required_all": [
+        "activity_commuting"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [],
+      "placeholders": [],
+      "numeric": []
+    },
+    {
+      "id": "activity_grilling",
+      "required_all": [
+        "activity_grilling"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [],
+      "placeholders": [],
+      "numeric": []
+    },
+    {
+      "id": "activity_outdoor_exercise",
+      "required_all": [
+        "activity_outdoor_exercise"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [],
+      "placeholders": [],
+      "numeric": []
+    },
+    {
+      "id": "activity_staying_in",
+      "required_all": [
+        "activity_staying_in"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [],
+      "placeholders": [],
+      "numeric": []
+    },
+    {
+      "id": "activity_walking",
+      "required_all": [
+        "activity_walking"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [],
+      "placeholders": [],
+      "numeric": []
+    },
+    {
+      "id": "commute_windy",
+      "required_all": [
+        "windy"
+      ],
+      "scopes": [
+        "commute"
+      ],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "context_free",
+      "required_all": [],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [],
+      "placeholders": [],
+      "numeric": []
+    },
+    {
+      "id": "current_clear",
+      "required_all": [
+        "clear"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_cloudy",
+      "required_all": [
+        "cloudy"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_cold",
+      "required_all": [
+        "cold"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_fog",
+      "required_all": [
+        "fog"
+      ],
+      "scopes": [
+        "current"
+      ],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_hot",
+      "required_all": [
+        "hot"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_hot_humid",
+      "required_all": [
+        "hot",
+        "humid"
+      ],
+      "scopes": [
+        "current"
+      ],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_humid",
+      "required_all": [
+        "humid"
+      ],
+      "scopes": [
+        "current"
+      ],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_light_rain",
+      "required_all": [
+        "light_rain"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_nice",
+      "required_all": [
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_snow",
+      "required_all": [
+        "snow"
+      ],
+      "scopes": [
+        "current"
+      ],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "current_windy",
+      "required_all": [
+        "windy"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "forecast_rain",
+      "required_all": [
+        "forecast_rain_probability"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "hourly",
+        "today",
+        "commute",
+        "weekend"
+      ],
+      "placeholders": [],
+      "numeric": [
+        {
+          "fact": "precip_chance",
+          "unit": "percent",
+          "min": 50
+        }
+      ],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "hourly_clear",
+      "required_all": [
+        "clear"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "hourly_cloudy",
+      "required_all": [
+        "cloudy"
+      ],
+      "scopes": [
+        "hourly"
+      ],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_frat_bro_clear_weekend_001",
+      "required_all": [
+        "clear",
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "weekend"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_frat_bro_dry_mood_001",
+      "required_all": [
+        "dry"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_frat_bro_heavy_rain_commute_001",
+      "required_all": [
+        "heavy_rain"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "commute"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_frat_bro_hot_humid_today_001",
+      "required_all": [
+        "hot",
+        "humid"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_frat_bro_severe_today_001",
+      "required_all": [
+        "storm"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_frat_bro_windy_hourly_001",
+      "required_all": [
+        "windy"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "hourly"
+      ],
+      "placeholders": [
+        "wind_mph"
+      ],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_grandpa_bad_air_mood_001",
+      "required_all": [
+        "bad_air"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_grandpa_cloudy_weekend_001",
+      "required_all": [
+        "cloudy"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "weekend"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_grandpa_cold_today_001",
+      "required_all": [
+        "cold"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_grandpa_fog_commute_001",
+      "required_all": [
+        "fog"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "commute"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_grandpa_severe_today_001",
+      "required_all": [
+        "snow"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_grandpa_snow_hourly_001",
+      "required_all": [
+        "snow"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "hourly"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_karen_cloudy_hourly_001",
+      "required_all": [
+        "cloudy"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "hourly"
+      ],
+      "placeholders": [
+        "condition"
+      ],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_karen_high_uv_mood_001",
+      "required_all": [
+        "high_uv",
+        "hot"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_karen_light_rain_commute_001",
+      "required_all": [
+        "light_rain"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "commute"
+      ],
+      "placeholders": [
+        "precip_chance"
+      ],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_karen_partly_cloudy_today_001",
+      "required_all": [
+        "partly_cloudy",
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_karen_severe_today_001",
+      "required_all": [
+        "storm"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [
+        "city"
+      ],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_karen_weekend_good_001",
+      "required_all": [
+        "clear",
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "weekend"
+      ],
+      "placeholders": [
+        "city"
+      ],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_politician_clear_today_001",
+      "required_all": [
+        "clear",
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [
+        "city"
+      ],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_politician_heavy_rain_hourly_001",
+      "required_all": [
+        "heavy_rain"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "hourly"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_politician_humid_mood_001",
+      "required_all": [
+        "humid"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [
+        "humidity"
+      ],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_politician_severe_today_001",
+      "required_all": [
+        "storm"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_politician_weekend_good_001",
+      "required_all": [
+        "clear",
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "weekend"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_politician_windy_commute_001",
+      "required_all": [
+        "windy"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "commute"
+      ],
+      "placeholders": [
+        "wind_mph"
+      ],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_two_year_old_fog_weekend_001",
+      "required_all": [
+        "fog"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "weekend"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_two_year_old_hot_hourly_001",
+      "required_all": [
+        "hot"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "hourly"
+      ],
+      "placeholders": [
+        "temp",
+        "temp_unit"
+      ],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "legacy_two_year_old_light_rain_today_001",
+      "required_all": [
+        "light_rain"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_two_year_old_nice_mood_001",
+      "required_all": [
+        "nice"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_two_year_old_severe_today_001",
+      "required_all": [
+        "storm"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "current"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 120
+    },
+    {
+      "id": "legacy_two_year_old_snow_commute_001",
+      "required_all": [
+        "snow"
+      ],
+      "any_of": [],
+      "forbidden": [],
+      "scopes": [
+        "commute"
+      ],
+      "placeholders": [],
+      "numeric": [],
+      "max_age_minutes": 720
+    },
+    {
+      "id": "local_morning",
+      "required_all": [],
+      "scopes": [
+        "current"
+      ]
+    }
+  ]
+}

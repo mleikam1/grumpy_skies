@@ -10,6 +10,34 @@ import 'package:grumpy_skies/features/fun/meme/models/meme_document.dart';
 import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
 
 void main() {
+  test('optional roast provenance roundtrips without changing existing schema',
+      () {
+    final document = MemeDocument.blank().copyWith(roastSnapshot: {
+      'id': 'grandpa_clear_001',
+      'text': 'The clouds called in sick.',
+      'persona': 'grandpa',
+      'mood': 'cozy',
+      'familyId': 'clouds_called',
+      'packVersion': 'test-v2',
+      'scope': 'current',
+      'source': 'bundled',
+      'reason': 'eligible',
+      'weatherTimestamp': '2026-10-10T12:00:00.000Z',
+    });
+    final restored = MemeDocument.fromJson(document.toJson());
+    expect(restored.roastSnapshot, document.roastSnapshot);
+    expect(
+        restored.layers.map((l) => l.text), document.layers.map((l) => l.text));
+    expect(restored.toJson()['schemaVersion'], MemeDocument.schemaVersion);
+    expect(MemeDocument.fromJson(MemeDocument.blank().toJson()).roastSnapshot,
+        isNull);
+    final invalid = {
+      ...document.toJson(),
+      'roastSnapshot': {'latitude': '42'}
+    };
+    expect(() => MemeDocument.fromJson(invalid), throwsFormatException);
+  });
+
   TestWidgetsFlutterBinding.ensureInitialized();
   late Map<String, dynamic> rawCatalog, rawStickers;
   late MemeCatalog catalog;

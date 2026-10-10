@@ -389,6 +389,7 @@ class MemeDocument {
     this.background = const MemeBackground(),
     List<MemeLayer> layers = const [],
     Map<String, dynamic>? weatherSnapshot,
+    Map<String, dynamic>? roastSnapshot,
     this.personaId,
     this.captionId,
     this.visualStyle = 'cute',
@@ -396,6 +397,8 @@ class MemeDocument {
     required this.createdAt,
     required this.updatedAt,
   })  : layers = List.unmodifiable(layers),
+        roastSnapshot =
+            roastSnapshot == null ? null : _freezeMap(roastSnapshot),
         weatherSnapshot =
             weatherSnapshot == null ? null : _freezeMap(weatherSnapshot);
 
@@ -406,6 +409,7 @@ class MemeDocument {
   final MemeBackground background;
   final List<MemeLayer> layers;
   final Map<String, dynamic>? weatherSnapshot;
+  final Map<String, dynamic>? roastSnapshot;
   final String visualStyle;
   final bool watermark;
   final DateTime createdAt, updatedAt;
@@ -456,6 +460,7 @@ class MemeDocument {
     MemeBackground? background,
     List<MemeLayer>? layers,
     Object? weatherSnapshot = _unset,
+    Object? roastSnapshot = _unset,
     Object? personaId = _unset,
     Object? captionId = _unset,
     String? visualStyle,
@@ -475,6 +480,9 @@ class MemeDocument {
         weatherSnapshot: identical(weatherSnapshot, _unset)
             ? this.weatherSnapshot
             : weatherSnapshot as Map<String, dynamic>?,
+        roastSnapshot: identical(roastSnapshot, _unset)
+            ? this.roastSnapshot
+            : roastSnapshot as Map<String, dynamic>?,
         personaId: identical(personaId, _unset)
             ? this.personaId
             : personaId as String?,
@@ -496,6 +504,7 @@ class MemeDocument {
         'background': background.toJson(),
         'layers': layers.map((layer) => layer.toJson()).toList(),
         'weatherSnapshot': weatherSnapshot,
+        if (roastSnapshot != null) 'roastSnapshot': roastSnapshot,
         'personaId': personaId,
         'captionId': captionId,
         'visualStyle': visualStyle,
@@ -566,6 +575,32 @@ class MemeDocument {
       }
     }
     if (weather != null) _validateWeather(weather);
+    final roast =
+        json['roastSnapshot'] == null ? null : _map(json['roastSnapshot']);
+    if (roast != null) {
+      const allowed = {
+        'id',
+        'text',
+        'persona',
+        'mood',
+        'familyId',
+        'packVersion',
+        'scope',
+        'reason',
+        'source',
+        'weatherTimestamp',
+        'windowStart',
+        'windowEnd'
+      };
+      if (jsonEncode(roast).length > 8000 ||
+          roast.keys.any((key) => !allowed.contains(key)) ||
+          roast.values.any((v) => v is! String)) {
+        throw const FormatException('Invalid roast provenance.');
+      }
+      for (final field in ['weatherTimestamp', 'windowStart', 'windowEnd']) {
+        if (roast.containsKey(field)) _date(roast, field);
+      }
+    }
     return MemeDocument(
       id: _id(json, 'id'),
       name: _string(json, 'name', max: 160),
@@ -574,6 +609,7 @@ class MemeDocument {
       background: MemeBackground.fromJson(_map(json['background'])),
       layers: layers,
       weatherSnapshot: weather,
+      roastSnapshot: roast,
       personaId: json['personaId'] == null ? null : _id(json, 'personaId'),
       captionId: json['captionId'] == null ? null : _id(json, 'captionId'),
       visualStyle: style,

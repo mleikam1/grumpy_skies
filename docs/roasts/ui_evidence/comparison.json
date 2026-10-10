@@ -1,0 +1,463 @@
+{
+  "baseline_integrity_errors": [],
+  "comparisons": [
+    {
+      "image": "dark_compact200_appearance.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_daily_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_fun.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_hourly_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_radar.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_roasts.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_roasts_card.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_today.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_compact200_today_roast.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "dark_phone_appearance.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_daily_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_fun.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_hourly_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_radar.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_roasts.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_roasts_card.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_today.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_phone_today_roast.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "dark_tablet_appearance.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_daily_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_fun.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_hourly_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_radar.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_roasts.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_roasts_card.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_today.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "dark_tablet_today_roast.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "emotion_dark_frat_bro.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_dark_grandpa.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_dark_karen.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_dark_politician.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_dark_two_year_old.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_gallery_dark_frat_bro.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_dark_grandpa.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_dark_karen.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_dark_politician.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_dark_two_year_old.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_light_frat_bro.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_light_grandpa.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_light_karen.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_light_politician.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_gallery_light_two_year_old.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 670800
+    },
+    {
+      "image": "emotion_light_frat_bro.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_light_grandpa.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_light_karen.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_light_politician.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "emotion_light_two_year_old.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 429000
+    },
+    {
+      "image": "light_compact200_appearance.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_daily_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_fun.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_hourly_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_radar.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_roasts.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_roasts_card.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_today.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_compact200_today_roast.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 270080
+    },
+    {
+      "image": "light_phone_appearance.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_daily_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_fun.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_hourly_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_radar.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_roasts.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_roasts_card.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_today.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_phone_today_roast.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 329160
+    },
+    {
+      "image": "light_tablet_appearance.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_daily_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_fun.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_hourly_sheet.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_radar.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_roasts.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_roasts_card.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_today.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    },
+    {
+      "image": "light_tablet_today_roast.png",
+      "status": "identical",
+      "changed_pixels": 0,
+      "total_pixels": 967600
+    }
+  ],
+  "protected_changes": [
+    "lib/features/forecast/forecast_screen.dart",
+    "lib/features/fun/meme/meme_studio.dart",
+    "lib/features/fun/meme/meme_weather.dart",
+    "lib/features/fun/meme/models/meme_document.dart",
+    "lib/features/roasts/roasts_screen.dart",
+    "lib/main.dart",
+    "pubspec.lock",
+    "pubspec.yaml"
+  ],
+  "identical_images": 74,
+  "baseline_image_count": 74,
+  "protected_file_count": 285,
+  "protected_note": "All changes require human-readable data-wiring/dependency review; listed changes are not automatically approved."
+}

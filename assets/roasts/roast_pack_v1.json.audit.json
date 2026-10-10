@@ -1,0 +1,17 @@
+{
+  "built_at": "2026-10-10T12:15:40.696384Z",
+  "pack_version": "2026.10.10.1",
+  "sha256": "b987502a4447ea853252b1975328dc69527492ada5b1b7d2d40f9d1af9e5fa62",
+  "source_sha256": "b13716263feb1d6c6e35ddfc10febd892a05c3aa5d9958e5e5419b19aba93ebf",
+  "rules_sha256": "9540a63a879bf8c5250f625cf80ed947ff402e9dc07cd88b08dc8cde6f08ef86",
+  "bytes": 255181,
+  "gzip_bytes": 25689,
+  "review_status": "machine_reviewed; no human approval claimed",
+  "counts": {
+    "frat_bro": 106,
+    "grandpa": 106,
+    "karen": 106,
+    "politician": 106,
+    "two_year_old": 106
+  }
+}

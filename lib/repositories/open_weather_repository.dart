@@ -314,6 +314,7 @@ class OpenWeatherRepository extends WeatherRepository {
     return timeline.take(24).map((point) {
       return HourlyForecast(
         time: point.time,
+        temperatureKnown: point.temperatureF != null,
         temperatureC: point.temperatureF == null
             ? current.temperatureC
             : _fToC(point.temperatureF!),
@@ -413,7 +414,7 @@ class OpenWeatherRepository extends WeatherRepository {
   }
 
   static String _requestKey(double latitude, double longitude) {
-    return '${latitude.toStringAsFixed(3)},${longitude.toStringAsFixed(3)}';
+    return '$latitude,$longitude';
   }
 
   static bool _throttleForcedRefresh(Object error) {

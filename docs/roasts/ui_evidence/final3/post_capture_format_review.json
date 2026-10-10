@@ -1,0 +1,19 @@
+{
+  "note": "Original final3 hashes/images remain unchanged. Exact captured sources reconstructed from protected-source.diff and starting HEAD, verified against capture hashes, then formatted in scratch with installed dart format. Formatted bytes equal current source proves the observed post-capture changes are formatter-only.",
+  "changes": [
+    {
+      "path": "lib/features/forecast/forecast_screen.dart",
+      "capture_sha256": "f5dd80d9340c5b61f47f704ff3b27f78a44dc966a8d4e3fc2a0d3ecf83e21563",
+      "current_sha256": "3f5f3004023f0907264871d7a0c0061d532ead62bcc80bea8a8f6d1db3530419",
+      "exact_capture_source_reconstructed": true,
+      "formatter_only": true
+    },
+    {
+      "path": "lib/features/roasts/roasts_screen.dart",
+      "capture_sha256": "9288ca26526e55f5acdcbcc9e8d58dcc9400c43ed318fbbae317659e872152bd",
+      "current_sha256": "8d5f632d19d164e7f14721d7a9ecdc306bd105eca92fc2365ccf9ee70e6591cc",
+      "exact_capture_source_reconstructed": true,
+      "formatter_only": true
+    }
+  ]
+}

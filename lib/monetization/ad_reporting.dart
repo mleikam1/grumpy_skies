@@ -1,3 +1,4 @@
+import '../services/network_counters.dart';
 import 'ad_placement.dart';
 
 enum AdEventKind {
@@ -47,6 +48,9 @@ class SafeAdReporter implements AdReporter {
   final AdReporter delegate;
   @override
   void report(AdEvent event) {
+    if (event.kind == AdEventKind.request) {
+      NetworkCounters.instance.increment('ads_request');
+    }
     try {
       delegate.report(event);
     } catch (_) {/* Fail independently. */}

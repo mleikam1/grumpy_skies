@@ -1,306 +1,360 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import '../../../models/temperature_unit.dart';
 import '../../../models/weather_models.dart';
+import '../../../models/weather_safety.dart';
 import 'roast_content_models.dart';
-
-// Preserve the existing app-facing import while keeping editor tooling pure Dart.
+import 'roast_context_adapter.dart';
+export '../models/roast_mood.dart';
 export 'roast_content_models.dart';
 
 extension RoastLineWeatherConstraints on RoastLine {
   bool matchesStaticWeatherConstraints(WeatherRoastContext context) {
     if (conditionCodes.isNotEmpty &&
-        context.conditionCode != null &&
-        !conditionCodes.contains(context.conditionCode)) {
+        (context.conditionCode == null ||
+            !conditionCodes.contains(context.conditionCode))) {
       return false;
     }
-
-    final minTemp = tempMinF;
-    if (minTemp != null && context.tempF < minTemp) return false;
-
-    final maxTemp = tempMaxF;
-    if (maxTemp != null && context.tempF > maxTemp) return false;
-
-    final minHumidity = humidityMin;
-    if (minHumidity != null && context.humidity < minHumidity) return false;
-
-    final minWind = windMinMph;
-    if (minWind != null && context.windMph < minWind) return false;
-
-    final minPrecip = precipMinPercent;
-    if (minPrecip != null && context.precipChance < minPrecip) return false;
-
+    if (tempMinF != null &&
+        (context.tempF == null || context.tempF! < tempMinF!)) {
+      return false;
+    }
+    if (tempMaxF != null &&
+        (context.tempF == null || context.tempF! > tempMaxF!)) {
+      return false;
+    }
+    if (humidityMin != null &&
+        (context.humidity == null || context.humidity! < humidityMin!)) {
+      return false;
+    }
+    if (windMinMph != null &&
+        (context.windMph == null || context.windMph! < windMinMph!)) {
+      return false;
+    }
+    if (precipMinPercent != null &&
+        (context.precipChance == null ||
+            context.precipChance! < precipMinPercent!)) {
+      return false;
+    }
     return true;
   }
 }
 
+/// Immutable adapter output. Nullable fields are unknown, never fictional zeroes.
 class WeatherRoastContext {
   const WeatherRoastContext({
     required this.city,
-    required this.tempF,
-    required this.feelsLikeF,
-    required this.condition,
-    required this.humidity,
-    required this.windMph,
-    required this.precipChance,
-    required this.daypart,
-    required this.tags,
+    this.tempF,
+    this.feelsLikeF,
+    this.condition,
+    this.humidity,
+    this.windMph,
+    this.precipChance,
+    this.daypart = Daypart.any,
+    this.tags = const {},
     this.conditionCode,
     this.temperatureUnit = TemperatureUnit.fahrenheit,
+    this.placeId,
+    this.country,
+    this.region,
+    this.timezone,
+    this.localTime,
+    this.evaluatedAt,
+    this.observedAt,
+    this.windowStart,
+    this.windowEnd,
+    this.scope = RoastScope.current,
+    this.locale = 'en-US',
+    this.freshness = WeatherFreshness.fresh,
+    this.safetyStatus = WeatherSafetyStatus.unknown,
+    this.isOffline = false,
+    this.forecastComplete = false,
+    this.observedRainMm,
+    this.uvIndex,
+    this.aqi,
+    this.aqiScale,
+    this.aqiSource,
+    this.activity,
+    this.extraFacts = const {},
   });
-
   final TemperatureUnit temperatureUnit;
   final String city;
-  final int tempF;
-  final int feelsLikeF;
-  final String condition;
-  final int humidity;
-  final double windMph;
-  final int precipChance;
+  final int? tempF;
+  final int? feelsLikeF;
+  final String? condition;
+  final int? humidity;
+  final double? windMph;
+  final int? precipChance;
   final Daypart daypart;
   final Set<WeatherRoastTag> tags;
   final int? conditionCode;
+  final String? placeId;
+  final String? country;
+  final String? region;
+  final String? timezone;
+  final DateTime? localTime;
+  final DateTime? evaluatedAt;
+  final DateTime? observedAt;
+  final DateTime? windowStart;
+  final DateTime? windowEnd;
+  final RoastScope scope;
+  final String locale;
+  final WeatherFreshness freshness;
+  final WeatherSafetyStatus safetyStatus;
+  final bool isOffline;
+  final bool forecastComplete;
+  final double? observedRainMm;
+  final double? uvIndex;
+  final int? aqi;
+  final String? aqiScale;
+  final String? aqiSource;
+  final RoastActivity? activity;
+  final Set<String> extraFacts;
+
+  bool get requiresSafetyMessage =>
+      safetyStatus == WeatherSafetyStatus.activeAlert ||
+      tags.contains(WeatherRoastTag.severe);
+  bool get hasFreshWeather => freshness == WeatherFreshness.fresh;
+  Set<String> get facts => {
+        ...tags.map((tag) => tag.wireValue),
+        ...extraFacts,
+        if (scope == RoastScope.current &&
+            ((observedRainMm != null && observedRainMm! > 0) ||
+                {
+                  200,
+                  201,
+                  202,
+                  230,
+                  231,
+                  232,
+                  300,
+                  301,
+                  302,
+                  310,
+                  311,
+                  312,
+                  313,
+                  314,
+                  321,
+                  500,
+                  501,
+                  502,
+                  503,
+                  504,
+                  511,
+                  520,
+                  521,
+                  522,
+                  531,
+                  615,
+                  616
+                }.contains(conditionCode)))
+          'observed_rain',
+        if (precipChance != null) 'forecast_rain_probability',
+        if (activity != null) activity!.fact,
+      };
+
+  /// Three-state evidence: absence of an input is never evidence of absence.
+  bool? factValue(String fact) {
+    if (facts.contains(fact)) return true;
+    if (fact.startsWith('activity_')) return activity == null ? null : false;
+    if (fact == 'forecast_rain_probability') {
+      return precipChance == null ? null : true;
+    }
+    if ({'hot', 'cold'}.contains(fact)) return tempF == null ? null : false;
+    if (fact == 'dry') return humidity == null ? null : false;
+    if (fact == 'humid') {
+      return tempF == null || humidity == null ? null : false;
+    }
+    if (fact == 'windy') return windMph == null ? null : false;
+    if (fact == 'high_uv') return uvIndex == null ? null : false;
+    if (fact == 'bad_air') {
+      return aqi == null || !{'us_epa', 'openweather_1_5'}.contains(aqiScale)
+          ? null
+          : false;
+    }
+    if ({
+      'clear',
+      'partly_cloudy',
+      'cloudy',
+      'light_rain',
+      'heavy_rain',
+      'storm',
+      'snow',
+      'fog',
+      'observed_rain'
+    }.contains(fact)) {
+      return knownRoastConditionCodes.contains(conditionCode) ? false : null;
+    }
+    // Composite/region/calendar facts require affirmative evidence supplied by
+    // the adapter. Unsupported or partially observed combinations stay unknown.
+    return null;
+  }
+
+  Map<String, Map<String, Object?>> get inputProvenance => {
+        for (final entry in <String, bool>{
+          'temperature': tempF != null,
+          'feels_like': feelsLikeF != null,
+          'humidity': humidity != null,
+          'wind': windMph != null,
+          'condition_code': knownRoastConditionCodes.contains(conditionCode),
+          'forecast_probability': precipChance != null,
+          'observed_rain': observedRainMm != null,
+          'uv_index': uvIndex != null,
+          'air_quality': aqi != null && aqiScale != null,
+          'local_calendar': localTime != null,
+          'alerts': safetyStatus == WeatherSafetyStatus.clear ||
+              safetyStatus == WeatherSafetyStatus.activeAlert,
+        }.entries)
+          entry.key: {
+            'known': entry.value,
+            'source': entry.key == 'local_calendar'
+                ? 'selected_location_timezone'
+                : scope == RoastScope.current
+                    ? 'weather_bundle_current'
+                    : 'weather_bundle_forecast',
+            'observed_at': observedAt?.toUtc().toIso8601String(),
+            'freshness': freshness.name,
+          },
+      };
 
   factory WeatherRoastContext.fromWeatherBundle(
     WeatherBundle weather, {
     DateTime? now,
     TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit,
-  }) {
-    final current = weather.current;
-    final observedAt = now ?? current.displayUpdatedAt;
-    final tempF = current.temperatureF.round();
-    final feelsLikeF = current.feelsLikeF.round();
-    final windMph = current.windMph;
-    final precipChance = current.precipitationChance;
-    final conditionCode = current.weatherId;
-    final normalizedCondition = current.condition.toLowerCase();
-    final weatherMain = (current.weatherMain ?? '').toLowerCase();
-    final tags = <WeatherRoastTag>{};
+    RoastScope scope = RoastScope.current,
+    DateTime? targetTime,
+    DateTime? targetEnd,
+    String locale = 'en-US',
+    RoastActivity? activity,
+    LocationCandidate? selectedLocation,
+  }) =>
+      adaptRoastContext(weather,
+          now: now ?? DateTime.now(),
+          temperatureUnit: temperatureUnit,
+          scope: scope,
+          targetTime: targetTime,
+          targetEnd: targetEnd,
+          locale: locale,
+          activity: activity,
+          selectedLocation: selectedLocation);
 
-    if (tempF >= 90) tags.add(WeatherRoastTag.hot);
-    if (tempF <= 32) tags.add(WeatherRoastTag.cold);
-    if (current.humidity >= 65 && tempF >= 75) {
-      tags.add(WeatherRoastTag.humid);
-    }
-    if (current.humidity <= 30) tags.add(WeatherRoastTag.dry);
-    if (windMph >= 20) tags.add(WeatherRoastTag.windy);
-    if (current.uvIndex >= 7) tags.add(WeatherRoastTag.highUv);
-    if (_isBadAir(current.aqi, current.aqiCategory)) {
-      tags.add(WeatherRoastTag.badAir);
-    }
-
-    if (_isStorm(conditionCode, normalizedCondition, weatherMain)) {
-      tags.add(WeatherRoastTag.storm);
-    }
-    if (_isSnow(conditionCode, normalizedCondition, weatherMain)) {
-      tags.add(WeatherRoastTag.snow);
-    }
-    if (_isFog(conditionCode, normalizedCondition, weatherMain)) {
-      tags.add(WeatherRoastTag.fog);
-    }
-    if (_isRain(conditionCode, normalizedCondition, weatherMain) ||
-        precipChance >= 50) {
-      tags.add(
-        _isHeavyRain(
-          conditionCode,
-          normalizedCondition,
-          precipChance,
-          current.rainLastHour,
-        )
-            ? WeatherRoastTag.heavyRain
-            : WeatherRoastTag.lightRain,
-      );
-    }
-    if (_isClear(conditionCode, normalizedCondition, weatherMain)) {
-      tags.add(WeatherRoastTag.clear);
-    }
-    if (_isPartlyCloudy(conditionCode, normalizedCondition)) {
-      tags.add(WeatherRoastTag.partlyCloudy);
-    } else if (_isCloudy(conditionCode, normalizedCondition, weatherMain)) {
-      tags.add(WeatherRoastTag.cloudy);
-    }
-
-    if (weather.alerts.isNotEmpty ||
-        current.alertIds.isNotEmpty ||
-        _mentionsSevereWeather(normalizedCondition)) {
-      tags.add(WeatherRoastTag.severe);
-    }
-
-    final gross = tags.contains(WeatherRoastTag.humid) ||
-        tags.contains(WeatherRoastTag.heavyRain) ||
-        tags.contains(WeatherRoastTag.badAir) ||
-        tags.contains(WeatherRoastTag.fog) ||
-        (tags.contains(WeatherRoastTag.hot) &&
-            tags.contains(WeatherRoastTag.highUv));
-    if (gross) tags.add(WeatherRoastTag.gross);
-
-    final commuteRisk = tags.contains(WeatherRoastTag.lightRain) ||
-        tags.contains(WeatherRoastTag.heavyRain) ||
-        tags.contains(WeatherRoastTag.storm) ||
-        tags.contains(WeatherRoastTag.snow) ||
-        tags.contains(WeatherRoastTag.fog) ||
-        tags.contains(WeatherRoastTag.windy) ||
-        tags.contains(WeatherRoastTag.severe);
-    if (commuteRisk) tags.add(WeatherRoastTag.commuteRisk);
-
-    final nice = tempF >= 60 &&
-        tempF <= 82 &&
-        !gross &&
-        !commuteRisk &&
-        !tags.contains(WeatherRoastTag.cold);
-    if (nice) tags.add(WeatherRoastTag.nice);
-
-    final weekend = observedAt.weekday == DateTime.friday ||
-        observedAt.weekday == DateTime.saturday ||
-        observedAt.weekday == DateTime.sunday;
-    if (weekend && nice) tags.add(WeatherRoastTag.weekendGood);
-
-    if (tags.isEmpty) tags.add(WeatherRoastTag.fallback);
-
-    return WeatherRoastContext(
-      city: _cityName(current.locationName),
-      temperatureUnit: temperatureUnit,
-      tempF: tempF,
-      feelsLikeF: feelsLikeF,
-      condition: current.condition,
-      humidity: current.humidity,
-      windMph: windMph,
-      precipChance: precipChance,
-      daypart: Daypart.fromDateTime(observedAt),
-      tags: tags,
-      conditionCode: conditionCode,
-    );
-  }
-
-  String _displayTemperature(int fahrenheit) =>
-      temperatureUnit == TemperatureUnit.celsius
+  String? _displayTemperature(int? fahrenheit) => fahrenheit == null
+      ? null
+      : temperatureUnit == TemperatureUnit.celsius
           ? ((fahrenheit - 32) * 5 / 9).round().toString()
           : fahrenheit.toString();
 
+  Map<String, String> get placeholderValues => {
+        if (city.trim().isNotEmpty) 'city': city,
+        if (tempF != null) 'temp': _displayTemperature(tempF)!,
+        'temp_unit': '°${temperatureUnit.suffix}',
+        if (feelsLikeF != null) 'feels_like': _displayTemperature(feelsLikeF)!,
+        if (condition != null &&
+            condition!.trim().isNotEmpty &&
+            condition != 'Unknown')
+          'condition': condition!,
+        if (humidity != null) 'humidity': humidity.toString(),
+        if (windMph != null) 'wind_mph': windMph!.round().toString(),
+        if (precipChance != null) 'precip_chance': precipChance.toString(),
+        if (daypart != Daypart.any) 'daypart': daypart.name,
+      };
+
+  bool canRender(String template) =>
+      RegExp(r'\{([^{}]+)\}')
+          .allMatches(template)
+          .every((m) => placeholderValues.containsKey(m.group(1))) &&
+      !template
+          .replaceAll(RegExp(r'\{([^{}]+)\}'), '')
+          .contains(RegExp(r'[{}]'));
+
   String render(String template) {
-    final values = <String, String>{
-      'city': city.trim().isEmpty ? 'your area' : city,
-      'temp': _displayTemperature(tempF),
-      'temp_unit': '°${temperatureUnit.suffix}',
-      'feels_like': _displayTemperature(feelsLikeF),
-      'condition': condition.trim().isEmpty ? 'weather' : condition,
-      'humidity': humidity.toString(),
-      'wind_mph': windMph.round().toString(),
-      'precip_chance': precipChance.toString(),
-      'daypart': daypart.name,
-    };
-
-    final rendered =
-        template.replaceAllMapped(RegExp(r'\{([a-zA-Z0-9_]+)\}'), (match) {
-      final key = match.group(1)!;
-      return values[key] ?? '';
-    });
-    return _cleanRenderedText(rendered);
+    if (!canRender(template)) {
+      throw FormatException(
+          'Unknown or unavailable roast placeholder', template);
+    }
+    final values = placeholderValues;
+    return _cleanRenderedText(template.replaceAllMapped(
+        RegExp(r'\{([^{}]+)\}'), (m) => values[m.group(1)]!));
   }
 
-  static WeatherRoastContext fallback({
-    String city = 'your area',
-    Daypart daypart = Daypart.any,
-  }) {
-    return WeatherRoastContext(
-      city: city,
-      tempF: 0,
-      feelsLikeF: 0,
-      condition: 'weather',
-      humidity: 0,
-      windMph: 0,
-      precipChance: 0,
-      daypart: daypart,
-      tags: const {WeatherRoastTag.fallback},
-    );
-  }
-}
+  /// Broad weather buckets keep display slots stable across tiny value changes.
+  String stableSlot(String persona, RoastType type) => [
+        normalizeRoastPersonaId(persona),
+        sha256.convert(utf8.encode(placeId ?? city)).toString(),
+        scope.name,
+        type.name,
+        localTime == null
+            ? 'unknown-date'
+            : '${localTime!.year}-${localTime!.month}-${localTime!.day}',
+        daypart.name,
+        if (scope != RoastScope.current)
+          windowStart?.toUtc().toIso8601String() ?? 'unknown-window',
+        ...(tags.map((tag) => tag.wireValue).toList()..sort()),
+        precipChance == null
+            ? 'unknown-pop'
+            : precipChance! < 30
+                ? 'low-pop'
+                : precipChance! < 60
+                    ? 'moderate-pop'
+                    : 'high-pop',
+        freshness.name,
+        safetyStatus.name,
+        locale,
+        activity?.name ?? '',
+      ].join('|');
 
-bool _isBadAir(int aqi, String category) {
-  final normalized = category.toLowerCase();
-  return aqi >= 151 ||
-      normalized.contains('unhealthy') ||
-      normalized.contains('hazardous');
-}
+  Map<String, Object?> get diagnostics => {
+        'scope': scope.name,
+        'timezone': timezone,
+        'local_time': localTime?.toIso8601String(),
+        'observed_at': observedAt?.toUtc().toIso8601String(),
+        'window_start': windowStart?.toUtc().toIso8601String(),
+        'window_end': windowEnd?.toUtc().toIso8601String(),
+        'freshness': freshness.name,
+        'alert_status': safetyStatus.name,
+        'offline': isOffline,
+        'forecast_complete': forecastComplete,
+        'facts': facts.toList()..sort(),
+        'inputs': inputProvenance,
+        'aqi_scale': aqiScale,
+        'aqi_source': aqiSource,
+      };
 
-bool _isStorm(int? code, String condition, String main) {
-  return (code != null && code >= 200 && code < 300) ||
-      main.contains('thunderstorm') ||
-      condition.contains('thunder') ||
-      condition.contains('storm');
-}
+  static WeatherRoastContext unavailable(
+          {DateTime? now,
+          String city = '',
+          String? placeId,
+          String? country,
+          String? region,
+          String? timezone,
+          RoastScope scope = RoastScope.current,
+          String locale = 'en-US',
+          TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit,
+          RoastActivity? activity}) =>
+      WeatherRoastContext(
+          city: city,
+          placeId: placeId,
+          country: country,
+          region: region,
+          timezone: timezone,
+          evaluatedAt: now ?? DateTime.now(),
+          scope: scope,
+          locale: locale,
+          temperatureUnit: temperatureUnit,
+          activity: activity,
+          freshness: WeatherFreshness.unavailable,
+          tags: const {WeatherRoastTag.fallback});
 
-bool _isSnow(int? code, String condition, String main) {
-  return (code != null && code >= 600 && code < 700) ||
-      main.contains('snow') ||
-      condition.contains('snow') ||
-      condition.contains('sleet');
-}
-
-bool _isFog(int? code, String condition, String main) {
-  const fogCodes = {701, 711, 721, 731, 741, 751, 761, 762, 771, 781};
-  return (code != null && fogCodes.contains(code)) ||
-      main.contains('mist') ||
-      main.contains('haze') ||
-      condition.contains('fog') ||
-      condition.contains('mist') ||
-      condition.contains('haze') ||
-      condition.contains('smoke') ||
-      condition.contains('dust');
-}
-
-bool _isRain(int? code, String condition, String main) {
-  return (code != null && code >= 500 && code < 600) ||
-      (code != null && code >= 300 && code < 400) ||
-      main.contains('rain') ||
-      main.contains('drizzle') ||
-      condition.contains('rain') ||
-      condition.contains('drizzle') ||
-      condition.contains('shower');
-}
-
-bool _isHeavyRain(
-  int? code,
-  String condition,
-  int precipChance,
-  double? rainLastHour,
-) {
-  return (code != null && code >= 502 && code < 600) ||
-      condition.contains('heavy') ||
-      precipChance >= 75 ||
-      (rainLastHour ?? 0) >= 0.25;
-}
-
-bool _isClear(int? code, String condition, String main) {
-  return code == 800 ||
-      main.contains('clear') ||
-      condition.contains('clear') ||
-      condition.contains('sunny');
-}
-
-bool _isPartlyCloudy(int? code, String condition) {
-  return code == 801 ||
-      condition.contains('partly') ||
-      condition.contains('few clouds') ||
-      condition.contains('mostly sunny');
-}
-
-bool _isCloudy(int? code, String condition, String main) {
-  return (code != null && code >= 802 && code <= 804) ||
-      main.contains('cloud') ||
-      condition.contains('cloud') ||
-      condition.contains('overcast');
-}
-
-bool _mentionsSevereWeather(String condition) {
-  return condition.contains('severe') ||
-      condition.contains('tornado') ||
-      condition.contains('hurricane') ||
-      condition.contains('warning');
-}
-
-String _cityName(String locationName) {
-  final trimmed = locationName.trim();
-  if (trimmed.isEmpty) return 'your area';
-  return trimmed.split(',').first.trim();
+  static WeatherRoastContext fallback(
+          {String city = 'your area', Daypart daypart = Daypart.any}) =>
+      WeatherRoastContext(
+          city: city,
+          daypart: daypart,
+          freshness: WeatherFreshness.unavailable,
+          tags: const {WeatherRoastTag.fallback});
 }
 
 String _cleanRenderedText(String text) {
@@ -319,3 +373,62 @@ String _cleanRenderedText(String text) {
   cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ');
   return cleaned;
 }
+
+/// Only documented OpenWeather codes establish positive or negative facts.
+const knownRoastConditionCodes = <int>{
+  200,
+  201,
+  202,
+  210,
+  211,
+  212,
+  221,
+  230,
+  231,
+  232,
+  300,
+  301,
+  302,
+  310,
+  311,
+  312,
+  313,
+  314,
+  321,
+  500,
+  501,
+  502,
+  503,
+  504,
+  511,
+  520,
+  521,
+  522,
+  531,
+  600,
+  601,
+  602,
+  611,
+  612,
+  613,
+  615,
+  616,
+  620,
+  621,
+  622,
+  701,
+  711,
+  721,
+  731,
+  741,
+  751,
+  761,
+  762,
+  771,
+  781,
+  800,
+  801,
+  802,
+  803,
+  804,
+};

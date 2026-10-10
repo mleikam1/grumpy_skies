@@ -18,6 +18,7 @@ import '../../shared/widgets/dm_approved_components.dart';
 import '../fun/meme/meme_weather.dart';
 import 'models/roast_persona.dart';
 import 'services/displayed_roast_share.dart';
+import 'services/roast_safety.dart';
 import 'widgets/daymaker_persona_carousel.dart';
 import 'widgets/featured_roast_card.dart';
 
@@ -40,7 +41,28 @@ class RoastsScreen extends StatefulWidget {
   State<RoastsScreen> createState() => _RoastsScreenState();
 }
 
-class _RoastsScreenState extends State<RoastsScreen> {
+class _RoastsScreenState extends State<RoastsScreen>
+    with WidgetsBindingObserver {
+  Timer? _contextTimer;
+  bool _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _contextTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted && _foreground) setState(() {});
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (_foreground && mounted) {
+      setState(() {}); // Local truth/daypart revalidation only.
+    }
+  }
+
   late RoastRepository _repository;
   SettingsRepository? _settingsRepository;
   SettingsController? _settings;
@@ -107,12 +129,18 @@ class _RoastsScreenState extends State<RoastsScreen> {
       unawaited(_load());
     } else if (_location?.currentWeather != null && mounted) {
       // Safety may update without changing location; never refetch from a theme.
-      setState(() => _weather = _location!.currentWeather);
+      if (!identical(_weather, _location!.currentWeather) && !_loading) {
+        unawaited(_load()); // Reuses currentWeather; this branch cannot fetch.
+      } else {
+        setState(() => _weather = _location!.currentWeather);
+      }
     }
   }
 
   @override
   void dispose() {
+    _contextTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _location?.removeListener(_onLocationChanged);
     _settings?.removeListener(_onSettingsChanged);
     super.dispose();
@@ -196,34 +224,47 @@ class _RoastsScreenState extends State<RoastsScreen> {
 
   bool get _alertsActive =>
       _weather?.current.alertIds.isNotEmpty == true ||
-      _weather?.alerts.any((alert) => alert.isRelevantAt(_now)) == true;
+      _weather?.alerts.any((alert) => alert.isRelevantAt(_now)) == true ||
+      roastHumorBlocked(_weather, now: _now);
 
   void _rememberDisplayed() {
     final roast = _roasts[_selectedId];
     final weather = _weather;
     if (roast == null || weather == null || _alertsActive) return;
+    bool stillShown() =>
+        mounted &&
+        !_alertsActive &&
+        identical(_weather, weather) &&
+        _selectedId == roast.personaId &&
+        _roasts[_selectedId]?.text == roast.text &&
+        identical(_roasts[_selectedId]?.selection, roast.selection);
     final source = DisplayedRoastSnapshot(
       id: roast.id,
       text: roast.text,
       personaId: roast.personaId,
       mood: roast.resolvedMood,
+      selection: roast.selection,
       sourceKey: 'roasts',
       sourceLabel: 'Roasts',
       isSample: widget.isSample,
       weatherSnapshot: MemeWeather.freeze(weather,
-          temperatureUnit: _unit, isSample: widget.isSample),
+          temperatureUnit: _unit, isSample: widget.isSample, now: _now),
       capturedAt: _now,
     );
-    _sources['${roast.id}|${roast.text}'] = source;
+    _sources[_sourceKey(roast)] = source;
     if (_repository case final PackRoastRepository repository) {
-      repository.recordDisplayed(roast);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (stillShown()) {
+          repository.recordDisplayed(roast);
+        }
+      });
       _history = [
         roast,
         ..._history.where((r) => r.id != roast.id || r.text != roast.text)
       ].take(50).toList();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (stillShown()) {
         context
             .read<DisplayedRoastRegistry?>()
             ?.publish(source, weather: weather);
@@ -291,15 +332,51 @@ class _RoastsScreenState extends State<RoastsScreen> {
     }
   }
 
+  String _sourceKey(Roast roast) => roast.selection == null
+      ? '${roast.id}|${roast.text}|${roast.createdAt.toUtc().toIso8601String()}'
+      : DisplayedRoastRegistry.selectionKey(roast.selection!);
+
   Future<void> _share(Roast roast) async {
-    final source = _sources['${roast.id}|${roast.text}'];
-    if (source == null || _alertsActive) return;
+    final source = context
+            .read<DisplayedRoastRegistry?>()
+            ?.forSelection(roast.selection) ??
+        _sources[_sourceKey(roast)] ??
+        DisplayedRoastSnapshot(
+            id: roast.id,
+            text: roast.text,
+            personaId: roast.personaId,
+            mood: roast.resolvedMood,
+            selection: roast.selection,
+            sourceKey: 'history',
+            sourceLabel: 'Roast history',
+            isSample: widget.isSample,
+            capturedAt: roast.createdAt);
+    if (_alertsActive) return;
     await showDisplayedRoastShareSheet(context, source);
   }
 
   @override
   Widget build(BuildContext context) {
     context.watch<SettingsController?>();
+    if (_repository case final PackRoastRepository repository) {
+      final weather = _weather;
+      if (weather != null) {
+        _roasts = {
+          for (final persona in _personas)
+            persona.id: PackRoastRepository.fromSelection(
+                repository.controller.select(
+                    persona: persona.id,
+                    bundle: weather,
+                    unit: _unit,
+                    now: _now),
+                weatherSnapshotId: weather.snapshot?.id ??
+                    'weather-${weather.current.displayUpdatedAt.millisecondsSinceEpoch}')
+        };
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _rememberDisplayed();
+        });
+      }
+    }
     final colors = context.dmColors;
     return Scaffold(
         body: SafeArea(
@@ -350,8 +427,12 @@ class _RoastsScreenState extends State<RoastsScreen> {
                         else if (_alertsActive)
                           _status(
                               context,
-                              'Weather alerts take priority',
-                              'Roasts are paused while alerts are active. Check the official warning and local guidance.',
+                              _weather!.alerts
+                                          .any((a) => a.isRelevantAt(_now)) ||
+                                      _weather!.current.alertIds.isNotEmpty
+                                  ? 'Weather alerts take priority'
+                                  : 'Weather safety takes priority',
+                              'Roasts are paused for these conditions. Check the current weather and official guidance.',
                               'View weather',
                               () => context.go(AppRoutes.forecast))
                         else if (_roasts[_selectedId] == null)
