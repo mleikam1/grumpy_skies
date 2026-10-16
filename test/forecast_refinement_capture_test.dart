@@ -92,7 +92,7 @@ void main() {
       String.fromEnvironment('REFINEMENT_PHASE', defaultValue: 'after');
   for (final dark in [false, true]) {
     final theme = dark ? 'dark' : 'light';
-    testWidgets('real Today $theme details and daily sheet', (tester) async {
+    testWidgets('real Today $theme sun times and daily sheet', (tester) async {
       final session = ApprovedPreviewSession(
           initialLocation: AppRoutes.forecast,
           appearance: dark ? AppAppearance.dark : AppAppearance.light);
@@ -105,9 +105,9 @@ void main() {
       if (phase != 'before') {
         await _save(tester, boundary, '${phase}_${theme}_metrics');
       }
-      await tester.ensureVisible(find.text('Details'));
+      await tester.ensureVisible(find.text('Sunrise & sunset'));
       await tester.pump(const Duration(milliseconds: 400));
-      await _save(tester, boundary, '${phase}_${theme}_details');
+      await _save(tester, boundary, '${phase}_${theme}_sun_times');
       final daily = find.byType(ForecastDailyStrip);
       await tester.ensureVisible(daily);
       await tester.pump(const Duration(milliseconds: 400));

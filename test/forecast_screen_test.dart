@@ -101,7 +101,20 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Demo City, US'), findsOneWidget);
     expect(find.text('Hourly forecast'), findsOneWidget);
-    expect(find.text('Details'), findsOneWidget);
+    expect(find.text('Sunrise'), findsOneWidget);
+    expect(find.text('Sunset'), findsOneWidget);
+    for (final removed in [
+      'Details',
+      'Short-term precipitation',
+      'Moonrise',
+      'Moonset',
+      'Humidity',
+      'Pressure',
+      'Visibility',
+      'Last hour',
+    ]) {
+      expect(find.text(removed), findsNothing);
+    }
   });
 
   testWidgets('forecast renders 7 daily tiles and 12 hourly rows',

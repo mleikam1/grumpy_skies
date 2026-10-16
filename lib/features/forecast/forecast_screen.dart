@@ -20,7 +20,6 @@ import '../../features/roasts/models/roast_persona.dart';
 import '../../features/roasts/content/roast_pack_repository.dart';
 import '../../models/weather_models.dart';
 import '../../models/weather_safety.dart';
-import '../../models/precipitation_coverage.dart';
 import '../../monetization/ad_placement.dart';
 import '../../monetization/widgets/ad_section.dart';
 import '../../repositories/settings_repository.dart';
@@ -538,13 +537,7 @@ class _ForecastScreenState extends State<ForecastScreen>
                                       hour.time.isBefore(now
                                           .add(const Duration(hours: 12)))))),
                       const SizedBox(height: 16),
-                      ShortTermPrecipitationCard(
-                          minutes: weather.minutePrecipitation,
-                          now: now,
-                          unavailable: !observationFresh || cached,
-                          units: weather.current.units),
-                      const SizedBox(height: 16),
-                      ForecastExtraMetrics(weather: weather.current),
+                      ForecastSunTimes(weather: weather.current),
                       if (!_loading &&
                           !cached &&
                           observationFresh &&
@@ -745,147 +738,6 @@ class _StaleWeatherBanner extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class ShortTermPrecipitationCard extends StatelessWidget {
-  const ShortTermPrecipitationCard({
-    super.key,
-    required this.minutes,
-    this.now,
-    this.unavailable = false,
-    this.units = 'imperial',
-  });
-
-  final List<MinutePrecipitation> minutes;
-  final DateTime? now;
-  final bool unavailable;
-  final String units;
-
-  @override
-  Widget build(BuildContext context) {
-    final reference = now ?? DateTime.now();
-    final coverage =
-        PrecipitationCoverage(minutes, reference, unavailable: unavailable);
-    final hasPrecipitation = coverage.points.any((minute) => minute.isWet);
-    final title = coverage.summary(reference);
-    final visibleMinutes = coverage.points.take(12).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DmSectionHeader(title: coverage.heading),
-        const SizedBox(height: DMSpacing.sm),
-        DmGlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (hasPrecipitation)
-                    const DaymakerWeatherIcon(
-                      iconSlug: 'umbrella',
-                      size: DMSpacing.iconMd,
-                      semanticLabel: 'Precipitation',
-                      color: DMColors.rainTeal,
-                    )
-                  else
-                    Icon(
-                      coverage.coversNextHour
-                          ? Icons.check_circle_outline
-                          : Icons.info_outline,
-                      color: coverage.coversNextHour
-                          ? DMColors.mintGreen
-                          : context.dmColors.textMuted,
-                    ),
-                  const SizedBox(width: DMSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: DMTypography.body
-                          .copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-              if (visibleMinutes.isNotEmpty) ...[
-                const SizedBox(height: DMSpacing.md),
-                SizedBox(
-                  height: 88,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      for (final minute in visibleMinutes)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 2,
-                            ),
-                            child: _MinuteBar(minute: minute, units: units),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MinuteBar extends StatelessWidget {
-  const _MinuteBar({required this.minute, required this.units});
-
-  final MinutePrecipitation minute;
-  final String units;
-
-  @override
-  Widget build(BuildContext context) {
-    final amount = minute.precipitation.clamp(0, 0.25);
-    final height = 8 + (amount / 0.25 * 58);
-    final color =
-        minute.isWet ? DMColors.rainTeal : context.dmColors.glassStrong;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Tooltip(
-          message:
-              '${_formatTime(minute.time)}: ${minute.precipitation.toStringAsFixed(2)} ${units == 'imperial' ? 'in/h' : 'mm/h'}',
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            height: height,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(6),
-            ),
-          ),
-        ),
-        const SizedBox(height: DMSpacing.xxs),
-        Text(
-          _formatMinute(minute.time),
-          maxLines: 1,
-          overflow: TextOverflow.clip,
-          style: DMTypography.labelSmall.copyWith(
-            color: context.dmColors.textMuted,
-          ),
-        ),
-      ],
-    );
-  }
-
-  static String _formatMinute(DateTime time) {
-    return time.minute.toString().padLeft(2, '0');
-  }
-
-  static String _formatTime(DateTime time) {
-    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final suffix = time.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $suffix';
   }
 }
 

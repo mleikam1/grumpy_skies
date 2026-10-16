@@ -16,6 +16,9 @@ class DmBottomNavItem {
 }
 
 class DmBottomNav extends StatelessWidget {
+  static const _barRadius = 30.0;
+  static const _barInset = 4.0;
+
   const DmBottomNav(
       {super.key,
       required this.currentIndex,
@@ -48,9 +51,20 @@ class DmBottomNav extends StatelessWidget {
       70 +
       (MediaQuery.textScalerOf(context).scale(11) - 11).clamp(0, 22);
 
+  BorderRadius _itemRadius(int index, TextDirection direction) {
+    // Keep the end selection concentric with the bar's inset rounded edge.
+    const outer = Radius.circular(_barRadius - _barInset);
+    const inner = Radius.circular(21);
+    return BorderRadiusDirectional.horizontal(
+      start: index == 0 ? outer : inner,
+      end: index == items.length - 1 ? outer : inner,
+    ).resolve(direction);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.dmColors;
+    final direction = Directionality.of(context);
     return Semantics(
         container: true,
         label: 'Primary navigation',
@@ -66,10 +80,10 @@ class DmBottomNav extends StatelessWidget {
                         elevation: 3,
                         shadowColor: colors.shadow,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(_barRadius),
                             side: BorderSide(color: colors.border)),
                         child: Padding(
-                            padding: const EdgeInsets.all(4),
+                            padding: const EdgeInsets.all(_barInset),
                             child: Row(children: [
                               for (var index = 0; index < items.length; index++)
                                 Expanded(
@@ -79,7 +93,7 @@ class DmBottomNav extends StatelessWidget {
                                   label: items[index].semanticLabel,
                                   child: ExcludeSemantics(
                                       child: InkWell(
-                                    borderRadius: BorderRadius.circular(21),
+                                    borderRadius: _itemRadius(index, direction),
                                     onTap: () => onDestinationSelected(index),
                                     child: Container(
                                       constraints:
@@ -91,7 +105,7 @@ class DmBottomNav extends StatelessWidget {
                                               ? colors.navSelected
                                               : Colors.transparent,
                                           borderRadius:
-                                              BorderRadius.circular(21)),
+                                              _itemRadius(index, direction)),
                                       child: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [

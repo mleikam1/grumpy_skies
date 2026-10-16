@@ -135,10 +135,9 @@ class _DailyTileText {
   final String precipitation;
 
   static const labelStyle =
-      TextStyle(fontSize: 10, height: 1.1, fontWeight: FontWeight.w700);
-  static const highStyle =
+      TextStyle(fontSize: 12, height: 1.1, fontWeight: FontWeight.w800);
+  static const temperatureStyle =
       TextStyle(fontSize: 16, height: 1.1, fontWeight: FontWeight.w800);
-  static const lowStyle = TextStyle(fontSize: 13, height: 1.1);
   static const precipitationStyle = TextStyle(fontSize: 10, height: 1.1);
 
   factory _DailyTileText.fromItem(
@@ -180,8 +179,8 @@ class _DailyTileText {
         4 +
         4 +
         measure(label, labelStyle) +
-        measure(high, highStyle) +
-        measure(low, lowStyle) +
+        measure(high, temperatureStyle) +
+        measure(low, temperatureStyle) +
         measure(precipitation, precipitationStyle) +
         2;
   }
@@ -229,7 +228,7 @@ class ForecastDailyTile extends StatelessWidget {
                 Text(text.label,
                     textAlign: TextAlign.center,
                     style: _DailyTileText.labelStyle
-                        .copyWith(color: colors.textSecondary)),
+                        .copyWith(color: colors.textPrimary)),
                 const SizedBox(height: 6),
                 DaymakerWeatherIcon(
                   key: ValueKey('${item.id}-icon'),
@@ -247,11 +246,11 @@ class ForecastDailyTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(text.high,
                     textAlign: TextAlign.center,
-                    style: _DailyTileText.highStyle),
+                    style: _DailyTileText.temperatureStyle),
                 const SizedBox(height: 4),
                 Text(text.low,
                     textAlign: TextAlign.center,
-                    style: _DailyTileText.lowStyle
+                    style: _DailyTileText.temperatureStyle
                         .copyWith(color: colors.textSecondary)),
                 const SizedBox(height: 4),
                 Text(text.precipitation,

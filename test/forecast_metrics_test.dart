@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:grumpy_skies/design/dm_metric_colors.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_extra_metrics.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_sun_times.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_metric_chips.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
@@ -75,7 +75,7 @@ void main() {
           })));
     });
     testWidgets(
-        'metrics keep real values and wrap at 2x ${dark ? 'dark' : 'light'}',
+        'sun times keep real values and wrap at 2x ${dark ? 'dark' : 'light'}',
         (tester) async {
       tester.view.physicalSize = const Size(320, 800);
       tester.view.devicePixelRatio = 1;
@@ -101,20 +101,18 @@ void main() {
                   body: SingleChildScrollView(
                       child: Padding(
                           padding: const EdgeInsets.all(18),
-                          child: ForecastExtraMetrics(weather: weather)))))));
+                          child: ForecastSunTimes(weather: weather)))))));
       await tester.pump();
       expect(tester.takeException(), isNull);
-      expect(find.text('10.0 km'), findsOneWidget);
-      expect(find.text('1013 hPa'), findsOneWidget);
-      expect(find.text('1.20 mm rain / 0.40 mm snow'), findsOneWidget);
       expect(find.text('7:22 AM'), findsOneWidget);
       expect(find.text('6:49 PM'), findsOneWidget);
-      expect(find.bySemanticsLabel('Moonrise, Unavailable'), findsOneWidget);
+      expect(find.text('Moonrise'), findsNothing);
+      expect(find.text('Moonset'), findsNothing);
       for (final paragraph
           in tester.allRenderObjects.whereType<RenderParagraph>()) {
         expect(paragraph.didExceedMaxLines, isFalse);
       }
-      await tester.ensureVisible(find.text('Moonset'));
+      await tester.ensureVisible(find.text('Sunset'));
       expect(tester.takeException(), isNull);
     });
   }

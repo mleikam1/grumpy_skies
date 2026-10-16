@@ -1,6 +1,6 @@
 export 'forecast_current_weather_card.dart';
 export 'forecast_daily_grid.dart';
-export 'forecast_extra_metrics.dart';
+export 'forecast_sun_times.dart';
 export 'forecast_header.dart';
 export 'forecast_hero_atmosphere.dart';
 export 'forecast_hourly_strip.dart';
