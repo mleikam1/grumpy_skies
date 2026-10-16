@@ -148,11 +148,17 @@ class DmApprovedAction extends StatelessWidget {
       required this.label,
       required this.icon,
       required this.onPressed,
-      this.primary = false});
+      this.primary = false,
+      this.backgroundColor,
+      this.foregroundColor,
+      this.outlineColor});
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
   final bool primary;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final Color? outlineColor;
 
   @override
   Widget build(BuildContext context) => OutlinedButton.icon(
@@ -162,15 +168,17 @@ class DmApprovedAction extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 48),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          backgroundColor:
-              primary ? context.dmColors.primary : Colors.transparent,
-          foregroundColor: primary
-              ? context.dmColors.onPrimary
-              : context.dmColors.textPrimary,
+          backgroundColor: backgroundColor ??
+              (primary ? context.dmColors.primary : Colors.transparent),
+          foregroundColor: foregroundColor ??
+              (primary
+                  ? context.dmColors.onPrimary
+                  : context.dmColors.textPrimary),
           side: BorderSide(
-              color: primary
-                  ? Colors.transparent
-                  : context.dmColors.outlineVariant),
+              color: outlineColor ??
+                  (primary
+                      ? Colors.transparent
+                      : context.dmColors.outlineVariant)),
           textStyle: const TextStyle(
               fontFamily: 'DaymakerSans',
               fontSize: 13,

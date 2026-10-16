@@ -4,6 +4,7 @@ import '../../../features/roasts/models/roast_persona.dart';
 import '../../../models/daymaker_models.dart';
 import '../../../shared/widgets/dm_approved_components.dart';
 import '../../../shared/widgets/dm_roast_mood_badge.dart';
+import '../../../shared/widgets/dm_roast_surface.dart';
 
 class ForecastRoastCard extends StatelessWidget {
   const ForecastRoastCard({
@@ -24,12 +25,15 @@ class ForecastRoastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.dmColors;
+    final colors = context.dmRoastColors;
     final mood = roast.resolvedMood;
     final title =
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text("${persona.name}'s take",
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+          style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: colors.textPrimary)),
       const SizedBox(height: 5),
       Wrap(
           spacing: 8,
@@ -37,12 +41,14 @@ class ForecastRoastCard extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             DmPersonaTitleBadge(
-                label: RoastPersonas.byId(persona.id).badgeText),
-            DmRoastMoodBadge(mood: mood),
+                label: RoastPersonas.byId(persona.id).badgeText,
+                colors: colors),
+            DmRoastMoodBadge(mood: mood, colors: colors),
           ]),
     ]);
     final quote = Text('“${roast.text}”',
-        style: const TextStyle(
+        style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 21,
             fontWeight: FontWeight.w700,
             height: 1.2,
@@ -50,11 +56,18 @@ class ForecastRoastCard extends StatelessWidget {
     final actions = LayoutBuilder(builder: (context, c) {
       final buttons = [
         DmApprovedAction(
-            label: 'Another', icon: Icons.refresh, onPressed: onNewRoast),
+            label: 'Another',
+            icon: Icons.refresh,
+            onPressed: onNewRoast,
+            backgroundColor: colors.anotherSurface,
+            foregroundColor: colors.anotherText,
+            outlineColor: colors.anotherOutline),
         DmApprovedAction(
             label: 'Share',
             icon: Icons.ios_share_outlined,
             primary: true,
+            backgroundColor: colors.shareSurface,
+            foregroundColor: colors.shareText,
             onPressed: onShare),
       ];
       if (c.maxWidth < 200 || MediaQuery.textScalerOf(context).scale(13) > 18) {
@@ -73,16 +86,10 @@ class ForecastRoastCard extends StatelessWidget {
             child: Text(sourceLabel!,
                 style: TextStyle(fontSize: 10, color: colors.textSecondary)),
           );
-    return Container(
+    return DmRoastSurface(
       key: const ValueKey('today-persona-card'),
+      colors: colors,
       padding: const EdgeInsets.fromLTRB(8, 14, 14, 12),
-      decoration: BoxDecoration(
-        gradient: persona.id == 'frat_bro'
-            ? colors.grandpaGradient
-            : colors.karenGradient,
-        border: Border.all(color: colors.karenBorder),
-        borderRadius: BorderRadius.circular(22),
-      ),
       child: LayoutBuilder(builder: (context, c) {
         final large =
             c.maxWidth < 285 || MediaQuery.textScalerOf(context).scale(14) > 19;

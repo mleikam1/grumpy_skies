@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 
 import 'dm_breakpoints.dart';
 import 'dm_motion.dart';
+import 'dm_roast_colors.dart';
 import 'dm_semantic_colors.dart';
 import 'dm_typography.dart';
 
 export 'dm_semantic_colors.dart';
+export 'dm_roast_colors.dart';
 
 abstract final class DMTheme {
   const DMTheme._();
@@ -79,7 +81,7 @@ abstract final class DMTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      extensions: [c],
+      extensions: [c, dark ? DMRoastColors.dark : DMRoastColors.light],
       scaffoldBackgroundColor: c.appBackground,
       canvasColor: c.surface,
       cardColor: c.surface,
@@ -274,6 +276,11 @@ abstract final class DMTheme {
 
 extension DMThemeContextX on BuildContext {
   ThemeData get dmTheme => Theme.of(this);
+  DMRoastColors get dmRoastColors =>
+      Theme.of(this).extension<DMRoastColors>() ??
+      (Theme.of(this).brightness == Brightness.dark
+          ? DMRoastColors.dark
+          : DMRoastColors.light);
   DMSemanticColors get dmColors =>
       Theme.of(this).extension<DMSemanticColors>() ??
       (Theme.of(this).brightness == Brightness.dark

@@ -4,6 +4,7 @@ import '../../../models/temperature_unit.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/dm_approved_components.dart';
 import '../../../shared/widgets/dm_roast_mood_badge.dart';
+import '../../../shared/widgets/dm_roast_surface.dart';
 import '../models/roast_persona.dart';
 
 class FeaturedRoastCard extends StatelessWidget {
@@ -20,20 +21,13 @@ class FeaturedRoastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.dmColors;
+    final colors = context.dmRoastColors;
     final mood = roast.resolvedMood;
-    return Container(
+    return DmRoastSurface(
+      colors: colors,
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: persona.id == 'karen' || persona.id == 'two_year_old'
-            ? colors.karenGradient
-            : colors.grandpaGradient,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-            color: persona.id == 'karen'
-                ? colors.karenBorder
-                : colors.grandpaBorder),
-      ),
+      borderRadius: BorderRadius.circular(22),
+      illuminationAlignment: const Alignment(.65, -.55),
       child: LayoutBuilder(builder: (context, constraints) {
         final large = constraints.maxWidth < 275 ||
             MediaQuery.textScalerOf(context).scale(14) > 19;
@@ -47,18 +41,20 @@ class FeaturedRoastCard extends StatelessWidget {
                   color: colors.textSecondary)),
           const SizedBox(height: 10),
           Text('${persona.name}.',
-              style: const TextStyle(
+              style: TextStyle(
+                  color: colors.textPrimary,
                   fontSize: 32,
                   height: 1.08,
                   letterSpacing: -1,
                   fontWeight: FontWeight.w800)),
           const SizedBox(height: 10),
           DmPersonaTitleBadge(
+              colors: colors,
               label: persona.id == 'grandpa'
                   ? 'WEATHER WISEGUY'
                   : RoastPersonas.byId(persona.id).badgeText),
           const SizedBox(height: 10),
-          DmRoastMoodBadge(mood: mood),
+          DmRoastMoodBadge(mood: mood, colors: colors),
         ]);
         final portrait = DmPersonaPortrait(
             personaId: persona.id,
@@ -76,13 +72,14 @@ class FeaturedRoastCard extends StatelessWidget {
                 ]),
               const SizedBox(height: 16),
               Text('“${roast.text}”',
-                  style: const TextStyle(
+                  style: TextStyle(
+                      color: colors.textPrimary,
                       fontSize: 21,
                       height: 1.22,
                       letterSpacing: -.35,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 18),
-              Divider(color: colors.grandpaBorder, height: 1),
+              Divider(color: colors.divider, height: 1),
               const SizedBox(height: 12),
               Wrap(
                   alignment: WrapAlignment.spaceBetween,
