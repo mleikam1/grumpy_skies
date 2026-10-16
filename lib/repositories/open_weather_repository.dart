@@ -12,18 +12,34 @@ class OpenWeatherRepository extends WeatherRepository {
     CacheService? cacheService,
     Duration cacheDuration = const Duration(minutes: 10),
     WeatherClock? clock,
+    bool persistCache = true,
   })  : _clock = clock ?? DateTime.now,
         _client = client,
         _cacheService = cacheService,
-        _cacheDuration = cacheDuration;
+        _cacheDuration = cacheDuration,
+        _persistCache = persistCache,
+        _inFlightBundles = {};
+
+  OpenWeatherRepository._private(OpenWeatherRepository parent)
+      : _clock = parent._clock,
+        _client = parent._client,
+        _cacheService = parent._cacheService,
+        _cacheDuration = parent._cacheDuration,
+        _persistCache = false,
+        _inFlightBundles = parent._inFlightBundles;
 
   final WeatherClock _clock;
   final OpenWeatherBackendClient _client;
   final CacheService? _cacheService;
   final Duration _cacheDuration;
-  final _inFlightBundles = <String, Future<WeatherBundle>>{};
+  final bool _persistCache;
+  final Map<String, Future<WeatherBundle>> _inFlightBundles;
   final _recentFailures = <String, _WeatherRequestFailure>{};
   static const _failureCooldown = Duration(minutes: 1);
+
+  @override
+  WeatherRepository privateLocationConsumer() =>
+      OpenWeatherRepository._private(this);
 
   @override
   Future<List<LocationCandidate>> searchLocations({
@@ -169,11 +185,13 @@ class OpenWeatherRepository extends WeatherRepository {
       longitude: longitude,
       location: location,
     );
-    await _cacheService?.saveWeatherBundle(
-      lat: latitude,
-      lon: longitude,
-      bundle: bundle,
-    );
+    if (_persistCache) {
+      await _cacheService?.saveWeatherBundle(
+        lat: latitude,
+        lon: longitude,
+        bundle: bundle,
+      );
+    }
     return bundle;
   }
 

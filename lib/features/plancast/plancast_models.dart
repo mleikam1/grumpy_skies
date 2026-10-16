@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 import '../../models/weather_models.dart';
+import 'smart_location_models.dart';
+
+export 'smart_location_models.dart';
 
 /// Hashes are opaque navigation/storage keys, never calendar titles or addresses.
 String planCastId(String value) =>
@@ -11,12 +14,14 @@ String planCastId(String value) =>
 enum EventEnvironment { unknown, indoor, outdoor, online }
 
 enum ForecastCoverage {
+  loading,
   hourly,
   daily,
   partial,
   stale,
   tooEarly,
   unavailable,
+  deferred,
   needsLocation,
   online
 }
@@ -59,6 +64,12 @@ class CalendarEvent {
       this.longitude,
       this.nativeFingerprint,
       this.recurringId,
+      this.legacyRecurringId,
+      this.legacyLocationText,
+      this.mapUrl,
+      this.isRecurring = false,
+      this.isDetached = false,
+      this.originalStartUtc,
       this.tentative = false});
   final String id, nativeId, calendarId, title, timeZone, locationText;
   final DateTime startUtc, endUtc;
@@ -66,11 +77,22 @@ class CalendarEvent {
   final DateTime? allDayStart, allDayEnd;
   final double? latitude, longitude;
   final String? recurringId;
+
+  /// Read-only migration metadata; new rules always use [seriesKey].
+  final String? legacyRecurringId, legacyLocationText;
   final String? nativeFingerprint;
+  final String? mapUrl;
+  final bool isRecurring, isDetached;
+  final DateTime? originalStartUtc;
 
   String get displayTitle => title.trim().isEmpty ? 'Untitled plan' : title;
   String get recurringKey => planCastId(
       '$calendarId|${recurringId ?? nativeId}|${locationText.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ')}');
+  String get legacyRecurringKey => planCastId(
+      '$calendarId|${legacyRecurringId ?? recurringId ?? nativeId}|${(legacyLocationText ?? locationText).trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ')}');
+  bool matchesLegacyRecurringKey(String key) =>
+      key == recurringKey || key == legacyRecurringKey;
+  String get seriesKey => planCastId('$calendarId|${recurringId ?? nativeId}');
   bool get hasCoordinates =>
       latitude != null &&
       longitude != null &&
@@ -78,12 +100,24 @@ class CalendarEvent {
   bool get hasDuration => endUtc.isAfter(startUtc);
   static CalendarEvent? fromMap(Map<String, dynamic> value) {
     final status = value['status']?.toString().toLowerCase();
-    if (status == 'canceled' || status == 'cancelled' || status == 'declined') {
+    if (value['deleted'] == true ||
+        value['deleted'] == 1 ||
+        status == 'deleted' ||
+        status == 'canceled' ||
+        status == 'cancelled' ||
+        status == 'declined') {
       return null;
     }
     final startMs = value['startMs'];
     final endMs = value['endMs'];
-    if (startMs is! num || endMs is! num) return null;
+    if (startMs is! num ||
+        endMs is! num ||
+        !startMs.isFinite ||
+        !endMs.isFinite ||
+        startMs.abs() > 8640000000000000 ||
+        endMs.abs() > 8640000000000000) {
+      return null;
+    }
     final start =
         DateTime.fromMillisecondsSinceEpoch(startMs.toInt(), isUtc: true);
     final end = DateTime.fromMillisecondsSinceEpoch(endMs.toInt(), isUtc: true);
@@ -114,15 +148,33 @@ class CalendarEvent {
         latitude: (value['latitude'] as num?)?.toDouble(),
         longitude: (value['longitude'] as num?)?.toDouble(),
         recurringId: value['recurringId']?.toString(),
+        legacyRecurringId: value['legacyRecurringId']?.toString(),
+        legacyLocationText: value['legacyLocation'] as String?,
+        mapUrl: value['mapUrl'] as String?,
+        isRecurring: value['isRecurring'] == true,
+        isDetached: value['isDetached'] == true,
+        originalStartUtc: value['originalStartMs'] is num &&
+                (value['originalStartMs'] as num).isFinite &&
+                (value['originalStartMs'] as num).abs() <= 8640000000000000
+            ? DateTime.fromMillisecondsSinceEpoch(
+                (value['originalStartMs'] as num).toInt(),
+                isUtc: true)
+            : null,
         tentative: status == 'tentative');
   }
 
   static DateTime? _civilDate(Object? value) {
-    if (value is! String) return null;
+    if (value is! String || !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+      return null;
+    }
     final parsed = DateTime.tryParse(value);
-    return parsed == null
-        ? null
-        : DateTime.utc(parsed.year, parsed.month, parsed.day);
+    if (parsed == null ||
+        parsed.year != int.parse(value.substring(0, 4)) ||
+        parsed.month != int.parse(value.substring(5, 7)) ||
+        parsed.day != int.parse(value.substring(8, 10))) {
+      return null;
+    }
+    return DateTime.utc(parsed.year, parsed.month, parsed.day);
   }
 }
 
@@ -262,7 +314,9 @@ class EventWeatherAssessment {
       this.alerts = const [],
       this.uncertainties = const [],
       this.arrival,
-      this.leaving});
+      this.leaving,
+      this.dailyOnly = false,
+      this.segments = const []});
   final ForecastCoverage coverage;
   final WeatherImpact impact;
   final String explanation, advice, condition;
@@ -273,6 +327,9 @@ class EventWeatherAssessment {
   final List<WeatherAlert> alerts;
   final List<String> uncertainties;
   final EventWeatherAssessment? arrival, leaving;
+  final List<EventWeatherSegment> segments;
+  final bool dailyOnly;
+  bool get isDaily => dailyOnly || coverage == ForecastCoverage.daily;
   bool get usable =>
       impact != WeatherImpact.unavailable &&
       (coverage == ForecastCoverage.hourly ||
@@ -281,9 +338,20 @@ class EventWeatherAssessment {
   bool get materiallyAffected =>
       impact == WeatherImpact.watch || impact == WeatherImpact.disruption;
   bool get serious => alerts.isNotEmpty || impact == WeatherImpact.disruption;
-  String get precipitationLabel => coverage == ForecastCoverage.daily
+  String get precipitationLabel => isDaily
       ? 'Peak daily precipitation chance'
       : 'Peak hourly precipitation chance during your event';
+}
+
+class EventWeatherSegment {
+  const EventWeatherSegment(
+      {required this.label,
+      required this.startUtc,
+      required this.endUtc,
+      required this.assessment});
+  final String label;
+  final DateTime startUtc, endUtc;
+  final EventWeatherAssessment assessment;
 }
 
 class PlanCastEventWeather {
@@ -291,15 +359,30 @@ class PlanCastEventWeather {
       {required this.event,
       required this.assessment,
       this.venue,
+      this.resolvedLocation,
+      this.participation = EventParticipation.unknown,
+      this.venueTimeZone,
+      this.venueTimeZoneOffset,
       this.environment = EventEnvironment.unknown,
       this.remindersEnabled = true});
   final CalendarEvent event;
   final EventWeatherAssessment assessment;
   final LocationCandidate? venue;
+  final ResolvedLocation? resolvedLocation;
+  final EventParticipation participation;
+  final String? venueTimeZone;
+  final int? venueTimeZoneOffset;
   final EventEnvironment environment;
   final bool remindersEnabled;
   bool get needsLocation =>
-      assessment.coverage == ForecastCoverage.needsLocation;
+      !isOnline &&
+      (resolvedLocation != null
+          ? !resolvedLocation!.hasWeatherBasis
+          : assessment.coverage == ForecastCoverage.needsLocation);
+  bool get isOnline =>
+      participation == EventParticipation.online ||
+      environment == EventEnvironment.online;
+  bool get automaticLocation => resolvedLocation?.automatic ?? false;
 }
 
 class PlanCastBriefing {
@@ -311,11 +394,14 @@ class PlanCastBriefing {
       this.personaLine,
       required this.generatedAt,
       required this.usableWeatherCount,
-      required this.needsLocationCount});
+      required this.needsLocationCount,
+      this.automaticLocationCount = 0,
+      this.reviewLocationCount = 0});
   final String yourDay, worthWatching, beforeYouGo;
   final String? tomorrow, personaLine;
   final DateTime generatedAt;
   final int usableWeatherCount, needsLocationCount;
+  final int automaticLocationCount, reviewLocationCount;
   String get text => [
         'Your day. $yourDay',
         'Worth watching. $worthWatching',

@@ -6,11 +6,32 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/plancast/plancast_controller.dart';
+import 'package:grumpy_skies/features/plancast/device_area_service.dart';
 import 'package:grumpy_skies/features/plancast/platform/plancast_platform.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_settings_screen.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_card.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
+import 'package:grumpy_skies/services/location_service.dart';
+
+class UiArea extends DeviceAreaService {
+  @override
+  DeviceAreaSample? get sample => null;
+  @override
+  DeviceLocationFailure? get failure => null;
+  @override
+  Stream<DeviceAreaSample?> get changes => const Stream.empty();
+  @override
+  Future<DeviceAreaSample?> refresh(
+          {bool requestPermission = false, bool force = false}) async =>
+      null;
+  @override
+  Future<void> setActive(bool active) async {}
+  @override
+  Future<void> clear() async {}
+  @override
+  void dispose() {}
+}
 
 class UiDevice extends PlanCastPlatform {
   UiDevice({bool supported = true}) : super(supported: supported);
@@ -111,6 +132,7 @@ void main() {
       {bool connect = false}) async {
     final c = PlanCastController(
         weatherRepository: const FakeWeatherRepository(),
+        deviceAreaService: UiArea(),
         platform: device,
         clock: () => DateTime.utc(2026, 6, 14, 17));
     await c.initialize();
@@ -199,7 +221,8 @@ void main() {
     await pump(tester, c,
         const Scaffold(body: SingleChildScrollView(child: PlanCastCard())));
     expect(find.byType(PlanCastEventTile), findsNWidgets(2));
-    expect(find.textContaining('need a location'), findsOneWidget);
+    expect(find.text('0 with weather · 1 online · 1 without weather'),
+        findsOneWidget);
     expect(find.text('View my PlanCast'), findsOneWidget);
     expect(c.previews.map((e) => e.event.id).toSet().length, c.previews.length);
     expect(tester.takeException(), isNull);
@@ -242,6 +265,8 @@ void main() {
     await pump(tester, c, const PlanCastSettingsScreen());
     final toggle =
         find.widgetWithText(SwitchListTile, 'PlanCast notifications');
+    await tester.scrollUntilVisible(toggle, 300);
+    await tester.pumpAndSettle();
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(device.notificationRequests, 1);

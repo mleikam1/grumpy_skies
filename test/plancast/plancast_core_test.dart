@@ -683,7 +683,9 @@ void main() {
       expect(c.eventsForDay(local), isEmpty);
       expect(c.briefingForDay(local).yourDay, startsWith('No plans'));
       expect(c.eventsForDay(tomorrow), hasLength(1));
-      expect(c.previews.single.event.nativeId, 'tomorrow');
+      expect(c.previews, isEmpty,
+          reason: 'Today previews must share Today counts.');
+      expect(c.eventsForDay(tomorrow).single.event.nativeId, 'tomorrow');
       expect(w.requests, 1);
     });
     test('persona units rerender locally and never expose private venue names',
@@ -711,8 +713,8 @@ void main() {
       final fahrenheit = c.briefingForDay(now, persona: 'karen');
       final celsius = c.briefingForDay(now,
           persona: 'karen', temperatureUnit: TemperatureUnit.celsius);
-      expect(fahrenheit.personaLine, 'At your venue: 68°F. Same opinion.');
-      expect(celsius.personaLine, 'At your venue: 20°C. Same opinion.');
+      expect(fahrenheit.personaLine, 'At this area: 68°F. Same opinion.');
+      expect(celsius.personaLine, 'At this area: 20°C. Same opinion.');
       expect(celsius.text, isNot(contains('Private medical')));
       expect(
           identical(

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:grumpy_skies/features/plancast/platform/plancast_platform.dart';
@@ -11,6 +12,8 @@ import 'package:grumpy_skies/main.dart' as app;
 /// calendar store after access is granted externally; it never writes events.
 /// The ordinary app launch can update its normal local preferences, and a denied
 /// calendar status purges PlanCast state, so never run against a personal install.
+/// Without read access, a synthetic protected-write attempt must be rejected
+/// natively and leave PlanCast preferences absent.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('native PlanCast bridge and normal launch do not request access',
@@ -37,6 +40,12 @@ void main() {
     expect(await bridge.notificationPermission(),
         isIn(['notDetermined', 'denied', 'authorized']));
     expect(await bridge.speechStatus(), isIn(['available', 'unavailable']));
+    if (before != 'authorized') {
+      await expectLater(bridge.secureWrite('{"nativeBoundaryProbe":true}'),
+          throwsA(isA<PlatformException>()));
+      expect(await bridge.secureRead(), isNull,
+          reason: 'A denied native write must not resurrect PlanCast state.');
+    }
     final now = DateTime.now().toUtc();
     expect(
         await bridge.events(

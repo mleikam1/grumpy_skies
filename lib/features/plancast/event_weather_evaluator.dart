@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:timezone/timezone.dart' as tz;
+
 import '../../models/weather_models.dart';
 import '../roasts/content/roast_context_adapter.dart';
 import 'plancast_models.dart';
@@ -16,7 +18,8 @@ class EventWeatherEvaluator {
       required DateTime now,
       EventEnvironment environment = EventEnvironment.unknown,
       int bufferMinutes = 30,
-      bool hasLocation = true}) {
+      bool hasLocation = true,
+      bool isStay = false}) {
     if (environment == EventEnvironment.online) {
       return const EventWeatherAssessment(
           coverage: ForecastCoverage.online,
@@ -28,16 +31,15 @@ class EventWeatherEvaluator {
       return const EventWeatherAssessment(
           coverage: ForecastCoverage.needsLocation,
           impact: WeatherImpact.unavailable,
-          explanation:
-              'Choose or confirm a physical location to see weather for this plan.',
-          advice: 'Add a venue, or mark this plan Online.');
+          explanation: 'No usable area is available for this plan yet.',
+          advice:
+              'Use your current area or choose one default city for locationless plans.');
     }
     if (weather == null) {
       return const EventWeatherAssessment(
           coverage: ForecastCoverage.unavailable,
           impact: WeatherImpact.unavailable,
-          explanation:
-              'Venue forecast unavailable. Try refreshing when connected.');
+          explanation: 'Forecast unavailable. Try refreshing when connected.');
     }
     final updated =
         (weather.current.sourceUpdatedAt ?? weather.current.lastUpdated)
@@ -50,7 +52,7 @@ class EventWeatherEvaluator {
           coverage: ForecastCoverage.stale,
           impact: WeatherImpact.unavailable,
           explanation:
-              'The venue forecast is stale or offline. Refresh before relying on it.',
+              'The forecast is stale or offline. Refresh before relying on it.',
           forecastUpdatedAt: updated,
           validUntil: expiry,
           uncertainties: const [
@@ -66,10 +68,13 @@ class EventWeatherEvaluator {
           forecastUpdatedAt: updated,
           validUntil: expiry);
     }
-    final result = event.isAllDay
-        ? _daily(event, weather, updated, expiry)
-        : _interval(event.startUtc, event.endUtc, weather, updated, expiry,
-            environment);
+    final stay =
+        isStay ? _stay(event, weather, updated, expiry, environment) : null;
+    final result = stay ??
+        (event.isAllDay
+            ? _daily(event, weather, updated, expiry)
+            : _interval(event.startUtc, event.endUtc, weather, updated, expiry,
+                environment));
     if (event.isAllDay || bufferMinutes <= 0 || !result.usable) return result;
     final buffer = Duration(minutes: bufferMinutes.clamp(0, 180));
     final arrival = _interval(event.startUtc.subtract(buffer), event.startUtc,
@@ -89,6 +94,8 @@ class EventWeatherEvaluator {
             : result;
     return EventWeatherAssessment(
         coverage: result.coverage,
+        dailyOnly: result.isDaily,
+        segments: result.segments,
         impact: guidance.impact,
         explanation: indoor
             ? 'Indoor activity. Arrival planning buffer: ${arrival.explanation} Leaving planning buffer: ${leaving.explanation}'
@@ -197,7 +204,7 @@ class EventWeatherEvaluator {
     if (peak != null && peak >= 40) {
       impact = WeatherImpact.watch;
       reasons.add('Peak hourly precipitation chance is $peak%.');
-      actions.add('Bring an umbrella for arrival and leaving.');
+      actions.add('Bring an umbrella for time outside.');
     }
     if (windPeak != null && windPeak >= 30) {
       impact = WeatherImpact.watch;
@@ -217,10 +224,10 @@ class EventWeatherEvaluator {
     if (hazardous || (windPeak ?? 0) >= 55 || alerts.isNotEmpty) {
       impact = WeatherImpact.disruption;
       reasons.add(alerts.isNotEmpty
-          ? 'An official alert overlaps this venue and event interval.'
+          ? 'An official alert overlaps this forecast area and event interval.'
           : 'Storms, icy weather or strong wind may disrupt outdoor plans.');
       actions.add(
-          'Check the latest venue forecast and official guidance before leaving.');
+          'Check the latest forecast and official guidance before leaving.');
     }
     if (environment == EventEnvironment.outdoor &&
         hours.any((h) => h.weatherIcon?.endsWith('n') == true)) {
@@ -338,7 +345,10 @@ class EventWeatherEvaluator {
     final storm =
         days.any((d) => _disruptiveCondition(d.condition, d.weatherId));
     return EventWeatherAssessment(
-        coverage: ForecastCoverage.daily,
+        coverage: dates.length < last.difference(first).inDays + 1
+            ? ForecastCoverage.partial
+            : ForecastCoverage.daily,
+        dailyOnly: true,
         impact: noValues
             ? WeatherImpact.unavailable
             : storm
@@ -371,6 +381,116 @@ class EventWeatherEvaluator {
           if (probabilities.length < days.length)
             'Some precipitation probabilities are unavailable.',
         ]);
+  }
+
+  /// A stay is a sequence of real event intervals, not one averaged condition.
+  /// All-day exclusive dates remain floating dates; no checkout time is invented.
+  EventWeatherAssessment? _stay(CalendarEvent event, WeatherBundle weather,
+      DateTime updated, DateTime expiry, EventEnvironment environment) {
+    final zone = weather.current.timezone;
+    final localStart = event.isAllDay
+        ? event.allDayStart
+        : roastLocalTime(event.startUtc, zone, null, forecast: true);
+    final localLast = event.isAllDay
+        ? event.allDayEnd!.subtract(const Duration(days: 1))
+        : roastLocalTime(
+            event.endUtc.subtract(const Duration(microseconds: 1)), zone, null,
+            forecast: true);
+    if (localStart == null || localLast == null) return null;
+    final first =
+        DateTime.utc(localStart.year, localStart.month, localStart.day);
+    final last = DateTime.utc(localLast.year, localLast.month, localLast.day);
+    if (first == last) return null;
+    final segments = <EventWeatherSegment>[];
+    for (var date = first;
+        !date.isAfter(last);
+        date = date.add(const Duration(days: 1))) {
+      // Calendar reads are bounded; a pathological long stay does not allocate
+      // unbounded rows or create a separate provider request per day.
+      if (segments.length >= 31) break;
+      final next = date.add(const Duration(days: 1));
+      DateTime start = date, end = next;
+      if (!event.isAllDay && localStart is tz.TZDateTime) {
+        start =
+            tz.TZDateTime(localStart.location, date.year, date.month, date.day)
+                .toUtc();
+        end =
+            tz.TZDateTime(localStart.location, next.year, next.month, next.day)
+                .toUtc();
+        if (start.isBefore(event.startUtc)) start = event.startUtc;
+        if (end.isAfter(event.endUtc)) end = event.endUtc;
+      }
+      final assessment = event.isAllDay
+          ? _daily(
+              CalendarEvent(
+                  id: event.id,
+                  nativeId: event.nativeId,
+                  calendarId: event.calendarId,
+                  title: event.title,
+                  startUtc: start,
+                  endUtc: end,
+                  timeZone: event.timeZone,
+                  isAllDay: true,
+                  allDayStart: date,
+                  allDayEnd: next),
+              weather,
+              updated,
+              expiry)
+          : _interval(start, end, weather, updated, expiry, environment);
+      segments.add(EventWeatherSegment(
+          label: event.isAllDay
+              ? (date == first
+                  ? 'First day'
+                  : date == last
+                      ? 'Final covered day'
+                      : 'Stay day')
+              : (date == first
+                  ? 'Arrival'
+                  : date == last
+                      ? 'Departure'
+                      : 'Stay day'),
+          startUtc: start,
+          endUtc: end,
+          assessment: assessment));
+    }
+    final usable = segments.where((s) => s.assessment.usable).toList();
+    final partial = usable.length < segments.length ||
+        segments.length < last.difference(first).inDays + 1 ||
+        segments.any((s) => s.assessment.coverage == ForecastCoverage.partial);
+    final dailyOnly =
+        segments.every((s) => s.assessment.isDaily || !s.assessment.usable);
+    final ranked = [...usable]..sort((a, b) =>
+        b.assessment.impact.index.compareTo(a.assessment.impact.index));
+    return EventWeatherAssessment(
+        coverage: usable.isEmpty
+            ? (segments.every(
+                    (s) => s.assessment.coverage == ForecastCoverage.tooEarly)
+                ? ForecastCoverage.tooEarly
+                : ForecastCoverage.unavailable)
+            : partial
+                ? ForecastCoverage.partial
+                : dailyOnly
+                    ? ForecastCoverage.daily
+                    : ForecastCoverage.hourly,
+        dailyOnly: dailyOnly,
+        impact: ranked.isEmpty
+            ? WeatherImpact.unavailable
+            : ranked.first.assessment.impact,
+        explanation:
+            '${usable.length} of ${segments.length} stay dates have an outlook. See each date for its own weather.',
+        advice: ranked.isEmpty
+            ? 'Check again as the stay approaches.'
+            : ranked.first.assessment.advice,
+        forecastUpdatedAt: updated,
+        validUntil: expiry,
+        alerts: [for (final segment in segments) ...segment.assessment.alerts],
+        uncertainties: [
+          if (partial)
+            'Some stay intervals have incomplete or unavailable forecasts.',
+          if (event.isAllDay)
+            'All-day dates do not specify arrival or departure times.'
+        ],
+        segments: segments);
   }
 
   static bool _disruptiveCondition(String condition, int? id) =>

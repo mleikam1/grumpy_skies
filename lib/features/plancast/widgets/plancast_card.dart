@@ -11,6 +11,7 @@ import '../../../shared/widgets/daymaker_components.dart';
 import '../../../services/settings_controller.dart';
 import '../plancast_controller.dart';
 import '../screens/plancast_screen.dart';
+import 'plancast_location_controls.dart';
 
 /// A deliberately small entry point; calendar work never gates Today weather.
 class PlanCastCard extends StatelessWidget {
@@ -26,7 +27,9 @@ class PlanCastCard extends StatelessWidget {
     final settings = context.watch<SettingsController?>();
     final persona = settings?.selectedPersonaId;
     final unit = settings?.temperatureUnit ?? TemperatureUnit.fahrenheit;
-    final briefing = controller.briefingForDay(controller.clock().toLocal(),
+    final today = controller.clock().toLocal();
+    final items = controller.eventsForDay(today);
+    final briefing = controller.briefingForDay(today,
         persona: persona, temperatureUnit: unit);
     return DmGlassCard(
       key: const ValueKey('plancast-card'),
@@ -60,12 +63,15 @@ class PlanCastCard extends StatelessWidget {
               onPressed: () => context.push(AppRoutes.planCast),
               child: const Text('Connect calendars')),
         ] else ...[
-          Text(briefing.yourDay),
+          const Text('Today', style: DMTypography.labelLarge),
           const SizedBox(height: DMSpacing.xs),
           Text(
-              '${briefing.usableWeatherCount} with usable weather · ${briefing.needsLocationCount} need a location',
+              items.isEmpty
+                  ? 'No plans for today.'
+                  : planCastScopeSummary(items),
               style: DMTypography.bodySmall),
-          for (final item in controller.previews.take(2))
+          PlanCastLocationNotice(items: items),
+          for (final item in items.take(2))
             PlanCastEventTile(item: item, compact: true),
           if (briefing.personaLine != null)
             Text(briefing.personaLine!, style: DMTypography.bodySmall),

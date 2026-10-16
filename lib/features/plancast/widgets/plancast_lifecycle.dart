@@ -41,7 +41,7 @@ class _PlanCastLifecycleState extends State<PlanCastLifecycle>
     if (state == AppLifecycleState.resumed) {
       unawaited(_resume());
     } else {
-      unawaited(widget.controller.stopSpeaking());
+      unawaited(widget.controller.onPause());
     }
   }
 

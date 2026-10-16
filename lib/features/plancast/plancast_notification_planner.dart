@@ -1,3 +1,4 @@
+import 'plancast_event_copy.dart';
 import 'plancast_models.dart';
 
 /// Builds one bounded, replaceable local queue. Native adapters persist it;
@@ -38,9 +39,15 @@ class PlanCastNotificationPlanner {
     }
 
     DateTime expiryFor(DateTime at, PlanCastEventWeather? item, bool detailed) {
-      final expiry = detailed
+      var expiry = detailed
           ? item!.assessment.validUntil!
           : at.add(const Duration(hours: 2));
+      final locationExpiry = item?.resolvedLocation?.validUntil;
+      if (detailed &&
+          locationExpiry != null &&
+          locationExpiry.isBefore(expiry)) {
+        expiry = locationExpiry;
+      }
       return item != null && item.event.startUtc.isBefore(expiry)
           ? item.event.startUtc
           : expiry;
@@ -92,7 +99,7 @@ class PlanCastNotificationPlanner {
       ..sort((a, b) => a.event.startUtc.compareTo(b.event.startUtc));
     for (final item in sorted) {
       if (!item.remindersEnabled ||
-          item.environment == EventEnvironment.online ||
+          item.isOnline ||
           item.event.isAllDay ||
           !item.assessment.materiallyAffected ||
           !item.assessment.usable) {
@@ -139,17 +146,22 @@ class PlanCastNotificationPlanner {
         bundledAt.add(at);
         final expiry = item.assessment.validUntil;
         final updated = item.assessment.forecastUpdatedAt;
+        final locationExpiry = item.resolvedLocation?.validUntil;
         final detailed = preferences.detailedNotificationPreviews &&
             expiry != null &&
             updated != null &&
             !at.toUtc().isAfter(expiry) &&
+            (locationExpiry == null || !at.toUtc().isAfter(locationExpiry)) &&
+            !at.isBefore(updated) &&
+            !at.isBefore(calendarSyncedAt) &&
+            at.difference(updated) <= const Duration(hours: 6) &&
             at.difference(calendarSyncedAt) <= const Duration(hours: 6) &&
             at.difference(now) <= const Duration(hours: 6) &&
             item.assessment.coverage == ForecastCoverage.hourly;
         final checked = updated?.toLocal();
         final body = detailed
-            ? '${item.event.displayTitle}: ${item.assessment.impact.label}. ${item.assessment.advice} Last checked ${checked!.hour.toString().padLeft(2, '0')}:${checked.minute.toString().padLeft(2, '0')}.'
-            : 'You have upcoming plans. Open PlanCast for the latest venue weather and calendar changes.';
+            ? '${item.event.displayTitle} (${PlanCastEventCopy.interval(item)}): ${PlanCastEventCopy.location(item)} ${item.assessment.impact.label}. ${item.assessment.advice} Last checked ${checked!.hour.toString().padLeft(2, '0')}:${checked.minute.toString().padLeft(2, '0')}.'
+            : 'You have upcoming plans. Open PlanCast for the latest event weather and calendar changes.';
         notices.add(notice(id, at, body, '/plancast?event=${item.event.id}',
             item: item, detailed: detailed));
       }

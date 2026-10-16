@@ -3,6 +3,10 @@ import '../models/weather_models.dart';
 abstract class WeatherRepository {
   const WeatherRepository();
 
+  /// A private consumer may reuse public forecast data but must not persist
+  /// newly derived calendar destinations into the ordinary weather history.
+  WeatherRepository privateLocationConsumer() => this;
+
   Future<List<LocationCandidate>> searchLocations({
     required String query,
     int limit = 5,

@@ -163,6 +163,7 @@ class ApprovedPreviewSession {
   Widget build(
           {double textScale = 1,
           Key? captureKey,
+          GoRouter? routerOverride,
           bool reducedMotion = false}) =>
       MultiProvider(
         providers: [
@@ -191,7 +192,7 @@ class ApprovedPreviewSession {
               darkTheme: DMTheme.darkTheme,
               themeMode: appearance.themeMode,
               themeAnimationDuration: Duration.zero,
-              routerConfig: router,
+              routerConfig: routerOverride ?? router,
               builder: (context, child) => MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                     textScaler: TextScaler.linear(textScale),

@@ -7,12 +7,21 @@ import '../../repositories/weather_repository.dart';
 /// main selected-location controller. Cache/in-flight keys contain coordinates
 /// only; calendar titles, IDs and payloads cannot reach a service request.
 class VenueWeatherRepository {
-  VenueWeatherRepository(this.repository,
-      {DateTime Function()? clock, this.maxConcurrent = 2})
-      : clock = clock ?? DateTime.now;
+  VenueWeatherRepository(WeatherRepository repository,
+      {DateTime Function()? clock,
+      this.maxConcurrent = 2,
+      this.maximumRequestsPerHour = 12,
+      this.maximumCacheEntries = 32,
+      this.lifetime = cacheLifetime,
+      this.failureCooldown = const Duration(minutes: 1),
+      this.requestTimeout = const Duration(seconds: 30)})
+      : repository = repository.privateLocationConsumer(),
+        clock = clock ?? DateTime.now;
   final WeatherRepository repository;
   final DateTime Function() clock;
   final int maxConcurrent;
+  final int maximumRequestsPerHour, maximumCacheEntries;
+  final Duration lifetime, failureCooldown, requestTimeout;
   final Map<String, ({WeatherBundle value, DateTime fetched})> _cache = {};
   final Map<String, Future<WeatherBundle>> _pending = {};
   final Map<String, DateTime> _failures = {};
@@ -27,7 +36,12 @@ class VenueWeatherRepository {
     final key = keyFor(venue);
     final cached = _cache[key];
     return _pending.containsKey(key) ||
-        cached != null && clock().difference(cached.fetched) < cacheLifetime;
+        cached != null && _fresh(cached.fetched);
+  }
+
+  bool _fresh(DateTime fetched) {
+    final age = clock().difference(fetched);
+    return !age.isNegative && age < lifetime;
   }
 
   Future<WeatherBundle> get(LocationCandidate venue) {
@@ -36,19 +50,18 @@ class VenueWeatherRepository {
     }
     final key = keyFor(venue);
     final cached = _cache[key];
-    if (cached != null && clock().difference(cached.fetched) < cacheLifetime) {
+    if (cached != null && _fresh(cached.fetched)) {
       return Future.value(cached.value);
     }
     final inFlight = _pending[key];
     if (inFlight != null) return inFlight;
     _requestTimes.removeWhere(
         (time) => clock().difference(time) >= const Duration(hours: 1));
-    if (_requestTimes.length >= 12) {
+    if (_requestTimes.length >= maximumRequestsPerHour) {
       return Future.error(const VenueWeatherDeferred());
     }
     final failure = _failures[key];
-    if (failure != null &&
-        clock().difference(failure) < const Duration(minutes: 1)) {
+    if (failure != null && clock().difference(failure) < failureCooldown) {
       return cached == null
           ? Future.error(StateError('Venue forecast temporarily unavailable'))
           : Future.value(cached.value.asOfflineCache());
@@ -73,11 +86,13 @@ class VenueWeatherRepository {
       // Deliberately omit LocationCandidate: only coordinates reach the backend.
       final value = await repository
           .getWeather(latitude: venue.lat, longitude: venue.lon)
-          .timeout(const Duration(seconds: 30));
+          .timeout(requestTimeout);
       if (generation == _generation) {
         _cache[key] = (value: value, fetched: clock());
         _failures.remove(key);
-        if (_cache.length > 32) _cache.remove(_cache.keys.first);
+        if (_cache.length > maximumCacheEntries) {
+          _cache.remove(_cache.keys.first);
+        }
       }
       return value;
     } catch (_) {

@@ -6,17 +6,21 @@ import 'package:provider/provider.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../../../models/temperature_unit.dart';
-import '../../../models/weather_models.dart';
 import '../../../services/settings_controller.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 import '../../roasts/content/roast_context_adapter.dart';
 import '../plancast_controller.dart';
+import '../plancast_event_copy.dart';
 import 'plancast_settings_screen.dart';
+import 'plancast_time_format.dart';
+import '../widgets/plancast_location_controls.dart';
+
+export 'plancast_time_format.dart';
 
 const planCastPrivacyExplanation =
     'PlanCast reads only the device calendars you select. Accounts must be available to the operating system; a standalone calendar app may not expose its events. '
     'We never create, edit, or delete source events or their reminders. On iOS, full calendar access is required to read existing events, even though PlanCast is read-only.\n\n'
-    'Calendar processing and briefings stay on this device. Only venue text or coordinates go to the existing location and weather services—not titles, descriptions, guests, or meeting links. '
+    'Calendar processing and briefings stay on this device. Coordinates go to the weather service. Optional online location matching sends only a locally extracted city, venue or address query—not full titles, descriptions, dates, guests, or meeting links. '
     'No calendar data is sent to ads, analytics, or AI services. Notifications are a separate, optional choice.';
 
 class PlanCastScreen extends StatefulWidget {
@@ -31,6 +35,7 @@ class PlanCastScreen extends StatefulWidget {
 class _PlanCastScreenState extends State<PlanCastScreen> {
   int _view = 0;
   bool _changedView = false;
+  bool _briefingExpanded = false;
   String? _speechMessage;
   bool _speaking = false;
   int _speechRequest = 0;
@@ -175,9 +180,17 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
                     onSelected: (_) => setState(() {
                           _view = entry.key;
                           _changedView = true;
+                          _briefingExpanded = false;
                         })),
             ]),
             const SizedBox(height: DMSpacing.md),
+            Text(
+                _view == 2 && requestedDay == null
+                    ? 'This week · ${MaterialLocalizations.of(context).formatMediumDate(today)} – ${MaterialLocalizations.of(context).formatMediumDate(DateTime(today.year, today.month, today.day + 6))}'
+                    : planCastDate(context, day, now: now),
+                style: DMTypography.labelLarge),
+            Text(planCastScopeSummary(items), style: DMTypography.bodySmall),
+            PlanCastLocationNotice(items: items),
             if (controller.loading) const LinearProgressIndicator(),
             if (controller.error != null)
               Padding(
@@ -199,17 +212,17 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    _briefingSection('Your day', briefing.yourDay),
-                    _briefingSection('Worth watching', briefing.worthWatching),
-                    _briefingSection('Before you go', briefing.beforeYouGo),
-                    if (briefing.tomorrow != null)
-                      _briefingSection('Tomorrow', briefing.tomorrow!),
-                    if (briefing.personaLine != null)
+                    _briefingSection('Your day', _briefingLead(items)),
+                    if (_briefingExpanded) ...[
                       _briefingSection(
-                          'One last opinion', briefing.personaLine!),
-                    Text(
-                        '${briefing.usableWeatherCount} with usable weather · ${briefing.needsLocationCount} need a location',
-                        style: DMTypography.bodySmall),
+                          'Worth watching', briefing.worthWatching),
+                      _briefingSection('Before you go', briefing.beforeYouGo),
+                      if (briefing.tomorrow != null)
+                        _briefingSection('Tomorrow', briefing.tomorrow!),
+                      if (briefing.personaLine != null)
+                        _briefingSection(
+                            'One last opinion', briefing.personaLine!),
+                    ],
                     Wrap(spacing: DMSpacing.sm, children: [
                       TextButton.icon(
                           icon: const Icon(Icons.volume_up_outlined),
@@ -251,6 +264,16 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
                               }
                             }
                           }),
+                      TextButton.icon(
+                          icon: Icon(_briefingExpanded
+                              ? Icons.expand_less
+                              : Icons.expand_more),
+                          label: Text(_briefingExpanded
+                              ? 'Hide briefing'
+                              : 'Full briefing'),
+                          onPressed: () => setState(() {
+                                _briefingExpanded = !_briefingExpanded;
+                              })),
                       if (_speaking)
                         TextButton.icon(
                             icon: const Icon(Icons.stop),
@@ -293,6 +316,48 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
         ));
   }
 
+  String _briefingLead(List<PlanCastEventWeather> items) {
+    final alerts = items
+        .where((item) => !item.isOnline && item.assessment.alerts.isNotEmpty);
+    if (alerts.isNotEmpty) {
+      return '${alerts.first.assessment.alerts.first.event}. Review the affected plan and official guidance below.';
+    }
+    final available =
+        items.where((item) => !item.isOnline && item.assessment.usable).toList()
+          ..sort((a, b) {
+            final impact =
+                b.assessment.impact.index.compareTo(a.assessment.impact.index);
+            return impact != 0
+                ? impact
+                : a.event.startUtc.compareTo(b.event.startUtc);
+          });
+    if (available.isEmpty) {
+      if (items.isEmpty) return 'No event forecasts to review for this day.';
+      if (items.every((item) => item.isOnline)) {
+        return 'Your online plans do not need venue weather.';
+      }
+      return 'Event forecasts are not available yet. Review each plan’s status below.';
+    }
+    final item = available.first;
+    final assessment = item.assessment;
+    if (assessment.segments.isNotEmpty) {
+      return 'Your stay has dated outlooks. Review each available segment below.';
+    }
+    final condition = assessment.condition.trim();
+    final weather = [
+      if (condition.isNotEmpty && condition.toLowerCase() != 'unknown')
+        condition,
+      if (assessment.peakPrecipitationChance != null)
+        '${assessment.peakPrecipitationChance}% precipitation chance',
+    ].join(' · ');
+    final scope = assessment.isDaily
+        ? 'Broad day outlook'
+        : assessment.coverage == ForecastCoverage.partial
+            ? 'Partial event forecast'
+            : 'Event forecast';
+    return '$scope: ${weather.isEmpty ? 'weather data available' : weather}. ${PlanCastEventCopy.interval(item)}.';
+  }
+
   Widget _briefingSection(String title, String body) => Padding(
       padding: const EdgeInsets.only(bottom: DMSpacing.md),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -300,35 +365,6 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
         const SizedBox(height: DMSpacing.xs),
         Text(body),
       ]));
-}
-
-String planCastTimestamp(BuildContext context, DateTime time) {
-  final local = time.toLocal();
-  return '${MaterialLocalizations.of(context).formatShortDate(local)} ${TimeOfDay.fromDateTime(local).format(context)}';
-}
-
-String planCastEventTime(BuildContext context, CalendarEvent event) {
-  final l10n = MaterialLocalizations.of(context);
-  if (event.isAllDay) {
-    final first = event.allDayStart!;
-    final last = event.allDayEnd!.subtract(const Duration(days: 1));
-    return 'All day · ${l10n.formatShortDate(first)}${last == first ? '' : ' – ${l10n.formatShortDate(last)}'}';
-  }
-  final zonedStart = roastLocalTime(event.startUtc, event.timeZone, null);
-  final start = zonedStart ?? event.startUtc;
-  final end =
-      roastLocalTime(event.endUtc, event.timeZone, null) ?? event.endUtc;
-  String offset(DateTime time) {
-    final minutes = time.timeZoneOffset.inMinutes;
-    return 'UTC${minutes < 0 ? '−' : '+'}${(minutes.abs() ~/ 60).toString().padLeft(2, '0')}:${(minutes.abs() % 60).toString().padLeft(2, '0')}';
-  }
-
-  final zone =
-      zonedStart == null ? 'UTC (event time zone unavailable)' : event.timeZone;
-  final endDate = start.day == end.day && start.month == end.month
-      ? ''
-      : '${l10n.formatShortDate(end)} ';
-  return '${l10n.formatShortDate(start)} · ${TimeOfDay.fromDateTime(start).format(context)} ${offset(start)}${event.hasDuration ? ' – $endDate${TimeOfDay.fromDateTime(end).format(context)} ${offset(end)}' : ''} · $zone';
 }
 
 class PlanCastEventTile extends StatelessWidget {
@@ -340,79 +376,78 @@ class PlanCastEventTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final event = item.event;
     final assessment = item.assessment;
+    final now = context.watch<PlanCastController?>()?.clock();
+    final segmented = assessment.segments.isNotEmpty;
     return InkWell(
-        onTap: () => openPlanCastEvent(context, item),
-        borderRadius: BorderRadius.circular(DMSpacing.md),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: DMSpacing.sm),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (assessment.usable)
-                Padding(
-                    padding: const EdgeInsets.only(right: DMSpacing.sm),
-                    child: DaymakerWeatherIcon(
-                      key: ValueKey('plancast-icon-${event.id}'),
-                      conditionDescription: assessment.condition,
-                      openWeatherIconCode: assessment.weatherIcon,
-                      forecastTime: event.startUtc,
-                      size: 36,
-                      semanticLabel: assessment.condition,
-                    ))
-              else
-                const Padding(
-                    padding: EdgeInsets.only(right: DMSpacing.sm),
-                    child: Icon(Icons.event_outlined)),
-              Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Text(event.displayTitle,
-                        maxLines: compact ? 2 : null,
-                        overflow: compact ? TextOverflow.ellipsis : null,
-                        style: DMTypography.labelLarge),
-                    Text(planCastEventTime(context, event),
+      onTap: () => openPlanCastEvent(context, item),
+      borderRadius: BorderRadius.circular(DMSpacing.md),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: DMSpacing.sm),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(
+                padding: const EdgeInsets.only(right: DMSpacing.sm),
+                child: _hasCondition(assessment) && !segmented
+                    ? _weatherIcon(item, assessment, event.startUtc, 36)
+                    : Icon(item.isOnline
+                        ? Icons.videocam_outlined
+                        : Icons.event_outlined)),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(event.displayTitle,
+                      maxLines: compact ? 2 : null,
+                      overflow: compact ? TextOverflow.ellipsis : null,
+                      style: DMTypography.labelLarge),
+                  Text(
+                      '${planCastEventTime(context, event, now: now)}${planCastCalendarTimeDiffers(event) ? ' · calendar time' : ''}',
+                      style: DMTypography.bodySmall),
+                  if (event.tentative)
+                    const Text('Tentative invitation',
                         style: DMTypography.bodySmall),
-                    if (event.tentative)
-                      const Text('Tentative invitation',
-                          style: DMTypography.bodySmall),
-                  ])),
-              const Icon(Icons.chevron_right),
-            ]),
-            if (!compact) ...[
-              const SizedBox(height: DMSpacing.sm),
-              Text(
-                  item.environment == EventEnvironment.online
-                      ? 'Online · no travel weather'
-                      : item.venue?.displayName ??
-                          (item.needsLocation
-                              ? 'Location needed — choose a physical venue'
-                              : 'Location unavailable'),
-                  style: DMTypography.bodySmall),
-              const SizedBox(height: DMSpacing.xs),
-              Text(assessment.impact.label, style: DMTypography.label),
-              Text(assessment.explanation),
-              if (assessment.usable)
-                Text(planCastWeatherValues(context, assessment),
-                    style: DMTypography.bodySmall),
-              if (assessment.advice.isNotEmpty) Text(assessment.advice),
-              Text(
-                  assessment.forecastUpdatedAt == null
-                      ? 'No forecast update available'
-                      : 'Last checked ${planCastTimestamp(context, assessment.forecastUpdatedAt!)}',
-                  style: DMTypography.bodySmall),
-            ] else
-              Text(
-                  assessment.usable
-                      ? assessment.advice
-                      : assessment.explanation,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.bodySmall),
+                ])),
+            const Icon(Icons.chevron_right),
           ]),
-        ));
+          PlanCastLocationRow(item: item),
+          if (segmented)
+            Text('${assessment.segments.length} dated outlooks for your stay',
+                style: DMTypography.bodySmall)
+          else if (!item.isOnline) ...[
+            Text(assessment.explanation, style: DMTypography.bodySmall),
+            if (assessment.usable)
+              Text(planCastWeatherValues(context, assessment),
+                  style: DMTypography.bodySmall),
+            if (assessment.usable && assessment.advice.isNotEmpty)
+              Text(assessment.advice, style: DMTypography.bodySmall),
+          ],
+        ]),
+      ),
+    );
   }
 }
+
+bool _hasCondition(EventWeatherAssessment value) =>
+    value.usable &&
+    (value.weatherIcon?.isNotEmpty == true ||
+        !{'', 'unknown', 'unavailable'}
+            .contains(value.condition.trim().toLowerCase()));
+
+Widget _weatherIcon(PlanCastEventWeather item,
+        EventWeatherAssessment assessment, DateTime instant, double size) =>
+    DaymakerWeatherIcon(
+        key: ValueKey(
+            'plancast-icon-${item.event.id}-${instant.millisecondsSinceEpoch}'),
+        conditionDescription: assessment.condition,
+        openWeatherIconCode: assessment.weatherIcon,
+        forecastTime: instant,
+        forecastLocalTime: roastLocalTime(
+            instant, item.venueTimeZone, item.venueTimeZoneOffset,
+            forecast: true),
+        latitude: item.venue?.lat,
+        longitude: item.venue?.lon,
+        size: size,
+        semanticLabel: assessment.condition);
 
 String planCastWeatherValues(
     BuildContext context, EventWeatherAssessment value) {
@@ -432,36 +467,14 @@ Future<void> openPlanCastEvent(
     Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => _EventDetails(initial: item)));
 
-class _EventDetails extends StatefulWidget {
+class _EventDetails extends StatelessWidget {
   const _EventDetails({required this.initial});
   final PlanCastEventWeather initial;
   @override
-  State<_EventDetails> createState() => _EventDetailsState();
-}
-
-class _EventDetailsState extends State<_EventDetails> {
-  final _query = TextEditingController();
-  List<LocationCandidate> _results = [];
-  bool _searching = false;
-  bool _recurring = false;
-  String? _message;
-  @override
-  void initState() {
-    super.initState();
-    _query.text = widget.initial.event.locationText;
-  }
-
-  @override
-  void dispose() {
-    _query.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final controller = context.watch<PlanCastController>();
-    final item = controller.currentEvents
-        .where((e) => e.event.id == widget.initial.event.id)
+    final c = context.watch<PlanCastController>();
+    final item = c.currentEvents
+        .where((e) => e.event.id == initial.event.id)
         .firstOrNull;
     if (item == null) {
       return Scaffold(
@@ -472,6 +485,14 @@ class _EventDetailsState extends State<_EventDetails> {
                   'This event was removed, moved, or its calendar is no longer selected. Return to PlanCast for your latest plans.')));
     }
     final assessment = item.assessment;
+    final location = item.resolvedLocation;
+    final trip = c.tripSuggestion(item);
+    final venueZone = item.venueTimeZone;
+    final venueTime = venueZone == null
+        ? null
+        : planCastEventTime(context, item.event,
+            now: c.clock(), timeZone: venueZone);
+    final calendarTime = planCastEventTime(context, item.event, now: c.clock());
     return Scaffold(
         appBar: AppBar(title: const Text('Your plan')),
         body: Center(
@@ -482,241 +503,210 @@ class _EventDetailsState extends State<_EventDetails> {
                     children: [
                       Text(item.event.displayTitle,
                           style: DMTypography.headingSmall),
-                      Text(planCastEventTime(context, item.event)),
-                      const SizedBox(height: DMSpacing.md),
-                      Text(assessment.impact.label,
-                          style: DMTypography.labelLarge),
-                      Text(assessment.explanation),
-                      if (assessment.usable) ...[
-                        DaymakerWeatherIcon(
-                            conditionDescription: assessment.condition,
-                            openWeatherIconCode: assessment.weatherIcon,
-                            forecastTime: item.event.startUtc,
-                            size: 64,
-                            semanticLabel: assessment.condition),
-                        Text(planCastWeatherValues(context, assessment)),
+                      Text(
+                          '$calendarTime${planCastCalendarTimeDiffers(item.event) ? ' · calendar time' : ''}'),
+                      if (planCastCalendarTimeDiffers(item.event))
+                        Text(
+                            'Your time: ${planCastEventTime(context, item.event, now: c.clock(), deviceTime: true)}',
+                            style: DMTypography.bodySmall),
+                      if (!item.event.isAllDay &&
+                          venueTime != null &&
+                          venueTime != calendarTime)
+                        Text(
+                            '${location?.venueConfirmed == true ? 'Venue time' : 'Area time'}: $venueTime',
+                            style: DMTypography.bodySmall),
+                      PlanCastLocationRow(item: item),
+                      const SizedBox(height: DMSpacing.sm),
+                      if (assessment.segments.isEmpty) ...[
+                        if (_hasCondition(assessment))
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: _weatherIcon(
+                                  item, assessment, item.event.startUtc, 64)),
+                        Text(assessment.explanation),
+                        if (assessment.usable)
+                          Text(planCastWeatherValues(context, assessment)),
+                        if (assessment.advice.isNotEmpty)
+                          Text(assessment.advice),
+                      ] else ...[
+                        const Text('Weather through your stay',
+                            style: DMTypography.headingSmall),
+                        for (final segment in assessment.segments)
+                          Padding(
+                              padding: const EdgeInsets.only(top: DMSpacing.sm),
+                              child: DmGlassCard(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    Text(segment.label,
+                                        style: DMTypography.labelLarge),
+                                    Text(_segmentTime(context, segment, item),
+                                        style: DMTypography.bodySmall),
+                                    if (_hasCondition(segment.assessment))
+                                      _weatherIcon(item, segment.assessment,
+                                          segment.startUtc, 40),
+                                    Text(segment.assessment.explanation),
+                                    if (segment.assessment.usable)
+                                      Text(planCastWeatherValues(
+                                          context, segment.assessment)),
+                                    if (segment.assessment.advice.isNotEmpty)
+                                      Text(segment.assessment.advice),
+                                  ]))),
                       ],
-                      if (assessment.advice.isNotEmpty) Text(assessment.advice),
+                      if (trip != null)
+                        TextButton.icon(
+                            icon: const Icon(Icons.luggage_outlined),
+                            label: const Text(
+                                'Use this trip area for other plans during these dates'),
+                            onPressed: () => reviewPlanCastBatch(
+                                context, c, trip,
+                                start: item.event.startUtc,
+                                end: item.event.endUtc,
+                                calendarIds: {item.event.calendarId})),
                       for (final issue in assessment.uncertainties)
                         Text(issue, style: DMTypography.bodySmall),
                       if (assessment.arrival != null)
                         _window('Arrival buffer', assessment.arrival!),
                       if (assessment.leaving != null)
                         _window('Leaving buffer', assessment.leaving!),
-                      Text(
-                          'Planning buffers: ${controller.preferences.bufferMinutes} minutes before and after. These are not calculated travel times.',
-                          style: DMTypography.bodySmall),
-                      if (assessment.forecastUpdatedAt != null)
+                      if (!item.isOnline)
                         Text(
-                            'Forecast checked ${planCastTimestamp(context, assessment.forecastUpdatedAt!)}',
+                            'Planning buffers: ${c.preferences.bufferMinutes} minutes before and after. These are not calculated travel times.',
                             style: DMTypography.bodySmall),
                       for (final alert in assessment.alerts)
-                        DmGlassCard(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                              Text(alert.event, style: DMTypography.labelLarge),
-                              Text(alert.senderName),
-                              if (alert.start != null)
-                                Text(
-                                    'Issued / valid from ${planCastTimestamp(context, alert.start!)}'),
-                              if (alert.end != null)
-                                Text(
-                                    'Until ${planCastTimestamp(context, alert.end!)}'),
-                              Text(alert.description),
-                            ])),
-                      const SizedBox(height: DMSpacing.lg),
-                      const Text('Where is this happening?',
-                          style: DMTypography.headingSmall),
-                      Text(item.event.locationText.isEmpty
-                          ? 'No physical location on the source event.'
-                          : item.event.locationText),
-                      Text(item.venue == null
-                          ? 'Choose a venue to get location-specific weather.'
-                          : 'Weather for ${item.venue!.displayName}'),
-                      Wrap(spacing: DMSpacing.sm, children: [
-                        for (final value in EventEnvironment.values)
-                          ChoiceChip(
-                              label: Text(_environmentLabel(value)),
-                              selected: item.environment == value,
-                              onSelected: (_) => controller.setEventOverride(
-                                  item.event,
-                                  environment: value)),
-                      ]),
-                      if (item.environment != EventEnvironment.online) ...[
-                        const SizedBox(height: DMSpacing.md),
-                        TextField(
-                            controller: _query,
-                            decoration: const InputDecoration(
-                                labelText: 'Venue city or locality',
-                                helperText:
-                                    'Place search resolves cities, not street-level addresses. Only this text is sent.'),
-                            textInputAction: TextInputAction.search,
-                            onSubmitted: (_) => _search(controller)),
-                        Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                                onPressed: _searching
-                                    ? null
-                                    : () => _search(controller),
-                                icon: const Icon(Icons.search),
-                                label: const Text('Find venue'))),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: () =>
-                                _coordinates(controller, item.event),
-                            icon: const Icon(Icons.pin_drop_outlined),
-                            label: const Text('Set exact venue coordinates'),
-                          ),
-                        ),
-                        if (_searching) const LinearProgressIndicator(),
-                        if (_message != null) Text(_message!),
-                        if (item.event.recurringId != null)
-                          CheckboxListTile(
-                              contentPadding: EdgeInsets.zero,
-                              value: _recurring,
-                              onChanged: (value) =>
-                                  setState(() => _recurring = value ?? false),
-                              title:
-                                  const Text('Reuse for this recurring venue'),
-                              subtitle: const Text(
-                                  'Only when the recurring event keeps the same location.')),
-                        for (final result in _results)
-                          ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(result.displayName),
-                              subtitle: const Text(
-                                  'Confirm this location for event weather'),
-                              trailing: const Icon(Icons.check_circle_outline),
-                              onTap: () async {
-                                await controller.setEventOverride(item.event,
-                                    venue: result, recurringVenue: _recurring);
-                                if (mounted) {
-                                  setState(() {
-                                    _results = [];
-                                    _message =
-                                        'Venue confirmed for PlanCast. The source calendar is unchanged.';
-                                  });
-                                }
-                              }),
-                      ],
+                        Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: DMSpacing.sm),
+                            child: DmGlassCard(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                  Text(alert.event,
+                                      style: DMTypography.labelLarge),
+                                  Text(alert.senderName),
+                                  if (alert.start != null)
+                                    Text(
+                                        'Valid from ${planCastTimestamp(context, alert.start!)}'),
+                                  if (alert.end != null)
+                                    Text(
+                                        'Until ${planCastTimestamp(context, alert.end!)}'),
+                                  Text(alert.description),
+                                ]))),
                       const SizedBox(height: DMSpacing.md),
+                      ExpansionTile(
+                          tilePadding: EdgeInsets.zero,
+                          title: const Text('Why this location?'),
+                          children: [
+                            Align(
+                                alignment: Alignment.centerLeft,
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(item.isOnline
+                                          ? 'You are participating online; no venue weather is needed.'
+                                          : location?.reason ??
+                                              'Weather uses the available calendar location or your confirmed choice.'),
+                                      if (location?.areaAssumed == true)
+                                        const Text(
+                                            'This is an area forecast, not a confirmed venue.'),
+                                      if (location?.reviewSuggested == true)
+                                        const Text(
+                                            'You can optionally refine this location with Change.'),
+                                      if (location?.observedAt != null)
+                                        Text(
+                                            'Area observed ${planCastTimestamp(context, location!.observedAt!)}'),
+                                      if (location != null)
+                                        Text(
+                                            'Location resolved ${planCastTimestamp(context, location.resolvedAt)}'),
+                                      if (assessment.forecastUpdatedAt != null)
+                                        Text(
+                                            'Forecast updated ${planCastTimestamp(context, assessment.forecastUpdatedAt!)}'),
+                                      if (location != null)
+                                        Text(
+                                            'Location source: ${location.provider}',
+                                            style: DMTypography.bodySmall),
+                                      if (!item.event.isAllDay)
+                                        const Text(
+                                            'Calendar times are preserved. Changing a weather area never changes the appointment time.',
+                                            style: DMTypography.bodySmall),
+                                    ])),
+                          ]),
+                      const SizedBox(height: DMSpacing.sm),
+                      if (!item.isOnline)
+                        Wrap(spacing: DMSpacing.sm, children: [
+                          for (final environment in [
+                            EventEnvironment.unknown,
+                            EventEnvironment.indoor,
+                            EventEnvironment.outdoor
+                          ])
+                            ChoiceChip(
+                                label: Text(switch (environment) {
+                                  EventEnvironment.indoor => 'Indoor',
+                                  EventEnvironment.outdoor => 'Outdoor',
+                                  _ => 'Not specified'
+                                }),
+                                selected: item.environment == environment,
+                                onSelected: (_) => c.setEventOverride(
+                                    item.event,
+                                    environment: environment)),
+                        ]),
                       SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           title: const Text('Event heads-ups'),
                           subtitle: const Text(
                               'Requires PlanCast notification permission and respects your quiet hours.'),
                           value: item.remindersEnabled,
-                          onChanged: (value) => controller.setEventOverride(
-                              item.event,
+                          onChanged: (value) => c.setEventOverride(item.event,
                               remindersEnabled: value)),
                       const Text(
                           'All corrections and reminder choices belong to PlanCast. Your source calendar event is never edited.',
                           style: DMTypography.bodySmall),
+                      if (c.canUndoLocationChange)
+                        TextButton.icon(
+                            onPressed: c.undoLocationChange,
+                            icon: const Icon(Icons.undo),
+                            label: const Text('Undo location change')),
                     ]))));
   }
 
-  Widget _window(String label, EventWeatherAssessment value) => Padding(
+  Widget _window(String title, EventWeatherAssessment value) => Padding(
       padding: const EdgeInsets.only(top: DMSpacing.sm),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: DMTypography.labelLarge),
+        Text(title, style: DMTypography.labelLarge),
         Text(value.explanation),
-        if (value.advice.isNotEmpty) Text(value.advice)
       ]));
-  Future<void> _search(PlanCastController controller) async {
-    setState(() {
-      _searching = true;
-      _message = null;
-    });
-    try {
-      final results = await controller.searchVenues(_query.text);
-      if (mounted) {
-        setState(() {
-          _results = results;
-          _message = results.isEmpty
-              ? 'No reliable location found. Try the venue’s city or locality. Meeting links and room numbers are not locations.'
-              : 'Choose the correct venue; PlanCast never assumes the nearest match.';
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _message =
-            'Location lookup is unavailable. Try again when connected.');
-      }
-    } finally {
-      if (mounted) setState(() => _searching = false);
+  String _segmentTime(BuildContext context, EventWeatherSegment segment,
+      PlanCastEventWeather item) {
+    final start = item.event.isAllDay
+        ? segment.startUtc
+        : roastLocalTime(segment.startUtc, item.venueTimeZone, null) ??
+            segment.startUtc.toLocal();
+    final end = item.event.isAllDay
+        ? segment.endUtc
+        : roastLocalTime(segment.endUtc, item.venueTimeZone, null) ??
+            segment.endUtc.toLocal();
+    final localizations = MaterialLocalizations.of(context);
+    final date = localizations.formatMediumDate(start);
+    if (segment.assessment.isDaily) return '$date · Day outlook';
+    bool isMidnight(DateTime time) =>
+        time.hour == 0 &&
+        time.minute == 0 &&
+        time.second == 0 &&
+        time.millisecond == 0 &&
+        time.microsecond == 0;
+    final startDate = DateTime.utc(start.year, start.month, start.day);
+    final endDate = DateTime.utc(end.year, end.month, end.day);
+    final endsNextDay =
+        endDate == DateTime.utc(start.year, start.month, start.day + 1);
+    if (isMidnight(start) && isMidnight(end) && endsNextDay) {
+      return '$date · Full day';
     }
+    final endLabel = isMidnight(end) && endsNextDay
+        ? 'midnight'
+        : '${endDate != startDate ? '${localizations.formatMediumDate(end)} · ' : ''}${TimeOfDay.fromDateTime(end).format(context)}';
+    return '$date · ${TimeOfDay.fromDateTime(start).format(context)}–$endLabel';
   }
-
-  Future<void> _coordinates(
-      PlanCastController controller, CalendarEvent event) async {
-    final latitude = TextEditingController();
-    final longitude = TextEditingController();
-    String? message;
-    final venue = await showDialog<LocationCandidate>(
-        context: context,
-        builder: (dialogContext) => StatefulBuilder(
-            builder: (context, update) => AlertDialog(
-                  title: const Text('Exact venue coordinates'),
-                  content: SingleChildScrollView(
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Text(
-                        'Use known coordinates for the physical venue. These are sent only to the weather service; your source event is unchanged.'),
-                    TextField(
-                        controller: latitude,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true, signed: true),
-                        decoration: const InputDecoration(
-                            labelText: 'Latitude (−90 to 90)')),
-                    TextField(
-                        controller: longitude,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true, signed: true),
-                        decoration: const InputDecoration(
-                            labelText: 'Longitude (−180 to 180)')),
-                    if (message != null) Text(message!),
-                  ])),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(dialogContext),
-                        child: const Text('Cancel')),
-                    FilledButton(
-                        onPressed: () {
-                          final lat = double.tryParse(latitude.text.trim());
-                          final lon = double.tryParse(longitude.text.trim());
-                          if (lat == null ||
-                              lon == null ||
-                              !LocationCandidate.hasValidCoordinatePair(
-                                  lat, lon)) {
-                            update(() => message =
-                                'Enter valid latitude and longitude values.');
-                            return;
-                          }
-                          Navigator.pop(
-                              dialogContext,
-                              LocationCandidate(
-                                  name: 'Confirmed venue',
-                                  country: '',
-                                  lat: lat,
-                                  lon: lon,
-                                  source: 'user-confirmed-coordinates'));
-                        },
-                        child: const Text('Use these coordinates')),
-                  ],
-                )));
-    latitude.dispose();
-    longitude.dispose();
-    if (venue != null) {
-      await controller.setEventOverride(event,
-          venue: venue, recurringVenue: _recurring);
-    }
-  }
-
-  String _environmentLabel(EventEnvironment value) => switch (value) {
-        EventEnvironment.indoor => 'Indoor',
-        EventEnvironment.outdoor => 'Outdoor',
-        EventEnvironment.online => 'Online',
-        EventEnvironment.unknown => 'Unknown'
-      };
 }

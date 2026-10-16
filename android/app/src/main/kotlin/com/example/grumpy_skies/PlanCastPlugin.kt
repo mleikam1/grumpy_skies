@@ -175,11 +175,15 @@ internal object PlanCastNative {
         }.generateKey()
     }
     fun write(context: Context, name: String, value: String) {
+        // Runs on the native serial executor. Recheck around persistence so a
+        // revoked grant cannot recreate preferences or a pending notice queue.
+        checkPermission(context)
         require(value.length <= 1048576)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply { init(Cipher.ENCRYPT_MODE, key()) }
         val bytes = cipher.iv + cipher.doFinal(value.toByteArray(Charsets.UTF_8))
         val atomic = AtomicFile(File(context.noBackupFilesDir, "plancast_$name")); val stream = atomic.startWrite()
         try { stream.write(bytes); atomic.finishWrite(stream) } catch (e: Exception) { atomic.failWrite(stream); throw e }
+        checkPermission(context)
     }
     fun read(context: Context, name: String): String? {
         val file = AtomicFile(File(context.noBackupFilesDir, "plancast_$name"))
@@ -194,13 +198,13 @@ internal object PlanCastNative {
         }
         return rows
     }
-    private fun checkPermission(context: Context) { if (!calendarAllowed(context)) throw SecurityException() }
+    private fun checkPermission(context: Context) { if (!calendarAllowed(context)) { purge(context); throw SecurityException() } }
     fun events(context: Context, ids: List<String>, start: Long, end: Long): List<Map<String, Any?>> {
         checkPermission(context); require(end > start && end - start <= 16 * DAY && ids.size <= 200)
         if (ids.isEmpty()) return emptyList()
         val selected = ids.mapNotNull { it.toLongOrNull() }; if (selected.isEmpty()) return emptyList()
         val builder = CalendarContract.Instances.CONTENT_URI.buildUpon(); ContentUris.appendId(builder, start); ContentUris.appendId(builder, end)
-        val columns = arrayOf("event_id", "calendar_id", "title", "begin", "end", "allDay", "eventTimezone", "eventLocation", "eventStatus", "selfAttendeeStatus", "original_id", "originalInstanceTime")
+        val columns = arrayOf("event_id", "calendar_id", "title", "begin", "end", "allDay", "eventTimezone", "eventLocation", "eventStatus", "selfAttendeeStatus", "original_id", "originalInstanceTime", "rrule", "rdate")
         val selection = "calendar_id IN (${selected.joinToString(",") { "?" }}) AND (eventStatus IS NULL OR eventStatus != ?) AND (selfAttendeeStatus IS NULL OR selfAttendeeStatus != ?) AND deleted = 0"
         val args = selected.map { it.toString() } + CalendarContract.Events.STATUS_CANCELED.toString() + CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED.toString()
         val result = mutableListOf<Map<String, Any?>>()
@@ -209,17 +213,33 @@ internal object PlanCastNative {
                 val begin = cursor.getLong(3); val finish = cursor.getLong(4)
                 if (finish <= start || begin >= end) continue
                 val allDay = cursor.getInt(5) != 0
-                val series = if (cursor.isNull(10)) cursor.getLong(0).toString() else cursor.getLong(10).toString()
+                val detached = !cursor.isNull(10)
+                val recurring = detached || !cursor.getString(12).isNullOrBlank() || !cursor.getString(13).isNullOrBlank()
+                val series = if (detached) cursor.getLong(10).toString() else cursor.getLong(0).toString()
                 val original = if (cursor.isNull(11)) begin else cursor.getLong(11)
-                val row = mutableMapOf<String, Any?>("id" to "${series}_$original", "nativeEventId" to cursor.getLong(0).toString(), "calendarId" to cursor.getLong(1).toString(), "title" to (cursor.getString(2) ?: "Calendar event"), "startMs" to begin, "endMs" to finish, "isAllDay" to allDay, "timeZone" to (cursor.getString(6) ?: TimeZone.getDefault().id), "location" to (cursor.getString(7) ?: ""), "status" to if (cursor.getInt(8) == CalendarContract.Events.STATUS_TENTATIVE || cursor.getInt(9) == CalendarContract.Attendees.ATTENDEE_STATUS_TENTATIVE) "tentative" else "confirmed", "recurringId" to series)
+                val row = mutableMapOf<String, Any?>("id" to "${series}_$original", "nativeEventId" to cursor.getLong(0).toString(), "calendarId" to cursor.getLong(1).toString(), "title" to (cursor.getString(2) ?: "Calendar event"), "startMs" to begin, "endMs" to finish, "isAllDay" to allDay, "timeZone" to (cursor.getString(6) ?: TimeZone.getDefault().id), "location" to (cursor.getString(7) ?: ""), "status" to if (cursor.getInt(8) == CalendarContract.Events.STATUS_TENTATIVE || cursor.getInt(9) == CalendarContract.Attendees.ATTENDEE_STATUS_TENTATIVE) "tentative" else "confirmed", "isRecurring" to recurring, "isDetached" to detached, "originalStartMs" to original)
+                if (recurring) row["recurringId"] = series
+                supportedMapUrl(cursor.getString(7))?.let { row["mapUrl"] = it }
                 // Android all-day DTSTART/DTEND are UTC dates with an exclusive end.
                 if (allDay) { val format = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }; row["allDayStart"] = format.format(Date(begin)); row["allDayEnd"] = format.format(Date(finish)) }
-                val signature = listOf(row["title"], row["location"], begin, finish, allDay, row["timeZone"], row["status"]).joinToString("\u001f")
+                val signature = listOf(row["title"], row["location"], row["mapUrl"], begin, finish, original, allDay, row["timeZone"], row["status"], row["recurringId"], recurring, detached).joinToString("\u001f")
                 row["nativeFingerprint"] = MessageDigest.getInstance("SHA-256").digest(signature.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
                 result.add(row)
             }
         }
         return result.distinctBy { "${it["calendarId"]}/${it["id"]}" }
+    }
+    private fun supportedMapUrl(value: String?): String? {
+        val raw = value?.trim() ?: return null
+        if (raw.length > 2048) return null
+        val uri = Uri.parse(raw)
+        if (uri.userInfo != null) return null
+        if (uri.scheme?.lowercase(Locale.ROOT) == "geo") return raw
+        if (uri.scheme?.lowercase(Locale.ROOT) !in setOf("https", "http")) return null
+        val host = uri.host?.lowercase(Locale.ROOT) ?: return null
+        val supported = host in setOf("maps.apple.com", "maps.google.com", "openstreetmap.org", "www.openstreetmap.org") ||
+            (host in setOf("google.com", "www.google.com") && (uri.path == "/maps" || uri.path?.startsWith("/maps/") == true))
+        return if (supported) raw else null
     }
     private fun queue(context: Context): JSONArray = read(context, "queue")?.let { JSONArray(it) } ?: JSONArray()
     private fun pending(context: Context, id: String): PendingIntent = PendingIntent.getBroadcast(context, 0, Intent(context, PlanCastReceiver::class.java).setAction("plancast.deliver").setData(Uri.parse("plancast://notice/$id")), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -260,7 +280,8 @@ internal object PlanCastNative {
     private fun generic(n: JSONObject) { n.put("title", "PlanCast"); n.put("body", "Open PlanCast for your plans and the latest available weather."); n.put("detailed", false) }
     private fun schedule(context: Context, notices: JSONArray) {
         val alarms = context.getSystemService(AlarmManager::class.java)
-        for (i in 0 until notices.length()) { val n = notices.getJSONObject(i); alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, maxOf(n.getLong("fireAtMs"), System.currentTimeMillis() + 1000), pending(context, n.getString("id"))) }
+        for (i in 0 until notices.length()) { checkPermission(context); val n = notices.getJSONObject(i); alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, maxOf(n.getLong("fireAtMs"), System.currentTimeMillis() + 1000), pending(context, n.getString("id"))) }
+        checkPermission(context)
     }
     private fun eventValid(context: Context, notice: JSONObject): Boolean {
         if (!notice.has("nativeEventId") || !notice.has("nativeCalendarId") || !notice.has("nativeStartMs")) return true

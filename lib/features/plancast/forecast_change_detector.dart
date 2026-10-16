@@ -1,6 +1,6 @@
 import 'plancast_models.dart';
 
-/// Only two comparable, fresh venue forecasts can establish a change.
+/// Only two comparable, fresh event forecasts can establish a change.
 class ForecastChangeDetector {
   const ForecastChangeDetector();
   bool materiallyChanged(
@@ -9,12 +9,17 @@ class ForecastChangeDetector {
         prior.event.id != current.event.id ||
         prior.event.startUtc != current.event.startUtc ||
         prior.event.endUtc != current.event.endUtc ||
-        prior.venue?.lat != current.venue?.lat ||
-        prior.venue?.lon != current.venue?.lon ||
-        current.venue == null ||
+        prior.event.timeZone != current.event.timeZone ||
+        prior.event.isAllDay != current.event.isAllDay ||
+        prior.event.allDayStart != current.event.allDayStart ||
+        prior.event.allDayEnd != current.event.allDayEnd ||
+        prior.venueTimeZone != current.venueTimeZone ||
+        prior.venueTimeZoneOffset != current.venueTimeZoneOffset ||
+        prior.participation != current.participation ||
+        !_sameLocationEvidence(prior, current) ||
         prior.environment != current.environment ||
         !current.remindersEnabled ||
-        current.environment == EventEnvironment.online ||
+        current.isOnline ||
         !current.event.startUtc.isAfter(now) ||
         !current.assessment.materiallyAffected) {
       return false;
@@ -47,5 +52,33 @@ class ForecastChangeDetector {
         nextWind != null &&
         nextWind >= 30 &&
         nextWind - priorWind >= 20;
+  }
+
+  bool _sameLocationEvidence(
+      PlanCastEventWeather prior, PlanCastEventWeather current) {
+    final before = prior.resolvedLocation;
+    final after = current.resolvedLocation;
+    final oldVenue = before?.candidate ?? prior.venue;
+    final newVenue = after?.candidate ?? current.venue;
+    if (newVenue == null ||
+        oldVenue == null ||
+        oldVenue.lat != newVenue.lat ||
+        oldVenue.lon != newVenue.lon) {
+      return false;
+    }
+    if (before == null || after == null) return before == null && after == null;
+    // The full resolution signature includes observation freshness. A new
+    // timestamp alone must not hide a genuine change in comparable weather.
+    final observedArea = before.source == LocationSource.currentArea ||
+        before.source == LocationSource.lastKnownArea;
+    return before.hasWeatherBasis &&
+        after.hasWeatherBasis &&
+        before.source == after.source &&
+        before.precision == after.precision &&
+        before.evidenceQuality == after.evidenceQuality &&
+        before.provider == after.provider &&
+        before.provisional == after.provisional &&
+        before.validFrom == after.validFrom &&
+        (observedArea || before.validUntil == after.validUntil);
   }
 }

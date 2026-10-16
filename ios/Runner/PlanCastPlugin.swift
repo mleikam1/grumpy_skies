@@ -154,16 +154,41 @@ private enum PlanCastNative {
       let id = "\(event.calendarItemIdentifier)_\(Int64(occurrence.timeIntervalSince1970 * 1000))"
       guard seen.insert("\(event.calendar.calendarIdentifier)/\(id)").inserted else { return nil }
       let zone = event.timeZone ?? TimeZone.current
-      var row: [String: Any] = ["id": id, "nativeEventId": event.eventIdentifier ?? id, "calendarId": event.calendar.calendarIdentifier, "title": event.title ?? "Calendar event", "startMs": Int64(event.startDate.timeIntervalSince1970 * 1000), "endMs": Int64(event.endDate.timeIntervalSince1970 * 1000), "isAllDay": event.isAllDay, "timeZone": zone.identifier, "location": event.location ?? "", "status": event.status == .tentative || ownStatus == .tentative ? "tentative" : "confirmed", "recurringId": event.calendarItemIdentifier]
+      let recurring = event.hasRecurrenceRules || event.isDetached || event.occurrenceDate != nil
+      let location = (event.location?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? event.location : event.structuredLocation?.title) ?? ""
+      var row: [String: Any] = ["id": id, "nativeEventId": event.eventIdentifier ?? id, "calendarId": event.calendar.calendarIdentifier, "title": event.title ?? "Calendar event", "startMs": Int64(event.startDate.timeIntervalSince1970 * 1000), "endMs": Int64(event.endDate.timeIntervalSince1970 * 1000), "isAllDay": event.isAllDay, "timeZone": zone.identifier, "location": location, "status": event.status == .tentative || ownStatus == .tentative ? "tentative" : "confirmed", "isRecurring": recurring, "isDetached": event.isDetached, "originalStartMs": Int64(occurrence.timeIntervalSince1970 * 1000)]
+      // Migration only: old saved venue choices used this ID and raw location.
+      // Keep them separate from the corrected cross-occurrence series identity.
+      row["legacyRecurringId"] = event.calendarItemIdentifier
+      row["legacyLocation"] = event.location ?? ""
+      if recurring {
+        // Apple's external ID is shared by recurring occurrences and detached
+        // exceptions. Scope it to the calendar and keep the server ID opaque.
+        let externalSeries: String? = event.calendarItemExternalIdentifier
+        let series = externalSeries.flatMap { $0.isEmpty ? nil : $0 } ?? event.calendarItemIdentifier
+        row["recurringId"] = SHA256.hash(data: Data("\(event.calendar.calendarIdentifier)|\(series)".utf8)).map { String(format: "%02x", $0) }.joined()
+      }
+      // Only supported map metadata crosses the bridge. Never fetch event URLs
+      // or expose arbitrary meeting URLs, descriptions or guest information.
+      if let mapURL = supportedMapURL(event.url?.absoluteString) ?? supportedMapURL(location) { row["mapUrl"] = mapURL }
       if let coordinate = event.structuredLocation?.geoLocation?.coordinate { row["latitude"] = coordinate.latitude; row["longitude"] = coordinate.longitude }
       if event.isAllDay {
         let formatter = DateFormatter(); formatter.calendar = Calendar(identifier: .gregorian); formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.timeZone = zone; formatter.dateFormat = "yyyy-MM-dd"
         row["allDayStart"] = formatter.string(from: event.startDate); row["allDayEnd"] = formatter.string(from: event.endDate)
       }
-      let signature = ["title", "location", "startMs", "endMs", "isAllDay", "timeZone", "status", "latitude", "longitude"].map { String(describing: row[$0] ?? "") }.joined(separator: "\u{001f}")
+      let signature = ["title", "location", "mapUrl", "startMs", "endMs", "originalStartMs", "isAllDay", "timeZone", "status", "latitude", "longitude", "recurringId", "isRecurring", "isDetached", "legacyRecurringId", "legacyLocation"].map { String(describing: row[$0] ?? "") }.joined(separator: "\u{001f}")
       row["nativeFingerprint"] = SHA256.hash(data: Data(signature.utf8)).map { String(format: "%02x", $0) }.joined()
       return row
     }
+  }
+  static func supportedMapURL(_ value: String?) -> String? {
+    guard let raw = value?.trimmingCharacters(in: .whitespacesAndNewlines), raw.count <= 2048,
+          let url = URLComponents(string: raw), url.user == nil, url.password == nil else { return nil }
+    if url.scheme?.lowercased() == "geo" { return raw }
+    guard ["https", "http"].contains(url.scheme?.lowercased() ?? ""), let host = url.host?.lowercased() else { return nil }
+    let supported = ["maps.apple.com", "maps.google.com", "openstreetmap.org", "www.openstreetmap.org"].contains(host) ||
+      (["google.com", "www.google.com"].contains(host) && (url.path == "/maps" || url.path.hasPrefix("/maps/")))
+    return supported ? raw : nil
   }
   static func directory() throws -> URL {
     var directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("PlanCast", isDirectory: true)
@@ -172,9 +197,13 @@ private enum PlanCastNative {
     return directory
   }
   static func write(_ name: String, _ value: String) throws {
+    // Recheck on the native serial queue, not only before Dart enqueues work.
+    // A revoked grant must not recreate preferences or a pending notice queue.
+    try requireAccess()
     guard let data = value.data(using: .utf8), data.count <= 1048576 else { throw NSError(domain: "PlanCastStorage", code: 1) }
     let file = try directory().appendingPathComponent(name)
     try data.write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+    try requireAccess()
   }
   static func read(_ name: String) throws -> String? {
     let file = try directory().appendingPathComponent(name)
@@ -243,6 +272,7 @@ private enum PlanCastNative {
   }
   static func schedule(_ rows: [[String: Any]]) throws {
     for n in rows {
+      try requireAccess()
       guard let id = n["id"] as? String, let route = n["route"] as? String else { continue }
       let content = UNMutableNotificationContent(); content.title = n["title"] as? String ?? "PlanCast"; content.body = n["body"] as? String ?? "Open PlanCast for the latest available weather."; content.sound = .default
       content.userInfo = ["route": route]; content.threadIdentifier = "plancast"; content.categoryIdentifier = "plancast"
@@ -255,6 +285,7 @@ private enum PlanCastNative {
       if semaphore.wait(timeout: .now() + 5) == .timedOut { throw NSError(domain: "PlanCastNotification", code: 1) }
       if let schedulingError { throw schedulingError }
     }
+    try requireAccess()
   }
   static func eventValid(_ n: [String: Any]) throws -> Bool {
     guard let id = n["nativeEventId"] as? String, let calendar = n["nativeCalendarId"] as? String, let start = n["nativeStartMs"] as? NSNumber else { return true }

@@ -5,6 +5,7 @@ import '../../../design/dm_spacing.dart';
 import '../../../design/dm_typography.dart';
 import '../plancast_controller.dart';
 import 'plancast_screen.dart';
+import '../widgets/plancast_location_controls.dart';
 
 Future<void> selectPlanCastCalendars(
     BuildContext context, PlanCastController controller) async {
@@ -105,6 +106,8 @@ class PlanCastSettingsScreen extends StatelessWidget {
                               icon: const Icon(Icons.refresh),
                               label: const Text(
                                   'Refresh / find missing calendars')),
+                          const Divider(),
+                          const PlanCastSmartLocationSettings(),
                           const Divider(),
                           const Text('Briefing and event heads-ups',
                               style: DMTypography.headingSmall),
@@ -233,7 +236,7 @@ class PlanCastSettingsScreen extends StatelessWidget {
                           const Text(planCastPrivacyExplanation),
                           const SizedBox(height: DMSpacing.md),
                           const Text(
-                              'Snapshots stay in memory. Necessary choices and venue overrides use protected app-local storage with bounded retention. Disconnect removes PlanCast data and cancels only its notices. Permission revocation is checked when the app or background maintenance can run; cleanup cannot execute while the OS has suspended the app.',
+                              'Snapshots stay in memory. Intentional location choices use protected app-local storage. Temporary provider responses and trip contexts expire separately. Disconnect removes PlanCast data and cancels only its notices. Permission revocation is checked when the app or background maintenance can run; cleanup cannot execute while the OS has suspended the app.',
                               style: DMTypography.bodySmall),
                           TextButton.icon(
                               icon: const Icon(Icons.link_off),
