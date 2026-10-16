@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:timezone/data/latest.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../config/weather_api_config.dart';
 import '../models/weather_models.dart';
@@ -239,10 +241,9 @@ class OpenWeatherBackendClient {
         'units': units,
       },
     );
-    return ((json['points'] as List?) ?? const [])
-        .map((item) => TimelineWeatherPoint.fromJson(
-              (item as Map).cast<String, dynamic>(),
-            ))
+    return _recordsFromList(json['points'])
+        .where((item) => _forecastTimestamp(item['time'] ?? item['dt']) != null)
+        .map(TimelineWeatherPoint.fromJson)
         .toList();
   }
 
@@ -259,10 +260,9 @@ class OpenWeatherBackendClient {
         'units': units,
       },
     );
-    return ((json['points'] as List?) ?? const [])
-        .map((item) => TimelineWeatherPoint.fromJson(
-              (item as Map).cast<String, dynamic>(),
-            ))
+    return _recordsFromList(json['points'])
+        .where((item) => _forecastTimestamp(item['time'] ?? item['dt']) != null)
+        .map(TimelineWeatherPoint.fromJson)
         .toList();
   }
 
@@ -566,8 +566,25 @@ class OpenWeatherBackendClient {
     required String units,
   }) {
     final dtoUnits = (json['units'] as String?) ?? units;
+    final currentJson =
+        ((json['current'] as Map?) ?? json).cast<String, dynamic>();
+    final hourlyMetadata = json['hourlyTimeline'] is Map
+        ? json['hourlyTimeline'] as Map
+        : const {};
+    final dailyMetadata =
+        json['dailyTimeline'] is Map ? json['dailyTimeline'] as Map : const {};
     final current = _currentFromBackend(
-      ((json['current'] as Map?) ?? json).cast<String, dynamic>(),
+      {
+        ...currentJson,
+        'timezone': currentJson['timezone'] ??
+            json['timezone'] ??
+            hourlyMetadata['timezone'] ??
+            dailyMetadata['timezone'],
+        'timezoneOffset': currentJson['timezoneOffset'] ??
+            json['timezoneOffset'] ??
+            hourlyMetadata['timezoneOffset'] ??
+            dailyMetadata['timezoneOffset'],
+      },
       locationName: locationName,
       units: dtoUnits,
     );
@@ -576,16 +593,22 @@ class OpenWeatherBackendClient {
     final hourlyRecords = _forecastRecords(
       json['hourly'],
       json['hourlyTimeline'],
-    );
+    )
+        .where((item) => _forecastTimestamp(item['time'] ?? item['dt']) != null)
+        .toList(growable: false);
     final dailyRecords = _forecastRecords(
       json['daily'],
       json['dailyTimeline'],
-    );
+    )
+        .where((item) =>
+            _forecastDate(
+                item['date'], item['dt'], timezoneOffset, current.timezone) !=
+            null)
+        .toList(growable: false);
     final hourly = hourlyRecords
         .map(
           (item) => _hourlyForecastFromBackend(
             item,
-            current: current,
             units: dtoUnits,
           ),
         )
@@ -676,24 +699,23 @@ class OpenWeatherBackendClient {
 
   static HourlyForecast _hourlyForecastFromBackend(
     Map<String, dynamic> json, {
-    required CurrentWeather current,
     required String units,
   }) {
     final weather = _primaryWeatherCondition(json['weather']);
     final rawTemp = json['temp'] ?? json['temperature'] ?? json['temperatureF'];
-    final rawTime = _dateFromJson(json['time'] ?? json['dt']);
+    final rawTime = _forecastTimestamp(json['time'] ?? json['dt']);
     return HourlyForecast(
-      time: rawTime ?? current.lastUpdated,
-      temperatureKnown: rawTemp is num,
-      temperatureC: rawTemp == null
-          ? current.temperatureC
-          : _temperatureToC((rawTemp as num).toDouble(), units),
+      time: rawTime!,
+      temperatureKnown: rawTemp is num && rawTemp.isFinite,
+      temperatureC: rawTemp is num && rawTemp.isFinite
+          ? _temperatureToC(rawTemp.toDouble(), units)
+          : 0,
       condition: _titleCase(
         (json['condition'] ??
                 json['weatherDescription'] ??
                 weather?['description'] ??
                 weather?['main'] ??
-                current.condition)
+                'Unknown')
             .toString(),
       ),
       precipitationChanceKnown: (json['precipitationProbability'] ??
@@ -703,7 +725,6 @@ class OpenWeatherBackendClient {
         json['precipitationProbability'] ??
             json['pop'] ??
             json['precipitationChance'],
-        fallback: current.precipitationChance,
       ),
       weatherIcon:
           (json['weatherIcon'] ?? json['icon'] ?? weather?['icon']) as String?,
@@ -727,21 +748,22 @@ class OpenWeatherBackendClient {
         json['date'],
         json['dt'],
         timezoneOffset,
-        current.lastUpdated,
-      ),
-      temperatureKnown: rawMin is num && rawMax is num,
-      minTempC: rawMin == null
-          ? current.temperatureC
-          : _temperatureToC((rawMin as num).toDouble(), units),
-      maxTempC: rawMax == null
-          ? current.temperatureC
-          : _temperatureToC((rawMax as num).toDouble(), units),
+        current.timezone,
+      )!,
+      temperatureKnown:
+          rawMin is num && rawMin.isFinite && rawMax is num && rawMax.isFinite,
+      minTempC: rawMin is num && rawMin.isFinite
+          ? _temperatureToC(rawMin.toDouble(), units)
+          : 0,
+      maxTempC: rawMax is num && rawMax.isFinite
+          ? _temperatureToC(rawMax.toDouble(), units)
+          : 0,
       condition: _titleCase(
         (json['condition'] ??
                 json['weatherDescription'] ??
                 weather?['description'] ??
                 weather?['main'] ??
-                current.condition)
+                'Unknown')
             .toString(),
       ),
       precipitationChanceKnown: (json['precipitationProbability'] ??
@@ -751,7 +773,6 @@ class OpenWeatherBackendClient {
         json['precipitationProbability'] ??
             json['pop'] ??
             json['precipitationChance'],
-        fallback: current.precipitationChance,
       ),
       weatherIcon:
           (json['weatherIcon'] ?? json['icon'] ?? weather?['icon']) as String?,
@@ -766,28 +787,57 @@ class OpenWeatherBackendClient {
     return probability <= 1 ? (probability * 100).round() : probability.round();
   }
 
-  static DateTime _forecastDate(
+  static bool _forecastTimeZonesLoaded = false;
+
+  static DateTime? _forecastDate(
     Object? date,
     Object? dt,
     int? timezoneOffset,
-    DateTime fallback,
+    String? timezone,
   ) {
     if (date is String) {
-      final parsed = DateTime.tryParse(date);
-      if (parsed != null) {
-        return DateTime(parsed.year, parsed.month, parsed.day);
+      final civil = _validCivilPrefix(date);
+      if (civil != null && DateTime.tryParse(date) != null) return civil;
+    }
+    final instant = _forecastTimestamp(dt);
+    if (instant == null) return null;
+    if (timezone != null && timezone.isNotEmpty) {
+      if (!_forecastTimeZonesLoaded) {
+        tzdata.initializeTimeZones();
+        _forecastTimeZonesLoaded = true;
+      }
+      try {
+        final local = tz.TZDateTime.from(instant, tz.getLocation(timezone));
+        return DateTime(local.year, local.month, local.day);
+      } on tz.LocationNotFoundException {
+        // A provider offset is the honest fallback for an unknown zone name.
       }
     }
+    final local = instant.toUtc().add(Duration(seconds: timezoneOffset ?? 0));
+    return DateTime(local.year, local.month, local.day);
+  }
 
-    if (dt is num) {
-      final local = DateTime.fromMillisecondsSinceEpoch(
-        (dt * 1000).round() + (timezoneOffset ?? 0) * 1000,
-        isUtc: true,
-      );
-      return DateTime(local.year, local.month, local.day);
+  static DateTime? _validCivilPrefix(String value) {
+    final match =
+        RegExp(r'^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)').firstMatch(value);
+    if (match == null) return null;
+    final year = int.parse(match[1]!);
+    final month = int.parse(match[2]!);
+    final day = int.parse(match[3]!);
+    final civil = DateTime(year, month, day);
+    return civil.year == year && civil.month == month && civil.day == day
+        ? civil
+        : null;
+  }
+
+  static DateTime? _forecastTimestamp(Object? value) {
+    if (value is String && _validCivilPrefix(value) == null) return null;
+    if (value is num && !value.isFinite) return null;
+    try {
+      return _dateFromJson(value);
+    } on ArgumentError {
+      return null;
     }
-
-    return DateTime(fallback.year, fallback.month, fallback.day);
   }
 
   static DateTime? _dateFromJson(Object? value) {

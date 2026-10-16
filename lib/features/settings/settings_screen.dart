@@ -282,6 +282,20 @@ class _PreferencesColumn extends StatelessWidget {
             },
           ),
         ),
+        SizedBox(height: gap),
+        _SettingsSection(
+          title: 'PlanCast',
+          child: DmSettingsRow(
+            icon: Icons.event_note_outlined,
+            accentColor: context.dmColors.insightIcon,
+            title: 'Your plans. The sky’s opinion.',
+            subtitle:
+                'Optional device calendars, briefings, and event weather.',
+            trailing: const _Chevron(),
+            onTap: () => context.push(AppRoutes.planCast),
+            semanticLabel: 'Open PlanCast calendar weather and preferences',
+          ),
+        ),
       ],
     );
   }

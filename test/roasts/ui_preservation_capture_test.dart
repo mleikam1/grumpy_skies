@@ -7,8 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/models/app_appearance.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_list.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_roast_card.dart';
 import 'package:grumpy_skies/features/roasts/widgets/featured_roast_card.dart';
 import 'support/ui_preservation_session.dart';
@@ -86,8 +86,8 @@ void main() {
         await settle(tester);
         await save(tester, key, '${prefix}_today_roast');
         for (final section in [
-          ('hourly', find.byType(ForecastHourlyStrip)),
-          ('daily', find.byType(ForecastDailyGrid))
+          ('hourly', find.byType(ForecastHourlyList)),
+          ('daily', find.byType(ForecastDailyStrip))
         ]) {
           await tester.ensureVisible(section.$2);
           await settle(tester);

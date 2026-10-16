@@ -7,8 +7,8 @@ import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/data/daymaker_sample_data.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_current_weather_card.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_list.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
@@ -76,6 +76,10 @@ void main() {
     expect(find.text('Moderate'), findsWidgets);
     expect(find.text('74°'), findsWidgets);
     expect(find.text('7-day forecast'), findsOneWidget);
+    expect(find.byType(ForecastDailyStrip), findsOneWidget);
+    expect(find.byType(ForecastHourlyList), findsOneWidget);
+    expect(tester.getTopLeft(find.byType(ForecastDailyStrip)).dy,
+        lessThan(tester.getTopLeft(find.byType(ForecastHourlyList)).dy));
     await tester.ensureVisible(find.text('Weather data © OpenWeather'));
     expect(find.text('Weather data © OpenWeather'), findsOneWidget);
     expect(find.bySemanticsLabel('Another'), findsOneWidget);
@@ -100,7 +104,7 @@ void main() {
     expect(find.text('Details'), findsOneWidget);
   });
 
-  testWidgets('forecast renders 12 hourly tiles and 7 daily rows',
+  testWidgets('forecast renders 7 daily tiles and 12 hourly rows',
       (tester) async {
     tester.view.physicalSize = const Size(2200, 1000);
     tester.view.devicePixelRatio = 1;
@@ -145,12 +149,12 @@ void main() {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  ForecastHourlyStrip(
+                  ForecastHourlyList(
                     hourly: hourly,
                     referenceTime: reference,
                     timezoneOffset: 0,
                   ),
-                  ForecastDailyGrid(
+                  ForecastDailyStrip(
                     daily: daily,
                     referenceTime: reference,
                     timezoneOffset: 0,
@@ -165,20 +169,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Now'), findsOneWidget);
-    expect(find.text('1 PM'), findsOneWidget);
+    expect(find.text('1:00 PM'), findsOneWidget);
     expect(
         find.descendant(
-            of: find.byType(ForecastHourlyStrip),
+            of: find.byType(ForecastHourlyList),
             matching: find.textContaining(RegExp(r'^\d+%$'))),
-        findsNWidgets(11));
-    expect(find.text('11 PM'), findsOneWidget);
-    expect(find.text('12 AM'), findsNothing);
+        findsNWidgets(12));
+    expect(find.text('11:00 PM'), findsOneWidget);
+    expect(find.text('12:00 AM'), findsNothing);
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('Mon'), findsOneWidget);
     expect(find.text('Tue'), findsOneWidget);
     expect(
         find.descendant(
-            of: find.byType(ForecastDailyGrid),
+            of: find.byType(ForecastDailyStrip),
             matching: find.textContaining('°')),
         findsNWidgets(14));
     expect(find.text('Sat'), findsOneWidget);
@@ -194,12 +198,12 @@ void main() {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                ForecastHourlyStrip(
+                ForecastHourlyList(
                   hourly: [],
                   errorMessage:
                       'Forecast timeline needs OpenWeather One Call API 4.0 access.',
                 ),
-                ForecastDailyGrid(
+                ForecastDailyStrip(
                   daily: [],
                   errorMessage:
                       'Forecast timeline needs OpenWeather One Call API 4.0 access.',

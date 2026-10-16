@@ -6,6 +6,8 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'features/plancast/plancast_controller.dart';
+import 'features/plancast/widgets/plancast_lifecycle.dart';
 import 'app/daymaker_router.dart';
 import 'features/fun/meme/meme_weather.dart';
 import 'features/roasts/content/roast_pack_repository.dart';
@@ -59,6 +61,8 @@ void main() async {
   final xpService = await XpService.create();
   final achievementService = await AchievementService.create();
 
+  final planCast = PlanCastController(weatherRepository: weatherRepository);
+
   final monetization = MonetizationController(
     config: AdConfig.fromEnvironment(),
     weather: locationController,
@@ -76,6 +80,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<PlanCastController>.value(value: planCast),
         ChangeNotifierProvider<MonetizationController>.value(
             value: monetization),
         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
@@ -97,8 +102,12 @@ void main() async {
           value: settingsController,
         ),
       ],
-      child: RoastForegroundSync(
-          controller: localRoasts, child: const GrumpySkiesApp()),
+      child: PlanCastLifecycle(
+        controller: planCast,
+        router: daymakerRouter,
+        child: RoastForegroundSync(
+            controller: localRoasts, child: const GrumpySkiesApp()),
+      ),
     ),
   );
   WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -7,6 +7,7 @@ class AppRoutes {
   static const fun = '/fun';
   static const memeGenerator = '/fun/meme';
   static const settings = '/settings';
+  static const planCast = '/plancast';
   static const about = '/settings/about';
 
   // Compatibility aliases for older app code and bookmarks.

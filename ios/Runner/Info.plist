@@ -36,6 +36,14 @@
 		<key>WeatherRadar</key>
 		<string>Grumpy Skies uses your approximate location to center live weather and radar.</string>
 	</dict>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>PlanCast reads only your selected device calendars to match plans with weather. iOS requires full calendar access to read existing events; PlanCast never changes them.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>PlanCast reads your selected device calendars to match plans with weather. It never changes your events.</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array><string>com.grumpyskies.plancast.maintenance</string></array>
+	<key>UIBackgroundModes</key>
+	<array><string>fetch</string></array>
 	<key>NSCameraUsageDescription</key>
 	<string>DayMaker uses the camera only when you choose to take a photo for your meme.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

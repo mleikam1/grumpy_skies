@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_list.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_metric_chips.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
@@ -108,7 +108,7 @@ void main() {
       await tester.ensureVisible(find.text('Details'));
       await tester.pump(const Duration(milliseconds: 400));
       await _save(tester, boundary, '${phase}_${theme}_details');
-      final daily = find.byType(ForecastDailyGrid);
+      final daily = find.byType(ForecastDailyStrip);
       await tester.ensureVisible(daily);
       await tester.pump(const Duration(milliseconds: 400));
       await tester
@@ -163,7 +163,7 @@ void main() {
                                   child: Column(children: [
                                     const Text(
                                         'Synthetic forecast stress fixture'),
-                                    ForecastHourlyStrip(
+                                    ForecastHourlyList(
                                         hourly: [
                                           for (var i = 0; i < 12; i++)
                                             HourlyForecast(
@@ -176,14 +176,14 @@ void main() {
                                         ],
                                         referenceTime: now,
                                         timezoneOffset: -18000),
-                                    ForecastDailyGrid(
+                                    ForecastDailyStrip(
                                         daily: days,
                                         referenceTime: now,
                                         timezoneOffset: -18000),
                                   ]))))))));
         });
         await tester.pump();
-        final daily = find.byType(ForecastDailyGrid);
+        final daily = find.byType(ForecastDailyStrip);
         await tester.ensureVisible(daily);
         await tester.pump();
         await tester
@@ -202,19 +202,30 @@ void main() {
         await tester.drag(sheetList, const Offset(0, -1400));
         await tester.pumpAndSettle();
         // The last day is reachable, including at twice the system text size.
-        final lastDay =
-            find.descendant(of: sheetList, matching: find.text('Sun'));
+        final lastDay = find.descendant(
+            of: sheetList,
+            matching: find.byKey(
+                const ValueKey('detail-daily-2026-10-18T00:00:00.000Z')));
         await tester.scrollUntilVisible(lastDay, 300,
             scrollable: find.descendant(
                 of: sheetList, matching: find.byType(Scrollable)));
         await tester.pumpAndSettle();
+        // Hit-test the real date text, as the original test did, rather than
+        // the row's center (which can lie between its text columns).
+        final lastDayText =
+            find.descendant(of: lastDay, matching: find.byType(Text));
+        await tester.ensureVisible(lastDayText.first);
+        await tester.pumpAndSettle();
+        expect(lastDayText.first.hitTestable(), findsOneWidget);
+        await tester.ensureVisible(lastDayText.last);
+        await tester.pumpAndSettle();
         await _save(tester, boundary, 'after_${name}_seven_day_bottom');
-        expect(lastDay.hitTestable(), findsOneWidget);
+        expect(lastDayText.last.hitTestable(), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.tap(find.byTooltip('Close forecast'));
         await tester.pumpAndSettle();
         expect(find.byType(DraggableScrollableSheet), findsNothing);
-        final hourly = find.byType(ForecastHourlyStrip);
+        final hourly = find.byType(ForecastHourlyList);
         await tester.ensureVisible(hourly);
         await tester.pump();
         await tester

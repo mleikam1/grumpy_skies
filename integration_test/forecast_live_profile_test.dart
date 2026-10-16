@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:grumpy_skies/app.dart';
 import 'package:grumpy_skies/app/daymaker_router.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
+import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_list.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_timeline.dart';
 import 'package:grumpy_skies/features/forecast/models/hourly_timeline.dart';
 import 'package:grumpy_skies/features/roasts/controllers/local_roast_controller.dart';
@@ -53,7 +53,7 @@ void main() {
     expect(roasts.ready, isTrue,
         reason: 'The real bundled roast catalog must finish loading.');
     await tester.pump(const Duration(seconds: 2));
-    final strip = find.byType(ForecastHourlyStrip);
+    final strip = find.byType(ForecastHourlyList);
     await tester.ensureVisible(strip);
     await tester.pump(const Duration(milliseconds: 400));
     final seeAll = find.descendant(of: strip, matching: find.text('See all'));

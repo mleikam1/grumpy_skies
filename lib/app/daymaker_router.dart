@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../config/app_routes.dart';
+import '../features/plancast/screens/plancast_screen.dart';
 import '../features/forecast/forecast_screen.dart';
 import '../features/fun/meme_generator_screen.dart';
 import '../features/fun/meme/meme_weather.dart';
@@ -18,6 +19,14 @@ final daymakerRouter = GoRouter(
   initialLocation: AppRoutes.splash,
   observers: [AdModalObserver()],
   routes: [
+    GoRoute(
+      path: AppRoutes.planCast,
+      name: 'plancast',
+      builder: (context, state) => PlanCastScreen(
+        eventId: state.uri.queryParameters['event'],
+        day: DateTime.tryParse(state.uri.queryParameters['day'] ?? ''),
+      ),
+    ),
     GoRoute(
       path: '/',
       redirect: (_, __) => AppRoutes.splash,

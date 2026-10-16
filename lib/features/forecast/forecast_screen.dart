@@ -33,6 +33,9 @@ import '../../services/weather_location_controller.dart';
 import '../../shared/widgets/daymaker_components.dart';
 import '../../shared/widgets/weather_location_selector.dart';
 import 'widgets/forecast_dashboard_widgets.dart';
+import 'widgets/forecast_daily_strip.dart';
+import 'widgets/forecast_hourly_list.dart';
+import '../plancast/widgets/plancast_card.dart';
 
 class ForecastScreen extends StatefulWidget {
   const ForecastScreen({
@@ -494,27 +497,28 @@ class _ForecastScreenState extends State<ForecastScreen>
                               .push(AppRoutes.memeGenerator, extra: memeSource),
                         ),
                       ],
-                      ForecastHourlyStrip(
+                      ForecastDailyStrip(
+                        daily: weather.daily,
+                        timezone: weather.current.timezone,
+                        timezoneOffset: weather.current.timezoneOffset,
+                        latitude: weather.current.latitude,
+                        longitude: weather.current.longitude,
+                        referenceTime: now,
+                        errorMessage: weather.dailyForecastMessage,
+                      ),
+                      ForecastHourlyList(
                         hourly: weather.hourly,
                         weather: weather,
                         roasts: _localRoasts,
                         personaId: selectedPersona.id,
                         clock: widget.clock,
                         timezone: weather.current.timezone,
-                        sunrise: weather.current.sunrise,
-                        sunset: weather.current.sunset,
                         referenceTime: now,
                         timezoneOffset: weather.current.timezoneOffset,
                         errorMessage: weather.hourlyForecastMessage,
                       ),
-                      ForecastDailyGrid(
-                        daily: weather.daily,
-                        sunrise: weather.current.sunrise,
-                        sunset: weather.current.sunset,
-                        referenceTime: now,
-                        timezoneOffset: weather.current.timezoneOffset,
-                        errorMessage: weather.dailyForecastMessage,
-                      ),
+                      const SizedBox(height: 12),
+                      const PlanCastCard(),
                       const SizedBox(height: 12),
                       Text(
                           _observationLabel(
