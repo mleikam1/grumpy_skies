@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
@@ -7,6 +10,7 @@ import 'package:grumpy_skies/features/plancast/platform/plancast_platform.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
 import 'package:grumpy_skies/features/plancast/smart_location_travel.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_card.dart';
+import 'package:grumpy_skies/features/plancast/widgets/plancast_presentation.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_location_controls.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
@@ -129,6 +133,25 @@ class _Controller extends PlanCastController {
   @override
   List<PlanCastEventWeather> get currentEvents => items;
   @override
+  PlanCastDaySummary summaryForDay(DateTime day,
+          {Set<String>? calendarFilter}) =>
+      PlanCastDaySummary.build(
+          day: day,
+          now: _now,
+          events: items,
+          connected: true,
+          selectedCalendarIds: selectedCalendarIds,
+          calendarFilter: calendarFilter);
+  @override
+  PlanCastAgendaSummary summaryForRange(DateTime start,
+          {int days = 7, Set<String>? calendarFilter}) =>
+      PlanCastAgendaSummary(start: start, days: [
+        for (var i = 0; i < days; i++)
+          summaryForDay(DateTime(start.year, start.month, start.day + i),
+              calendarFilter: calendarFilter)
+      ]);
+
+  @override
   LocationCandidate? get currentArea => area;
   @override
   bool get showSmartLocationExplanation => false;
@@ -203,16 +226,42 @@ class _Controller extends PlanCastController {
   }
 }
 
+Future<void>? _fontLoading;
+Future<void> _loadDaymakerFont() => _fontLoading ??= () async {
+      final manifest =
+          jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
+      final entry = manifest
+          .cast<Map<String, dynamic>>()
+          .firstWhere((entry) => entry['family'] == 'DaymakerSans');
+      final loader = FontLoader('DaymakerSans');
+      for (final font
+          in (entry['fonts'] as List).cast<Map<String, dynamic>>()) {
+        loader.addFont(rootBundle.load(font['asset'] as String));
+      }
+      await loader.load();
+    }();
+
+Future<void> _expectStat(WidgetTester tester, String label) async {
+  final semantics = tester.ensureSemantics();
+  try {
+    await tester.pump();
+    expect(find.bySemanticsLabel(label), findsOneWidget);
+  } finally {
+    semantics.dispose();
+  }
+}
+
 void main() {
   Future<void> pump(WidgetTester tester, _Controller c, Widget child,
-      {bool dark = false, double scale = 1}) async {
-    tester.view.physicalSize = const Size(320, 850);
+      {bool dark = false, double scale = 1, double width = 320}) async {
+    tester.view.physicalSize = Size(width, 850);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
       c.dispose();
     });
+    await tester.runAsync(_loadDaymakerFont);
     await tester.pumpWidget(ChangeNotifierProvider<PlanCastController>.value(
         value: c,
         child: MaterialApp(
@@ -240,10 +289,10 @@ void main() {
           dark: dark, scale: 1.8);
       expect(find.byType(PlanCastEventTile), findsNWidgets(2));
       expect(find.text('Tomorrow reservation'), findsNothing);
-      expect(find.text('2 with weather · 2 automatically located'),
-          findsOneWidget);
-      expect(find.textContaining('Using your area · Overland Park'),
-          findsNWidgets(2));
+      await _expectStat(tester, '2 plans');
+      await _expectStat(tester, '2 with weather');
+      expect(
+          find.textContaining('Overland Park · Your area'), findsNWidgets(2));
       expect(find.byType(DaymakerWeatherIcon), findsNWidgets(2));
       expect(tester.takeException(), isNull);
     });
@@ -265,8 +314,8 @@ void main() {
           for (final item in c.items) PlanCastEventTile(item: item)
         ]))));
     expect(find.byType(DaymakerWeatherIcon), findsNothing);
-    expect(find.text('Online · no venue weather needed'), findsOneWidget);
-    expect(find.textContaining('Using your area'), findsNWidgets(2));
+    expect(find.text('Online · No venue weather needed'), findsOneWidget);
+    expect(find.textContaining('Overland Park · Your area'), findsNWidgets(2));
     expect(planCastScopeSummary(c.items),
         '1 with weather · 2 automatically located · 1 online · 1 without weather');
     expect(tester.takeException(), isNull);
@@ -277,26 +326,26 @@ void main() {
         'briefing starts compact and expands in ${dark ? 'dark' : 'light'}',
         (tester) async {
       final c = _Controller([_item('Tree trimming'), _item('Lunch')]);
-      await pump(tester, c, const PlanCastScreen(), dark: dark);
-      expect(find.textContaining('Clear · 10% precipitation chance'),
-          findsOneWidget);
-      expect(find.text('Read my day'), findsOneWidget);
-      expect(find.text('Worth watching'), findsNothing);
+      await pump(tester, c, const PlanCastScreen(), dark: dark, width: 390);
+      expect(find.byType(PlanCastPersonaCard), findsOneWidget);
+      expect(find.text('Listen'), findsOneWidget);
+      expect(find.text('Less'), findsNothing);
       expect(find.textContaining('You have 2 plans'), findsNothing);
       expect(find.text('Tree trimming').hitTestable(), findsOneWidget);
-      await tester.tap(find.text('Full briefing'));
+      await tester.tap(find.text('Full readout'));
       await tester.pumpAndSettle();
-      expect(find.text('Worth watching'), findsOneWidget);
-      expect(find.text('Before you go'), findsOneWidget);
-      expect(find.textContaining('You have 2 plans'), findsNothing);
-      await tester.ensureVisible(find.text('Hide briefing'));
+      expect(find.text('Less'), findsOneWidget);
+      final card =
+          tester.widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard));
+      expect(find.text(card.readout.fullText), findsOneWidget);
+      await tester.ensureVisible(find.text('Less'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Hide briefing'));
+      await tester.tap(find.text('Less'));
       await tester.pumpAndSettle();
-      expect(find.text('Worth watching'), findsNothing);
-      await tester.scrollUntilVisible(find.text('Full briefing'), -250);
+      expect(find.text('Less'), findsNothing);
+      await tester.scrollUntilVisible(find.text('Full readout'), -250);
       await tester.pumpAndSettle();
-      expect(find.text('Full briefing').hitTestable(), findsOneWidget);
+      expect(find.text('Full readout').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
@@ -311,8 +360,7 @@ void main() {
     await pump(tester, c, const PlanCastScreen());
     await tester.tap(find.widgetWithText(ChoiceChip, 'Tomorrow'));
     await tester.pumpAndSettle();
-    expect(
-        find.text('1 with weather · 1 automatically located'), findsOneWidget);
+    await _expectStat(tester, '1 with weather');
     await tester.scrollUntilVisible(find.text('Tomorrow plan'), 250);
     expect(find.text('Today plan'), findsNothing);
     expect(find.text('Later plan'), findsNothing);
@@ -352,15 +400,14 @@ void main() {
         ));
     final c = _Controller([item]);
     await pump(tester, c, Scaffold(body: PlanCastEventTile(item: item)));
-    expect(find.byType(DaymakerWeatherIcon), findsNothing);
-    expect(find.text('2 dated outlooks for your stay'), findsOneWidget);
+    expect(find.byType(DaymakerWeatherIcon), findsOneWidget);
+    expect(find.text('Arrival · Event forecast · Clear'), findsOneWidget);
     await tester.tap(find.text('Three-day stay'));
     await tester.pumpAndSettle();
     expect(find.text('Weather through your stay'), findsOneWidget);
     expect(find.text('Arrival'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Departure'), 200);
-    expect(find.text('Departure is outside the available forecast.'),
-        findsOneWidget);
+    expect(find.text('Outside the available forecast.'), findsOneWidget);
     expect(find.byType(DaymakerWeatherIcon), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -426,9 +473,12 @@ void main() {
           id: 'home', label: 'Home', candidate: _area, createdAt: _now)
     ]);
     await pump(
-        tester, c, Scaffold(body: PlanCastEventTile(item: c.items.first)));
+        tester, c, Scaffold(body: PlanCastLocationRow(item: c.items.first)));
     await tester
         .tap(find.byKey(const ValueKey('plancast-location-Tree trimming')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Apply to…'));
+    await tester.tap(find.text('Apply to…'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Missing-location events in this series'));
     await tester.pumpAndSettle();
@@ -437,8 +487,9 @@ void main() {
     await tester.ensureVisible(find.text('Home'));
     await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Use this choice'));
-    await tester.tap(find.text('Use this choice'));
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('plancast-save-location')));
+    await tester.tap(find.byKey(const ValueKey('plancast-save-location')));
     await tester.pumpAndSettle();
     expect(c.choiceScope, LocationRuleScope.seriesMissing);
     expect(c.choice?.kind, LocationChoiceKind.savedPlace);
@@ -501,7 +552,7 @@ void main() {
     expect(c.appliedCalendars, {'personal'});
     expect(
         c.appliedEnd!.difference(c.appliedStart!), const Duration(hours: 48));
-    await tester.tap(find.text('Undo location change'));
+    await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(c.undos, 1);
     expect(tester.takeException(), isNull);
@@ -545,7 +596,11 @@ void main() {
         Scaffold(
             body: SingleChildScrollView(
                 child: PlanCastLocationNotice(items: c.items))));
+    await tester.tap(find.text('Change'));
+    await tester.pumpAndSettle();
     expect(find.text('Use Home'), findsNothing);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
     c.smartLocations = c.smartLocations.copyWith(savedPlaces: [
       SavedPlanCastPlace(
           id: 'configured-home',
@@ -554,6 +609,8 @@ void main() {
           createdAt: _now),
     ]);
     c.notifyListeners();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Change'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Use Home'));
     await tester.pumpAndSettle();

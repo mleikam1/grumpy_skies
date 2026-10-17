@@ -1,7 +1,8 @@
 // Explicit simulator fixture, never imported by production main.dart.
 // flutter run -t integration_test/plancast_smart_locations_preview.dart
 //   --dart-define=PREVIEW_SCENE=plans --dart-define=PREVIEW_DARK=true
-// Scenes: plans, today, hotel, missing, settings, denied, travel.
+// Scenes: plans, today, hotel, flight, missing, settings, denied, travel.
+// Public fixture adapters are also used by UI interaction/request-count tests.
 // Real widgets, controller, resolver and evaluator; SYNTHETIC calendar/weather/
 // device-area data. No native calendar reads, location permissions or network IO.
 import 'dart:async';
@@ -39,13 +40,20 @@ const _miami = LocationCandidate(
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const scene = String.fromEnvironment('PREVIEW_SCENE', defaultValue: 'plans');
-  const dark = bool.fromEnvironment('PREVIEW_DARK');
+  const configuredScene =
+      String.fromEnvironment('PREVIEW_SCENE', defaultValue: 'plans');
+  const configuredDark = bool.fromEnvironment('PREVIEW_DARK');
+  final scene = Uri.base.queryParameters['scene'] ?? configuredScene;
+  final dark = Uri.base.queryParameters['dark'] == 'true' || configuredDark;
+  final textScale = double.tryParse(Uri.base.queryParameters['textScale'] ??
+          const String.fromEnvironment('PREVIEW_TEXT_SCALE',
+              defaultValue: '1')) ??
+      1;
   var now = ApprovedFixture.now;
-  final area = _FixtureArea(now, denied: scene == 'denied');
-  final platform = _FixturePlatform();
+  final area = PlanCastPreviewArea(now, denied: scene == 'denied');
+  final platform = PlanCastPreviewPlatform();
   final controller = PlanCastController(
-    weatherRepository: _FixtureWeather(() => now),
+    weatherRepository: PlanCastPreviewWeather(() => now),
     platform: platform,
     deviceAreaService: area,
     roastPackRepository: ApprovedRoastPackRepository(),
@@ -73,7 +81,7 @@ Future<void> main() async {
           : event == null
               ? AppRoutes.planCast
               : '${AppRoutes.planCast}?event=${Uri.encodeQueryComponent(event.event.id)}';
-  final router = GoRouter(initialLocation: initial, routes: [
+  final router = GoRouter(initialLocation: AppRoutes.forecast, routes: [
     ...session.router.configuration.routes,
     GoRoute(
         path: AppRoutes.planCast,
@@ -84,11 +92,15 @@ Future<void> main() async {
         builder: (_, __) => const PlanCastSettingsScreen()),
   ]);
   runApp(ChangeNotifierProvider<PlanCastController>.value(
-      value: controller, child: session.build(routerOverride: router)));
+      value: controller,
+      child: session.build(routerOverride: router, textScale: textScale)));
+  if (initial != AppRoutes.forecast) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => router.push(initial));
+  }
 }
 
-class _FixtureArea extends DeviceAreaService {
-  _FixtureArea(DateTime now, {this.denied = false}) {
+class PlanCastPreviewArea extends DeviceAreaService {
+  PlanCastPreviewArea(DateTime now, {this.denied = false}) {
     if (!denied) move(_home, now);
   }
   final bool denied;
@@ -126,11 +138,11 @@ class _FixtureArea extends DeviceAreaService {
   void dispose() {}
 }
 
-class _FixturePlatform extends PlanCastPlatform {
-  _FixturePlatform() : super(supported: true);
+class PlanCastPreviewPlatform extends PlanCastPlatform {
+  PlanCastPreviewPlatform() : super(supported: true);
   String _state = jsonEncode({
     'connected': true,
-    'calendarIds': ['personal', 'work'],
+    'calendarIds': ['personal', 'work', 'family', 'travel'],
     'preferences': const PlanCastPreferences().toJson(),
     'smartLocations': SmartLocationState(
         onlineMatchingEnabled: true,
@@ -185,8 +197,10 @@ class _FixturePlatform extends PlanCastPlatform {
   Future<void> stopSpeaking() async {}
   @override
   Future<List<Map<String, dynamic>>> calendars() async => [
-        {'id': 'personal', 'name': 'Personal'},
-        {'id': 'work', 'name': 'Work'},
+        {'id': 'personal', 'name': 'Personal', 'colorArgb': 0xFF258D87},
+        {'id': 'work', 'name': 'Work', 'colorArgb': 0xFF5278B8},
+        {'id': 'family', 'name': 'Family', 'colorArgb': 0xFF9469B4},
+        {'id': 'travel', 'name': 'Travel plans', 'colorArgb': 0xFFD48F44},
       ];
   @override
   Future<List<Map<String, dynamic>>> events(
@@ -216,28 +230,38 @@ class _FixturePlatform extends PlanCastPlatform {
           location: 'Online', calendar: 'work'),
       plan('missing', 'Dinner reservation', DateTime.utc(2026, 10, 12, 23),
           DateTime.utc(2026, 10, 13, 0),
-          location: '321 Unresolved Street, Unknown City'),
+          location: '321 Unresolved Street, Unknown City', calendar: 'family'),
       plan(
           'hotel',
           'Reservation at UNFRAMED, Miami Beach, Autograph Collection',
           DateTime.utc(2026, 10, 13, 19),
           DateTime.utc(2026, 10, 16, 15),
-          zone: 'America/New_York'),
+          zone: 'America/New_York',
+          calendar: 'travel'),
+      plan('flight', 'Flight AA7310', DateTime.utc(2026, 10, 12, 21),
+          DateTime.utc(2026, 10, 12, 22),
+          calendar: 'travel'),
       plan('dinner-away', 'Dinner with friends', DateTime.utc(2026, 10, 14, 23),
-          DateTime.utc(2026, 10, 15, 0)),
+          DateTime.utc(2026, 10, 15, 0),
+          calendar: 'family'),
       plan('walk', 'Morning walk', DateTime.utc(2026, 10, 13, 13),
           DateTime.utc(2026, 10, 13, 14)),
-    ];
+    ].where((event) => calendarIds.contains(event['calendarId'])).toList();
   }
 }
 
-class _FixtureWeather extends WeatherRepository {
-  _FixtureWeather(this.clock);
+class PlanCastPreviewWeather extends WeatherRepository {
+  PlanCastPreviewWeather(this.clock);
   final DateTime Function() clock;
+  int forecastLoads = 0;
+  int geocodingQueries = 0;
   @override
   Future<List<LocationCandidate>> searchLocations(
-          {required String query, int limit = 5}) async =>
-      query.toLowerCase().contains('miami beach') ? [_miami] : [];
+      {required String query, int limit = 5}) async {
+    geocodingQueries++;
+    return query.toLowerCase().contains('miami beach') ? [_miami] : [];
+  }
+
   @override
   Future<LocationCandidate?> reverseGeocode(
           {required double latitude, required double longitude}) async =>
@@ -258,6 +282,7 @@ class _FixtureWeather extends WeatherRepository {
       required double longitude,
       bool forceRefresh = false,
       LocationCandidate? location}) async {
+    forecastLoads++;
     final remote = latitude < 30;
     final place = remote ? _miami : _home;
     final condition = remote ? 'Rain' : 'Partly cloudy';

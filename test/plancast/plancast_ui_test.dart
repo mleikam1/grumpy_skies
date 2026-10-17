@@ -11,6 +11,7 @@ import 'package:grumpy_skies/features/plancast/platform/plancast_platform.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_settings_screen.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_card.dart';
+import 'package:grumpy_skies/features/plancast/widgets/plancast_presentation.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/services/location_service.dart';
 
@@ -204,13 +205,13 @@ void main() {
     expect(device.notificationRequests, 0);
     expect(device.eventReads, 0);
     expect(c.selectedCalendarIds, isEmpty);
-    expect(find.text('Choose calendars'), findsOneWidget);
+    expect(find.text('Manage calendars'), findsOneWidget);
     expect(
         tester
             .widgetList<CheckboxListTile>(find.byType(CheckboxListTile))
             .every((w) => w.value == false),
         isTrue);
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -221,8 +222,12 @@ void main() {
     await pump(tester, c,
         const Scaffold(body: SingleChildScrollView(child: PlanCastCard())));
     expect(find.byType(PlanCastEventTile), findsNWidgets(2));
-    expect(find.text('0 with weather · 1 online · 1 without weather'),
-        findsOneWidget);
+    final semantics = tester.ensureSemantics();
+
+    expect(find.bySemanticsLabel('2 plans'), findsOneWidget);
+    expect(find.bySemanticsLabel('1 online'), findsOneWidget);
+    semantics.dispose();
+    expect(find.text('With weather'), findsNothing);
     expect(find.text('View my PlanCast'), findsOneWidget);
     expect(c.previews.map((e) => e.event.id).toSet().length, c.previews.length);
     expect(tester.takeException(), isNull);
@@ -240,7 +245,7 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.tap(find.textContaining('A very long private appointment'));
     await tester.pumpAndSettle();
-    expect(find.text('Your plan'), findsOneWidget);
+    expect(find.text('Event details'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -249,13 +254,13 @@ void main() {
     final device = UiDevice();
     final c = await controller(device, connect: true);
     await pump(tester, c, const PlanCastScreen(), size: const Size(768, 1024));
-    await tester.ensureVisible(find.text('Read my day'));
-    await tester.tap(find.text('Read my day'));
+    await tester.ensureVisible(find.text('Listen'));
+    await tester.tap(find.text('Listen'));
     await tester.pumpAndSettle();
     expect(
         find.textContaining('An offline voice is unavailable'), findsOneWidget);
     expect(device.spoken, isNot(contains('private appointment')));
-    expect(find.text('Your day'), findsOneWidget);
+    expect(find.byType(PlanCastPersonaCard), findsOneWidget);
   });
 
   testWidgets('notification denial cannot disconnect calendars',
@@ -290,7 +295,7 @@ void main() {
     expect(find.text('Personal'), findsOneWidget);
     expect(find.text('Work'), findsOneWidget);
     expect(c.selectedCalendarIds, isEmpty);
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
   });
 
@@ -311,12 +316,12 @@ void main() {
     final device = UiDevice()..speech = Completer<bool>();
     final c = await controller(device, connect: true);
     await pump(tester, c, const PlanCastScreen(), size: const Size(768, 1024));
-    await tester.ensureVisible(find.text('Read my day'));
+    await tester.ensureVisible(find.text('Listen'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Read my day'));
+    await tester.tap(find.text('Listen'));
     await tester.pumpAndSettle();
-    expect(find.text('Stop reading'), findsOneWidget);
-    await tester.tap(find.text('Stop reading'));
+    expect(find.text('Stop'), findsOneWidget);
+    await tester.tap(find.text('Stop'));
     await tester.pumpAndSettle();
     expect(device.stops, greaterThan(0));
     device.speech!.complete(false);

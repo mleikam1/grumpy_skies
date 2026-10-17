@@ -7,7 +7,8 @@ import AVFAudio
 import CryptoKit
 
 /// Native read-only device calendars and local-only services. Never serializes
-/// descriptions, attendees, attachments, account identifiers or meeting URLs.
+/// descriptions, attendees, attachments or meeting URLs. Calendar source titles
+/// are displayed locally to distinguish calendars; they are never uploaded.
 final class PlanCastPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   static weak var active: PlanCastPlugin?
   private var sink: FlutterEventSink?
@@ -132,7 +133,19 @@ private enum PlanCastNative {
   static func requireAccess() throws { if permission() != "authorized" { purge(); throw NSError(domain: "PlanCastPermission", code: 1) } }
   static func calendars() throws -> [[String: Any]] {
     try requireAccess()
-    return store.calendars(for: .event).map { ["id": $0.calendarIdentifier, "name": $0.title] }
+    return store.calendars(for: .event).map { calendar in
+      var row: [String: Any] = ["id": calendar.calendarIdentifier, "name": calendar.title]
+      let sourceTitle = calendar.source.title.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !sourceTitle.isEmpty { row["accountName"] = sourceTitle }
+      if let cgColor = calendar.cgColor {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        if UIColor(cgColor: cgColor).getRed(&r, green: &g, blue: &b, alpha: &a) {
+          func byte(_ value: CGFloat) -> Int { Int((min(1, max(0, value)) * 255).rounded()) }
+          row["colorArgb"] = (byte(a) << 24) | (byte(r) << 16) | (byte(g) << 8) | byte(b)
+        }
+      }
+      return row
+    }
   }
   static func events(_ args: [String: Any]) throws -> [[String: Any]] {
     try requireAccess()

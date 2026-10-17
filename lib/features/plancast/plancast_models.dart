@@ -38,11 +38,17 @@ extension WeatherImpactLabel on WeatherImpact {
 }
 
 class DeviceCalendar {
-  const DeviceCalendar({required this.id, required this.name});
+  const DeviceCalendar(
+      {required this.id, required this.name, this.colorArgb, this.accountName});
   final String id;
   final String name;
+  final int? colorArgb;
+  final String? accountName;
   factory DeviceCalendar.fromMap(Map<String, dynamic> value) => DeviceCalendar(
-      id: value['id'].toString(), name: value['name'] as String? ?? 'Calendar');
+      id: value['id'].toString(),
+      name: value['name'] as String? ?? 'Calendar',
+      colorArgb: (value['colorArgb'] as num?)?.toInt(),
+      accountName: value['accountName'] as String?);
 }
 
 /// Timed events keep true UTC instants plus IANA context. All-day dates are

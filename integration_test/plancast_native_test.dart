@@ -46,6 +46,16 @@ void main() {
       expect(await bridge.secureRead(), isNull,
           reason: 'A denied native write must not resurrect PlanCast state.');
     }
+    if (before == 'authorized') {
+      // Read-only metadata added for the approved calendar sheet. No event
+      // contents or account labels are printed or persisted by this probe.
+      for (final calendar in await bridge.calendars()) {
+        expect(calendar['id'], isA<String>());
+        expect(calendar['name'], isA<String>());
+        expect(calendar['colorArgb'], anyOf(isNull, isA<int>()));
+        expect(calendar['accountName'], anyOf(isNull, isA<String>()));
+      }
+    }
     final now = DateTime.now().toUtc();
     expect(
         await bridge.events(

@@ -28,50 +28,137 @@ class PlanCastLocationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = item.resolvedLocation;
-    final text = item.isOnline
-        ? 'Online · no venue weather needed'
-        : location == null
-            ? item.venue?.displayName ?? 'Choose a weather area'
-            : '${location.sourceLabel} · ${location.displayLabel}${location.provisional ? ' · provisional' : ''}';
-    return InkWell(
-      key: ValueKey('plancast-location-${item.event.id}'),
-      onTap: () => changePlanCastLocation(context, item),
-      borderRadius: BorderRadius.circular(DMSpacing.sm),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: DMSpacing.sm),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(item.isOnline ? Icons.videocam_outlined : Icons.place_outlined,
-              size: 18),
-          const SizedBox(width: DMSpacing.xs),
-          Expanded(child: Text(text, style: DMTypography.bodySmall)),
-          const SizedBox(width: DMSpacing.xs),
-          const Text('Change', style: DMTypography.label),
-        ]),
+    final label = item.isOnline
+        ? 'Online'
+        : location?.candidate?.name ??
+            item.venue?.name ??
+            'Choose a weather area';
+    final source = item.isOnline
+        ? 'No venue weather needed'
+        : location?.sourceLabel ?? 'Weather location';
+    return Semantics(
+      excludeSemantics: true,
+      button: true,
+      label: '$label. $source. Change weather location',
+      child: InkWell(
+        key: ValueKey('plancast-location-${item.event.id}'),
+        onTap: () => changePlanCastLocation(context, item),
+        borderRadius: BorderRadius.circular(DMSpacing.sm),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: DMSpacing.sm),
+            child: Row(children: [
+              Icon(
+                  item.isOnline
+                      ? Icons.videocam_outlined
+                      : Icons.place_outlined,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.secondary),
+              const SizedBox(width: DMSpacing.sm),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(label,
+                        style: DMTypography.labelLarge,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                    Text(source, style: Theme.of(context).textTheme.bodySmall),
+                  ])),
+              const SizedBox(width: DMSpacing.sm),
+              Text('Change',
+                  style: DMTypography.label.copyWith(
+                      color: Theme.of(context).colorScheme.secondary)),
+            ]),
+          ),
+        ),
       ),
     );
   }
 }
 
-Future<T?> _sheet<T>(BuildContext context, Widget child) =>
+/// Shared modal shell keeps the action reachable while long content scrolls.
+Future<T?> showPlanCastSheet<T>(BuildContext context, Widget child) =>
     showModalBottomSheet<T>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        showDragHandle: true,
-        builder: (context) => Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.viewInsetsOf(context).bottom),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.sizeOf(context).height * .85),
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      constraints: const BoxConstraints(maxWidth: 640),
+      builder: (context) => Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: SafeArea(
+            top: false,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: (MediaQuery.sizeOf(context).height * .88 -
+                          MediaQuery.viewInsetsOf(context).bottom)
+                      .clamp(160.0, 900.0)),
+              child: child,
+            )),
+      ),
+    );
+
+class PlanCastSheetContent extends StatelessWidget {
+  const PlanCastSheetContent(
+      {super.key,
+      required this.title,
+      required this.child,
+      this.subtitle,
+      this.footer,
+      this.busy = false});
+  final String title;
+  final String? subtitle;
+  final Widget child;
+  final Widget? footer;
+  final bool busy;
+  @override
+  Widget build(BuildContext context) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(DMSpacing.md, 0, DMSpacing.sm, 0),
+                child: Row(children: [
+                  Expanded(
+                      child: Text(title, style: DMTypography.headingSmall)),
+                  IconButton(
+                      tooltip: 'Close',
+                      onPressed: busy ? null : () => Navigator.pop(context),
+                      icon: const Icon(Icons.close)),
+                ])),
+            if (subtitle != null)
+              Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      DMSpacing.md, 0, DMSpacing.md, DMSpacing.sm),
+                  child: Text(subtitle!,
+                      style: Theme.of(context).textTheme.bodySmall)),
+            Flexible(
                 child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(DMSpacing.md), child: child),
-              ),
-            ));
+                    padding: const EdgeInsets.fromLTRB(
+                        DMSpacing.md, 0, DMSpacing.md, DMSpacing.md),
+                    child: child)),
+            if (footer != null)
+              Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      DMSpacing.md, DMSpacing.sm, DMSpacing.md, DMSpacing.md),
+                  child: footer),
+          ]);
+}
+
+Future<T?> _sheet<T>(BuildContext context, Widget child) =>
+    showPlanCastSheet<T>(
+        context,
+        SingleChildScrollView(
+            padding: const EdgeInsets.all(DMSpacing.md), child: child));
 
 Future<void> changePlanCastLocation(
         BuildContext context, PlanCastEventWeather item) =>
-    _sheet<void>(
+    showPlanCastSheet<void>(
         context,
         _LocationChoices(
             controller: context.read<PlanCastController>(), item: item));
@@ -87,9 +174,110 @@ class _LocationChoices extends StatefulWidget {
 class _LocationChoicesState extends State<_LocationChoices> {
   LocationRuleScope _scope = LocationRuleScope.occurrence;
   LocationChoice? _choice;
-  String? _choiceLabel;
-  bool _saving = false;
+  String _selection = 'automatic';
+  bool _dirty = false, _saving = false, _reset = false;
   String? _message;
+  late final LocationCandidate? _invite;
+  late final bool _manual;
+
+  @override
+  void initState() {
+    super.initState();
+    final c = widget.controller, item = widget.item;
+    // This only reads already resolved local evidence; opening a sheet never
+    // starts a place lookup, location request or forecast load.
+    final invite = c.locationResolver.resolve(
+        event: item.event,
+        now: c.clock(),
+        state: const SmartLocationState(),
+        lookupResults: c.locationLookup.cachedResults);
+    _invite =
+        invite.location.hasWeatherBasis ? invite.location.candidate : null;
+    final rules = c.locationRules.where((r) => r.enabled).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final occurrence = rules
+        .where((r) =>
+            r.targetId == item.event.id &&
+            {LocationRuleScope.occurrence, LocationRuleScope.legacy}
+                .contains(r.scope))
+        .firstOrNull;
+    final evidence = c.locationResolver.extractor.extract(item.event);
+    final series = rules
+        .where((r) =>
+            r.scope == LocationRuleScope.seriesMissing &&
+            item.event.isRecurring &&
+            r.targetId == item.event.seriesKey)
+        .firstOrNull;
+    final legacy = occurrence?.useAutomatic == true ||
+            (!evidence.fromCalendarField && series != null)
+        ? null
+        : rules
+            .where((r) =>
+                r.scope == LocationRuleScope.legacy &&
+                item.event.matchesLegacyRecurringKey(r.targetId) &&
+                (r.choice.kind != LocationChoiceKind.online || item.isOnline))
+            .firstOrNull;
+    _manual = occurrence?.useAutomatic != true &&
+        (occurrence != null ||
+            legacy != null ||
+            item.resolvedLocation?.source == LocationSource.userOverride);
+    final inherited = switch (item.resolvedLocation?.source) {
+      LocationSource.recurringRule => legacy ?? series,
+      LocationSource.calendarDefault => rules
+          .where((r) =>
+              r.scope == LocationRuleScope.calendarDefault &&
+              r.targetId == item.event.calendarId)
+          .firstOrNull,
+      _ => null,
+    };
+    _choice = occurrence?.useAutomatic == true
+        ? null
+        : occurrence?.choice ?? legacy?.choice ?? inherited?.choice;
+    if (_choice != null) {
+      _selection = switch (_choice!.kind) {
+        LocationChoiceKind.currentArea => 'current',
+        LocationChoiceKind.online => 'online',
+        LocationChoiceKind.savedPlace => 'saved:${_choice!.savedPlaceId}',
+        LocationChoiceKind.place => 'chosen',
+      };
+    } else if (item.isOnline) {
+      _selection = 'online';
+      _choice = const LocationChoice.online();
+    } else if ({LocationSource.currentArea, LocationSource.lastKnownArea}
+        .contains(item.resolvedLocation?.source)) {
+      _selection = 'current';
+      _choice = const LocationChoice.currentArea();
+    } else if (_invite != null && _samePlace(_invite, item.venue)) {
+      _selection = 'invite';
+      _choice = LocationChoice.place(_invite!);
+    } else if (item.venue != null) {
+      final saved = c.savedPlaces
+          .where((p) => _samePlace(p.candidate, item.venue))
+          .firstOrNull;
+      _selection = saved == null ? 'chosen' : 'saved:${saved.id}';
+      _choice = saved == null
+          ? LocationChoice.place(item.venue!)
+          : LocationChoice.savedPlace(saved.id);
+    }
+  }
+
+  bool _samePlace(LocationCandidate? a, LocationCandidate? b) =>
+      a != null &&
+      b != null &&
+      (a.lat - b.lat).abs() < .00001 &&
+      (a.lon - b.lon).abs() < .00001;
+
+  void _select(String id, LocationChoice? choice, {bool reset = false}) {
+    setState(() {
+      _selection = id;
+      _choice = choice;
+      _dirty = true;
+      _reset = reset;
+      _message = null;
+      if (reset) _scope = LocationRuleScope.occurrence;
+    });
+  }
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
       listenable: widget.controller,
@@ -97,117 +285,239 @@ class _LocationChoicesState extends State<_LocationChoices> {
         final c = widget.controller;
         final count =
             c.locationChoiceAffected(widget.item.event, _scope).length;
-        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Weather location', style: DMTypography.headingSmall),
-          Text(widget.item.event.displayTitle),
-          const SizedBox(height: DMSpacing.sm),
-          const Text(
-              'Changes stay in PlanCast. The calendar appointment and its time stay unchanged.',
-              style: DMTypography.bodySmall),
-          const SizedBox(height: DMSpacing.sm),
-          Wrap(spacing: DMSpacing.xs, children: [
-            _scopeChip('This event', LocationRuleScope.occurrence),
-            if (widget.item.event.isRecurring)
-              _scopeChip('Missing-location events in this series',
-                  LocationRuleScope.seriesMissing),
-            _scopeChip('Calendar default', LocationRuleScope.calendarDefault),
-          ]),
-          if (_scope != LocationRuleScope.occurrence)
-            Text(
-                '$count currently loaded ${count == 1 ? 'plan' : 'plans'} affected. Stronger calendar destinations are kept.',
-                style: DMTypography.bodySmall),
-          ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.my_location),
-              title: const Text('Current area'),
-              subtitle: Text(c.currentArea?.displayName ??
-                  'Use the device’s area when available'),
-              onTap: _saving
-                  ? null
-                  : () async {
-                      await c.useCurrentArea();
-                      if (!mounted) return;
-                      setState(() {
-                        _choice = const LocationChoice.currentArea();
-                        _choiceLabel = 'Current area';
-                        _message = c.locationPermissionMessage;
-                      });
-                    }),
-          for (final place in c.savedPlaces)
-            ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.bookmark_border),
-                title: Text(place.label),
-                subtitle: Text(place.candidate.displayName),
-                onTap: () => setState(() {
-                      _choice = LocationChoice.savedPlace(place.id);
-                      _choiceLabel = place.label;
-                    })),
-          ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.search),
-              title: const Text('Search for a city'),
-              subtitle: Text(c.locationMatchingCapability),
-              onTap: () async {
-                final place = await choosePlanCastArea(context, c);
-                if (mounted && place != null) {
-                  setState(() {
-                    _choice = LocationChoice.place(place);
-                    _choiceLabel = place.displayName;
-                  });
-                }
-              }),
-          ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.videocam_outlined),
-              title: const Text('Online'),
-              subtitle: const Text('No venue weather needed'),
-              onTap: () => setState(() {
-                    _choice = const LocationChoice.online();
-                    _choiceLabel = 'Online';
-                  })),
-          TextButton.icon(
-              icon: const Icon(Icons.pin_drop_outlined),
-              label: const Text('Set exact venue coordinates'),
-              onPressed: () async {
-                final place = await _exactCoordinates(context);
-                if (mounted && place != null) {
-                  setState(() {
-                    _choice = LocationChoice.place(place);
-                    _choiceLabel = place.displayName;
-                  });
-                }
-              }),
-          if (_message != null) Text(_message!, style: DMTypography.bodySmall),
-          if (_choiceLabel != null)
-            Text('Use: $_choiceLabel', style: DMTypography.labelLarge),
-          const SizedBox(height: DMSpacing.sm),
-          FilledButton(
-              onPressed: _choice == null || _saving
-                  ? null
-                  : () async {
-                      setState(() => _saving = true);
-                      try {
-                        await c.setLocationChoice(widget.item.event, _choice!,
-                            scope: _scope);
-                        if (context.mounted) Navigator.pop(context);
-                      } catch (_) {
-                        if (mounted) {
-                          setState(() {
-                            _saving = false;
-                            _message =
-                                'That choice could not be saved. Please try again.';
-                          });
-                        }
-                      }
-                    },
-              child: Text(_saving ? 'Saving…' : 'Use this choice')),
-        ]);
+        return PopScope(
+            canPop: !_saving,
+            child: PlanCastSheetContent(
+              title: 'Set event location',
+              subtitle: 'Choose where to get weather for this event.',
+              busy: _saving,
+              footer: FilledButton(
+                key: const ValueKey('plancast-save-location'),
+                onPressed:
+                    _saving || (_choice == null && !_reset) ? null : _save,
+                child: Text(_saving ? 'Saving…' : 'Save'),
+              ),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DecoratedBox(
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Theme.of(context).colorScheme.outline),
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Column(children: [
+                          _option(
+                              'current',
+                              Icons.my_location,
+                              'Current area',
+                              c.currentArea?.displayName ??
+                                  'Use your device’s area when available',
+                              () => _select('current',
+                                  const LocationChoice.currentArea())),
+                          if (_invite != null)
+                            _option(
+                                'invite',
+                                Icons.place_outlined,
+                                'Location from invite',
+                                _invite!.displayName,
+                                () => _select(
+                                    'invite', LocationChoice.place(_invite!))),
+                          for (final place in c.savedPlaces)
+                            _option(
+                                'saved:${place.id}',
+                                Icons.bookmark_border,
+                                place.label,
+                                place.candidate.displayName,
+                                () => _select('saved:${place.id}',
+                                    LocationChoice.savedPlace(place.id))),
+                          if (_selection == 'chosen' &&
+                              _choice?.candidate != null)
+                            _option(
+                                'chosen',
+                                Icons.place_outlined,
+                                _choice!.candidate!.name,
+                                'Selected weather location',
+                                () {}),
+                          _option(
+                              'search', Icons.search, 'Search for a city', null,
+                              () async {
+                            final place = await choosePlanCastArea(context, c);
+                            if (mounted && place != null) {
+                              _select('chosen', LocationChoice.place(place));
+                            }
+                          }, disclosure: true),
+                          _option(
+                              'online',
+                              Icons.videocam_outlined,
+                              'Online',
+                              'No venue weather needed',
+                              () => _select(
+                                  'online', const LocationChoice.online())),
+                        ])),
+                    if (_manual || _reset)
+                      TextButton.icon(
+                          key: const ValueKey('plancast-automatic-location'),
+                          icon: Icon(
+                              _reset
+                                  ? Icons.check_circle_outline
+                                  : Icons.auto_awesome_outlined,
+                              size: 18),
+                          onPressed: _saving
+                              ? null
+                              : () => _select('automatic', null, reset: true),
+                          label: const Text('Use automatic location')),
+                    ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Apply to…',
+                            style: DMTypography.labelLarge),
+                        subtitle: Text(_scopeLabel(_scope)),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _saving || _reset ? null : _chooseScope),
+                    if (_scope != LocationRuleScope.occurrence)
+                      Text(
+                          '$count currently loaded ${count == 1 ? 'plan' : 'plans'} affected. Confirmed destinations stay unchanged.',
+                          style: Theme.of(context).textTheme.bodySmall),
+                    if (_reset)
+                      Text(
+                          'This event returns to automatic location. Series and calendar rules stay in place.',
+                          style: Theme.of(context).textTheme.bodySmall),
+                    if (_message != null)
+                      Padding(
+                          padding: const EdgeInsets.only(top: DMSpacing.sm),
+                          child: Text(_message!,
+                              style: Theme.of(context).textTheme.bodySmall)),
+                    const SizedBox(height: DMSpacing.sm),
+                    Text(
+                        'Changes stay in PlanCast. Your calendar is read-only.',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title:
+                            const Text('Advanced', style: DMTypography.label),
+                        children: [
+                          ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.pin_drop_outlined),
+                              title: const Text('Exact venue coordinates'),
+                              onTap: _saving
+                                  ? null
+                                  : () async {
+                                      final place =
+                                          await _exactCoordinates(context);
+                                      if (mounted && place != null) {
+                                        _select('chosen',
+                                            LocationChoice.place(place));
+                                      }
+                                    })
+                        ]),
+                  ]),
+            ));
       });
-  Widget _scopeChip(String label, LocationRuleScope scope) => ChoiceChip(
-      label: Text(label),
-      selected: _scope == scope,
-      onSelected: _saving ? null : (_) => setState(() => _scope = scope));
+
+  Widget _option(String id, IconData icon, String title, String? subtitle,
+      VoidCallback onTap,
+      {bool disclosure = false}) {
+    final selected = _selection == id;
+    return Semantics(
+        selected: selected,
+        button: true,
+        child: ListTile(
+          key: ValueKey('plancast-location-choice-$id'),
+          contentPadding: const EdgeInsets.symmetric(
+              horizontal: DMSpacing.sm, vertical: DMSpacing.xs),
+          leading: Icon(icon, color: Theme.of(context).colorScheme.secondary),
+          title: Text(title, style: DMTypography.labelLarge),
+          subtitle: subtitle == null ? null : Text(subtitle),
+          trailing: Icon(
+              disclosure
+                  ? Icons.chevron_right
+                  : selected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+              color: selected
+                  ? Theme.of(context).colorScheme.secondary
+                  : Theme.of(context).colorScheme.onSurfaceVariant),
+          onTap: _saving ? null : onTap,
+        ));
+  }
+
+  String _scopeLabel(LocationRuleScope scope) => switch (scope) {
+        LocationRuleScope.occurrence => 'This event',
+        LocationRuleScope.seriesMissing =>
+          'Missing-location events in this series',
+        LocationRuleScope.calendarDefault =>
+          'Missing-location events in this calendar',
+        LocationRuleScope.legacy => 'This event',
+      };
+
+  Future<void> _chooseScope() async {
+    final scope = await showPlanCastSheet<LocationRuleScope>(
+        context,
+        PlanCastSheetContent(
+            title: 'Apply location to…',
+            subtitle: 'Known destinations keep their own weather.',
+            child: Column(children: [
+              for (final scope in [
+                LocationRuleScope.occurrence,
+                if (widget.item.event.isRecurring)
+                  LocationRuleScope.seriesMissing,
+                LocationRuleScope.calendarDefault
+              ])
+                ListTile(
+                    title: Text(_scopeLabel(scope)),
+                    trailing: Icon(_scope == scope
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off),
+                    onTap: () => Navigator.pop(context, scope)),
+            ])));
+    if (scope != null && mounted) {
+      setState(() {
+        _scope = scope;
+        _dirty = true;
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    if (!_dirty) {
+      Navigator.pop(context);
+      return;
+    }
+    if (!_reset && _choice == null) return;
+    setState(() => _saving = true);
+    try {
+      final c = widget.controller;
+      if (_reset) {
+        await c.resetEventLocation(widget.item.event);
+      } else {
+        final freshDeviceArea = c.deviceAreaService.failure == null &&
+            c.locationResolver.policy
+                .accepts(c.deviceAreaService.sample, c.clock(), current: true);
+        if (_choice!.kind == LocationChoiceKind.currentArea &&
+            !freshDeviceArea) {
+          await c.useCurrentArea();
+          if (!mounted) return;
+          if (c.currentArea == null) {
+            setState(() {
+              _saving = false;
+              _message = c.locationPermissionMessage ??
+                  'Your current area is unavailable. Choose a city or try again.';
+            });
+            return;
+          }
+        }
+        await c.setLocationChoice(widget.item.event, _choice!, scope: _scope);
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _message = 'That choice could not be saved. Please try again.';
+        });
+      }
+    }
+  }
 }
 
 Future<LocationCandidate?> _exactCoordinates(BuildContext context) async {
@@ -555,11 +865,6 @@ class PlanCastLocationNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.watch<PlanCastController>();
     final travel = c.travelNotice;
-    final home = c.savedPlaces
-        .where((place) =>
-            place.label.trim().toLowerCase() == 'home' &&
-            place.candidate.hasValidCoordinates)
-        .firstOrNull;
     final needsDefault = c.currentArea == null &&
         c.defaultArea == null &&
         items.any((e) {
@@ -567,69 +872,117 @@ class PlanCastLocationNotice extends StatelessWidget {
           final evidence = c.locationResolver.extractor.extract(e.event);
           return !evidence.hasDestinationEvidence && !evidence.virtualOnly;
         });
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (c.showSmartLocationExplanation) ...[
-        const Text(
-            'Plans without a location can use your current area automatically. Confirmed destinations stay put.',
-            style: DMTypography.bodySmall),
-        TextButton(
-            onPressed: c.acknowledgeSmartLocations,
-            child: const Text('Got it')),
-      ],
-      if (needsDefault) ...[
-        const Text(
-            'Choose one default city for plans without a location. Known destinations keep their own weather.'),
-        TextButton(
-            onPressed: () async {
-              final place = await choosePlanCastArea(context, c);
-              if (place != null) await c.setDefaultArea(place);
-            },
-            child: const Text('Choose default city')),
-      ],
-      if (travel != null) ...[
-        Text(travel.message, style: DMTypography.bodySmall),
-        Text(
-            '${planCastTimestamp(context, travel.windowStart)} – ${planCastTimestamp(context, travel.windowEnd)}',
-            style: DMTypography.bodySmall),
-        Wrap(spacing: DMSpacing.xs, children: [
-          TextButton(
-              onPressed: () => reviewPlanCastBatch(context, c, travel.area,
-                  start: travel.windowStart,
-                  end: travel.windowEnd,
-                  calendarIds: travel.calendarIds),
-              child: const Text('Keep this area')),
-          TextButton(
-              onPressed: () async {
-                final place = await choosePlanCastArea(context, c);
-                if (place != null && context.mounted) {
-                  await reviewPlanCastBatch(context, c, place,
-                      start: travel.windowStart,
-                      end: travel.windowEnd,
-                      calendarIds: travel.calendarIds);
-                }
-              },
-              child: const Text('Use another area')),
-          if (home != null)
-            TextButton(
-                onPressed: () => reviewPlanCastBatch(context, c, home.candidate,
-                    start: travel.windowStart,
-                    end: travel.windowEnd,
-                    calendarIds: travel.calendarIds),
-                child: const Text('Use Home')),
-          TextButton(
-              onPressed: () => reviewPlanCastBatch(context, c, travel.area,
-                  start: travel.windowStart,
-                  end: travel.windowEnd,
-                  calendarIds: travel.calendarIds),
-              child: Text('Review ${travel.affectedCount} plans')),
+    if (travel == null &&
+        !needsDefault &&
+        !c.showSmartLocationExplanation &&
+        !c.canUndoLocationChange) {
+      return const SizedBox.shrink();
+    }
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      key: const ValueKey('plancast-location-notice'),
+      padding: const EdgeInsets.fromLTRB(
+          DMSpacing.sm, DMSpacing.sm, DMSpacing.xs, 0),
+      decoration: BoxDecoration(
+          color: colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(16)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+              padding: const EdgeInsets.only(top: DMSpacing.xs),
+              child:
+                  Icon(Icons.my_location, size: 18, color: colors.secondary)),
+          const SizedBox(width: DMSpacing.sm),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(
+                    travel != null
+                        ? travel.message
+                        : needsDefault
+                            ? 'Choose one default city for plans without a location.'
+                            : c.showSmartLocationExplanation
+                                ? 'Plans without a location use your area. Known destinations stay put.'
+                                : 'Location updated.',
+                    style: DMTypography.bodySmall),
+                if (travel != null)
+                  Text('Until ${planCastTimestamp(context, travel.windowEnd)}',
+                      style: Theme.of(context).textTheme.bodySmall),
+              ])),
+          if (travel != null || c.showSmartLocationExplanation && !needsDefault)
+            IconButton(
+                tooltip: 'Dismiss location notice',
+                onPressed: travel != null
+                    ? c.dismissTravelNotice
+                    : c.acknowledgeSmartLocations,
+                icon: const Icon(Icons.close, size: 18)),
         ]),
-      ],
-      if (c.canUndoLocationChange)
-        TextButton.icon(
-            onPressed: c.undoLocationChange,
-            icon: const Icon(Icons.undo),
-            label: const Text('Undo location change')),
-    ]);
+        Wrap(spacing: DMSpacing.xs, children: [
+          if (travel != null)
+            TextButton(
+                onPressed: () => _changeTravelArea(context, c),
+                child: const Text('Change')),
+          if (needsDefault && travel == null)
+            TextButton(
+                onPressed: () async {
+                  final place = await choosePlanCastArea(context, c);
+                  if (place != null) await c.setDefaultArea(place);
+                },
+                child: const Text('Choose default city')),
+          if (c.canUndoLocationChange)
+            TextButton.icon(
+                onPressed: c.undoLocationChange,
+                icon: const Icon(Icons.undo, size: 18),
+                label: const Text('Undo')),
+        ]),
+      ]),
+    );
+  }
+}
+
+Future<void> _changeTravelArea(
+    BuildContext context, PlanCastController c) async {
+  final travel = c.travelNotice;
+  if (travel == null) return;
+  final home = c.savedPlaces
+      .where((p) =>
+          p.label.trim().toLowerCase() == 'home' &&
+          p.candidate.hasValidCoordinates)
+      .firstOrNull;
+  final area = await showPlanCastSheet<LocationCandidate>(
+      context,
+      PlanCastSheetContent(
+          title: 'Change area for these plans',
+          subtitle:
+              '${travel.affectedCount} plans · until ${planCastTimestamp(context, travel.windowEnd)}',
+          child: Column(children: [
+            ListTile(
+                leading: const Icon(Icons.my_location),
+                title: const Text('Keep this area'),
+                subtitle: Text(travel.area.displayName),
+                onTap: () => Navigator.pop(context, travel.area)),
+            if (home != null)
+              ListTile(
+                  leading: const Icon(Icons.home_outlined),
+                  title: const Text('Use Home'),
+                  subtitle: Text(home.candidate.displayName),
+                  onTap: () => Navigator.pop(context, home.candidate)),
+            ListTile(
+                leading: const Icon(Icons.search),
+                title: const Text('Search for a city'),
+                onTap: () async {
+                  final place = await choosePlanCastArea(context, c);
+                  if (context.mounted && place != null) {
+                    Navigator.pop(context, place);
+                  }
+                }),
+          ])));
+  if (area != null && context.mounted) {
+    await reviewPlanCastBatch(context, c, area,
+        start: travel.windowStart,
+        end: travel.windowEnd,
+        calendarIds: travel.calendarIds);
   }
 }
 

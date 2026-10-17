@@ -19,11 +19,15 @@ import 'event_weather_evaluator.dart';
 import 'forecast_change_detector.dart';
 import 'plancast_briefing.dart';
 import 'plancast_models.dart';
+import 'plancast_day_summary.dart';
+import 'plancast_readout.dart';
 import 'plancast_notification_planner.dart';
 import 'platform/plancast_platform.dart';
 import 'venue_weather_repository.dart';
 
 export 'plancast_models.dart';
+export 'plancast_day_summary.dart';
+export 'plancast_readout.dart';
 
 /// Feature state is isolated from Today, radar, analytics and ad controllers.
 /// Calendar snapshots and rendered briefings are memory-only. Protected native
@@ -87,6 +91,9 @@ class PlanCastController extends ChangeNotifier {
   final Map<String, String> _eventWeatherVenueKeys = {};
   final Map<String, PlanCastBriefing> _briefings = {};
   final Map<String, String> _opinions = {};
+  final Map<String, PlanCastReadout> _readouts = {};
+  // Current-day completed identity is memory-only and never used for requests.
+  List<CalendarEvent> _completedEvents = const [];
   StreamSubscription<String>? _subscription;
   Timer? _debounce;
   Future<void>? _initializing;
@@ -244,6 +251,7 @@ class PlanCastController extends ChangeNotifier {
     selectedCalendarIds = ids.intersection(calendars.map((c) => c.id).toSet());
     _revision++;
     events = const [];
+    _completedEvents = const [];
     _eventWeather.clear();
     _eventWeatherVenueKeys.clear();
     _invalidateBriefings();
@@ -293,6 +301,13 @@ class PlanCastController extends ChangeNotifier {
       if (revision != _revision || _disposed) return;
       if (!await _stillAuthorized(revision)) return;
       _overrides.removeWhere((_, value) => !value.expiresAt.isAfter(now));
+      _completedEvents = source
+          .where((e) =>
+              selectedCalendarIds.contains(e.calendarId) &&
+              !e.isAllDay &&
+              !e.endUtc.isAfter(now) &&
+              PlanCastDaySummary.occursOnDay(e, localNow))
+          .toList();
       final normalized = source
           .where((e) =>
               selectedCalendarIds.contains(e.calendarId) &&
@@ -679,6 +694,99 @@ class PlanCastController extends ChangeNotifier {
         .toList();
   }
 
+  PlanCastDaySummary summaryForDay(DateTime day,
+          {Set<String>? calendarFilter}) =>
+      PlanCastDaySummary.build(
+          day: day,
+          now: clock(),
+          events:
+              events.map((e) => _evaluate(e.event, _eventWeather[e.event.id])),
+          completedEvents: _completedEvents,
+          connected: connected,
+          selectedCalendarIds: selectedCalendarIds,
+          loading: loading,
+          calendarFilter: calendarFilter);
+
+  PlanCastAgendaSummary summaryForRange(DateTime start,
+      {int days = 7, Set<String>? calendarFilter}) {
+    final snapshot = events
+        .map((e) => _evaluate(e.event, _eventWeather[e.event.id]))
+        .toList();
+    final now = clock();
+    return PlanCastAgendaSummary(
+        start: DateTime(start.year, start.month, start.day),
+        days: [
+          for (var i = 0; i < days.clamp(0, 14); i++)
+            PlanCastDaySummary.build(
+                day: DateTime(start.year, start.month, start.day + i),
+                now: now,
+                events: snapshot,
+                completedEvents: _completedEvents,
+                connected: connected,
+                selectedCalendarIds: selectedCalendarIds,
+                loading: loading,
+                calendarFilter: calendarFilter)
+        ]);
+  }
+
+  PlanCastReadout readoutForDay(DateTime day,
+      {required String personaId,
+      TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit,
+      Set<String>? calendarFilter,
+      PlanCastDaySummary? summary,
+      bool privateTitles = true}) {
+    final snapshot =
+        summary ?? summaryForDay(day, calendarFilter: calendarFilter);
+    final key =
+        '${snapshot.signature}|$personaId|${temperatureUnit.name}|$privateTitles';
+    if (_readouts.length >= 64) _readouts.remove(_readouts.keys.first);
+    return _readouts.putIfAbsent(
+        key,
+        () => const PlanCastReadoutComposer().compose(
+            summary: snapshot,
+            personaId: personaId,
+            now: clock(),
+            temperatureUnit: temperatureUnit,
+            privateTitles: privateTitles));
+  }
+
+  /// UI-only access: no forecast/geocoding request, persistence, or budget reset.
+  /// A detail opened from an old row cannot show hours from its replaced venue.
+  List<HourlyForecast> cachedHoursForEvent(PlanCastEventWeather item) {
+    if (!connected || item.event.isAllDay) return const [];
+    final latest =
+        currentEvents.where((e) => e.event.id == item.event.id).firstOrNull;
+    final weather = _eventWeather[item.event.id];
+    if (latest == null ||
+        weather == null ||
+        latest.isOnline ||
+        item.venue == null ||
+        latest.venue == null ||
+        !latest.assessment.usable ||
+        weather.isOfflineCache ||
+        _eventWeatherVenueKeys[item.event.id] !=
+            VenueWeatherRepository.keyFor(latest.venue!) ||
+        VenueWeatherRepository.keyFor(item.venue!) !=
+            VenueWeatherRepository.keyFor(latest.venue!)) {
+      return const [];
+    }
+    final age = clock().difference(weather.current.lastUpdated);
+    if (age > evaluator.maximumAge || age < const Duration(minutes: -5)) {
+      return const [];
+    }
+    final buffer = Duration(minutes: preferences.bufferMinutes);
+    final start = latest.event.startUtc.subtract(buffer);
+    final end = latest.event.endUtc.add(buffer);
+    final hours = <int, HourlyForecast>{};
+    for (final hour in weather.hourly) {
+      if (hour.time.isBefore(end) &&
+          hour.time.add(const Duration(hours: 1)).isAfter(start)) {
+        hours.putIfAbsent(hour.time.toUtc().millisecondsSinceEpoch, () => hour);
+      }
+    }
+    return hours.values.toList()..sort((a, b) => a.time.compareTo(b.time));
+  }
+
   List<PlanCastEventWeather> get previews {
     final upcoming = eventsForDay(clock());
     if (upcoming.isEmpty) return const [];
@@ -803,6 +911,7 @@ class PlanCastController extends ChangeNotifier {
     _connected = false;
     loading = false;
     events = const [];
+    _completedEvents = const [];
     calendars = const [];
     selectedCalendarIds = {};
     preferences = const PlanCastPreferences();
@@ -883,6 +992,7 @@ class PlanCastController extends ChangeNotifier {
   void _invalidateBriefings() {
     _briefings.clear();
     _opinions.clear();
+    _readouts.clear();
   }
 
   void _notify() {
@@ -1125,6 +1235,42 @@ class PlanCastController extends ChangeNotifier {
     await _locationsChanged();
   }
 
+  /// A reset is scoped to this occurrence, including migrated recurring choices.
+  /// Sibling occurrences retain their old choice; modern defaults still apply.
+  Future<void> resetEventLocation(CalendarEvent event) async {
+    if (!connected || !selectedCalendarIds.contains(event.calendarId)) return;
+    final hasLegacySeries = smartLocations.rules.any((r) =>
+        r.enabled &&
+        r.scope == LocationRuleScope.legacy &&
+        event.matchesLegacyRecurringKey(r.targetId));
+    smartLocations = smartLocations.copyWith(rules: [
+      ...smartLocations.rules.where((r) =>
+          !((r.scope == LocationRuleScope.occurrence ||
+                  r.scope == LocationRuleScope.legacy) &&
+              r.targetId == event.id)),
+      if (hasLegacySeries)
+        ScopedLocationRule(
+            id: planCastId('location-rule|occurrence|${event.id}'),
+            scope: LocationRuleScope.occurrence,
+            targetId: event.id,
+            choice: const LocationChoice.currentArea(),
+            useAutomatic: true,
+            createdAt: clock()),
+    ]);
+    final prior = _overrides[event.id] ??
+        _overrides[event.recurringKey] ??
+        _overrides[event.legacyRecurringKey];
+    if (prior != null) {
+      _overrides[event.id] = EventOverride(
+          environment: prior.environment == EventEnvironment.online
+              ? EventEnvironment.unknown
+              : prior.environment,
+          remindersEnabled: prior.remindersEnabled,
+          expiresAt: event.endUtc.add(const Duration(days: 1)));
+    }
+    await _locationsChanged();
+  }
+
   Future<void> removeLocationRule(String id) async {
     if (!connected) return;
     final removed = smartLocations.rules.where((r) => r.id == id).firstOrNull;
@@ -1180,23 +1326,26 @@ class PlanCastController extends ChangeNotifier {
       LocationRuleScope.calendarDefault => 'Calendar default',
       LocationRuleScope.legacy => 'Saved location choice',
     };
-    final choice = switch (rule.choice.kind) {
-      LocationChoiceKind.online => 'Online',
-      LocationChoiceKind.currentArea => 'Current area',
-      LocationChoiceKind.place =>
-        rule.choice.candidate?.displayName ?? 'Choose a place',
-      LocationChoiceKind.savedPlace => savedPlaces
-              .where((p) => p.id == rule.choice.savedPlaceId)
-              .firstOrNull
-              ?.label ??
-          'Saved place unavailable',
-    };
+    final choice = rule.useAutomatic
+        ? 'Automatic location'
+        : switch (rule.choice.kind) {
+            LocationChoiceKind.online => 'Online',
+            LocationChoiceKind.currentArea => 'Current area',
+            LocationChoiceKind.place =>
+              rule.choice.candidate?.displayName ?? 'Choose a place',
+            LocationChoiceKind.savedPlace => savedPlaces
+                    .where((p) => p.id == rule.choice.savedPlaceId)
+                    .firstOrNull
+                    ?.label ??
+                'Saved place unavailable',
+          };
     return '$scope · $choice';
   }
 
   bool _hasOccurrenceChoice(CalendarEvent event) =>
       smartLocations.rules.any((r) =>
           r.enabled &&
+          !r.useAutomatic &&
           r.targetId == event.id &&
           {LocationRuleScope.occurrence, LocationRuleScope.legacy}
               .contains(r.scope)) ||
@@ -1209,6 +1358,11 @@ class PlanCastController extends ChangeNotifier {
               event.isRecurring &&
               r.targetId == event.seriesKey ||
           r.scope == LocationRuleScope.legacy &&
+              !smartLocations.rules.any((reset) =>
+                  reset.enabled &&
+                  reset.useAutomatic &&
+                  reset.scope == LocationRuleScope.occurrence &&
+                  reset.targetId == event.id) &&
               event.matchesLegacyRecurringKey(r.targetId)));
 
   List<PlanCastEventWeather> locationChoiceAffected(
@@ -1384,6 +1538,8 @@ class PlanCastController extends ChangeNotifier {
     _eventWeather.clear();
     _eventWeatherVenueKeys.clear();
     _overrides.clear();
+    _completedEvents = const [];
+    _invalidateBriefings();
     super.dispose();
   }
 }

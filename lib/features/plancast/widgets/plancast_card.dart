@@ -9,9 +9,10 @@ import '../../../config/app_routes.dart';
 import '../../../design/dm_typography.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 import '../../../services/settings_controller.dart';
+import '../../roasts/models/roast_persona.dart';
 import '../plancast_controller.dart';
 import '../screens/plancast_screen.dart';
-import 'plancast_location_controls.dart';
+import 'plancast_presentation.dart';
 
 /// A deliberately small entry point; calendar work never gates Today weather.
 class PlanCastCard extends StatelessWidget {
@@ -25,12 +26,14 @@ class PlanCastCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final settings = context.watch<SettingsController?>();
-    final persona = settings?.selectedPersonaId;
+    final persona = RoastPersonas.normalizeId(settings?.selectedPersonaId);
     final unit = settings?.temperatureUnit ?? TemperatureUnit.fahrenheit;
     final today = controller.clock().toLocal();
-    final items = controller.eventsForDay(today);
-    final briefing = controller.briefingForDay(today,
-        persona: persona, temperatureUnit: unit);
+    final summary = controller.summaryForDay(today);
+    final items = summary.events;
+    final readout = controller.readoutForDay(today,
+        personaId: persona, temperatureUnit: unit, summary: summary);
+    void open() => context.push(AppRoutes.planCast);
     return DmGlassCard(
       key: const ValueKey('plancast-card'),
       padding: const EdgeInsets.all(DMSpacing.md),
@@ -38,10 +41,32 @@ class PlanCastCard extends StatelessWidget {
       blurSigma: 0,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Icon(Icons.event_note_outlined, color: context.dmColors.insightIcon),
+          Icon(Icons.event_note_outlined,
+              size: 28, color: context.dmColors.insightIcon),
           const SizedBox(width: DMSpacing.sm),
-          const Expanded(
-              child: Text('PlanCast', style: DMTypography.headingSmall)),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Expanded(
+                    child: Text('PlanCast', style: DMTypography.headingSmall)),
+                if (controller.connected)
+                  Text('Today',
+                      style: DMTypography.label
+                          .copyWith(color: context.dmColors.textSecondary)),
+              ]),
+              const SizedBox(height: DMSpacing.xxs),
+              Text('Your plans. The sky’s opinion.',
+                  style: DMTypography.bodySmall
+                      .copyWith(color: context.dmColors.textSecondary)),
+            ]),
+          ),
+          if (controller.connected)
+            IconButton(
+              tooltip: 'Open PlanCast',
+              onPressed: open,
+              icon: const Icon(Icons.chevron_right),
+            ),
           if (!controller.connected)
             IconButton(
               tooltip: 'Dismiss PlanCast invitation',
@@ -49,35 +74,48 @@ class PlanCastCard extends StatelessWidget {
               icon: const Icon(Icons.close),
             ),
         ]),
-        const Text('Your plans. The sky’s opinion.',
-            style: DMTypography.bodySmall),
         const SizedBox(height: DMSpacing.sm),
         if (!controller.supported)
           const Text(
               'Device calendars are available in the Android and iOS app. Your normal forecast works here on the web.')
         else if (!controller.connected) ...[
           const Text(
-              'An optional daily weather readout for the calendars you choose. Read-only, with private details kept on this device.'),
-          const SizedBox(height: DMSpacing.sm),
-          FilledButton(
-              onPressed: () => context.push(AppRoutes.planCast),
-              child: const Text('Connect calendars')),
-        ] else ...[
-          const Text('Today', style: DMTypography.labelLarge),
-          const SizedBox(height: DMSpacing.xs),
-          Text(
-              items.isEmpty
-                  ? 'No plans for today.'
-                  : planCastScopeSummary(items),
+              'A daily take on your plans and their weather. Choose which device calendars to include.',
               style: DMTypography.bodySmall),
-          PlanCastLocationNotice(items: items),
-          for (final item in items.take(2))
-            PlanCastEventTile(item: item, compact: true),
-          if (briefing.personaLine != null)
-            Text(briefing.personaLine!, style: DMTypography.bodySmall),
+          const SizedBox(height: DMSpacing.sm),
+          FilledButton(onPressed: open, child: const Text('Connect calendars')),
+        ] else if (controller.loading && items.isEmpty) ...[
+          const PlanCastLoadingPreview(compact: true),
+        ] else ...[
+          PlanCastPersonaCard(readout: readout, compact: true),
+          const SizedBox(height: DMSpacing.sm),
+          PlanCastSummaryRow(summary: summary, compact: true),
+          if (controller.loading)
+            const Padding(
+                padding: EdgeInsets.only(top: DMSpacing.xs),
+                child: Text('Refreshing your plans…',
+                    style: DMTypography.bodySmall)),
+          if (controller.error != null)
+            Padding(
+                padding: const EdgeInsets.only(top: DMSpacing.xs),
+                child: Text(controller.error!, style: DMTypography.bodySmall)),
+          if (items.isNotEmpty) const SizedBox(height: DMSpacing.xs),
+          for (final item in items.take(2)) ...[
+            PlanCastEventTile(item: item, compact: true, day: today),
+            if (items.take(2).last != item)
+              Divider(height: 1, color: context.dmColors.divider),
+          ],
+          const SizedBox(height: DMSpacing.xxs),
           TextButton(
-              onPressed: () => context.push(AppRoutes.planCast),
-              child: const Text('View my PlanCast')),
+              onPressed: open,
+              style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: DMSpacing.xxs),
+                  minimumSize: const Size(double.infinity, 48)),
+              child: const Row(children: [
+                Expanded(child: Text('View my PlanCast')),
+                Icon(Icons.chevron_right),
+              ])),
         ],
       ]),
     );

@@ -367,6 +367,8 @@ class SmartLocationResolver {
                 r.scope == LocationRuleScope.legacy) &&
             r.targetId == event.id)
         .firstOrNull;
+    final useAutomatic = occurrence?.scope == LocationRuleScope.occurrence &&
+        occurrence?.useAutomatic == true;
     ResolvedLocation unresolved(String reason,
             {bool conflict = false, bool review = true}) =>
         ResolvedLocation(
@@ -495,7 +497,8 @@ class SmartLocationResolver {
     }
 
     if (occurrenceOverride?.environment == EventEnvironment.online ||
-        occurrence?.choice.kind == LocationChoiceKind.online) {
+        (!useAutomatic &&
+            occurrence?.choice.kind == LocationChoiceKind.online)) {
       return finish(
           unresolved('Online participation was explicitly selected.',
               review: false),
@@ -507,7 +510,7 @@ class SmartLocationResolver {
     if (explicitlyPhysical) {
       participation = EventParticipation.physical;
     }
-    if (occurrence != null) {
+    if (occurrence != null && !useAutomatic) {
       return finish(choice(occurrence.choice, LocationSource.userOverride,
           providerExpiry: occurrence.providerExpiresAt)!);
     }
@@ -529,7 +532,8 @@ class SmartLocationResolver {
             r.scope == LocationRuleScope.legacy &&
             event.matchesLegacyRecurringKey(r.targetId))
         .firstOrNull;
-    if (!hasNewSeriesChoice &&
+    if (!useAutomatic &&
+        !hasNewSeriesChoice &&
         legacySeries != null &&
         !(explicitlyPhysical &&
             legacySeries.choice.kind == LocationChoiceKind.online)) {

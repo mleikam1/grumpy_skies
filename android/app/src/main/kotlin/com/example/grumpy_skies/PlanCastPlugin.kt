@@ -193,8 +193,8 @@ internal object PlanCastNative {
     fun calendars(context: Context): List<Map<String, Any?>> {
         checkPermission(context)
         val rows = mutableListOf<Map<String, Any?>>()
-        context.contentResolver.query(CalendarContract.Calendars.CONTENT_URI, arrayOf("_id", "calendar_displayName", "calendar_color"), "visible = 1", null, "calendar_displayName ASC")?.use { cursor ->
-            while (cursor.moveToNext()) rows.add(mapOf("id" to cursor.getLong(0).toString(), "name" to (cursor.getString(1) ?: "Calendar"), "color" to cursor.getInt(2)))
+        context.contentResolver.query(CalendarContract.Calendars.CONTENT_URI, arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.ACCOUNT_NAME), "visible = 1", null, "calendar_displayName ASC")?.use { cursor ->
+            while (cursor.moveToNext()) rows.add(mapOf("id" to cursor.getLong(0).toString(), "name" to (cursor.getString(1) ?: "Calendar"), "colorArgb" to (if (cursor.isNull(2)) null else cursor.getInt(2).toLong() and 0xffffffffL), "accountName" to cursor.getString(3)?.trim()?.takeIf { it.isNotEmpty() }))
         }
         return rows
     }

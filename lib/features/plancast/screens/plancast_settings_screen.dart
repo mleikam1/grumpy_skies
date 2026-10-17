@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,56 +11,138 @@ import '../widgets/plancast_location_controls.dart';
 Future<void> selectPlanCastCalendars(
     BuildContext context, PlanCastController controller) async {
   final needsOnboarding = controller.selectedCalendarIds.isEmpty;
-  final chosen = controller.selectedCalendarIds.toSet();
-  final saved = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-                title: const Text('Choose calendars'),
-                content: SizedBox(
-                    width: 500,
-                    child: SingleChildScrollView(
-                        child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                          const Text(
-                              'Only calendars you select are read. Add missing accounts to your device calendar settings, make their calendars visible, then refresh PlanCast.'),
-                          if (controller.calendars.isEmpty)
-                            const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: DMSpacing.md),
-                                child: Text(
-                                    'No accessible calendars found. You can keep using the weather app.')),
-                          for (final calendar in controller.calendars)
-                            CheckboxListTile(
-                                contentPadding: EdgeInsets.zero,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                                title: Text(calendar.name),
-                                value: chosen.contains(calendar.id),
-                                onChanged: (value) => setState(() {
-                                      if (value == true) {
-                                        chosen.add(calendar.id);
-                                      } else {
-                                        chosen.remove(calendar.id);
-                                      }
-                                    })),
-                        ]))),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(dialogContext, false),
-                      child: const Text('Cancel')),
-                  FilledButton(
-                      onPressed: () => Navigator.pop(dialogContext, true),
-                      child: const Text('Use selected calendars')),
-                ],
-              )));
-  if (saved != true) return;
-  await controller.selectCalendars(chosen);
-  if (context.mounted && chosen.isNotEmpty && needsOnboarding) {
+  final saved = await showPlanCastSheet<bool>(
+      context, _CalendarSelection(controller: controller));
+  if (saved == true &&
+      context.mounted &&
+      controller.selectedCalendarIds.isNotEmpty &&
+      needsOnboarding) {
     await Navigator.of(context).push(MaterialPageRoute<void>(
         builder: (_) => const PlanCastSettingsScreen(firstConnection: true)));
+  }
+}
+
+class _CalendarSelection extends StatefulWidget {
+  const _CalendarSelection({required this.controller});
+  final PlanCastController controller;
+  @override
+  State<_CalendarSelection> createState() => _CalendarSelectionState();
+}
+
+class _CalendarSelectionState extends State<_CalendarSelection> {
+  late final Set<String> _chosen = {...widget.controller.selectedCalendarIds};
+  bool _saving = false;
+  String? _error;
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+      listenable: widget.controller,
+      builder: (context, _) {
+        final c = widget.controller;
+        return PopScope(
+            canPop: !_saving,
+            child: PlanCastSheetContent(
+              title: 'Manage calendars',
+              subtitle:
+                  'Choose which calendars appear in PlanCast. Read-only, always.',
+              busy: _saving,
+              footer: FilledButton(
+                  key: const ValueKey('plancast-save-calendars'),
+                  onPressed: _saving ? null : _save,
+                  child: Text(_saving ? 'Saving…' : 'Done')),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (c.calendars.isEmpty)
+                      const Padding(
+                          padding: EdgeInsets.symmetric(vertical: DMSpacing.md),
+                          child: Text(
+                              'No accessible calendars found. You can keep using the weather app.')),
+                    if (c.calendars.isNotEmpty)
+                      DecoratedBox(
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Theme.of(context).colorScheme.outline),
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Column(children: [
+                            for (final calendar in c.calendars)
+                              Semantics(
+                                  selected: _chosen.contains(calendar.id),
+                                  child: CheckboxListTile(
+                                    key: ValueKey(
+                                        'plancast-calendar-${calendar.id}'),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: DMSpacing.sm,
+                                        vertical: DMSpacing.xs),
+                                    secondary: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: calendar.colorArgb == null
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurfaceVariant
+                                                : Color(calendar.colorArgb!),
+                                            border: Border.all(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .outline))),
+                                    title: Text(calendar.name,
+                                        style: DMTypography.labelLarge),
+                                    subtitle: calendar.accountName == null
+                                        ? null
+                                        : Text(calendar.accountName!),
+                                    value: _chosen.contains(calendar.id),
+                                    onChanged: _saving
+                                        ? null
+                                        : (value) => setState(() {
+                                              value == true
+                                                  ? _chosen.add(calendar.id)
+                                                  : _chosen.remove(calendar.id);
+                                            }),
+                                  )),
+                          ])),
+                    const SizedBox(height: DMSpacing.sm),
+                    Text(
+                        '${_chosen.length} ${_chosen.length == 1 ? 'calendar' : 'calendars'} selected',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: const Text('Missing a calendar?',
+                            style: DMTypography.label),
+                        children: [
+                          Text(
+                              'Add the account in your device calendar settings and make its calendars visible. Then refresh PlanCast.',
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ]),
+                    if (_error != null)
+                      Text(_error!,
+                          style: Theme.of(context).textTheme.bodySmall),
+                  ]),
+            ));
+      });
+
+  Future<void> _save() async {
+    if (setEquals(_chosen, widget.controller.selectedCalendarIds)) {
+      Navigator.pop(context, true);
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.controller.selectCalendars(_chosen);
+      if (mounted) Navigator.pop(context, true);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error =
+              'Your calendar selection could not be saved. Please try again.';
+        });
+      }
+    }
   }
 }
 

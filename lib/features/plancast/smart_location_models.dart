@@ -304,12 +304,18 @@ class ScopedLocationRule {
       required this.choice,
       required this.createdAt,
       this.enabled = true,
+      this.useAutomatic = false,
       this.providerExpiresAt});
   final String id, targetId;
   final LocationRuleScope scope;
   final LocationChoice choice;
   final DateTime createdAt;
   final bool enabled;
+
+  /// An occurrence-only reset can bypass migrated series intent without
+  /// deleting the user's choice for sibling occurrences. The placeholder
+  /// [choice] is ignored while this flag is true.
+  final bool useAutomatic;
   final DateTime? providerExpiresAt;
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -318,6 +324,7 @@ class ScopedLocationRule {
         'choice': choice.toJson(),
         'createdAt': createdAt.toUtc().toIso8601String(),
         'enabled': enabled,
+        if (useAutomatic) 'useAutomatic': true,
         'providerExpiresAt': providerExpiresAt?.toUtc().toIso8601String()
       };
   static ScopedLocationRule? fromJson(Map<String, dynamic> json) {
@@ -343,6 +350,8 @@ class ScopedLocationRule {
         choice: choice,
         createdAt: created,
         enabled: json['enabled'] != false,
+        useAutomatic: scope == LocationRuleScope.occurrence &&
+            json['useAutomatic'] == true,
         providerExpiresAt: _date(json['providerExpiresAt']));
   }
 }
