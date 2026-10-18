@@ -1,3 +1,5 @@
+import '../../guidance/forecast_guidance.dart';
+import '../../guidance/domain/guidance.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -42,6 +44,7 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
   Timer? _freshnessTimer;
   List<HourlyForecast> _hours = [];
   List<_TimelineEntry> _entries = [];
+  final Set<DateTime> _tipHours = {};
   late DateTime _now;
   TemperatureUnit _unit = TemperatureUnit.fahrenheit;
 
@@ -89,6 +92,22 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
     _unit = _settings?.temperatureUnit ?? TemperatureUnit.fahrenheit;
     _hours = forecastTimelineHours(_weather?.hourly ?? widget.hourly, _now);
     _entries = [];
+    _tipHours.clear();
+    HourlyForecast? previous;
+    DateTime? lastTip;
+    for (final hour in _hours) {
+      final changed = previous == null ||
+          hour.weatherId != previous.weatherId ||
+          hour.precipitationChance ~/ 30 != previous.precipitationChance ~/ 30;
+      if (changed &&
+          _tipHours.length < 4 &&
+          (lastTip == null ||
+              hour.time.difference(lastTip) >= const Duration(hours: 3))) {
+        _tipHours.add(hour.time);
+        lastTip = hour.time;
+      }
+      previous = hour;
+    }
     String? previousDate;
     for (final hour in _hours) {
       final date = forecastDateKey(hour.time, _timezone, _offset);
@@ -170,6 +189,13 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
             key: ValueKey(
                 'hourly-row-${hour.time.toUtc().millisecondsSinceEpoch}'),
             hour: hour,
+            guidance: weather != null && _tipHours.contains(hour.time)
+                ? ForecastGuidanceView(
+                    weather: weather,
+                    surface: GuidanceSurface.hourlyDetail,
+                    hour: hour.time,
+                    clock: widget.clock)
+                : null,
             current: forecastIsCurrentHour(hour.time, _now),
             label: label,
             offsetLabel: repeated
@@ -199,6 +225,7 @@ class _HourlyDetailRow extends StatelessWidget {
   const _HourlyDetailRow(
       {super.key,
       required this.hour,
+      this.guidance,
       required this.label,
       required this.current,
       required this.unit,
@@ -207,6 +234,7 @@ class _HourlyDetailRow extends StatelessWidget {
       this.latitude,
       this.longitude});
   final HourlyForecast hour;
+  final Widget? guidance;
   final String label;
   final bool current;
   final TemperatureUnit unit;
@@ -293,6 +321,8 @@ class _HourlyDetailRow extends StatelessWidget {
         ]),
         if (largeText)
           Padding(padding: const EdgeInsets.only(top: 8), child: details),
+        if (guidance != null)
+          Padding(padding: const EdgeInsets.only(top: 8), child: guidance),
       ]),
     );
   }

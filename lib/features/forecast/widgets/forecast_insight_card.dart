@@ -1,3 +1,5 @@
+import '../../guidance/forecast_guidance.dart';
+import '../../guidance/domain/guidance.dart';
 import 'package:flutter/material.dart';
 import '../../../design/dm_theme.dart';
 import '../../../models/weather_models.dart';
@@ -39,7 +41,7 @@ class ForecastInsightCard extends StatelessWidget {
         : rain == null
             ? 'Explore the hourly forecast.'
             : 'Precipitation chance ${weather.current.precipitationChanceKnown && rain.precipitationChance > weather.current.precipitationChance ? 'rises to' : 'is'} ${rain.precipitationChance}%.';
-    return Material(
+    final fallback = Material(
         color: context.dmColors.insightSurface,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
@@ -84,5 +86,11 @@ class ForecastInsightCard extends StatelessWidget {
                       ])),
                   const Icon(Icons.chevron_right, size: 22),
                 ]))));
+    return ForecastGuidanceView(
+        weather: weather,
+        surface: GuidanceSurface.todaySummary,
+        compact: false,
+        clock: clock,
+        fallback: fallback);
   }
 }

@@ -918,6 +918,11 @@ class DailyForecast {
 
 /// Bundle for convenience
 class WeatherBundle {
+  /// Old serialized defaults cannot prove individual fields were supplied.
+  final bool guidanceAvailabilityVerified;
+
+  /// Retained backend attribution; absent in older caches rather than guessed.
+  final String? forecastSource;
   final CurrentWeather current;
   final List<HourlyForecast> hourly;
   final List<DailyForecast> daily;
@@ -935,6 +940,8 @@ class WeatherBundle {
   final String? dailyForecastMessage;
 
   const WeatherBundle({
+    this.guidanceAvailabilityVerified = true,
+    this.forecastSource,
     required this.current,
     required this.hourly,
     required this.daily,
@@ -951,6 +958,8 @@ class WeatherBundle {
   });
 
   Map<String, dynamic> toJson() => {
+        'guidanceAvailabilityVerified': guidanceAvailabilityVerified,
+        'forecastSource': forecastSource,
         'current': current.toJson(),
         'hourly': hourly.map((e) => e.toJson()).toList(),
         'daily': daily.map((e) => e.toJson()).toList(),
@@ -976,6 +985,7 @@ class WeatherBundle {
 
   factory WeatherBundle.fromSnapshot(WeatherSnapshot snapshot) {
     return WeatherBundle(
+      guidanceAvailabilityVerified: false,
       current: CurrentWeather.fromSnapshot(snapshot),
       hourly: snapshot.hourly
           .map((hour) => HourlyForecast.fromForecastHour(hour))
@@ -988,7 +998,26 @@ class WeatherBundle {
   }
 
   factory WeatherBundle.fromJson(Map<String, dynamic> json) {
+    bool hasFlags(Object? raw, List<String> keys) =>
+        raw is Map && keys.every((key) => raw[key] is bool);
+    final guidanceVerified = json['guidanceAvailabilityVerified'] != false &&
+        hasFlags(json['current'], const [
+          'temperatureKnown',
+          'feelsLikeKnown',
+          'humidityKnown',
+          'windKnown',
+          'uvKnown',
+          'sunriseKnown',
+          'sunsetKnown',
+          'precipitationChanceKnown'
+        ]) &&
+        (json['hourly'] as List).every((item) => hasFlags(
+            item, const ['temperatureKnown', 'precipitationChanceKnown'])) &&
+        (json['daily'] as List).every((item) => hasFlags(
+            item, const ['temperatureKnown', 'precipitationChanceKnown']));
     return WeatherBundle(
+      guidanceAvailabilityVerified: guidanceVerified,
+      forecastSource: json['forecastSource'] as String?,
       current: CurrentWeather.fromJson(json['current']),
       hourly: (json['hourly'] as List)
           .map((e) => HourlyForecast.fromJson(e))

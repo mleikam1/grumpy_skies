@@ -11,6 +11,7 @@ import '../../../services/settings_controller.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 import '../plancast_controller.dart';
 import '../widgets/plancast_event_card.dart';
+import '../widgets/plancast_guidance.dart';
 import '../widgets/plancast_location_controls.dart';
 import '../widgets/plancast_presentation.dart';
 import 'plancast_settings_screen.dart';
@@ -303,6 +304,7 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
         key: ValueKey('briefing-${summary.day}-${filter?.join(',') ?? 'all'}'),
         readout: readout,
         compact: compact,
+        guidance: PlanCastSummaryGuidance(summary: summary),
         contextLabel: compact
             ? null
             : planCastDate(context, summary.day, now: c.clock().toLocal()),

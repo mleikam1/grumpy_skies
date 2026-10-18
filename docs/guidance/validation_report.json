@@ -1,0 +1,29 @@
+{
+  "valid": true,
+  "schemaVersion": 1,
+  "catalogVersion": "1.1.0",
+  "templateCount": 240,
+  "familyCount": 40,
+  "sourceOverrideCount": 35,
+  "guardCount": 62,
+  "reviewedTemplateCount": 240,
+  "revisedTemplateCount": 171,
+  "maxTextChars": 134,
+  "maxTextWords": 21,
+  "negativeValidationCasesPassed": 24,
+  "files": {
+    "wingman_tips.en-US.json": {
+      "rawBytes": 56512,
+      "gzipBytes": 9000,
+      "sha256": "2881fccdede3a212d0b08de61ed9cb95e9114991cb6ebf730ba16075dd570b4b"
+    },
+    "wingman_tip_family_contracts.json": {
+      "rawBytes": 47600,
+      "gzipBytes": 6323,
+      "sha256": "a56f7df5be5ba634f9bf4459b53f508a3992f8649f1817e9f4b5e73428205bf9"
+    }
+  },
+  "combinedRawBytes": 104112,
+  "combinedGzipBytes": 15323,
+  "gzipMeasurement": "Each checked-in UTF-8 JSON file compressed independently with gzip level 9 and mtime 0."
+}

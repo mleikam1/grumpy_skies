@@ -18,6 +18,7 @@ class PlanCastBriefingCard extends StatefulWidget {
     this.listening = false,
     this.expandedContent,
     this.contextLabel,
+    this.guidance,
   });
 
   final PlanCastReadout readout;
@@ -26,6 +27,7 @@ class PlanCastBriefingCard extends StatefulWidget {
   final bool listening;
   final Widget? expandedContent;
   final String? contextLabel;
+  final Widget? guidance;
 
   @override
   State<PlanCastBriefingCard> createState() => _PlanCastBriefingCardState();
@@ -71,6 +73,7 @@ class _PlanCastBriefingCardState extends State<PlanCastBriefingCard> {
               heading,
               const SizedBox(height: DMSpacing.xs),
               copy,
+              if (widget.guidance != null) widget.guidance!,
               if (widget.onListen != null ||
                   widget.expandedContent != null) ...[
                 const SizedBox(height: DMSpacing.xxs),

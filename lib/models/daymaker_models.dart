@@ -1,6 +1,7 @@
 import 'app_appearance.dart';
 export 'app_appearance.dart';
 import 'temperature_unit.dart';
+import 'guidance_preferences.dart';
 
 class WeatherSnapshot {
   final String id;
@@ -309,6 +310,7 @@ class UserSettings {
   );
 
   final AppAppearance appearance;
+  final GuidancePreferences guidance;
   final TemperatureUnit temperatureUnit;
   final bool notificationsEnabled;
   final bool adsEnabled;
@@ -317,6 +319,7 @@ class UserSettings {
   final int streakDays;
 
   const UserSettings({
+    this.guidance = const GuidancePreferences(),
     this.appearance = AppAppearance.light,
     required this.temperatureUnit,
     required this.notificationsEnabled,
@@ -327,6 +330,7 @@ class UserSettings {
   });
 
   UserSettings copyWith({
+    GuidancePreferences? guidance,
     AppAppearance? appearance,
     TemperatureUnit? temperatureUnit,
     bool? notificationsEnabled,
@@ -336,6 +340,7 @@ class UserSettings {
     int? streakDays,
   }) {
     return UserSettings(
+      guidance: guidance ?? this.guidance,
       appearance: appearance ?? this.appearance,
       temperatureUnit: temperatureUnit ?? this.temperatureUnit,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,

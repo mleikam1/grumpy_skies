@@ -18,6 +18,8 @@ class ForecastDailyStrip extends StatelessWidget {
   const ForecastDailyStrip({
     super.key,
     required this.daily,
+    this.weather,
+    this.clock,
     this.referenceTime,
     this.timezone,
     this.timezoneOffset,
@@ -28,6 +30,8 @@ class ForecastDailyStrip extends StatelessWidget {
   });
 
   final List<DailyForecast> daily;
+  final WeatherBundle? weather;
+  final DateTime Function()? clock;
   final DateTime? referenceTime;
   final String? timezone;
   final int? timezoneOffset;
@@ -72,6 +76,8 @@ class ForecastDailyStrip extends StatelessWidget {
               : onSeeAll ??
                   () => showDailyForecastSheet(context,
                       daily: daily,
+                      weather: weather,
+                      clock: clock,
                       referenceTime: now,
                       timezone: timezone,
                       timezoneOffset: timezoneOffset,

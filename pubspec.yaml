@@ -70,6 +70,7 @@ flutter:
         - asset: assets/fonts/SpaceMono-Bold.ttf
           weight: 700
   assets:
+    - assets/guidance/
     - assets/approved_v1/weather/
     - assets/approved_v1/memes/
     - assets/monetization/

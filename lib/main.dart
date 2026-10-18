@@ -6,6 +6,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'features/guidance/guidance_controller.dart';
 import 'features/plancast/plancast_controller.dart';
 import 'features/plancast/widgets/plancast_lifecycle.dart';
 import 'app/daymaker_router.dart';
@@ -50,6 +51,7 @@ void main() async {
   locationController.addListener(evaluateAchievements);
 
   final planCast = PlanCastController(weatherRepository: weatherRepository);
+  final guidance = GuidanceController();
 
   final monetization = MonetizationController(
     config: AdConfig.fromEnvironment(),
@@ -67,6 +69,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<GuidanceController>.value(value: guidance),
         ChangeNotifierProvider<PlanCastController>.value(value: planCast),
         ChangeNotifierProvider<MonetizationController>.value(
             value: monetization),
@@ -92,6 +95,7 @@ void main() async {
     ),
   );
   WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(guidance.initialize());
     unawaited(monetization.start());
   });
 }

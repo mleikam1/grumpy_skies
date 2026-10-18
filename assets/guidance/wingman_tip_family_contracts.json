@@ -1,0 +1,1182 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "1.1.0",
+  "locale": "en-US",
+  "status": "repository_reviewed_contracts",
+  "purpose": "Repository-reviewed evidence specifications for the local Wingman catalog. These named contracts are data; application code proves predicates and enforces safety.",
+  "globalPolicy": {
+    "zeroIncrementalRequests": true,
+    "requiredForEveryWeatherClaim": [
+      "correct_location_scope",
+      "correct_time_scope",
+      "source_freshness",
+      "field_availability",
+      "provider_semantics",
+      "units_or_named_index",
+      "precision_no_greater_than_source"
+    ],
+    "ordinaryTipExclusions": [
+      "applicable_urgent_official_hazard_requires_priority",
+      "contradicting_fresh_observation",
+      "expired_evidence",
+      "expired_action_window",
+      "irreconcilable_source_conflict"
+    ],
+    "alerts": "Preserve the existing official alert UI, source instructions, spatial and temporal applicability, watch/warning distinction, and update lifecycle. Absence or expiry never proves all-clear.",
+    "activityBinding": "Explicit activity preference may choose an advice topic but does not prove an outing today. In preference-only mode the UI must supply a conditional context label such as 'If you are cycling' or a suitably conditional variant. Actual scheduled wording requires a known/proposed activity interval.",
+    "locationBinding": "Use the viewed forecast location for general tips and the existing resolved event venue for event tips. Current-area fallback is visibly labeled and refreshed after travel without moving explicit events.",
+    "probabilityBands": {
+      "possible": {
+        "minInclusive": 0.3,
+        "maxExclusive": 0.6
+      },
+      "likely": {
+        "minInclusive": 0.6,
+        "maxInclusive": 1
+      },
+      "note": "Starting editorial bands only; normalized probability and liquid-rain type are required. Reconcile with the provider. Never treat chance as amount, intensity, or whole-outing probability."
+    },
+    "comparisons": "Complete comparable intervals, meaningful improvement, and known-hazard exclusions are required. A comparative score is not an event-wide probability. Name a time window only if coverage supports it.",
+    "freshness": "Use documented provider-specific policies. fetchedAt cannot renew stale observation/issue time. Missing and stale are different from zero.",
+    "weatherOnlyCommutes": "No current traffic, travel-delay number, route-wide weather, accident, closure, or weather-causation claim from a point forecast.",
+    "catalogDelivery": "Bundle locally. No runtime content/API/database dependency.",
+    "variantRule": "Every variant must satisfy its family contract and any narrower requirements. If extra evidence is missing, choose a supported variant or revise wording; do not broaden eligibility."
+  },
+  "families": [
+    {
+      "id": "rain_likely_outing",
+      "title": "Likely liquid rain during an outing",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "liquid_rain_type",
+        "probability_likely",
+        "relevant_outing_or_day_window"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict"
+      ],
+      "claimLimit": "Use a supported day or outing interval; no inference of all-day rain or rain intensity.",
+      "semanticDedupeKey": "rain_likely_outing",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "rain_possible_outing",
+      "title": "Possible liquid rain during an outing",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "liquid_rain_type",
+        "probability_possible",
+        "relevant_outing_or_day_window"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict"
+      ],
+      "claimLimit": "Possible, not certain; never say rain is currently occurring from probability alone.",
+      "semanticDedupeKey": "rain_possible_outing",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "rain_current",
+      "title": "Currently observed light or moderate rain",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "current_detail"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "fresh_current_rain_observation",
+        "light_or_moderate_rain"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict",
+        "future_only_surface"
+      ],
+      "claimLimit": "Now at the displayed place only; current observation must remain fresh.",
+      "semanticDedupeKey": "rain_current",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "rain_later",
+      "title": "Higher rain likelihood later today",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "liquid_rain_type",
+        "hourly_probability_comparison",
+        "later_same_local_day"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict",
+        "different_local_day"
+      ],
+      "claimLimit": "Later means later than now on the location's local date; show the supported interval.",
+      "semanticDedupeKey": "rain_later",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "lower_rain_window",
+      "title": "General outing in a lower-rain window",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "liquid_rain_probability",
+        "complete_comparison_windows",
+        "meaningful_rain_probability_improvement"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window",
+        "incomplete_comparison"
+      ],
+      "claimLimit": "A comparative chance only; display a verified time range beside window-referencing copy. Wording compares hourly probabilities only; never publish a derived whole-outing probability or claim that current rain ended.",
+      "semanticDedupeKey": "lower_rain_window",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "rain_ending_trend",
+      "title": "Lower forecast rain chances after current rain",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "fresh_current_rain_observation",
+        "liquid_rain_type",
+        "hourly_probability_downward_comparison"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window",
+        "incomplete_comparison"
+      ],
+      "claimLimit": "The ID is historical shorthand. This never proves actual rain ending, reduced intensity, or exact end time. Wording compares hourly probabilities only; never publish a derived whole-outing probability or claim that current rain ended.",
+      "semanticDedupeKey": "rain_ending_trend",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "rain_evening",
+      "title": "Rain likely in the upcoming evening",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "liquid_rain_type",
+        "probability_likely",
+        "upcoming_evening_same_local_day"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict"
+      ],
+      "claimLimit": "This evening refers to the location's current local date; use a separate qualified form for another date.",
+      "semanticDedupeKey": "rain_evening",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "wet_walk",
+      "title": "Walking in currently observed rain",
+      "activity": "walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "current_detail"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "fresh_current_rain_observation",
+        "walking_activity_context"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window",
+        "future_only_surface"
+      ],
+      "claimLimit": "Surface slipperiness is conditional, not observed; this describes a walk now or imminently.",
+      "semanticDedupeKey": "wet_walk",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "dog_rain",
+      "title": "Dog outing with rain in its window",
+      "activity": "dog_walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "dog_activity_context",
+        "liquid_rain_type",
+        "rain_supported_in_activity_window"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Preference-only use requires a conditional activity caption; do not invent a scheduled walk.",
+      "semanticDedupeKey": "dog_rain",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "dog_heat",
+      "title": "Dog outing in warm or hot conditions",
+      "activity": "dog_walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "dog_activity_context",
+        "warm_or_hot_outlook"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Cooler hours are a conditional planning suggestion unless a separate verified window is shown; no dog-safe cutoff.",
+      "semanticDedupeKey": "dog_heat",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "dog_cold",
+      "title": "Dog outing in cold conditions",
+      "activity": "dog_walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "dog_activity_context",
+        "cold_outlook"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Describe comfort and flexibility, not a universally safe duration, temperature, or breed-specific medical instruction.",
+      "semanticDedupeKey": "dog_cold",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "dog_wind",
+      "title": "Dog outing in gusty conditions",
+      "activity": "dog_walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "dog_activity_context",
+        "notable_gusts_outlook"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Sheltered routes are suggestions where available; not confirmed route conditions.",
+      "semanticDedupeKey": "dog_wind",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "dog_lower_rain_window",
+      "title": "Dog outing in a comparatively lower-rain window",
+      "activity": "dog_walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "dog_activity_context",
+        "complete_comparison_windows",
+        "meaningful_rain_probability_improvement"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window",
+        "incomplete_comparison"
+      ],
+      "claimLimit": "A verified selected interval must accompany the copy; cover the intended walk duration. Wording compares hourly probabilities only; never publish a derived whole-outing probability or claim that current rain ended.",
+      "semanticDedupeKey": "dog_lower_rain_window",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "dog_after_dark",
+      "title": "Planned dog outing after sunset",
+      "activity": "dog_walking",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "known_dog_activity_interval",
+        "local_sunset_or_night_evidence"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Requires an actual proposed activity interval after local sunset; a dog preference alone is insufficient.",
+      "semanticDedupeKey": "dog_after_dark",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "bike_rain",
+      "title": "Cycling with likely rain in its window",
+      "activity": "cycling",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "cycling_activity_context",
+        "liquid_rain_type",
+        "probability_likely_in_activity_window"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Wet traction is conditional; do not claim a road is measured wet or a ride is safe.",
+      "semanticDedupeKey": "bike_rain",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "bike_wind",
+      "title": "Cycling in gusty conditions",
+      "activity": "cycling",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "cycling_activity_context",
+        "notable_gusts_in_activity_window"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "No headwind/tailwind or route exposure claim without route/direction evidence.",
+      "semanticDedupeKey": "bike_wind",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "bike_heat",
+      "title": "Cycling in warm or hot conditions",
+      "activity": "cycling",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "cycling_activity_context",
+        "warm_or_hot_outlook"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Cooler departure recommendations need a verified comparison if any time is named.",
+      "semanticDedupeKey": "bike_heat",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "bike_cold",
+      "title": "Cycling in cold conditions",
+      "activity": "cycling",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "cycling_activity_context",
+        "cold_outlook"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "A layering suggestion is not a guarantee of comfort or safety.",
+      "semanticDedupeKey": "bike_cold",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "bike_after_dark",
+      "title": "Planned cycling after sunset",
+      "activity": "cycling",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "known_cycling_activity_interval",
+        "local_sunset_or_night_evidence"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window"
+      ],
+      "claimLimit": "Requires a proposed activity after local sunset; preserve date/time across midnight.",
+      "semanticDedupeKey": "bike_after_dark",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "bike_lower_rain_window",
+      "title": "Cycling in a comparatively lower-rain window",
+      "activity": "cycling",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "cycling_activity_context",
+        "complete_comparison_windows",
+        "meaningful_rain_probability_improvement"
+      ],
+      "excludedWhen": [
+        "known_hazard_in_window",
+        "incomplete_comparison"
+      ],
+      "claimLimit": "Show the supported range; all activity intervals must be covered. No guaranteed dry ride. Wording compares hourly probabilities only; never publish a derived whole-outing probability or claim that current rain ended.",
+      "semanticDedupeKey": "bike_lower_rain_window",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "commute_rain",
+      "title": "Weather-based commute rain preparation",
+      "activity": "driving_commute",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "driving_commute_context",
+        "liquid_rain_type",
+        "probability_likely_overlapping_commute"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict"
+      ],
+      "claimLimit": "Weather at the labeled scope during the commute window; no measured traffic, delay, causal attribution, or route-wide weather.",
+      "semanticDedupeKey": "commute_rain",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "commute_snow",
+      "title": "Weather-based commute snow preparation",
+      "activity": "driving_commute",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "driving_commute_context",
+        "explicit_snow_forecast_overlapping_commute"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Slipperiness and delays are possibilities; no actual roadway or traffic claim.",
+      "semanticDedupeKey": "commute_snow",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "commute_fog",
+      "title": "Weather-based commute low-visibility preparation",
+      "activity": "driving_commute",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "driving_commute_context",
+        "explicit_fog_or_low_visibility_overlapping_commute"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "No inferred fog from high humidity alone and no known route closure or traffic claim.",
+      "semanticDedupeKey": "commute_fog",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "commute_wind",
+      "title": "Weather-based commute gust preparation",
+      "activity": "driving_commute",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "driving_commute_context",
+        "notable_gusts_overlapping_commute"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Exposure is conditional unless actually known; gusts at one endpoint are not proof across the route.",
+      "semanticDedupeKey": "commute_wind",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "commute_freezing_precip",
+      "title": "Weather-based commute freezing-precipitation preparation",
+      "activity": "driving_commute",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "adverse_condition",
+      "requiredEvidence": [
+        "driving_commute_context",
+        "explicit_freezing_precipitation_overlapping_commute"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Needs provider-identified freezing precipitation. Roads may become slippery; actual road ice is not established.",
+      "semanticDedupeKey": "commute_freezing_precip",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "hot_day",
+      "title": "Heat preparation for an outing",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "warm_or_hot_outlook",
+        "relevant_outing_or_day_window"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "No medical cutoff or guaranteed cooler time. Check named times using actual hourly evidence.",
+      "semanticDedupeKey": "hot_day",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "cool_morning_warm_afternoon",
+      "title": "Layers for a cooler morning and warmer afternoon",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "same_day_morning_afternoon_coverage",
+        "cool_morning",
+        "materially_warmer_afternoon"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Both periods must be observed in the forecast at the same place and date; no seasonal assumption.",
+      "semanticDedupeKey": "cool_morning_warm_afternoon",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "warm_day_cool_evening",
+      "title": "Layers for a warm day and cooler evening",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "same_day_daytime_evening_coverage",
+        "warm_daytime",
+        "materially_cooler_evening"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Both relevant periods require forecast coverage; no assumption that every evening cools.",
+      "semanticDedupeKey": "warm_day_cool_evening",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "cold_day",
+      "title": "Cold-weather preparation",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "cold_outlook",
+        "relevant_outing_or_day_window"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Cold alone is not ice, snow, or slippery-pavement evidence.",
+      "semanticDedupeKey": "cold_day",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "gusty_day",
+      "title": "Preparation for notable gusts",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "notable_gusts_outlook",
+        "relevant_outing_or_day_window"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Use a named gust field and configurable comfort band; no damaging-wind claim from an arbitrary cutoff.",
+      "semanticDedupeKey": "gusty_day",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "humid_day",
+      "title": "Preparation for warm humid conditions",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "warm_outlook",
+        "humidity_or_dewpoint_evidence",
+        "warm_humid_rule_met"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Humidity alone does not imply heat. Do not infer pollen, AQI, or a medical heat index.",
+      "semanticDedupeKey": "humid_day",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "uv_elevated",
+      "title": "Daytime elevated-UV preparation",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "named_uv_index",
+        "elevated_uv_category",
+        "daytime_uv_interval_coverage"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "A daily peak is day-level only; current/nighttime UV needs matching data and daylight context.",
+      "semanticDedupeKey": "uv_elevated",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "aqi_elevated",
+      "title": "Guidance for an elevated air-quality category",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "named_aqi_scheme",
+        "elevated_aqi_category",
+        "matching_aqi_time_location"
+      ],
+      "excludedWhen": [
+        "severe_air_quality_requires_primary_guidance"
+      ],
+      "claimLimit": "Category-specific guidance must be appropriate for the user scope. Current AQI cannot establish a later trend.",
+      "semanticDedupeKey": "aqi_elevated",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "snow_outing",
+      "title": "Outing preparation with snow expected",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "explicit_snow_forecast",
+        "relevant_outing_window"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Potential slower travel/slipperiness remains conditional. No ground accumulation or measured surface claim.",
+      "semanticDedupeKey": "snow_outing",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "freezing_precip_outing",
+      "title": "Outing preparation with freezing precipitation expected",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "adverse_condition",
+      "requiredEvidence": [
+        "explicit_freezing_precipitation",
+        "relevant_outing_window"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "An air temperature around freezing is insufficient. Preserve official hazard priority.",
+      "semanticDedupeKey": "freezing_precip_outing",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "fog_outing",
+      "title": "Outing preparation with fog or low visibility expected",
+      "activity": "outdoor",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "explicit_fog_or_low_visibility",
+        "relevant_outing_window"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "No inferred measured visibility from a generic cloudy/humid icon. Walking-specific variants need a walking context.",
+      "semanticDedupeKey": "fog_outing",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "event_rain",
+      "title": "Rain preparation for an outdoor calendar event",
+      "activity": "outdoor_event",
+      "allowedSurfaces": [
+        "event_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "explicit_outdoor_event",
+        "resolved_event_location",
+        "event_interval_coverage",
+        "liquid_rain_type",
+        "probability_likely_in_event_window"
+      ],
+      "excludedWhen": [
+        "umbrella_conflict"
+      ],
+      "claimLimit": "Event existence, outdoor setting, location provenance, and interval are known. No automatic venue lookup.",
+      "semanticDedupeKey": "event_rain",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "event_heat",
+      "title": "Heat preparation for an outdoor calendar event",
+      "activity": "outdoor_event",
+      "allowedSurfaces": [
+        "event_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "explicit_outdoor_event",
+        "resolved_event_location",
+        "event_interval_coverage",
+        "warm_or_hot_event_outlook"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "No assumed shade/water at the venue; suggestions are conditional.",
+      "semanticDedupeKey": "event_heat",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "event_cool_evening",
+      "title": "Layers for an outdoor evening event",
+      "activity": "outdoor_event",
+      "allowedSurfaces": [
+        "event_detail",
+        "plancast_summary"
+      ],
+      "priorityBand": "activity_impact",
+      "requiredEvidence": [
+        "explicit_outdoor_event",
+        "resolved_event_location",
+        "event_interval_coverage",
+        "evening_event_in_local_zone",
+        "cool_event_outlook"
+      ],
+      "excludedWhen": [],
+      "claimLimit": "Do not assign an evening time to an all-day event. Sitting-specific wording is conditional.",
+      "semanticDedupeKey": "event_cool_evening",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    },
+    {
+      "id": "forecast_unavailable",
+      "title": "Recoverable absence of a reliable forecast",
+      "activity": "any",
+      "allowedSurfaces": [
+        "today_summary",
+        "hourly_detail",
+        "day_detail",
+        "plancast_summary",
+        "event_detail"
+      ],
+      "priorityBand": "preparation",
+      "requiredEvidence": [
+        "no_reliable_required_forecast",
+        "existing_user_triggered_refresh_available",
+        "refresh_may_resolve_absence"
+      ],
+      "excludedWhen": [
+        "unsupported_capability",
+        "outside_forecast_horizon",
+        "permanent_permission_denial"
+      ],
+      "claimLimit": "The copy does not perform a refresh. Unsupported capabilities, out-of-horizon events, and denied permissions use their existing specific states.",
+      "semanticDedupeKey": "forecast_unavailable",
+      "cooldownPolicy": "Prefer less-recent eligible wording only within comparable priority; pin active situation and never suppress an important ongoing hazard."
+    }
+  ],
+  "variantOverrides": [
+    {
+      "templateId": "fog_outing_03",
+      "additionalRequiredEvidence": [
+        "walking_activity_context"
+      ],
+      "reason": "The text specifies walking."
+    },
+    {
+      "templateId": "snow_outing_05",
+      "additionalRequiredEvidence": [
+        "walking_activity_context"
+      ],
+      "reason": "The text specifies shortening a walk."
+    },
+    {
+      "templateId": "forecast_unavailable_02",
+      "additionalRequiredEvidence": [
+        "current_forecast_context"
+      ],
+      "reason": "The text says fresh weather details are unavailable right now."
+    },
+    {
+      "templateId": "dog_rain_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_rain_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_rain_05",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_rain_06",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_heat_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_heat_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_heat_04",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_cold_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_cold_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_cold_06",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_wind_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_wind_02",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_wind_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_wind_06",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_rain_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_rain_02",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_rain_04",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_rain_06",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_wind_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_wind_02",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_wind_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_wind_04",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_heat_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_heat_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_heat_05",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_heat_06",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_cold_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_cold_03",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_cold_05",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "bike_cold_06",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "Definite activity wording requires a known or user-selected activity interval, not just a preference."
+    },
+    {
+      "templateId": "dog_after_dark_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "The word planned must not describe an app-generated suggestion alone."
+    },
+    {
+      "templateId": "bike_after_dark_01",
+      "additionalRequiredEvidence": [
+        "known_or_user_selected_activity_window"
+      ],
+      "reason": "The word planned must not describe an app-generated suggestion alone."
+    }
+  ],
+  "predicateDefinitions": {
+    "dog_activity_context": "Explicit dog-walking preference or known activity. A known/user-selected interval is additionally required for definite variants; otherwise present suggestions conditionally for the displayed period.",
+    "cycling_activity_context": "Explicit cycling preference or known activity. A known/user-selected interval is additionally required for definite variants; otherwise present suggestions conditionally for the displayed period.",
+    "driving_commute_context": "Known driving commute interval, or a user-configured driving routine with applicable local weekday and time window. An interest toggle alone is insufficient. Do not infer commute occurrence outside that routine.",
+    "walking_activity_context": "Known walking activity, user-selected walking context, or a clearly conditional walking suggestion for an explicit walking preference.",
+    "known_dog_activity_interval": "User-selected/known dog outing or a visibly proposed optional interval. Template dog_after_dark_01 needs a genuinely user-selected/known interval because it says planned.",
+    "known_cycling_activity_interval": "User-selected/known ride or a visibly proposed optional interval. Template bike_after_dark_01 needs a genuinely user-selected/known interval because it says planned.",
+    "known_or_user_selected_activity_window": "An actual calendar/routine occurrence or a user-selected intended activity time. A general interest, automatic suggestion, or unconfirmed inferred activity is insufficient.",
+    "explicit_outdoor_event": "Known event whose outdoor nature is established, not merely a keyword that could also describe an indoor/virtual meeting.",
+    "complete_comparison_windows": "Enough valid hourly intervals to cover the complete intended outing, including every overlapping interval and comparison period; no gap is treated as benign.",
+    "local_sunset_or_night_evidence": "Date/location-specific sunset/night evidence for the intended interval. Do not use device timezone or today's sunset for another place/date.",
+    "notable_gusts_outlook": "An actual supported gust value meeting a documented configurable comfort threshold. Do not derive gusts from sustained wind alone or invent a damaging-wind label.",
+    "warm_or_hot_outlook": "A supported temperature/apparent-temperature field meeting documented comfort thresholds for the context; no medical or universal dog-safety meaning.",
+    "refresh_may_resolve_absence": "Ordinary missing/stale/recoverable weather data with an existing user-initiated refresh. Not unsupported AQI/pollen, missing consent, or an event outside forecast horizon."
+  }
+}

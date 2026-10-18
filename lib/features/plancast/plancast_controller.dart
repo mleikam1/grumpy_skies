@@ -728,6 +728,40 @@ class PlanCastController extends ChangeNotifier {
   }
 
   /// UI-only access: no forecast/geocoding request, persistence, or budget reset.
+  /// Guidance reads the same event cache as the existing assessment. Resolve
+  /// again so an old row cannot keep advice after a venue, calendar, or current
+  /// area changes. The returned DTO is normalized into immutable evidence by
+  /// the guidance adapter; this getter never refreshes a cache entry.
+  WeatherBundle? cachedGuidanceWeatherForEvent(PlanCastEventWeather item) {
+    if (!connected || !selectedCalendarIds.contains(item.event.calendarId)) {
+      return null;
+    }
+    final latest =
+        currentEvents.where((e) => e.event.id == item.event.id).firstOrNull;
+    final weather = _eventWeather[item.event.id];
+    if (latest == null ||
+        weather == null ||
+        latest.isOnline ||
+        !latest.assessment.usable ||
+        weather.isOfflineCache ||
+        latest.venue == null ||
+        item.venue == null ||
+        latest.resolvedLocation?.hasWeatherBasis != true ||
+        item.resolvedLocation?.signature !=
+            latest.resolvedLocation?.signature ||
+        item.environment != latest.environment ||
+        _eventWeatherVenueKeys[item.event.id] !=
+            VenueWeatherRepository.keyFor(latest.venue!) ||
+        VenueWeatherRepository.keyFor(item.venue!) !=
+            VenueWeatherRepository.keyFor(latest.venue!)) {
+      return null;
+    }
+    final age = clock().difference(weather.current.displayUpdatedAt);
+    if (age >= evaluator.maximumAge || age.isNegative) return null;
+    return weather;
+  }
+
+  /// UI-only access: no forecast/geocoding request, persistence, or budget reset.
   /// A detail opened from an old row cannot show hours from its replaced venue.
   List<HourlyForecast> cachedHoursForEvent(PlanCastEventWeather item) {
     if (!connected || item.event.isAllDay) return const [];

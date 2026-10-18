@@ -14,6 +14,8 @@ class ActiveViewport extends StatefulWidget {
     this.child,
     this.builder,
     this.onActiveChanged,
+    this.onExposure,
+    this.observeParentWhenEmpty = false,
     this.minimumVisibleFraction = .01,
   })  : assert(child != null || builder != null),
         assert(minimumVisibleFraction > 0 && minimumVisibleFraction <= 1);
@@ -22,6 +24,10 @@ class ActiveViewport extends StatefulWidget {
   final Widget Function(BuildContext context, bool active, Widget? child)?
       builder;
   final ValueChanged<bool>? onActiveChanged;
+
+  /// Runs after actual exposure measurement, even when visibility is unchanged.
+  final ValueChanged<bool>? onExposure;
+  final bool observeParentWhenEmpty;
   final double minimumVisibleFraction;
 
   @override
@@ -81,10 +87,16 @@ class _ActiveViewportState extends State<ActiveViewport>
         _tickerEnabled &&
         _routes.every((route) => route.isCurrent) &&
         _visibleFraction() >= widget.minimumVisibleFraction);
+    widget.onExposure?.call(_active);
   }
 
   double _visibleFraction() {
-    final box = _boundsKey.currentContext?.findRenderObject();
+    var box = _boundsKey.currentContext?.findRenderObject();
+    if (widget.observeParentWhenEmpty) {
+      while (box is RenderBox && box.hasSize && box.size.isEmpty) {
+        box = box.parent;
+      }
+    }
     if (box is! RenderBox ||
         !box.attached ||
         !box.hasSize ||

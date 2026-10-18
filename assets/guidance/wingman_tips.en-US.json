@@ -1,0 +1,1518 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "1.1.0",
+  "locale": "en-US",
+  "editorialStatus": "repository_reviewed",
+  "templates": [
+    {
+      "id": "rain_likely_outing_01",
+      "familyId": "rain_likely_outing",
+      "text": "If you're heading out during the displayed period, bring an umbrella with rain likely in the forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_likely_outing_02",
+      "familyId": "rain_likely_outing",
+      "text": "Heading outside for a while? A rain jacket belongs with your keys before you leave.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_likely_outing_03",
+      "familyId": "rain_likely_outing",
+      "text": "Protect papers and electronics before an outing with likely rain; a waterproof pouch can keep essentials together.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_likely_outing_04",
+      "familyId": "rain_likely_outing",
+      "text": "If you'll be outside for a while with rain likely, consider a spare dry layer for afterward.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_likely_outing_05",
+      "familyId": "rain_likely_outing",
+      "text": "Rain is likely for the displayed period. If you head outside, choose shoes you don't mind getting damp.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_likely_outing_06",
+      "familyId": "rain_likely_outing",
+      "text": "Keep your outdoor plans flexible, with a covered stop in mind if the rain arrives.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_possible_outing_01",
+      "familyId": "rain_possible_outing",
+      "text": "If you're heading outside, a small umbrella could save a dash for cover if the possible rain arrives.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_possible_outing_02",
+      "familyId": "rain_possible_outing",
+      "text": "Keep a light rain layer handy if your plans take you outside during the displayed chance of rain.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_possible_outing_03",
+      "familyId": "rain_possible_outing",
+      "text": "If your plans include a weather-sensitive outdoor task, give it a backup option in case the possible rain arrives.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_possible_outing_04",
+      "familyId": "rain_possible_outing",
+      "text": "If rain reaches your plans during the displayed period, an indoor backup gives you another option.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_possible_outing_05",
+      "familyId": "rain_possible_outing",
+      "text": "Leave room to stow wet gear if the possible rain arrives, especially when moving between indoor stops.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_possible_outing_06",
+      "familyId": "rain_possible_outing",
+      "text": "Keep anything that needs to stay dry tucked away; rain could pop into your plans.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_current_01",
+      "familyId": "rain_current",
+      "text": "It's raining now. Grab your umbrella before stepping out, even for a quick errand.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_current_02",
+      "familyId": "rain_current",
+      "text": "Current rain calls for a waterproof layer and a little protection for your bag.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_current_03",
+      "familyId": "rain_current",
+      "text": "Heading out in the rain? Keep your phone and other essentials somewhere they can stay dry.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_current_04",
+      "familyId": "rain_current",
+      "text": "If you head out in the current rain, choose shoes you don't mind getting wet.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_current_05",
+      "familyId": "rain_current",
+      "text": "If you're heading indoors after time in the current rain, consider how you'll carry or store a wet outer layer.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_current_06",
+      "familyId": "rain_current",
+      "text": "If an errand can wait, decide whether going out in the current rain suits your plans before leaving.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_later_01",
+      "familyId": "rain_later",
+      "text": "Rain chances rise later today. Bring a waterproof layer if you'll be away from home for a while.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_later_02",
+      "familyId": "rain_later",
+      "text": "Rain chances are higher later today. Pack an umbrella if your plans extend into the displayed hours.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_later_03",
+      "familyId": "rain_later",
+      "text": "Keep the later rain outlook in mind when choosing a time for outdoor errands.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_later_04",
+      "familyId": "rain_later",
+      "text": "If you're staying out later, leave room to carry wet gear between stops if the forecast rain arrives.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_later_05",
+      "familyId": "rain_later",
+      "text": "Rain is more likely later today. Give longer outdoor plans a covered backup.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_later_06",
+      "familyId": "rain_later",
+      "text": "Before leaving for the day, check whether your return trip overlaps the higher chance of rain.",
+      "requiredGuards": []
+    },
+    {
+      "id": "lower_rain_window_01",
+      "familyId": "lower_rain_window",
+      "text": "The shown window has lower hourly rain chances. Consider it for errands, with rain protection still handy.",
+      "requiredGuards": []
+    },
+    {
+      "id": "lower_rain_window_02",
+      "familyId": "lower_rain_window",
+      "text": "Need time outside? Compare the highlighted hours with your plans; their lower rain chances still leave room for showers.",
+      "requiredGuards": []
+    },
+    {
+      "id": "lower_rain_window_03",
+      "familyId": "lower_rain_window",
+      "text": "For a flexible outdoor task, consider the highlighted hours with lower rain chances and keep a covered backup.",
+      "requiredGuards": []
+    },
+    {
+      "id": "lower_rain_window_04",
+      "familyId": "lower_rain_window",
+      "text": "Lower hourly rain chances favor the shown window for a flexible errand. Protect anything that needs to stay dry.",
+      "requiredGuards": []
+    },
+    {
+      "id": "lower_rain_window_05",
+      "familyId": "lower_rain_window",
+      "text": "If an outing can move, use the lower hourly rain chances as one planning factor, with room to adapt.",
+      "requiredGuards": []
+    },
+    {
+      "id": "lower_rain_window_06",
+      "familyId": "lower_rain_window",
+      "text": "Check the highlighted lower-rain hours before choosing when to leave, and bring a light rain layer if needed.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_ending_trend_01",
+      "familyId": "rain_ending_trend",
+      "text": "Rain is observed now; forecast rain chances are lower later. Consider waiting if your errand is flexible.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_ending_trend_02",
+      "familyId": "rain_ending_trend",
+      "text": "Later forecast hours show lower rain chances. If you can wait, keep rain gear ready rather than assuming rain will stop.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_ending_trend_03",
+      "familyId": "rain_ending_trend",
+      "text": "For flexible plans, compare the lower rain chances in the later hours; keep a covered alternative available.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_ending_trend_04",
+      "familyId": "rain_ending_trend",
+      "text": "The later hours have lower forecast rain chances. Protect your belongings if you need to leave in the current rain.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_ending_trend_05",
+      "familyId": "rain_ending_trend",
+      "text": "If you leave before the lower-chance hours, choose a route you can shorten if the current rain becomes uncomfortable.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_ending_trend_06",
+      "familyId": "rain_ending_trend",
+      "text": "Check conditions before heading out in the highlighted lower-chance hours; they do not establish when the current rain will end.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_evening_01",
+      "familyId": "rain_evening",
+      "text": "If you're heading out this evening, bring an umbrella with rain likely in the forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_evening_02",
+      "familyId": "rain_evening",
+      "text": "Pack a rain layer for the evening, especially if your plans involve time outside.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_evening_03",
+      "familyId": "rain_evening",
+      "text": "Rain looks likely this evening. Choose an easy covered meeting spot if you're getting together outdoors.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_evening_04",
+      "familyId": "rain_evening",
+      "text": "If you'll be out this evening, keep your bag and essentials protected against the forecast rain.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_evening_05",
+      "familyId": "rain_evening",
+      "text": "Consider a spare dry layer if your evening plans involve long stretches outside with rain likely.",
+      "requiredGuards": []
+    },
+    {
+      "id": "rain_evening_06",
+      "familyId": "rain_evening",
+      "text": "Have a covered alternative ready for evening plans, with rain likely in the forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "wet_walk_01",
+      "familyId": "wet_walk",
+      "text": "If you're walking in the current rain, choose suitable shoes and keep a waterproof layer handy.",
+      "requiredGuards": []
+    },
+    {
+      "id": "wet_walk_02",
+      "familyId": "wet_walk",
+      "text": "For a walk in the current rain, take your time if paths feel slippery and protect your belongings.",
+      "requiredGuards": []
+    },
+    {
+      "id": "wet_walk_03",
+      "familyId": "wet_walk",
+      "text": "If you head out for a rainy walk, a shorter loop can keep shelter within easier reach.",
+      "requiredGuards": []
+    },
+    {
+      "id": "wet_walk_04",
+      "familyId": "wet_walk",
+      "text": "If a walk is on your agenda, choose covered stops where available and bring something to keep rain off.",
+      "requiredGuards": []
+    },
+    {
+      "id": "wet_walk_05",
+      "familyId": "wet_walk",
+      "text": "Keep your phone tucked away from current rain if you go walking, so your hands stay free.",
+      "requiredGuards": []
+    },
+    {
+      "id": "wet_walk_06",
+      "familyId": "wet_walk",
+      "text": "For an optional walk in this rain, a jacket with a hood leaves your hands free.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_rain_01",
+      "familyId": "dog_rain",
+      "text": "Rain may join your dog's walk. Keep a towel by the door for the return trip.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_rain_02",
+      "familyId": "dog_rain",
+      "text": "If you're taking the dog out, pack a rain layer and choose a loop you can shorten if showers arrive.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_rain_03",
+      "familyId": "dog_rain",
+      "text": "Your dog's walking window looks rainy. Have an easy route home if either of you wants to turn back.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_rain_04",
+      "familyId": "dog_rain",
+      "text": "If you plan to take the dog out in forecast rain, prepare somewhere to leave wet gear when you return.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_rain_05",
+      "familyId": "dog_rain",
+      "text": "A waterproof layer for you and a flexible route can help keep your dog's rainy outing manageable.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_rain_06",
+      "familyId": "dog_rain",
+      "text": "Keep your phone and dog-walking supplies protected from forecast rain before you head out.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_heat_01",
+      "familyId": "dog_heat",
+      "text": "Your dog's outing looks warm. Bring water for both of you and consider a shorter route with shade where available.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_heat_02",
+      "familyId": "dog_heat",
+      "text": "If you're walking the dog in this warmth, look for shade where available and leave room for water breaks.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_heat_03",
+      "familyId": "dog_heat",
+      "text": "Warm weather is a good reason to keep your dog's walk flexible and watch their comfort.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_heat_04",
+      "familyId": "dog_heat",
+      "text": "Pack water for your planned dog outing, and check surfaces before choosing where to walk in the warmth.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_heat_05",
+      "familyId": "dog_heat",
+      "text": "If you take the dog out in warmer conditions, watch their comfort and be ready to turn back sooner.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_heat_06",
+      "familyId": "dog_heat",
+      "text": "If you take the dog out in this warmth, carry a bowl so you can offer the water you bring.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_cold_01",
+      "familyId": "dog_cold",
+      "text": "It's looking cold for your dog's walk. Keep the trip flexible and watch how comfortable they seem.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_cold_02",
+      "familyId": "dog_cold",
+      "text": "If you're walking the dog in the cold, a loop near your starting point makes turning back easier.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_cold_03",
+      "familyId": "dog_cold",
+      "text": "Layer up for the dog walk, and be ready to shorten the outing if the cold bothers them.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_cold_04",
+      "familyId": "dog_cold",
+      "text": "If a dog outing is needed in this cold weather, check that both of you have suitable cold-weather gear.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_cold_05",
+      "familyId": "dog_cold",
+      "text": "If you walk the dog in the cold, leave room afterward to dry or change any damp gear.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_cold_06",
+      "familyId": "dog_cold",
+      "text": "Before this cold-weather dog walk, put bags and essentials within easy reach so stops can stay brief.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_wind_01",
+      "familyId": "dog_wind",
+      "text": "Gusts may make your dog's walk less comfortable. Consider a sheltered route where one is available.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_wind_02",
+      "familyId": "dog_wind",
+      "text": "Keep the gusty dog walk flexible, with a shorter loop if either of you has had enough.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_wind_03",
+      "familyId": "dog_wind",
+      "text": "Bring a secure outer layer for your dog's walk, and choose shelter from the wind where possible.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_wind_04",
+      "familyId": "dog_wind",
+      "text": "If you take the dog out and the gusts bother them, consider a brief outing near your starting point.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_wind_05",
+      "familyId": "dog_wind",
+      "text": "If a dog walk is on your agenda, secure your hat and loose belongings before heading into forecast gusts.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_wind_06",
+      "familyId": "dog_wind",
+      "text": "For the gusty dog walk, keep your schedule flexible so there is no need to rush through uncomfortable conditions.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_lower_rain_window_01",
+      "familyId": "dog_lower_rain_window",
+      "text": "If you're planning a dog walk, the highlighted hours have lower rain chances; keep a towel ready anyway.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_lower_rain_window_02",
+      "familyId": "dog_lower_rain_window",
+      "text": "If your dog's schedule allows a walk in the highlighted hours, pack rain gear despite their lower rain chances.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_lower_rain_window_03",
+      "familyId": "dog_lower_rain_window",
+      "text": "Consider the shown lower-rain hours if you take the dog out, while keeping an easy route back.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_lower_rain_window_04",
+      "familyId": "dog_lower_rain_window",
+      "text": "If a dog walk can move, compare the highlighted lower-rain hours with your available time before choosing a route.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_lower_rain_window_05",
+      "familyId": "dog_lower_rain_window",
+      "text": "For an optional dog walk in the lower-chance hours, protect your phone and bring a rain layer.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_lower_rain_window_06",
+      "familyId": "dog_lower_rain_window",
+      "text": "If you choose the highlighted lower-rain hours for a dog outing, keep the route flexible in case showers develop.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_after_dark_01",
+      "familyId": "dog_after_dark",
+      "text": "Your planned dog walk falls after sunset. Bring a light and use visible or reflective gear.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "dog_after_dark_02",
+      "familyId": "dog_after_dark",
+      "text": "If you choose the proposed after-dark dog walk, bring a light and look for a well-lit route where available.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_after_dark_03",
+      "familyId": "dog_after_dark",
+      "text": "For a possible dog outing after sunset, set out visible gear for both of you before leaving.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_after_dark_04",
+      "familyId": "dog_after_dark",
+      "text": "If you take the dog out in the shown after-sunset period, check your walking light's charge first.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_after_dark_05",
+      "familyId": "dog_after_dark",
+      "text": "If you choose the after-sunset dog outing, keep bags and essentials easy to reach without putting down your light.",
+      "requiredGuards": []
+    },
+    {
+      "id": "dog_after_dark_06",
+      "familyId": "dog_after_dark",
+      "text": "If an after-sunset dog walk suits your plans, consider a familiar loop that you can shorten if needed.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_rain_01",
+      "familyId": "bike_rain",
+      "text": "Rain looks likely during your ride. Bring a waterproof layer and allow extra room for braking if surfaces are wet.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_rain_02",
+      "familyId": "bike_rain",
+      "text": "Keep your cycling plans flexible with rain expected, and protect anything in your bag that needs to stay dry.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_rain_03",
+      "familyId": "bike_rain",
+      "text": "If you cycle in this rainy forecast, allow room to slow down if surfaces feel slippery.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_rain_04",
+      "familyId": "bike_rain",
+      "text": "Pack rain protection for the ride and consider a shorter route if you prefer less time in showers.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_rain_05",
+      "familyId": "bike_rain",
+      "text": "If cycling is on your agenda, check your lights and protect essentials before heading into the rainy forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_rain_06",
+      "familyId": "bike_rain",
+      "text": "If the rain arrives during your ride, keep a covered stopping option in mind where one is available.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_wind_01",
+      "familyId": "bike_wind",
+      "text": "Gusts may make the ride more demanding. Keep your route and pace flexible.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_wind_02",
+      "familyId": "bike_wind",
+      "text": "Consider a less exposed cycling route where available, with gusts in the forecast for your ride.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_wind_03",
+      "familyId": "bike_wind",
+      "text": "Allow extra time for your planned ride if forecast gusts call for a slower pace.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_wind_04",
+      "familyId": "bike_wind",
+      "text": "Secure loose layers before getting on the bike, and be ready to adjust your ride if gusts become uncomfortable.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_wind_05",
+      "familyId": "bike_wind",
+      "text": "If you're considering a ride in forecast gusts, leave room to pause somewhere sheltered where available.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_wind_06",
+      "familyId": "bike_wind",
+      "text": "Check the gust forecast if you plan to cycle, and choose a route with an easy option to turn back.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_heat_01",
+      "familyId": "bike_heat",
+      "text": "Your riding window looks warm. Bring water and give yourself options to pause or shorten the outing.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_heat_02",
+      "familyId": "bike_heat",
+      "text": "If you cycle in warmer conditions, leave room for water breaks and choose a pace you can comfortably adjust.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_heat_03",
+      "familyId": "bike_heat",
+      "text": "For your planned warm-weather ride, consider shaded stops where available and pack water before setting off.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_heat_04",
+      "familyId": "bike_heat",
+      "text": "If you ride in this warm outlook, consider a shorter route and check where you could take a break.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_heat_05",
+      "familyId": "bike_heat",
+      "text": "For your warm-weather ride, keep drinking water accessible so you can take a break without unpacking your bag.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_heat_06",
+      "familyId": "bike_heat",
+      "text": "For your planned ride in warmer conditions, avoid a packed schedule so there is room for breaks.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_cold_01",
+      "familyId": "bike_cold",
+      "text": "It's looking cold for your ride. Bring gloves and an extra layer you can adjust.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_cold_02",
+      "familyId": "bike_cold",
+      "text": "If you go cycling in these cold conditions, choose a place to pause indoors where available.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_cold_03",
+      "familyId": "bike_cold",
+      "text": "A wind-resistant outer layer may make this cold ride more comfortable, with gloves ready before you leave.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_cold_04",
+      "familyId": "bike_cold",
+      "text": "If you cycle in this cold forecast, choose a route you can shorten if the conditions become uncomfortable.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_cold_05",
+      "familyId": "bike_cold",
+      "text": "Bring an extra layer for any stops during your cold-weather ride, when you're moving less.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_cold_06",
+      "familyId": "bike_cold",
+      "text": "Leave room to stow a layer during your cold-weather ride if you become warmer than expected.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_after_dark_01",
+      "familyId": "bike_after_dark",
+      "text": "Your planned ride is after sunset. Check your lights and wear visible or reflective gear.",
+      "requiredGuards": [
+        "known_or_user_selected_activity_window"
+      ]
+    },
+    {
+      "id": "bike_after_dark_02",
+      "familyId": "bike_after_dark",
+      "text": "If you choose the proposed after-dark ride, charge your bike lights and look for well-lit stretches where available.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_after_dark_03",
+      "familyId": "bike_after_dark",
+      "text": "For a possible ride after dark, check that bags and clothing will not cover your lights or reflectors.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_after_dark_04",
+      "familyId": "bike_after_dark",
+      "text": "Working lights and reflective details can make you easier to notice if you cycle during the shown after-sunset period.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_after_dark_05",
+      "familyId": "bike_after_dark",
+      "text": "If an after-dark ride suits your plans, choose familiar stretches and give yourself room to adjust your pace.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_after_dark_06",
+      "familyId": "bike_after_dark",
+      "text": "If you expect a longer ride in the shown after-sunset period, consider a backup light and visible clothing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_lower_rain_window_01",
+      "familyId": "bike_lower_rain_window",
+      "text": "If you're planning a ride, the highlighted hours have lower rain chances. Keep a rain layer packed anyway.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_lower_rain_window_02",
+      "familyId": "bike_lower_rain_window",
+      "text": "If a ride can move, consider the highlighted lower-chance hours while leaving room to change plans if conditions worsen.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_lower_rain_window_03",
+      "familyId": "bike_lower_rain_window",
+      "text": "For an optional ride during the lower-rain hours, choose a route you can shorten if showers develop.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_lower_rain_window_04",
+      "familyId": "bike_lower_rain_window",
+      "text": "If cycling fits the shown lower-rain hours, check your lights before leaving and keep a flexible return time.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_lower_rain_window_05",
+      "familyId": "bike_lower_rain_window",
+      "text": "If you ride in the highlighted lower-chance hours, protect anything in your bag that needs to stay dry.",
+      "requiredGuards": []
+    },
+    {
+      "id": "bike_lower_rain_window_06",
+      "familyId": "bike_lower_rain_window",
+      "text": "Compare the highlighted lower-rain hours with your available riding time, and keep a covered stop in mind where possible.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_rain_01",
+      "familyId": "commute_rain",
+      "text": "Rain is forecast near the displayed area around your commute. Allow flexibility in your departure time.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_rain_02",
+      "familyId": "commute_rain",
+      "text": "If rain reaches your commute, leave extra following space and adjust to the conditions you encounter.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_rain_03",
+      "familyId": "commute_rain",
+      "text": "Bring your rain layer for the trip from the car, and allow extra time for a rainy commute.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_rain_04",
+      "familyId": "commute_rain",
+      "text": "Rain is likely around your commute. Before leaving, check that your wipers are ready for conditions you may encounter.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_rain_05",
+      "familyId": "commute_rain",
+      "text": "Keep anything you carry from the car protected from possible rain during your commute window.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_rain_06",
+      "familyId": "commute_rain",
+      "text": "If your commute can move, compare the displayed rain timing with your available departure times before choosing one.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_snow_01",
+      "familyId": "commute_snow",
+      "text": "Snow is forecast during your commute. Allow extra time in case roads become slippery or travel slows.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_snow_02",
+      "familyId": "commute_snow",
+      "text": "Bring a warm layer for stops outside the car, with snow forecast around your drive to work.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_snow_03",
+      "familyId": "commute_snow",
+      "text": "Keep your departure flexible for a snowy commute, and check local travel conditions before leaving.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_snow_04",
+      "familyId": "commute_snow",
+      "text": "Before the snowy commute, leave room to clear any snow that has actually collected on your vehicle.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_snow_05",
+      "familyId": "commute_snow",
+      "text": "Plan for a slower trip if snow affects your commute, with extra space between vehicles.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_snow_06",
+      "familyId": "commute_snow",
+      "text": "Keep an alternative commute plan in mind if the forecast snow makes the trip difficult.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_fog_01",
+      "familyId": "commute_fog",
+      "text": "Reduced visibility is forecast around your commute. Allow extra time if the conditions call for slower driving.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_fog_02",
+      "familyId": "commute_fog",
+      "text": "If reduced visibility affects your drive to work, leave extra following space and adjust to conditions.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_fog_03",
+      "familyId": "commute_fog",
+      "text": "Check your windows and mirrors before a commute with visibility concerns in the forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_fog_04",
+      "familyId": "commute_fog",
+      "text": "Check visibility before setting off for work; the outlook for your commute window may call for more flexibility.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_fog_05",
+      "familyId": "commute_fog",
+      "text": "If you encounter fog during your commute, use low-beam headlights; the forecast flags possible visibility concerns.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_fog_06",
+      "familyId": "commute_fog",
+      "text": "If visibility becomes too limited for your commute plans, consider a suitable place to stop rather than pressing on.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_wind_01",
+      "familyId": "commute_wind",
+      "text": "Gusts overlap your drive to work. Allow flexibility if the conditions call for a slower pace.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_wind_02",
+      "familyId": "commute_wind",
+      "text": "Forecast gusts may affect your commute. Keep a steady grip on the wheel and adjust to conditions you encounter.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_wind_03",
+      "familyId": "commute_wind",
+      "text": "If your commute crosses exposed stretches, forecast gusts may make those parts of the drive more demanding.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_wind_04",
+      "familyId": "commute_wind",
+      "text": "Check that doors and loose belongings are secure before your drive to work, with gusts in the forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_wind_05",
+      "familyId": "commute_wind",
+      "text": "Be ready for forecast gusts when stepping out of the car, especially while handling bags during your commute.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_wind_06",
+      "familyId": "commute_wind",
+      "text": "Check the wind outlook before leaving for work, especially if your route includes exposed sections.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_freezing_precip_01",
+      "familyId": "commute_freezing_precip",
+      "text": "Freezing precipitation is forecast during your commute. Check local road conditions and allow for possible slippery surfaces.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_freezing_precip_02",
+      "familyId": "commute_freezing_precip",
+      "text": "Your drive to work may be affected by freezing precipitation. Give yourself flexibility to change the trip.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_freezing_precip_03",
+      "familyId": "commute_freezing_precip",
+      "text": "Icy conditions could develop if the freezing-precipitation forecast plays out. Check travel updates before leaving for work.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_freezing_precip_04",
+      "familyId": "commute_freezing_precip",
+      "text": "Leave room to clear any ice that has actually formed on your vehicle before a commute with freezing precipitation forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_freezing_precip_05",
+      "familyId": "commute_freezing_precip",
+      "text": "Consider an alternative commute plan if freezing precipitation makes travel difficult, and check current road information first.",
+      "requiredGuards": []
+    },
+    {
+      "id": "commute_freezing_precip_06",
+      "familyId": "commute_freezing_precip",
+      "text": "Wear suitable footwear for stops outside the car if forecast freezing precipitation makes surfaces slippery.",
+      "requiredGuards": []
+    },
+    {
+      "id": "hot_day_01",
+      "familyId": "hot_day",
+      "text": "The outlook is warm. Bring water and give longer outdoor plans room for breaks or a shorter stay.",
+      "requiredGuards": []
+    },
+    {
+      "id": "hot_day_02",
+      "familyId": "hot_day",
+      "text": "Consider shaded breaks where available if your plans take you outdoors in the forecast warmth.",
+      "requiredGuards": []
+    },
+    {
+      "id": "hot_day_03",
+      "familyId": "hot_day",
+      "text": "Pack water before heading out, and give yourself the option to shorten an outing in warmer conditions.",
+      "requiredGuards": []
+    },
+    {
+      "id": "hot_day_04",
+      "familyId": "hot_day",
+      "text": "For flexible outdoor errands in the warmth, choose a cooler setting where available rather than committing to a long stay.",
+      "requiredGuards": []
+    },
+    {
+      "id": "hot_day_05",
+      "familyId": "hot_day",
+      "text": "Keep outdoor plans adaptable in warmer conditions, and check where you could pause for a break.",
+      "requiredGuards": []
+    },
+    {
+      "id": "hot_day_06",
+      "familyId": "hot_day",
+      "text": "A lighter outdoor schedule leaves room for water breaks when the forecast calls for warmer conditions.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cool_morning_warm_afternoon_01",
+      "familyId": "cool_morning_warm_afternoon",
+      "text": "A cool morning gives way to a warmer afternoon. Wear layers you can remove as the day changes.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cool_morning_warm_afternoon_02",
+      "familyId": "cool_morning_warm_afternoon",
+      "text": "Bring a bag with room for your morning layer when the forecast afternoon warmth arrives.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cool_morning_warm_afternoon_03",
+      "familyId": "cool_morning_warm_afternoon",
+      "text": "Check both departure and return temperatures before a long outing; the forecast shifts from a cool morning to a warmer afternoon.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cool_morning_warm_afternoon_04",
+      "familyId": "cool_morning_warm_afternoon",
+      "text": "If you're packing for the day, keep the cool-morning layer accessible instead of under everything else.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cool_morning_warm_afternoon_05",
+      "familyId": "cool_morning_warm_afternoon",
+      "text": "Choose adjustable outerwear for the cool morning so a brief stop is enough to adapt when the afternoon warms up.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cool_morning_warm_afternoon_06",
+      "familyId": "cool_morning_warm_afternoon",
+      "text": "A heavy morning outfit may be awkward to carry later. Consider a compact extra layer for the forecast temperature change.",
+      "requiredGuards": []
+    },
+    {
+      "id": "warm_day_cool_evening_01",
+      "familyId": "warm_day_cool_evening",
+      "text": "The day looks warm, but the evening cools down. Bring a layer if you'll be staying out.",
+      "requiredGuards": []
+    },
+    {
+      "id": "warm_day_cool_evening_02",
+      "familyId": "warm_day_cool_evening",
+      "text": "Keep your evening layer somewhere you can reach it, with cooler temperatures forecast after the warm daytime period.",
+      "requiredGuards": []
+    },
+    {
+      "id": "warm_day_cool_evening_03",
+      "familyId": "warm_day_cool_evening",
+      "text": "If you'll sit outdoors in the cooler evening, consider a compact blanket as well as your daytime clothing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "warm_day_cool_evening_04",
+      "familyId": "warm_day_cool_evening",
+      "text": "Check your expected return time against the cooler evening forecast before packing for a daytime outing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "warm_day_cool_evening_05",
+      "familyId": "warm_day_cool_evening",
+      "text": "Choose shoes and socks for the cooler evening too if a warm daytime outing may run late.",
+      "requiredGuards": []
+    },
+    {
+      "id": "warm_day_cool_evening_06",
+      "familyId": "warm_day_cool_evening",
+      "text": "If your plans extend into the cooler evening, consider an indoor stop where available for part of the outing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cold_day_01",
+      "familyId": "cold_day",
+      "text": "If the cold forecast overlaps outdoor plans, add a warm layer before heading out.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cold_day_02",
+      "familyId": "cold_day",
+      "text": "Keep gloves where you can reach them if your day includes time outside in the cold forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cold_day_03",
+      "familyId": "cold_day",
+      "text": "If your plans take you outside in this cold forecast, dress in layers you can adjust indoors and out.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cold_day_04",
+      "familyId": "cold_day",
+      "text": "Build an indoor break into longer outdoor errands where possible, with cold conditions in the outlook.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cold_day_05",
+      "familyId": "cold_day",
+      "text": "If you spend time outside in this cold forecast, consider a route that lets you finish the outing sooner if needed.",
+      "requiredGuards": []
+    },
+    {
+      "id": "cold_day_06",
+      "familyId": "cold_day",
+      "text": "Check that your shoes and socks suit the cold forecast before a longer outdoor outing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "gusty_day_01",
+      "familyId": "gusty_day",
+      "text": "Gusts are in the forecast. Secure loose belongings before heading out for the day.",
+      "requiredGuards": []
+    },
+    {
+      "id": "gusty_day_02",
+      "familyId": "gusty_day",
+      "text": "A close-fitting outer layer may be easier to manage than loose clothing in gusty weather.",
+      "requiredGuards": []
+    },
+    {
+      "id": "gusty_day_03",
+      "familyId": "gusty_day",
+      "text": "If you plan to carry papers outdoors, put them in a closed bag before heading into forecast gusts.",
+      "requiredGuards": []
+    },
+    {
+      "id": "gusty_day_04",
+      "familyId": "gusty_day",
+      "text": "If your outdoor plans are flexible, consider a sheltered spot with gusty conditions expected.",
+      "requiredGuards": []
+    },
+    {
+      "id": "gusty_day_05",
+      "familyId": "gusty_day",
+      "text": "Consider a shorter outdoor outing if forecast gusts become uncomfortable, leaving room to change your plans.",
+      "requiredGuards": []
+    },
+    {
+      "id": "gusty_day_06",
+      "familyId": "gusty_day",
+      "text": "Check the gust outlook before using large loose items outdoors, and secure them if they are difficult to control.",
+      "requiredGuards": []
+    },
+    {
+      "id": "humid_day_01",
+      "familyId": "humid_day",
+      "text": "The outlook is warm and muggy. Bring water and give outdoor plans a comfortable pace.",
+      "requiredGuards": []
+    },
+    {
+      "id": "humid_day_02",
+      "familyId": "humid_day",
+      "text": "Choose a cooler break spot where available if your plans involve time outdoors in the warm, humid outlook.",
+      "requiredGuards": []
+    },
+    {
+      "id": "humid_day_03",
+      "familyId": "humid_day",
+      "text": "If an outdoor task can be shortened, keep that option open in the warm, muggy forecast.",
+      "requiredGuards": []
+    },
+    {
+      "id": "humid_day_04",
+      "familyId": "humid_day",
+      "text": "Consider moving part of a longer outdoor plan indoors if the forecast warmth and humidity feel uncomfortable.",
+      "requiredGuards": []
+    },
+    {
+      "id": "humid_day_05",
+      "familyId": "humid_day",
+      "text": "Choose comfortable, breathable layers for the muggy forecast, with a change of clothes if that helps your plans.",
+      "requiredGuards": []
+    },
+    {
+      "id": "humid_day_06",
+      "familyId": "humid_day",
+      "text": "Leave room for breaks during outdoor errands; the warm, humid outlook may make a packed schedule less appealing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "uv_elevated_01",
+      "familyId": "uv_elevated",
+      "text": "UV is elevated for the displayed daytime period. Pack your usual sun protection before heading outside.",
+      "requiredGuards": []
+    },
+    {
+      "id": "uv_elevated_02",
+      "familyId": "uv_elevated",
+      "text": "Keep sun protection accessible if daytime plans run long, with elevated UV indicated for the displayed period.",
+      "requiredGuards": []
+    },
+    {
+      "id": "uv_elevated_03",
+      "familyId": "uv_elevated",
+      "text": "For time outdoors with elevated UV, keep a hat and protective clothing within reach.",
+      "requiredGuards": []
+    },
+    {
+      "id": "uv_elevated_04",
+      "familyId": "uv_elevated",
+      "text": "Choose a shaded place for a daytime break where available, and bring your usual sun protection.",
+      "requiredGuards": []
+    },
+    {
+      "id": "uv_elevated_05",
+      "familyId": "uv_elevated",
+      "text": "Review the displayed UV details before choosing how much of a longer daytime outing to spend outdoors.",
+      "requiredGuards": []
+    },
+    {
+      "id": "uv_elevated_06",
+      "familyId": "uv_elevated",
+      "text": "If your daytime plans are flexible, consider an indoor break with elevated UV indicated for the shown period.",
+      "requiredGuards": []
+    },
+    {
+      "id": "aqi_elevated_01",
+      "familyId": "aqi_elevated",
+      "text": "Check the air-quality detail before strenuous outdoor plans, especially if you know you're sensitive to pollution.",
+      "requiredGuards": []
+    },
+    {
+      "id": "aqi_elevated_02",
+      "familyId": "aqi_elevated",
+      "text": "Air quality may affect your plans. Consider a shorter outdoor session if the displayed category warrants it.",
+      "requiredGuards": []
+    },
+    {
+      "id": "aqi_elevated_03",
+      "familyId": "aqi_elevated",
+      "text": "Keep an indoor alternative for longer outdoor exercise if the displayed air-quality category warrants a change.",
+      "requiredGuards": []
+    },
+    {
+      "id": "aqi_elevated_04",
+      "familyId": "aqi_elevated",
+      "text": "If pollution tends to bother you, review the air-quality guidance before choosing an outdoor activity.",
+      "requiredGuards": []
+    },
+    {
+      "id": "aqi_elevated_05",
+      "familyId": "aqi_elevated",
+      "text": "Consider an easier outdoor pace when the air-quality reading raises concerns, especially if you're sensitive to pollution.",
+      "requiredGuards": []
+    },
+    {
+      "id": "aqi_elevated_06",
+      "familyId": "aqi_elevated",
+      "text": "Review the matching air-quality time and location before applying its guidance to a different outing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "snow_outing_01",
+      "familyId": "snow_outing",
+      "text": "Snow is forecast for the displayed period. If you head out, bring warm layers and grippy shoes.",
+      "requiredGuards": []
+    },
+    {
+      "id": "snow_outing_02",
+      "familyId": "snow_outing",
+      "text": "Give yourself extra time outside if the forecast snow makes paths slippery or walking slower.",
+      "requiredGuards": []
+    },
+    {
+      "id": "snow_outing_03",
+      "familyId": "snow_outing",
+      "text": "If you head outside during the forecast snow, pack a warm outer layer before leaving.",
+      "requiredGuards": []
+    },
+    {
+      "id": "snow_outing_04",
+      "familyId": "snow_outing",
+      "text": "Leave room to dry or change damp belongings after an outing if the forecast snow reaches your plans.",
+      "requiredGuards": []
+    },
+    {
+      "id": "snow_outing_05",
+      "familyId": "snow_outing",
+      "text": "Choose a route you can shorten if snow affects your walk, and dress for the forecast.",
+      "requiredGuards": [
+        "walking_activity_context"
+      ]
+    },
+    {
+      "id": "snow_outing_06",
+      "familyId": "snow_outing",
+      "text": "Protect anything that needs to stay dry if your outdoor plans overlap the expected snow.",
+      "requiredGuards": []
+    },
+    {
+      "id": "freezing_precip_outing_01",
+      "familyId": "freezing_precip_outing",
+      "text": "Freezing precipitation is forecast for the displayed period. If you head out, keep plans flexible in case surfaces become slippery.",
+      "requiredGuards": []
+    },
+    {
+      "id": "freezing_precip_outing_02",
+      "familyId": "freezing_precip_outing",
+      "text": "Check local conditions before heading out; forecast freezing precipitation could affect paths and steps.",
+      "requiredGuards": []
+    },
+    {
+      "id": "freezing_precip_outing_03",
+      "familyId": "freezing_precip_outing",
+      "text": "Give yourself the option to move an outdoor errand if forecast freezing precipitation makes walking difficult.",
+      "requiredGuards": []
+    },
+    {
+      "id": "freezing_precip_outing_04",
+      "familyId": "freezing_precip_outing",
+      "text": "If you head out during the freezing-precipitation forecast, allow extra time in case surfaces become slippery.",
+      "requiredGuards": []
+    },
+    {
+      "id": "freezing_precip_outing_05",
+      "familyId": "freezing_precip_outing",
+      "text": "An indoor alternative may be useful if freezing precipitation affects your plans. Check current conditions before leaving.",
+      "requiredGuards": []
+    },
+    {
+      "id": "freezing_precip_outing_06",
+      "familyId": "freezing_precip_outing",
+      "text": "Choose suitable footwear before an outing with freezing precipitation forecast, and take care if surfaces become slick.",
+      "requiredGuards": []
+    },
+    {
+      "id": "fog_outing_01",
+      "familyId": "fog_outing",
+      "text": "Reduced visibility is in the outlook. Wear visible gear if heading outside and allow flexibility in your timing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "fog_outing_02",
+      "familyId": "fog_outing",
+      "text": "Choose a familiar route if your outing overlaps the forecast visibility concerns, and adjust to conditions you encounter.",
+      "requiredGuards": []
+    },
+    {
+      "id": "fog_outing_03",
+      "familyId": "fog_outing",
+      "text": "If you're walking during the forecast visibility concerns, bring a light and use reflective details where practical.",
+      "requiredGuards": [
+        "walking_activity_context"
+      ]
+    },
+    {
+      "id": "fog_outing_04",
+      "familyId": "fog_outing",
+      "text": "If outdoor plans overlap the forecast visibility concerns, leave room to adjust travel time without assuming a delay.",
+      "requiredGuards": []
+    },
+    {
+      "id": "fog_outing_05",
+      "familyId": "fog_outing",
+      "text": "If visibility concerns overlap your outing, keep belongings easy to carry so you can watch the conditions around you.",
+      "requiredGuards": []
+    },
+    {
+      "id": "fog_outing_06",
+      "familyId": "fog_outing",
+      "text": "Check visibility before outdoor plans, and consider a familiar alternative if it is harder to see.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_rain_01",
+      "familyId": "event_rain",
+      "text": "Rain looks likely during your outdoor event. Bring an umbrella or rain layer for the occasion.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_rain_02",
+      "familyId": "event_rain",
+      "text": "Your outdoor event overlaps a rainy forecast. Check whether there's a covered option before heading over.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_rain_03",
+      "familyId": "event_rain",
+      "text": "Pack rain protection for the event, and keep anything that needs to stay dry tucked away.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_rain_04",
+      "familyId": "event_rain",
+      "text": "If your outdoor event is flexible, keep an indoor backup in mind with rain likely during that time.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_rain_05",
+      "familyId": "event_rain",
+      "text": "Consider a spare dry layer if you expect a long stay outside at the event with rain likely.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_rain_06",
+      "familyId": "event_rain",
+      "text": "Rain may join your outdoor event. Choose shoes you don't mind getting damp.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_heat_01",
+      "familyId": "event_heat",
+      "text": "Your outdoor event looks warm. Bring water and look for shaded breaks where available.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_heat_02",
+      "familyId": "event_heat",
+      "text": "Before leaving for the event, keep water within reach so a break does not mean unpacking everything.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_heat_03",
+      "familyId": "event_heat",
+      "text": "Warm conditions are forecast around your outdoor event. Choose adjustable clothing and give yourself room for breaks.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_heat_04",
+      "familyId": "event_heat",
+      "text": "Check whether your outdoor event has shaded areas, with warmer conditions in the forecast for that time.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_heat_05",
+      "familyId": "event_heat",
+      "text": "Keep your event plans adaptable in warmer conditions, including a shorter stay if that suits you.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_heat_06",
+      "familyId": "event_heat",
+      "text": "Before the outdoor event, plan how you could get water and take a break from the warmth.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_cool_evening_01",
+      "familyId": "event_cool_evening",
+      "text": "Your outdoor evening event looks cool. Bring a layer you can add after you arrive.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_cool_evening_02",
+      "familyId": "event_cool_evening",
+      "text": "If you'll be sitting outside at the event, consider a compact blanket for the cool evening.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_cool_evening_03",
+      "familyId": "event_cool_evening",
+      "text": "Choose layers you can adjust at your evening event, with cool weather expected outdoors.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_cool_evening_04",
+      "familyId": "event_cool_evening",
+      "text": "If your outdoor evening event allows it, consider an indoor break with cool conditions expected.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_cool_evening_05",
+      "familyId": "event_cool_evening",
+      "text": "Your evening event looks cool. Consider shoes and socks that keep you comfortable outdoors.",
+      "requiredGuards": []
+    },
+    {
+      "id": "event_cool_evening_06",
+      "familyId": "event_cool_evening",
+      "text": "Keep your outer layer accessible at the cool evening event so you can add it without unpacking your bag.",
+      "requiredGuards": []
+    },
+    {
+      "id": "forecast_unavailable_01",
+      "familyId": "forecast_unavailable",
+      "text": "A usable forecast is missing for these plans. Keep weather-dependent choices flexible until the existing refresh has more information.",
+      "requiredGuards": []
+    },
+    {
+      "id": "forecast_unavailable_02",
+      "familyId": "forecast_unavailable",
+      "text": "Fresh weather details aren't available right now. Use the app's refresh to try again when it suits you.",
+      "requiredGuards": [
+        "current_forecast_context"
+      ]
+    },
+    {
+      "id": "forecast_unavailable_03",
+      "familyId": "forecast_unavailable",
+      "text": "There's no reliable forecast for this tip yet. You can use the existing refresh before choosing outdoor clothing.",
+      "requiredGuards": []
+    },
+    {
+      "id": "forecast_unavailable_04",
+      "familyId": "forecast_unavailable",
+      "text": "We can't compare weather for this window yet. Use the existing refresh when ready, without assuming missing hours are dry.",
+      "requiredGuards": []
+    },
+    {
+      "id": "forecast_unavailable_05",
+      "familyId": "forecast_unavailable",
+      "text": "The weather outlook for these plans is unavailable. Consider a flexible backup while checking the app's existing refresh.",
+      "requiredGuards": []
+    },
+    {
+      "id": "forecast_unavailable_06",
+      "familyId": "forecast_unavailable",
+      "text": "A reliable forecast is missing for this time. Check again with the existing refresh before relying on a suggested outing window.",
+      "requiredGuards": []
+    }
+  ]
+}

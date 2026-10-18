@@ -12,6 +12,7 @@ import '../../../services/settings_controller.dart';
 import '../plancast_controller.dart';
 import '../screens/plancast_screen.dart';
 import 'plancast_presentation.dart';
+import 'plancast_guidance.dart';
 
 /// A deliberately small entry point; calendar work never gates Today weather.
 class PlanCastCard extends StatelessWidget {
@@ -85,7 +86,10 @@ class PlanCastCard extends StatelessWidget {
         ] else if (controller.loading && items.isEmpty) ...[
           const PlanCastLoadingPreview(compact: true),
         ] else ...[
-          PlanCastBriefingCard(readout: readout, compact: true),
+          PlanCastBriefingCard(
+              readout: readout,
+              compact: true,
+              guidance: PlanCastSummaryGuidance(summary: summary)),
           const SizedBox(height: DMSpacing.sm),
           PlanCastSummaryRow(summary: summary, compact: true),
           if (controller.loading)

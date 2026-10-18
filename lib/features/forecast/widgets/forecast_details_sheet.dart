@@ -1,3 +1,5 @@
+import '../../guidance/forecast_guidance.dart';
+import '../../guidance/domain/guidance.dart';
 import 'package:flutter/material.dart';
 
 import '../../../design/dm_theme.dart';
@@ -11,6 +13,8 @@ import 'forecast_temperature.dart';
 Future<void> showDailyForecastSheet(
   BuildContext context, {
   required List<DailyForecast> daily,
+  WeatherBundle? weather,
+  DateTime Function()? clock,
   required DateTime referenceTime,
   String? timezone,
   int? timezoneOffset,
@@ -36,6 +40,8 @@ Future<void> showDailyForecastSheet(
             itemBuilder: (context, index) => ForecastDailyDetailRow(
               key: ValueKey('detail-${window.items[index].id}'),
               item: window.items[index],
+              weather: weather,
+              clock: clock,
               today: window.today,
               timezone: timezone,
               timezoneOffset: timezoneOffset,
@@ -49,6 +55,8 @@ class ForecastDailyDetailRow extends StatelessWidget {
   const ForecastDailyDetailRow({
     super.key,
     required this.item,
+    this.weather,
+    this.clock,
     required this.today,
     this.timezone,
     this.timezoneOffset,
@@ -56,6 +64,8 @@ class ForecastDailyDetailRow extends StatelessWidget {
     this.longitude,
   });
   final DailyForecastItem item;
+  final WeatherBundle? weather;
+  final DateTime Function()? clock;
   final DateTime today;
   final String? timezone;
   final int? timezoneOffset;
@@ -141,6 +151,14 @@ class ForecastDailyDetailRow extends StatelessWidget {
                       : 'Precipitation unavailable',
                   style: TextStyle(
                       fontSize: 12, height: 1.3, color: colors.link))),
+          if (weather != null)
+            Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: ForecastGuidanceView(
+                    weather: weather!,
+                    surface: GuidanceSurface.dayDetail,
+                    day: item.date,
+                    clock: clock)),
         ]));
   }
 }

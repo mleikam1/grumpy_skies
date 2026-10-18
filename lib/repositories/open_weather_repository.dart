@@ -226,6 +226,8 @@ class OpenWeatherRepository extends WeatherRepository {
       dailyMessage: liveWeather.dailyForecastMessage,
     );
     final bundle = WeatherBundle(
+      guidanceAvailabilityVerified: liveWeather.guidanceAvailabilityVerified,
+      forecastSource: liveWeather.forecastSource,
       current: current,
       hourly: hourly,
       daily: daily,
@@ -308,6 +310,7 @@ class OpenWeatherRepository extends WeatherRepository {
         : await getWeatherAlerts(alertIds: current.alertIds);
 
     return WeatherBundle(
+      forecastSource: 'openweather_onecall_4_timelines',
       current: current,
       hourly: _hourlyFromTimeline(timeline, current),
       daily: const [],

@@ -128,6 +128,7 @@ class ApprovedWeatherRepository extends WeatherRepository {
   int requestCount = 0;
   bool failRequests = false;
   bool offline = false;
+  WeatherBundle? bundleOverride;
   @override
   Future<WeatherBundle> getWeather(
       {required double latitude,
@@ -136,9 +137,8 @@ class ApprovedWeatherRepository extends WeatherRepository {
       LocationCandidate? location}) async {
     requestCount++;
     if (failRequests) throw StateError('Synthetic unavailable weather fixture');
-    return offline
-        ? ApprovedFixture.weather.asOfflineCache()
-        : ApprovedFixture.weather;
+    final bundle = bundleOverride ?? ApprovedFixture.weather;
+    return offline ? bundle.asOfflineCache() : bundle;
   }
 
   @override

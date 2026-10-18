@@ -364,6 +364,8 @@ class _ForecastScreenState extends State<ForecastScreen>
                           now: now,
                           unavailable: cached || !observationFresh),
                       ForecastDailyStrip(
+                        weather: weather,
+                        clock: widget.clock,
                         daily: weather.daily,
                         timezone: weather.current.timezone,
                         timezoneOffset: weather.current.timezoneOffset,

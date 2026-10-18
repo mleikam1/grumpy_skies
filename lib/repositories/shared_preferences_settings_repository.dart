@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/guidance_preferences.dart';
 
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
@@ -9,6 +11,7 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
   SharedPreferencesSettingsRepository(this._preferences);
 
   static const _appearanceKey = 'settings.appearance';
+  static const _guidanceKey = 'settings.guidance.v1';
   static const _temperatureUnitKey = 'settings.temperatureUnit';
   static const _notificationsEnabledKey = 'settings.notificationsEnabled';
   static const _adsEnabledKey = 'settings.adsEnabled';
@@ -30,6 +33,7 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
     const defaults = UserSettings.defaults;
 
     return defaults.copyWith(
+      guidance: _readGuidance(),
       appearance: _readAppearance(),
       temperatureUnit: _readTemperatureUnit() ?? defaults.temperatureUnit,
       notificationsEnabled: _preferences.getBool(_notificationsEnabledKey) ??
@@ -44,6 +48,8 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
   @override
   Future<void> saveSettings(UserSettings settings) async {
     final saved = await Future.wait([
+      _preferences.setString(
+          _guidanceKey, jsonEncode(settings.guidance.toJson())),
       _preferences.setString(_appearanceKey, settings.appearance.name),
       _preferences.setString(
         _temperatureUnitKey,
@@ -83,6 +89,16 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
       }
     }
     return AppAppearance.light;
+  }
+
+  GuidancePreferences _readGuidance() {
+    try {
+      final value = _preferences.getString(_guidanceKey);
+      return GuidancePreferences.fromJson(
+          value == null ? null : jsonDecode(value));
+    } catch (_) {
+      return const GuidancePreferences();
+    }
   }
 
   TemperatureUnit? _readTemperatureUnit() {

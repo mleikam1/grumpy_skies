@@ -646,6 +646,7 @@ class OpenWeatherBackendClient {
         daily.isEmpty ? _forecastIssueMessage(forecastErrors['daily']) : null;
 
     return WeatherBundle(
+      forecastSource: json['forecastSource'] as String?,
       current: current,
       hourly: hourly,
       daily: daily,

@@ -18,6 +18,7 @@ import '../../shared/widgets/dm_buttons.dart';
 import '../../shared/widgets/dm_segmented_control.dart';
 import 'widgets/dm_settings_row.dart';
 import 'privacy_information.dart';
+import '../guidance/widgets/guidance_preferences_tile.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -236,6 +237,11 @@ class _PreferencesColumn extends StatelessWidget {
             ]),
           ),
         ],
+        SizedBox(height: gap),
+        const _SettingsSection(
+          title: 'Wingman tips',
+          child: GuidancePreferencesTile(),
+        ),
         SizedBox(height: gap),
         _SettingsSection(
           title: 'Notifications',

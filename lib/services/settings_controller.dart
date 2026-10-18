@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../models/temperature_unit.dart';
+import '../models/guidance_preferences.dart';
 import '../models/weather_models.dart';
 import '../repositories/settings_repository.dart';
 
@@ -31,6 +32,12 @@ class SettingsController extends ChangeNotifier {
   bool get notificationsEnabled => _settings.notificationsEnabled;
 
   bool get adsEnabled => _settings.adsEnabled;
+  GuidancePreferences get guidance => _settings.guidance;
+
+  void setGuidancePreferences(GuidancePreferences value) {
+    if (value == _settings.guidance) return;
+    _updateSettings(_settings.copyWith(guidance: value));
+  }
 
   bool get isLoaded => _isLoaded;
 

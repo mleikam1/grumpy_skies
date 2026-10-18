@@ -12,6 +12,7 @@ import '../../../models/weather_time.dart';
 import '../plancast_controller.dart';
 import '../screens/plancast_time_format.dart';
 import 'plancast_location_controls.dart';
+import 'plancast_guidance.dart';
 
 /// A row inside the Today card or an agenda card. Source event data is unchanged.
 class PlanCastEventTile extends StatelessWidget {
@@ -145,6 +146,7 @@ class PlanCastEventTile extends StatelessWidget {
                     if (item.event.tentative)
                       const Text('Tentative invitation',
                           style: DMTypography.bodySmall),
+                    PlanCastEventGuidance(item: item, day: selectedDay),
                   ])),
             ]),
           ),
@@ -452,15 +454,17 @@ class _EventDetails extends StatelessWidget {
             ],
             if (assessment.usable && assessment.advice.trim().isNotEmpty) ...[
               const SizedBox(height: DMSpacing.sm),
-              DmGlassCard(
-                  child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Icon(Icons.info_outline,
-                        color: context.dmColors.insightIcon, size: 22),
-                    const SizedBox(width: DMSpacing.sm),
-                    Expanded(child: Text(assessment.advice)),
-                  ])),
+              PlanCastEventGuidance(
+                  item: item,
+                  fallback: DmGlassCard(
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Icon(Icons.info_outline,
+                            color: context.dmColors.insightIcon, size: 22),
+                        const SizedBox(width: DMSpacing.sm),
+                        Expanded(child: Text(assessment.advice)),
+                      ]))),
             ],
           ] else ...[
             const Text('Weather through your stay',
@@ -474,6 +478,7 @@ class _EventDetails extends StatelessWidget {
                   heading: segment.label,
                   date: _segmentTime(context, segment, item)),
             ],
+            PlanCastEventGuidance(item: item),
           ],
           for (final alert in assessment.alerts) ...[
             const SizedBox(height: DMSpacing.sm),
