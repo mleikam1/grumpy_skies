@@ -1,12 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DayMaker weather meme starter catalog v1",
+  "title": "Wingman Weather meme starter catalog v1",
   "type": "object",
   "required": [
     "schemaVersion",
     "packId",
-    "templates",
-    "personaCaptions"
+    "templates"
   ],
   "properties": {
     "schemaVersion": {
@@ -136,46 +135,6 @@
           }
         }
       }
-    },
-    "personaCaptions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "top",
-          "bottom",
-          "language",
-          "ratingIntent"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "top": {
-            "type": "string",
-            "minLength": 1
-          },
-          "bottom": {
-            "type": "string",
-            "minLength": 1
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "language": {
-            "const": "en"
-          },
-          "ratingIntent": {
-            "const": "family_friendly"
-          }
-        }
-      },
-      "minItems": 50
     }
   }
 }

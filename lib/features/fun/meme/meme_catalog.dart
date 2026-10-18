@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-import '../../roasts/models/roast_persona.dart';
 import 'models/meme_document.dart';
 
 class MemeCaptionPair {
@@ -10,27 +9,17 @@ class MemeCaptionPair {
     required this.id,
     required this.top,
     required this.bottom,
-    this.personaId,
     List<String> tags = const [],
   }) : tags = List.unmodifiable(tags);
 
   final String id, top, bottom;
-  final String? personaId;
   final List<String> tags;
 
   factory MemeCaptionPair.fromJson(Map<String, dynamic> json) {
-    final seed = json['seedPersonaId'] ?? json['persona'];
-    final personaId = seed == null || seed == 'neutral'
-        ? null
-        : RoastPersonas.normalizeIdOrNull(seed as String);
-    if (seed != null && seed != 'neutral' && personaId == null) {
-      throw FormatException('Unknown catalog persona: $seed');
-    }
     return MemeCaptionPair(
       id: _id(json, 'id'),
       top: _string(json, 'top', max: 1000),
       bottom: _string(json, 'bottom', max: 1000),
-      personaId: personaId,
       tags: _strings(json['tags']),
     );
   }
@@ -106,7 +95,6 @@ class MemeTemplate {
 
   MemeDocument createDocument({
     MemeCaptionPair? caption,
-    String? personaId,
     Map<String, dynamic>? weatherSnapshot,
   }) {
     final selected = caption ?? defaultCaption;
@@ -131,7 +119,6 @@ class MemeTemplate {
           ),
       ],
       weatherSnapshot: weatherSnapshot,
-      personaId: personaId ?? selected.personaId,
       captionId: selected.id,
       createdAt: now,
       updatedAt: now,
@@ -210,10 +197,8 @@ class MemeCatalog {
   MemeCatalog({
     required List<MemeTemplate> templates,
     required List<MemeSticker> stickers,
-    required List<MemeCaptionPair> personaCaptions,
   })  : templates = List.unmodifiable(templates),
-        stickers = List.unmodifiable(stickers),
-        personaCaptions = List.unmodifiable(personaCaptions);
+        stickers = List.unmodifiable(stickers);
 
   static const catalogAsset =
       'assets/meme_content/weather_meme_catalog.v1.json';
@@ -221,11 +206,9 @@ class MemeCatalog {
 
   final List<MemeTemplate> templates;
   final List<MemeSticker> stickers;
-  final List<MemeCaptionPair> personaCaptions;
 
   Iterable<MemeCaptionPair> get allCaptions => [
         for (final template in templates) ...template.captionPairs,
-        ...personaCaptions,
       ];
   Set<String> get assetPaths => {
         for (final template in templates) ...[
@@ -263,9 +246,6 @@ class MemeCatalog {
           _objects(catalog['templates']).map(MemeTemplate.fromJson).toList(),
       stickers:
           _objects(stickers['stickers']).map(MemeSticker.fromJson).toList(),
-      personaCaptions: _objects(catalog['personaCaptions'])
-          .map(MemeCaptionPair.fromJson)
-          .toList(),
     );
     _unique(result.templates.map((template) => template.id), 'template');
     _unique(result.stickers.map((sticker) => sticker.id), 'sticker');

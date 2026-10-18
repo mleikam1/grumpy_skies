@@ -1,6 +1,5 @@
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
-import '../features/roasts/models/roast_persona.dart';
 import '../shared/assets/dm_assets.dart';
 
 abstract final class DayMakerSampleData {
@@ -159,124 +158,7 @@ abstract final class DayMakerSampleData {
   static final WeatherBundle weatherBundle =
       WeatherBundle.fromSnapshot(weatherSnapshot);
 
-  static final Persona persona =
-      RoastPersonas.defaultPersona.toDayMakerPersona();
-
-  static final List<Persona> personas =
-      List.unmodifiable(RoastPersonas.toDayMakerPersonas());
-
-  static final Roast roast = Roast(
-    id: 'demo-karen-daily-roast',
-    personaId: persona.id,
-    weatherSnapshotId: weatherSnapshot.id,
-    text: 'It’s 72°F and somehow still making a scene.',
-    category: 'daily',
-    createdAt: observedAt,
-    xpReward: 15,
-  );
-
-  static final List<Roast> dailyRoasts = List.unmodifiable([
-    roast,
-    Roast(
-      id: 'demo-frat-bro-daily-roast',
-      personaId: 'frat_bro',
-      weatherSnapshotId: weatherSnapshot.id,
-      text:
-          'It’s 72°F, bro. The clouds are mid and the humidity is doing keg stands.',
-      category: 'daily',
-      createdAt: observedAt.subtract(const Duration(minutes: 12)),
-      xpReward: 15,
-    ),
-    Roast(
-      id: 'demo-two-year-old-daily-roast',
-      personaId: 'two_year_old',
-      weatherSnapshotId: weatherSnapshot.id,
-      text: 'Sky is blue. Sun is loud. Shoes are optional.',
-      category: 'daily',
-      createdAt: observedAt.subtract(const Duration(minutes: 24)),
-      xpReward: 15,
-    ),
-    Roast(
-      id: 'demo-politician-daily-roast',
-      personaId: 'politician',
-      weatherSnapshotId: weatherSnapshot.id,
-      text:
-          'Today’s conditions are not bad weather; they are an atmospheric opportunity.',
-      category: 'daily',
-      createdAt: observedAt.subtract(const Duration(minutes: 36)),
-      xpReward: 15,
-    ),
-    Roast(
-      id: 'demo-grandpa-daily-roast',
-      personaId: 'grandpa',
-      weatherSnapshotId: weatherSnapshot.id,
-      text:
-          'Back in my day, we called this bring a jacket and stop complaining.',
-      category: 'daily',
-      createdAt: observedAt.subtract(const Duration(minutes: 48)),
-      xpReward: 15,
-    ),
-  ]);
-
-  static final List<Roast> roastHistory = List.unmodifiable([
-    roast,
-    Roast(
-      id: 'demo-karen-hourly-roast',
-      personaId: persona.id,
-      weatherSnapshotId: weatherSnapshot.id,
-      text: 'Partly cloudy with a 100% chance of asking for the manager.',
-      category: 'hourly',
-      createdAt: observedAt.subtract(const Duration(hours: 1)),
-      xpReward: 10,
-    ),
-    Roast(
-      id: 'demo-frat-bro-hourly-roast',
-      personaId: 'frat_bro',
-      weatherSnapshotId: weatherSnapshot.id,
-      text: 'Wind at 8 mph: light breeze, heavy main-character energy.',
-      category: 'hourly',
-      createdAt: observedAt.subtract(const Duration(hours: 2)),
-      xpReward: 10,
-    ),
-    Roast(
-      id: 'demo-two-year-old-hourly-roast',
-      personaId: 'two_year_old',
-      weatherSnapshotId: weatherSnapshot.id,
-      text: 'Rain chance is 38%, which is also the chance of sharing snacks.',
-      category: 'hourly',
-      createdAt: observedAt.subtract(const Duration(hours: 3)),
-      xpReward: 10,
-    ),
-    Roast(
-      id: 'demo-politician-hourly-roast',
-      personaId: 'politician',
-      weatherSnapshotId: weatherSnapshot.id,
-      text: 'The forecast is committed to transparency, except for the sun.',
-      category: 'hourly',
-      createdAt: observedAt.subtract(const Duration(hours: 4)),
-      xpReward: 10,
-    ),
-    Roast(
-      id: 'demo-grandpa-hourly-roast',
-      personaId: 'grandpa',
-      weatherSnapshotId: weatherSnapshot.id,
-      text: 'Humidity at 56% and everyone acts like the sky invented problems.',
-      category: 'hourly',
-      createdAt: observedAt.subtract(const Duration(hours: 5)),
-      xpReward: 10,
-    ),
-  ]);
-
   static final List<Achievement> achievements = List.unmodifiable([
-    const Achievement(
-      id: 'first-roast',
-      name: 'First Roast',
-      description: 'Survived your first weather insult.',
-      xpReward: 50,
-      unlocked: true,
-      progress: 1,
-      target: 1,
-    ),
     const Achievement(
       id: 'five-day-streak',
       name: 'Five-Day Streak',
@@ -352,7 +234,6 @@ abstract final class DayMakerSampleData {
 
   static const UserSettings userSettings = UserSettings(
     temperatureUnit: TemperatureUnit.fahrenheit,
-    selectedPersonaId: 'karen',
     notificationsEnabled: true,
     adsEnabled: true,
     xp: 420,

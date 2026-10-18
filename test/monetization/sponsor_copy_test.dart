@@ -44,28 +44,21 @@ void main() {
           bool known = true}) =>
       selector.chooseForVisit(
           visitId: visit,
-          personaId: 'karen',
           enabled: enabled,
           isWeb: web,
           severeWarning: severe,
           safetyFresh: fresh,
           safetyKnown: known);
 
-  test('bundled catalog has 50 original lines and all five personas', () {
-    expect(catalog, hasLength(50));
-    expect(catalog.map((line) => line.text).toSet(), hasLength(50));
-    expect(catalog.map((line) => line.personaId).whereType<String>().toSet(),
-        {'karen', 'frat_bro', 'grandpa', 'politician', 'two_year_old'});
+  test('bundled catalog retains ten neutral lines without persona attribution',
+      () {
+    expect(catalog, hasLength(10));
+    expect(catalog.map((line) => line.text).toSet(), hasLength(10));
     expect(
         catalog.any((line) =>
-            line.text ==
-            'We cannot expense an emotional-support snowplow. Apparently.'),
-        isTrue);
-    expect(
-        catalog.any((line) =>
-            line.text ==
-            'Karen: I asked for a company jet. They gave me a weather balloon.'),
-        isTrue);
+            RegExp(r'Karen|Frat Bro|Grandpa|Politician|2-Year-Old')
+                .hasMatch(line.text)),
+        isFalse);
   });
 
   test('choose only once per visit; cap two persists across a process restart',
@@ -106,19 +99,18 @@ void main() {
     expect(other.maxPerSession, 2);
   });
 
-  test('a single persona cycles its full catalog instead of exhausting forever',
+  test('neutral catalog cycles without exhausting or repeating consecutively',
       () async {
     final selected = <String>[];
     for (var visit = 0; visit < 24; visit++) {
       await selector.setSession('session-${100 + visit ~/ 2}');
       final choice = await choose('visit-$visit');
       expect(choice, isNotNull);
-      expect(choice!.personaId == null || choice.personaId == 'karen', isTrue);
-      selected.add(choice.id);
+      selected.add(choice!.id);
     }
-    // Ten shared lines plus eight Karen lines are all used before recycling.
-    expect(selected.take(18).toSet(), hasLength(18));
-    expect(selected[18], selected.first);
+    // The retained ten shared lines are used before recycling.
+    expect(selected.take(10).toSet(), hasLength(10));
+    expect(selected[10], selected.first);
     for (var index = 1; index < selected.length; index++) {
       expect(selected[index], isNot(selected[index - 1]));
     }

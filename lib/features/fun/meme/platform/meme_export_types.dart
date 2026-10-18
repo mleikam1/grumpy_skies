@@ -34,5 +34,5 @@ String safeMemeFileName(String input, String extension) {
       .replaceAll(RegExp(r'\.[a-zA-Z0-9]+$'), '')
       .replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
   final bounded = stem.length > 80 ? stem.substring(0, 80) : stem;
-  return '${bounded.isEmpty ? 'daymaker_meme' : bounded}.$extension';
+  return '${bounded.isEmpty ? 'wingman_weather_meme' : bounded}.$extension';
 }

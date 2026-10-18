@@ -133,7 +133,7 @@ class DeviceAreaSample {
 }
 
 /// Derived event evidence. Resolution time is deliberately excluded from the
-/// signature, so a rebuild cannot invalidate identical weather or persona copy.
+/// signature, so a rebuild cannot invalidate identical weather or briefing copy.
 class ResolvedLocation {
   ResolvedLocation(
       {this.candidate,

@@ -304,7 +304,7 @@ class _DayMakerWatermark extends StatelessWidget {
                 ),
                 const SizedBox(width: DMSpacing.xxs),
                 Text(
-                  'DayMaker',
+                  'Wingman Weather',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: DMTypography.labelSmall.copyWith(

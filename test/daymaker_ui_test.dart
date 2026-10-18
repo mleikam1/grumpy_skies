@@ -9,7 +9,6 @@ import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_document_canvas.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_inspector.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
-import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
@@ -24,15 +23,16 @@ void main() {
         await tester.pumpDayMakerApp(viewport: viewport);
 
         expectNoFlutterExceptions(tester);
-        expect(find.text('daymaker.'), findsOneWidget);
-        expect(find.text('Weather that brightens your day.'), findsOneWidget);
+        expect(find.text('Wingman Weather'), findsOneWidget);
+        expect(
+            find.text('We’ve got your back, in any weather.'), findsOneWidget);
       });
     }
 
     const mainTabs = <String, String>{
       'Today': AppRoutes.forecast,
+      'PlanCast': AppRoutes.planCast,
       'Radar': AppRoutes.radar,
-      'Roasts': AppRoutes.roasts,
       'Fun': AppRoutes.fun,
     };
 
@@ -50,11 +50,11 @@ void main() {
       });
     }
 
-    testWidgets('four destinations keep the approved order and route mapping',
+    testWidgets('four destinations keep the requested order and route mapping',
         (tester) async {
       await tester.pumpDayMakerRoute(initialLocation: AppRoutes.forecast);
       expect(DmBottomNav.defaultItems.map((item) => item.label),
-          ['Today', 'Radar', 'Roasts', 'Fun']);
+          ['Today', 'PlanCast', 'Radar', 'Fun']);
       expect(DaymakerShell.tabLocations, mainTabs.values.toList());
       for (var index = 0; index < DmBottomNav.defaultItems.length; index++) {
         final item = DmBottomNav.defaultItems[index];
@@ -109,34 +109,6 @@ void main() {
       expectNoFlutterExceptions(tester);
       expect(find.text('72°'), findsOneWidget);
       expect(find.text('Demo City, US'), findsOneWidget);
-    });
-
-    testWidgets('roasts screen displays Karen', (tester) async {
-      await tester.pumpDayMakerRoute(initialLocation: AppRoutes.roasts);
-
-      expectNoFlutterExceptions(tester);
-      expect(find.text('Karen'), findsWidgets);
-    });
-
-    testWidgets('Forecast and Roasts share the selected persona',
-        (tester) async {
-      await tester.pumpDayMakerRoute(initialLocation: AppRoutes.roasts);
-
-      await tester.ensureVisible(find.text('Frat Bro').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Frat Bro').first);
-      await tester.pumpAndSettle();
-
-      final settings =
-          tester.element(find.byType(RoastsScreen)).read<SettingsController>();
-      expect(settings.selectedPersonaId, 'frat_bro');
-
-      await tester.tap(find.bySemanticsLabel('Today tab'));
-      await tester.pumpAndSettle();
-
-      expectNoFlutterExceptions(tester);
-      expect(find.text("Frat Bro's take"), findsOneWidget);
-      expect(find.text('BAROMETER BRO'), findsOneWidget);
     });
 
     testWidgets('settings unit toggle works', (tester) async {

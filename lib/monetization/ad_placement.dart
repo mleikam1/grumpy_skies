@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 /// Logical IDs never depend on a network's app or unit identifier.
 enum AdPlacement {
   forecastBanner('forecast_banner'),
-  roastsHistoryMrec('roasts_history_mrec'),
   funHubMrec('fun_hub_mrec'),
   memeLibraryMrec('meme_library_mrec'),
   funCompleteInterstitial('fun_complete_interstitial');
@@ -41,7 +40,6 @@ bool hasEligibleContent(AdPlacement placement, int count,
     {bool sample = false, bool available = true}) {
   if (sample || !available) return false;
   return switch (placement) {
-    AdPlacement.roastsHistoryMrec => count >= 4,
     AdPlacement.memeLibraryMrec => count >= 6,
     AdPlacement.funHubMrec || AdPlacement.forecastBanner => count >= 1,
     AdPlacement.funCompleteInterstitial => false,

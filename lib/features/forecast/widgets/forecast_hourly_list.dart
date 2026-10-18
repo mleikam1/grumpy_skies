@@ -6,7 +6,6 @@ import '../../../design/dm_theme.dart';
 import '../../../models/weather_models.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 import '../../../shared/widgets/dm_approved_components.dart';
-import '../../roasts/controllers/local_roast_controller.dart';
 import '../models/forecast_view_models.dart';
 import '../models/hourly_timeline.dart';
 import 'forecast_hourly_timeline.dart';
@@ -25,8 +24,6 @@ class ForecastHourlyList extends StatelessWidget {
     this.longitude,
     this.errorMessage,
     this.weather,
-    this.roasts,
-    this.personaId,
     this.clock,
     this.onSeeAll,
     this.previewLimit = 12,
@@ -40,8 +37,6 @@ class ForecastHourlyList extends StatelessWidget {
   final double? longitude;
   final String? errorMessage;
   final WeatherBundle? weather;
-  final LocalRoastController? roasts;
-  final String? personaId;
   final DateTime Function()? clock;
   final VoidCallback? onSeeAll;
   final int previewLimit;
@@ -75,8 +70,6 @@ class ForecastHourlyList extends StatelessWidget {
                             scrollController: controller,
                             hourly: hourly,
                             weather: weather,
-                            roasts: roasts,
-                            personaId: personaId,
                             timezone: zone,
                             timezoneOffset: offset,
                             clock: clock,

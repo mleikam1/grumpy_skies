@@ -5,12 +5,10 @@ import 'package:flutter/services.dart';
 
 import 'interstitial_policy.dart';
 
-/// This is DayMaker editorial copy, never a claim of paid sponsorship.
+/// This is Wingman Weather editorial copy, never a claim of paid sponsorship.
 class EditorialAside {
-  const EditorialAside(
-      {required this.id, required this.personaId, required this.text});
+  const EditorialAside({required this.id, required this.text});
   final String id;
-  final String? personaId;
   final String text;
 
   static List<EditorialAside> parseCatalog(String source) {
@@ -22,7 +20,6 @@ class EditorialAside {
       final item = entry as Map<String, dynamic>;
       return EditorialAside(
         id: item['id'] as String,
-        personaId: item['persona'] as String?,
         text: item['text'] as String,
       );
     }).toList(growable: false);
@@ -108,7 +105,6 @@ class SponsorCopySelector {
 
   Future<EditorialAside?> chooseForVisit({
     required String visitId,
-    required String personaId,
     required bool enabled,
     required bool isWeb,
     required bool severeWarning,
@@ -130,14 +126,12 @@ class SponsorCopySelector {
     if (_sessionCount >= maxPerSession || random.nextDouble() >= probability) {
       return null;
     }
-    final candidates = catalog
-        .where((line) => line.personaId == null || line.personaId == personaId)
-        .toList();
+    final candidates = catalog;
     var eligible =
         candidates.where((line) => !_recentIds.contains(line.id)).toList();
-    // A single persona has fewer lines than the global recent-history capacity.
+    // The neutral catalog is smaller than the recent-history capacity.
     // Once that entire pool has been used, recycle its least-recent line; never
-    // strand the persona permanently or immediately repeat its previous line.
+    // exhaust the catalog permanently or immediately repeat its previous line.
     if (eligible.isEmpty && candidates.length > 1) {
       final recyclable = candidates
           .where((line) => line.id != _recentIds.lastOrNull)

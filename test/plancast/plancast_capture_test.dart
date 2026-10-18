@@ -5,16 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/models/app_appearance.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_strip.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_list.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_roast_card.dart';
 import 'package:grumpy_skies/features/plancast/plancast_controller.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
+import 'package:grumpy_skies/shared/widgets/dm_bottom_nav.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_card.dart';
 import 'package:grumpy_skies/preview/approved_fixture.dart';
 import 'package:grumpy_skies/preview/approved_preview.dart';
@@ -69,16 +68,10 @@ void main() {
                   PlanCastPreviewWeather(() => ApprovedFixture.now),
               platform: PlanCastPreviewPlatform(),
               deviceAreaService: PlanCastPreviewArea(ApprovedFixture.now),
-              roastPackRepository: ApprovedRoastPackRepository(),
               clock: () => ApprovedFixture.now);
           final session = ApprovedPreviewSession(
               appearance: dark ? AppAppearance.dark : AppAppearance.light);
-          final router = GoRouter(initialLocation: AppRoutes.forecast, routes: [
-            ...session.router.configuration.routes,
-            GoRoute(
-                path: AppRoutes.planCast,
-                builder: (_, __) => const PlanCastScreen())
-          ]);
+          final router = session.router;
           final boundary = GlobalKey();
           tester.view.physicalSize = Size(width, 930);
           tester.view.devicePixelRatio = 1;
@@ -103,21 +96,19 @@ void main() {
             await _save(tester, boundary, 'widget_today_top_$name');
             // These existing sections keep their original order and components.
             expect(
-                tester.getTopLeft(find.byType(ForecastRoastCard)).dy,
-                lessThan(
-                    tester.getTopLeft(find.byType(ForecastDailyStrip)).dy));
-            expect(
                 tester.getTopLeft(find.byType(ForecastDailyStrip)).dy,
                 lessThan(
                     tester.getTopLeft(find.byType(ForecastHourlyList)).dy));
-            expect(tester.getTopLeft(find.byType(ForecastHourlyList)).dy,
-                lessThan(tester.getTopLeft(find.byType(PlanCastCard)).dy));
-            await tester.ensureVisible(find.byType(PlanCastCard));
-            await _frames(tester);
-            await _save(tester, boundary, 'widget_today_card_$name');
+            expect(find.byType(PlanCastCard), findsNothing);
           }
-          router.push(AppRoutes.planCast);
+          await tester.tap(find.bySemanticsLabel('PlanCast tab'));
           await _frames(tester);
+          expect(find.byType(PlanCastScreen), findsOneWidget);
+          expect(
+              tester.widget<DmBottomNav>(find.byType(DmBottomNav)).currentIndex,
+              1);
+          expect(router.routeInformationProvider.value.uri.path,
+              AppRoutes.planCast);
           await _save(tester, boundary, 'widget_agenda_$name');
           expect(tester.takeException(), isNull);
           await tester.tap(find.widgetWithText(ChoiceChip, 'Tomorrow'));
@@ -127,7 +118,6 @@ void main() {
           await tester.pumpWidget(const SizedBox.shrink());
           controller.dispose();
           session.dispose();
-          router.dispose();
         });
       }
     }

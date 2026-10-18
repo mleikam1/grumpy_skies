@@ -68,6 +68,7 @@ class MemeStore {
     final documents = <MemeDocument>[];
     for (final key in await backend.keys('documents')) {
       try {
+        if (await _isRetiredContentBlob(key)) continue;
         final document = await load(key);
         if (document != null) documents.add(document);
       } catch (_) {
@@ -77,6 +78,15 @@ class MemeStore {
     }
     documents.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return documents;
+  }
+
+  /// Very early builds stored content-addressed packs in this collection.
+  /// Ignore only a verified pack blob; never delete or rewrite a saved project.
+  Future<bool> _isRetiredContentBlob(String key) async {
+    if (!RegExp(r'^roast_[a-f0-9]{64}$').hasMatch(key)) return false;
+    final bytes = await backend.read('documents', key);
+    return bytes != null &&
+        sha256.convert(bytes).toString() == key.substring(6);
   }
 
   Future<MemeDocument?> load(String id) async {
@@ -152,6 +162,7 @@ class MemeStore {
         final retained = {...activeHistoryMediaIds};
         for (final key in await backend.keys('documents')) {
           try {
+            if (await _isRetiredContentBlob(key)) continue;
             final bytes = await backend.read('documents', key);
             final document = MemeDocument.fromJson(
                 jsonDecode(utf8.decode(bytes!)) as Map<String, dynamic>);
@@ -266,7 +277,7 @@ class MemeStore {
         root['format'] != 'daymaker-meme-project' ||
         root['version'] != 1) {
       throw const FormatException(
-          'This is not a supported DayMaker project backup.');
+          'This is not a supported Wingman Weather project backup.');
     }
     if (root['document'] is! Map<String, dynamic>) {
       throw const FormatException(

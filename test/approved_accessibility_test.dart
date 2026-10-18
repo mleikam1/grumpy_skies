@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/forecast/forecast_screen.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_roast_card.dart';
 import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_document_canvas.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_inspector.dart';
@@ -112,16 +111,11 @@ void main() {
   }
 
   testWidgets(
-      'theme changes preserve actual Today scroll, persona, roast and weather request count',
+      'theme changes preserve actual Today scroll and weather request count',
       (tester) async {
     final session = await _preview(tester);
-    session.settings.setSelectedPersonaId('frat_bro');
     await _settleAssets(tester);
     final state = tester.state(find.byType(ForecastScreen));
-    final roast = tester
-        .widget<ForecastRoastCard>(find.byType(ForecastRoastCard))
-        .roast
-        .text;
     final weather = session.location.currentWeather;
     final requestCount = session.weather.requestCount;
     final todayScroll = find.byKey(const PageStorageKey('today-scroll'));
@@ -138,17 +132,10 @@ void main() {
       await _settleAssets(tester);
       expect(tester.state(find.byType(ForecastScreen)), same(state));
       expect(position.pixels, closeTo(offset, .01));
-      expect(session.settings.selectedPersonaId, 'frat_bro');
       expect(session.location.currentWeather, same(weather));
       expect(session.weather.requestCount, requestCount);
       expect(session.router.routeInformationProvider.value.uri.path,
           AppRoutes.forecast);
-      expect(
-          tester
-              .widget<ForecastRoastCard>(find.byType(ForecastRoastCard))
-              .roast
-              .text,
-          roast);
       expect(
           Theme.of(tester.element(find.byType(ForecastScreen))).brightness,
           appearance == AppAppearance.dark
@@ -159,7 +146,7 @@ void main() {
   });
 
   for (final appearance in [AppAppearance.light, AppAppearance.dark]) {
-    for (final route in [AppRoutes.forecast, AppRoutes.roasts, AppRoutes.fun]) {
+    for (final route in [AppRoutes.forecast, AppRoutes.fun]) {
       testWidgets('$route supports 2x text in ${appearance.name} appearance',
           (tester) async {
         await _preview(tester,

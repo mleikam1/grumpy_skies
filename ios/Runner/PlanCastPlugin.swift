@@ -255,7 +255,16 @@ private enum PlanCastNative {
   static func generic(_ n: inout [String: Any]) { n["title"] = "PlanCast"; n["body"] = "Open PlanCast for your plans and the latest available weather."; n["detailed"] = false }
   static func savedQueue() throws -> [[String: Any]] {
     guard let raw = try read("queue"), let data = raw.data(using: .utf8) else { return [] }
-    return try JSONSerialization.jsonObject(with: data) as? [[String: Any]] ?? []
+    let rows = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] ?? []
+    // Idempotent display-copy upgrade for our exact old generic invitation.
+    // Preserve reminder IDs, delivery times, event content and permissions.
+    return rows.map { row in
+      var notice = row
+      if notice["nativeEventId"] == nil, notice["detailed"] as? Bool != true, notice["body"] as? String == "Your plans. The sky’s opinion. Open PlanCast to refresh your day." {
+        notice["body"] = "Weather for your plans. Open PlanCast to refresh your day."
+      }
+      return notice
+    }
   }
   static func saveQueue(_ rows: [[String: Any]]) throws { let data = try JSONSerialization.data(withJSONObject: rows); try write("queue", String(decoding: data, as: UTF8.self)) }
   static func replace(_ requested: [[String: Any]]) throws {

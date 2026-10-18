@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
-import 'package:grumpy_skies/repositories/fake_roast_repository.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
 import 'package:grumpy_skies/repositories/open_weather_repository.dart';
@@ -32,19 +31,6 @@ void main() {
     expect(snapshot.chaosMeterPercent, 82);
     expect(bundle.current.temperatureF.round(), 72);
     expect(bundle.current.windLabel, '8 mph SW');
-  });
-
-  test('FakeRoastRepository returns stable Karen roast sample', () async {
-    const repo = FakeRoastRepository();
-
-    final persona = await repo.getPersona('karen');
-    final roast = await repo.getDailyRoast(
-      personaId: persona.id,
-      weatherSnapshotId: 'demo-partly-cloudy-2026-06-14',
-    );
-
-    expect(persona.displayName, 'Karen, Roast Queen');
-    expect(roast.text, 'It’s 72°F and somehow still making a scene.');
   });
 
   test('InMemorySettingsRepository starts with sample settings and saves',

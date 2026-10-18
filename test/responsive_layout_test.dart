@@ -21,6 +21,7 @@ void main() {
   const routes = <String, String>{
     'splash': AppRoutes.splash,
     'forecast': AppRoutes.forecast,
+    'plancast': AppRoutes.planCast,
     'roasts': AppRoutes.roasts,
     'roast reveal': AppRoutes.roastReveal,
     'radar': AppRoutes.radar,

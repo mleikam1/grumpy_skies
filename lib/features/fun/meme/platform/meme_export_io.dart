@@ -77,7 +77,7 @@ class NativeMemeExportAdapter implements MemeExportAdapter {
       final result = await _shareSender(ShareParams(
         files: [file],
         fileNameOverrides: [fileName],
-        title: 'DayMaker',
+        title: 'Wingman Weather',
         sharePositionOrigin: origin ?? const Rect.fromLTWH(1, 1, 1, 1),
       ));
       return switch (result.status) {

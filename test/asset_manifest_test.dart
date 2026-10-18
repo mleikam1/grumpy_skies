@@ -2,12 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
-import 'package:grumpy_skies/shared/widgets/dm_approved_components.dart';
 
 void main() {
   test(
-      'ASSET_MANIFEST.md matches registry, approved artwork and retained assets',
+      'ASSET_MANIFEST.md matches registry, approved artwork and retained creative assets',
       () {
     final manifest = File('ASSET_MANIFEST.md').readAsStringSync();
 
@@ -55,21 +53,9 @@ Set<String> _runtimeAssetPaths() {
     paths.addAll(_assetPathsIn(file.readAsStringSync()).where((path) =>
         path.startsWith('assets/approved_v1/') && !path.contains(r'$')));
   }
-  // Resolve interpolated persona paths through the actual runtime function.
-  paths.addAll(RoastPersonas.supportedIds.map(DmPersonaPortrait.pathFor));
-  // These original portraits remain shipped for stored-document compatibility.
-  const retainedLegacyPortraits = {
-    'assets/personas/karen_roast_queen.png',
-    'assets/personas/frat_bro_barometer_bro.png',
-    'assets/personas/two_year_old_tiny_thunder.png',
-    'assets/personas/politician_spin_doctor.png',
-    'assets/personas/grandpa_cloud_historian.png',
-  };
-  for (final path in retainedLegacyPortraits) {
-    expect(File(path).existsSync(), isTrue,
-        reason: 'Retained legacy asset: $path');
-  }
-  paths.addAll(retainedLegacyPortraits);
+  // Existing meme documents can reference approved weather/meme artwork and
+  // the studio catalogs. Persona portraits were never accepted by the studio's
+  // asset allowlist, so they need no shipped compatibility assets.
   const contentPaths = [
     'assets/meme_content/weather_meme_catalog.v1.json',
     'assets/meme_content/weather_stickers.v1.json',

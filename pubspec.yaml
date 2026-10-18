@@ -1,5 +1,5 @@
 name: grumpy_skies
-description: A funny persona-based weather app.
+description: Wingman Weather — local forecasts, radar, calendar weather, and creative tools.
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -70,7 +70,6 @@ flutter:
         - asset: assets/fonts/SpaceMono-Bold.ttf
           weight: 700
   assets:
-    - assets/approved_v1/personas/
     - assets/approved_v1/weather/
     - assets/approved_v1/memes/
     - assets/monetization/
@@ -81,8 +80,6 @@ flutter:
     - assets/backgrounds/fun/
     - assets/backgrounds/meme/
     - assets/backgrounds/radar/
-    - assets/backgrounds/reveal/
-    - assets/backgrounds/roasts/
     - assets/backgrounds/settings/
     - assets/backgrounds/splash/
     - assets/badges/
@@ -100,12 +97,5 @@ flutter:
     - assets/meme_stickers/
     - assets/meme_thumbnails/
     - assets/meme_content/
-    - assets/personas/
-    - assets/personas/karen/
-    - assets/personas/frat_bro/
-    - assets/personas/politician/
-    - assets/personas/grandpa/
-    - assets/personas/two_year_old/
     - assets/radar/
-    - assets/roasts/roast_pack_v1.json
     - assets/textures/

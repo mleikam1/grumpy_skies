@@ -9,11 +9,10 @@ import 'package:grumpy_skies/features/plancast/plancast_controller.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_card.dart';
 import 'package:grumpy_skies/features/plancast/widgets/plancast_presentation.dart';
-import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
+import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/preview/approved_fixture.dart';
 import 'package:grumpy_skies/preview/approved_preview.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
-import 'package:grumpy_skies/shared/widgets/dm_approved_components.dart';
 import '../../integration_test/plancast_smart_locations_preview.dart';
 
 Future<void> _settle(WidgetTester tester) async {
@@ -33,7 +32,6 @@ void main() {
       platform: PlanCastPreviewPlatform(),
       deviceAreaService: PlanCastPreviewArea(ApprovedFixture.now),
       clock: () => ApprovedFixture.now,
-      roastPackRepository: ApprovedRoastPackRepository(),
     );
     final session = ApprovedPreviewSession();
     await controller.initialize();
@@ -69,7 +67,7 @@ void main() {
     await _settle(tester);
   }
 
-  testWidgets('Today preview is scoped, compact and uses approved portrait',
+  testWidgets('Today preview is scoped, compact and character-free',
       (tester) async {
     final (controller, _, session) = await fixture();
     await pump(
@@ -87,12 +85,8 @@ void main() {
     expect(find.text('Change'), findsNothing);
     expect(find.text('Got it'), findsNothing);
     expect(find.textContaining('No material weather issue'), findsNothing);
-    final portrait =
-        tester.widget<DmPersonaPortrait>(find.byType(DmPersonaPortrait));
-    expect(portrait.personaId, 'karen');
-    expect(portrait.mood, isNotNull);
-    expect(DmPersonaPortrait.pathFor(portrait.personaId, mood: portrait.mood),
-        contains('karen'));
+    expect(find.byKey(const ValueKey('plancast-persona-card')), findsNothing);
+    expect(find.text('Your day ahead'), findsOneWidget);
     expect(tester.getSize(find.byKey(const ValueKey('plancast-card'))).height,
         lessThan(560));
     expect(controller.selectedCalendarIds,
@@ -116,7 +110,7 @@ void main() {
             width: width,
             dark: dark,
             scale: 2);
-        expect(find.byType(PlanCastPersonaCard), findsOneWidget);
+        expect(find.byType(PlanCastBriefingCard), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.drag(
             find.byType(SingleChildScrollView), const Offset(0, -600));
@@ -126,27 +120,27 @@ void main() {
     }
   }
 
-  testWidgets('all selectable personas keep approved portraits and stable copy',
+  testWidgets('factual briefing stays stable across units without requests',
       (tester) async {
     final (controller, weather, session) = await fixture();
     final requests = (weather.forecastLoads, weather.geocodingQueries);
     await pump(tester, controller, session,
         const Scaffold(body: SingleChildScrollView(child: PlanCastCard())));
-    for (final persona in RoastPersonas.all) {
-      session.settings.setSelectedPersonaId(persona.id);
+    for (final unit in TemperatureUnit.values) {
+      session.settings.setTemperatureUnit(unit);
       await _settle(tester);
-      final card =
-          tester.widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard));
-      expect(card.readout.personaId, persona.id);
+      final card = tester
+          .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard));
+      expect(find.byKey(const ValueKey('plancast-persona-card')), findsNothing);
       final before = card.readout.compactText;
       await tester.pump(const Duration(seconds: 1));
       expect(
           tester
-              .widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard))
+              .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard))
               .readout
               .compactText,
           before);
-      expect(find.text("${persona.displayName}'s take"), findsOneWidget);
+      expect(find.text('Your day ahead'), findsOneWidget);
     }
     expect((weather.forecastLoads, weather.geocodingQueries), requests);
     expect(tester.takeException(), isNull);
@@ -167,7 +161,7 @@ void main() {
     }
     await tester.tap(find.text('Full readout').first);
     await _settle(tester);
-    session.settings.setSelectedPersonaId('grandpa');
+    session.settings.setTemperatureUnit(TemperatureUnit.celsius);
     await _settle(tester);
     expect((weather.forecastLoads, weather.geocodingQueries), requests);
     expect(controller.selectedCalendarIds,

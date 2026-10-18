@@ -15,19 +15,17 @@ import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
 import 'package:grumpy_skies/features/fun/meme/storage/meme_store.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
 import 'package:grumpy_skies/features/radar/radar_screen.dart';
-import 'package:grumpy_skies/features/roasts/advanced_roast_reveal_screen.dart';
-import 'package:grumpy_skies/features/roasts/roasts_screen.dart';
+import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
 import 'package:grumpy_skies/features/settings/about_screen.dart';
 import 'package:grumpy_skies/features/settings/settings_screen.dart';
 import 'package:grumpy_skies/features/splash/splash_screen.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
-import 'package:grumpy_skies/repositories/fake_roast_repository.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/repositories/in_memory_settings_repository.dart';
-import 'package:grumpy_skies/repositories/roast_repository.dart';
 import 'package:grumpy_skies/repositories/settings_repository.dart';
+import 'package:grumpy_skies/repositories/fun_repository.dart';
+import 'package:grumpy_skies/repositories/local_fun_repository.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
-import 'package:grumpy_skies/services/persona_roast_service.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
 import 'package:grumpy_skies/services/weather_location_controller.dart';
 
@@ -167,9 +165,8 @@ Future<Widget> buildDayMakerTestProviders({
   return MultiProvider(
     providers: [
       Provider<WeatherRepository>.value(value: weatherRepository),
-      Provider<RoastRepository>.value(value: const FakeRoastRepository()),
+      Provider<FunRepository>.value(value: const LocalFunRepository()),
       Provider<SettingsRepository>.value(value: settingsRepository),
-      Provider<PersonaRoastService>.value(value: PersonaRoastService()),
       ChangeNotifierProvider<WeatherLocationController>.value(
         value: locationController,
       ),
@@ -196,6 +193,7 @@ GoRouter buildDayMakerTestRouter({required String initialLocation}) {
   final memeStore = MemeStore(MemoryMemeBackend());
   return GoRouter(
     initialLocation: initialLocation,
+    redirect: (_, state) => AppRoutes.retiredRedirect(state.uri),
     routes: [
       GoRoute(
         path: AppRoutes.splash,
@@ -214,14 +212,10 @@ GoRouter buildDayMakerTestRouter({required String initialLocation}) {
             builder: (context, state) => const ForecastScreen(),
           ),
           GoRoute(
-            path: AppRoutes.roasts,
-            builder: (context, state) => const RoastsScreen(),
-            routes: [
-              GoRoute(
-                path: 'reveal',
-                builder: (context, state) => const AdvancedRoastRevealScreen(),
-              ),
-            ],
+            path: AppRoutes.planCast,
+            builder: (context, state) => PlanCastScreen(
+                eventId: state.uri.queryParameters['event'],
+                day: DateTime.tryParse(state.uri.queryParameters['day'] ?? '')),
           ),
           GoRoute(
             path: AppRoutes.radar,

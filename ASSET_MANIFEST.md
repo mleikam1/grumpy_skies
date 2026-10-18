@@ -1,18 +1,15 @@
-# DayMaker Asset Manifest
+# Wingman Weather Asset Manifest
 
-Runtime manifest for registered assets, directly referenced approved illustrations, the meme catalog, and retained legacy portraits. Every parent folder is declared in `pubspec.yaml`; `test/asset_manifest_test.dart` verifies the complete path set. Reconstruction quality and source limitations are documented in `docs/ui_implementation/ASSET_STATUS.md`.
+Runtime manifest for registered assets, directly referenced approved illustrations, the meme catalog, and retained creative artwork. Every parent folder is declared in `pubspec.yaml`; `test/asset_manifest_test.dart` verifies the complete path set. Reconstruction quality and source limitations are documented in `docs/ui_implementation/ASSET_STATUS.md`.
 
-Generated assets may be absent during development. UI must load these paths only through `DmAssetImage` or `DmSvgIcon` so the app keeps running with fallback visuals.
+Planned weather assets may be absent during development and use existing fallback wrappers. The approved Wingman logo is bundled and rendered unchanged with `WingmanLogo`. Its source, mask procedure, platform outputs, and pixel verification are recorded in `docs/wingman_brand/`.
 
 ## Brand
 
 | Required asset path | Screen usage | Format | Expected dimensions | Transparent background required |
 | --- | --- | --- | --- | --- |
-| `assets/brand/app_icon.png` | App icon, about screen | PNG | 1024x1024 px | No |
-| `assets/brand/app_icon_foreground.png` | Adaptive app icon foreground | PNG | 1024x1024 px | Yes |
-| `assets/brand/logo_mark.png` | Splash, header mark | PNG | 1024x1024 px | Yes |
-| `assets/brand/logo_lockup.png` | Splash, about lockup | PNG | 1600x512 px | Yes |
-| `assets/brand/wordmark.png` | Splash, about wordmark | PNG | 1600x512 px | Yes |
+| `assets/brand/app_icon.png` | Opaque launcher master | PNG | 1024x1024 px | No |
+| `assets/brand/wingman_weather_logo.png` | Shared header, splash, About | PNG | 841x828 px | Yes |
 
 ## Backgrounds
 
@@ -29,14 +26,6 @@ Generated assets may be absent during development. UI must load these paths only
 | `assets/backgrounds/forecast/storm.png` | Forecast background, storm | PNG | 1440x2560 px | No |
 | `assets/backgrounds/forecast/wind.png` | Forecast background, wind | PNG | 1440x2560 px | No |
 | `assets/backgrounds/forecast/fog.png` | Forecast background, fog | PNG | 1440x2560 px | No |
-| `assets/backgrounds/roasts/default.png` | Roasts background, default | PNG | 1440x2560 px | No |
-| `assets/backgrounds/roasts/morning.png` | Roasts background, morning | PNG | 1440x2560 px | No |
-| `assets/backgrounds/roasts/afternoon.png` | Roasts background, afternoon | PNG | 1440x2560 px | No |
-| `assets/backgrounds/roasts/night.png` | Roasts background, night | PNG | 1440x2560 px | No |
-| `assets/backgrounds/roasts/severe.png` | Roasts background, severe weather | PNG | 1440x2560 px | No |
-| `assets/backgrounds/reveal/fog.png` | Roast reveal background, fog | PNG | 1440x2560 px | No |
-| `assets/backgrounds/reveal/scratch.png` | Roast reveal background, scratch card | PNG | 1440x2560 px | No |
-| `assets/backgrounds/reveal/spotlight.png` | Roast reveal background, spotlight | PNG | 1440x2560 px | No |
 | `assets/backgrounds/radar/map.png` | Radar base map background | PNG | 2048x2048 px | No |
 | `assets/backgrounds/radar/precipitation.png` | Radar precipitation background layer | PNG | 2048x2048 px | Yes |
 | `assets/backgrounds/radar/storm_track.png` | Radar storm track background layer | PNG | 2048x2048 px | Yes |
@@ -55,38 +44,18 @@ Generated assets may be absent during development. UI must load these paths only
 | `assets/backgrounds/about/team.png` | About team background | PNG | 1440x2560 px | No |
 | `assets/backgrounds/about/version.png` | About version background | PNG | 1440x2560 px | No |
 
-## Mascots And Personas
+## Retained weather illustration
 
 | Required asset path | Screen usage | Format | Expected dimensions | Transparent background required |
 | --- | --- | --- | --- | --- |
-| `assets/mascots/daymaker_idle.png` | Forecast hero, about screen mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_happy.png` | Splash mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_annoyed.png` | Roast state mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_thinking.png` | Loading/thinking mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_roasting.png` | Roast reveal mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_umbrella.png` | Rain state mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_sleepy.png` | Night/idle mascot | PNG | 1024x1024 px | Yes |
-| `assets/mascots/daymaker_severe_alert.png` | Severe weather mascot | PNG | 1024x1024 px | Yes |
-| `assets/personas/karen_roast_queen.png` | Persona carousel, roast cards | PNG | 1254x1254 px | No |
-| `assets/personas/frat_bro_barometer_bro.png` | Persona carousel, roast cards | PNG | 1042x1068 px | Yes |
-| `assets/personas/two_year_old_tiny_thunder.png` | Persona carousel, roast cards | PNG | 1040x1090 px | Yes |
-| `assets/personas/politician_spin_doctor.png` | Persona carousel, roast cards | PNG | 1034x1120 px | Yes |
-| `assets/personas/grandpa_cloud_historian.png` | Persona carousel, roast cards | PNG | 1022x1102 px | Yes |
-| `assets/personas/snarky_storm.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
-| `assets/personas/cloudy_cynic.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
-| `assets/personas/sunny_sass.png` | Legacy persona carousel | PNG | 1024x1024 px | Yes |
+| `assets/mascots/daymaker_idle.png` | Existing non-persona sun/cloud weather illustration | PNG | 1024x1024 px | Yes |
 
 ## Approved light/dark artwork
 
-The same portraits and weather artwork serve both app themes. These are reference-guided reconstructions with actual native pixel dimensions below; alpha edge limitations are recorded in [ASSET_STATUS.md](docs/ui_implementation/ASSET_STATUS.md). The five original persona files above remain shipped for stored-document compatibility. Flutter renders every label, caption, button, and card backdrop.
+The same weather artwork serves both app themes and remains available to existing meme documents. The editor's asset allowlist has never permitted persona portraits, so no persona image compatibility bundle is required. Flutter renders every label, caption, button, and card backdrop.
 
 | Required asset path | Screen usage | Format | Actual dimensions | Transparent background required |
 | --- | --- | --- | --- | --- |
-| `assets/approved_v1/personas/karen_portrait.png` | Today card, persona selector, Roasts | PNG | 1086x1448 px | Yes |
-| `assets/approved_v1/personas/frat_bro_portrait.png` | Persona selector, Today/Roasts selection | PNG | 1086x1448 px | Yes |
-| `assets/approved_v1/personas/politician_portrait.png` | Persona selector, Today/Roasts selection | PNG | 1086x1448 px | Yes |
-| `assets/approved_v1/personas/grandpa_portrait.png` | Roasts card, persona selector | PNG | 1086x1448 px | Yes |
-| `assets/approved_v1/personas/two_year_old_portrait.png` | Persona selector, Today/Roasts selection | PNG | 1086x1448 px | Yes |
 | `assets/approved_v1/weather/sun_grumpy_cloud.png` | Today partly-cloudy daytime hero | PNG | 1254x1254 px | Yes |
 | `assets/approved_v1/weather/sunglasses_cloud.png` | Fun Meme Studio promotion | PNG | 1254x1254 px | Yes |
 | `assets/approved_v1/weather/sun_sunglasses.png` | Current mood template and editable meme artwork | PNG | 1254x1254 px | Yes |
@@ -102,7 +71,6 @@ Meme document canvas dimensions remain independent of source artwork dimensions.
 | --- | --- | --- | --- | --- |
 | `assets/icons/nav/home.png` | Navigation icon, home | PNG | 256x256 px | Yes |
 | `assets/icons/nav/forecast.png` | Navigation icon, forecast | PNG | 256x256 px | Yes |
-| `assets/icons/nav/roasts.png` | Navigation icon, roasts | PNG | 256x256 px | Yes |
 | `assets/icons/nav/radar.png` | Navigation icon, radar | PNG | 256x256 px | Yes |
 | `assets/icons/nav/fun.png` | Navigation icon, fun | PNG | 256x256 px | Yes |
 | `assets/icons/nav/meme.png` | Navigation icon, meme | PNG | 256x256 px | Yes |
@@ -162,11 +130,9 @@ Meme document canvas dimensions remain independent of source artwork dimensions.
 | `assets/icons/fun/streak.png` | Fun icon, streak | PNG | 256x256 px | Yes |
 | `assets/icons/fun/trophy.png` | Fun icon, trophy | PNG | 256x256 px | Yes |
 | `assets/icons/fun/spark.png` | Fun icon, spark | PNG | 256x256 px | Yes |
-| `assets/icons/fun/roast.png` | Fun icon, roast | PNG | 256x256 px | Yes |
 | `assets/icons/fun/meme.png` | Fun icon, meme | PNG | 256x256 px | Yes |
 | `assets/icons/fun/quiz.png` | Fun icon, quiz | PNG | 256x256 px | Yes |
 | `assets/icons/fun/surprise.png` | Fun icon, surprise | PNG | 256x256 px | Yes |
-| `assets/icons/settings/persona.png` | Settings icon, persona | PNG | 256x256 px | Yes |
 | `assets/icons/settings/units.png` | Settings icon, units | PNG | 256x256 px | Yes |
 | `assets/icons/settings/notifications.png` | Settings icon, notifications | PNG | 256x256 px | Yes |
 | `assets/icons/settings/location.png` | Settings icon, location | PNG | 256x256 px | Yes |
@@ -178,23 +144,16 @@ Meme document canvas dimensions remain independent of source artwork dimensions.
 
 | Required asset path | Screen usage | Format | Expected dimensions | Transparent background required |
 | --- | --- | --- | --- | --- |
-| `assets/badges/first_roast.png` | Badge art, first roast | PNG | 512x512 px | Yes |
 | `assets/badges/week_streak.png` | Badge art, week streak | PNG | 512x512 px | Yes |
 | `assets/badges/month_streak.png` | Badge art, month streak | PNG | 512x512 px | Yes |
-| `assets/badges/all_day_roasts.png` | Badge art, all-day roasts | PNG | 512x512 px | Yes |
 | `assets/badges/severe_weather.png` | Badge art, severe weather | PNG | 512x512 px | Yes |
-| `assets/badges/social_roaster.png` | Badge art, social roaster | PNG | 512x512 px | Yes |
-| `assets/badges/karen_mode.png` | Badge art, Karen mode | PNG | 512x512 px | Yes |
-| `assets/badges/persona_switcher.png` | Badge art, persona switcher | PNG | 512x512 px | Yes |
 | `assets/badges/level_five.png` | Badge art, level five | PNG | 512x512 px | Yes |
-| `assets/badges/legendary_roaster.png` | Badge art, legendary roaster | PNG | 512x512 px | Yes |
 | `assets/fun/empty_state.png` | Fun illustration, empty state | PNG | 1200x900 px | Yes |
 | `assets/fun/no_weather.png` | Fun illustration, no weather | PNG | 1200x900 px | Yes |
 | `assets/fun/pull_to_refresh.png` | Fun illustration, pull to refresh | PNG | 1200x900 px | Yes |
 | `assets/fun/achievement_unlocked.png` | Fun illustration, achievement unlocked | PNG | 1200x900 px | Yes |
 | `assets/fun/streak_celebration.png` | Fun illustration, streak celebration | PNG | 1200x900 px | Yes |
 | `assets/fun/weather_quiz.png` | Fun illustration, weather quiz | PNG | 1200x900 px | Yes |
-| `assets/fun/roast_history.png` | Fun illustration, roast history | PNG | 1200x900 px | Yes |
 | `assets/fun/share_prompt.png` | Fun illustration, share prompt | PNG | 1200x900 px | Yes |
 | `assets/fun/crazy_day_wheel.png` | Fun illustration, Crazy Day Predictor wheel | PNG | 1024x1024 px | Yes |
 
@@ -261,7 +220,7 @@ The Weather Meme Studio uses the following shipped artwork. The former sunny/rai
 
 | Required content/font path | Usage |
 | --- | --- |
-| `assets/meme_content/weather_meme_catalog.v1.json` | 19 templates (15 legacy + 4 approved), safe-text zones, 94 template pairs and 50 persona pairs. |
+| `assets/meme_content/weather_meme_catalog.v1.json` | 19 templates (15 legacy + 4 approved), safe-text zones, neutral editable caption slots; no automatic persona/roast suggestions. |
 | `assets/meme_content/weather_stickers.v1.json` | 24 stable sticker IDs and provenance. |
 | `assets/meme_content/weather_meme_catalog.v1.schema.json` | Starter catalog schema; distinct from editor document schema. |
 | `assets/fonts/Nunito.ttf` | Locally bundled `MemeSans` font; license retained alongside. |
@@ -287,5 +246,4 @@ All 39 SVG sources and provenance are retained under `docs/meme-assets/` for aut
 | `assets/textures/frost.png` | Overlay texture, frost | PNG | 1024x1024 px | Yes |
 | `assets/textures/heat_haze.png` | Overlay texture, heat haze | PNG | 1024x1024 px | Yes |
 | `assets/textures/card_grain.png` | Overlay texture, card grain | PNG | 1024x1024 px | Yes |
-| `assets/textures/scratch_mask.png` | Reveal texture, scratch mask | PNG | 1024x1024 px | Yes |
 | `assets/textures/vignette.png` | Overlay texture, vignette | PNG | 1024x1024 px | Yes |

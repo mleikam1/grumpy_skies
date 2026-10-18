@@ -44,7 +44,8 @@ void main() {
     );
   }
 
-  testWidgets('ForecastScreen renders DayMaker dashboard at 390x844',
+  testWidgets(
+      'ForecastScreen renders character-free weather dashboard at 390x844',
       (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -65,12 +66,9 @@ void main() {
             matching: find.text('72°')),
         findsOneWidget);
     expect(find.text('Observed 10 min ago'), findsOneWidget);
-    expect(find.text("Karen's take"), findsOneWidget);
-    expect(find.text('ROAST QUEEN'), findsOneWidget);
-    expect(
-      find.text('“I have opinions. The suggestion box has been warned.”'),
-      findsOneWidget,
-    );
+    expect(find.text("Karen's take"), findsNothing);
+    expect(find.text('ROAST QUEEN'), findsNothing);
+    expect(find.textContaining('suggestion box'), findsNothing);
     expect(find.text('38%'), findsWidgets);
     expect(find.text('82'), findsOneWidget);
     expect(find.text('Moderate'), findsWidgets);
@@ -82,8 +80,8 @@ void main() {
         lessThan(tester.getTopLeft(find.byType(ForecastHourlyList)).dy));
     await tester.ensureVisible(find.text('Weather data © OpenWeather'));
     expect(find.text('Weather data © OpenWeather'), findsOneWidget);
-    expect(find.bySemanticsLabel('Another'), findsOneWidget);
-    expect(find.bySemanticsLabel('Share'), findsOneWidget);
+    expect(find.bySemanticsLabel('Another'), findsNothing);
+    expect(find.bySemanticsLabel('Share'), findsNothing);
   });
 
   testWidgets('ForecastScreen centers usable web layout at expanded width',

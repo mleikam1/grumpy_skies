@@ -1,0 +1,17 @@
+{
+  "source_sha256": "e79dafc98b7a9802c3259264bef771c26e4bfeab8d78b0fb9c28ca6bbc773bd0",
+  "crop_xyxy": [
+    207,
+    196,
+    1048,
+    1024
+  ],
+  "derivative_size": [
+    841,
+    828
+  ],
+  "unchanged_interior_pixels": 660472,
+  "transparent_corners": true,
+  "ios_icons_opaque": true,
+  "maskable_art_scale": 0.76
+}

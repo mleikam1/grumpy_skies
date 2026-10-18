@@ -11,12 +11,12 @@ import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_export_preview.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
 import 'package:grumpy_skies/models/app_appearance.dart';
-import 'package:grumpy_skies/preview/approved_fixture.dart';
 import 'package:grumpy_skies/preview/approved_preview.dart';
 
 // Opt in to writing review artifacts; normal flutter test runs only assertions.
 const _capture = bool.fromEnvironment('CAPTURE_APPROVED_UI');
-const _captureRoot = 'docs/ui_implementation/screenshots/fixture';
+const _captureRoot = String.fromEnvironment('WINGMAN_CAPTURE_ROOT',
+    defaultValue: 'work/wingman_screenshots');
 
 Future<void>? _fontLoading;
 
@@ -104,16 +104,11 @@ void main() {
     }
     expect(violations, isEmpty);
   });
-  const mainRoutes = {
-    'today': AppRoutes.forecast,
-    'roasts': AppRoutes.roasts,
-    'fun': AppRoutes.fun
-  };
+  const mainRoutes = {'today': AppRoutes.forecast, 'fun': AppRoutes.fun};
   const secondaryRoutes = {
     'settings': AppRoutes.settings,
     'about': AppRoutes.about,
     'radar': AppRoutes.radar,
-    'roast_reveal': AppRoutes.roastReveal,
     'meme_library': AppRoutes.memeGenerator,
     'onboarding': AppRoutes.splash,
   };
@@ -132,17 +127,9 @@ void main() {
         await _save(tester, boundary, '${theme}_${route.key}');
         expect(tester.takeException(), isNull);
         if (route.value == AppRoutes.forecast) {
-          // The strict engine uses the recorded context-free fallback for this
-          // synthetic input. Do not alter fixture weather or old golden images.
-          expect(
-              find.textContaining(
-                  'I have opinions. The suggestion box has been warned.'),
-              findsOneWidget);
+          expect(find.textContaining('I have opinions.'), findsNothing);
+          expect(find.text('Roasts'), findsNothing);
           expect(session.weather.requestCount, 1);
-        }
-        if (route.value == AppRoutes.roasts) {
-          expect(find.textContaining(ApprovedFixture.grandpaQuote),
-              findsOneWidget);
         }
         if (route.value == AppRoutes.memeGenerator) {
           expect(find.byType(MemeLibrary), findsOneWidget);

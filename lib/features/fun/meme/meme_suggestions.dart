@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import '../../roasts/models/roast_persona.dart';
 import 'meme_catalog.dart';
 
 /// Local, intact joke-pair selection. Recent IDs belong to the small persisted
@@ -31,30 +30,12 @@ abstract final class MemeSuggestions {
   static MemeCaptionPair captionFor({
     required MemeCatalog catalog,
     required MemeTemplate template,
-    String? personaId,
     Map<String, dynamic>? weatherSnapshot,
     List<String> recentIds = const [],
     Random? random,
   }) {
-    final persona = RoastPersonas.normalizeIdOrNull(personaId);
-    final tags = _tags(weatherSnapshot);
-    final hasWeather = tags.isNotEmpty;
-    final personaPairs = catalog.personaCaptions.where((pair) {
-      return persona != null &&
-          pair.personaId == persona &&
-          pair.tags.any(template.tags.contains) &&
-          (!hasWeather || pair.tags.any(tags.contains));
-    }).toList();
-    final neutralPairs = template.captionPairs;
-    // Favor the chosen persona while allowing fresh template jokes to prevent
-    // repeating its only compatible line on every tap.
-    final unseenPersona =
-        personaPairs.where((pair) => !recentIds.contains(pair.id)).toList();
-    if (unseenPersona.isNotEmpty) {
-      return _pick(unseenPersona, (p) => p.id, recentIds, random ?? Random());
-    }
-    final combined = [...personaPairs, ...neutralPairs];
-    return _pick(combined, (p) => p.id, recentIds, random ?? Random());
+    return _pick(template.captionPairs, (pair) => pair.id, recentIds,
+        random ?? Random());
   }
 
   static List<String> remember(

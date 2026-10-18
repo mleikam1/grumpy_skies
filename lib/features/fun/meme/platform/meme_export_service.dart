@@ -27,7 +27,7 @@ class MemeExportService {
 
   Future<MemeTransferResult> saveBackup(Uint8List bytes, String fileName,
           {Rect? origin}) =>
-      adapter.saveBackup(bytes, safeMemeFileName(fileName, 'daymaker'),
+      adapter.saveBackup(bytes, safeMemeFileName(fileName, 'wingman'),
           origin: origin);
 
   void _validatePng(Uint8List bytes) {

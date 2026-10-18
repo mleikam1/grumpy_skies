@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:label="grumpy_skies"
+        android:label="Wingman Weather"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Official Google demo app ID by default; no requests unless Dart gates pass. -->

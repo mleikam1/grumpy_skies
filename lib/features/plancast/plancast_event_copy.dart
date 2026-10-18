@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-import '../roasts/content/roast_context_adapter.dart';
+import '../../models/weather_time.dart';
 import 'plancast_models.dart';
 
 /// Shared factual context for the briefing and opt-in detailed reminders.
@@ -12,7 +12,7 @@ class PlanCastEventCopy {
     final event = item.event;
     if (event.isAllDay) return 'All day';
     DateTime calendarTime(DateTime value) =>
-        roastLocalTime(value, event.timeZone, null) ?? value.toLocal();
+        weatherLocalTime(value, event.timeZone, null) ?? value.toLocal();
     final start = calendarTime(event.startUtc);
     final end = calendarTime(event.endUtc);
     final first = DateFormat.jm().format(start);

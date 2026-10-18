@@ -79,6 +79,8 @@ void main() {
     );
 
     expect(controller.temperatureUnit, TemperatureUnit.fahrenheit);
+    expect(find.text('Default Persona'), findsNothing);
+    expect(find.textContaining('Karen'), findsNothing);
 
     await tester.tap(find.text('°C Celsius'));
     await tester.pumpAndSettle();
@@ -148,11 +150,11 @@ void main() {
     await tester.pumpAndSettle();
 
     final aboutRow = find.ancestor(
-      of: find.text('About DayMaker'),
+      of: find.text('About Wingman Weather'),
       matching: find.byType(InkWell),
     );
 
-    await tester.ensureVisible(find.text('About DayMaker'));
+    await tester.ensureVisible(find.text('About Wingman Weather'));
     await tester.pumpAndSettle();
     await tester.tap(aboutRow);
     await tester.pumpAndSettle();

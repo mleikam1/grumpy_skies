@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/features/plancast/plancast_controller.dart';
-import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
+import 'package:grumpy_skies/repositories/shared_preferences_settings_repository.dart';
+import 'package:grumpy_skies/services/wingman_upgrade_migration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'plancast_core_test.dart' as fixtures;
@@ -107,12 +108,10 @@ PlanCastDaySummary _summary(List<PlanCastEventWeather> events,
         loading: loading);
 
 PlanCastReadout _read(PlanCastDaySummary summary,
-        {String persona = 'karen',
-        bool privateTitles = true,
+        {bool privateTitles = true,
         TemperatureUnit unit = TemperatureUnit.fahrenheit}) =>
     const PlanCastReadoutComposer().compose(
         summary: summary,
-        personaId: persona,
         now: _now,
         temperatureUnit: unit,
         privateTitles: privateTitles);
@@ -328,14 +327,13 @@ void main() {
     expect(readout.text.toLowerCase(), contains('rain'));
     expect(readout.text, isNot(contains('Private medical')));
     expect(readout.text, isNot(contains('Chicago')));
-    expect(readout.mood, RoastMood.complaining);
     expect(readout.text.split(RegExp(r'\s+')).length, lessThanOrEqualTo(35));
     expect(readout.compactText.split(RegExp(r'\s+')).length,
         lessThanOrEqualTo(16));
   });
 
   test(
-      'precise venue and private medical title never enter primary persona copy',
+      'precise venue and private medical title never enter primary briefing copy',
       () {
     final day = _summary([
       _item('private',
@@ -358,7 +356,7 @@ void main() {
     expect(optedIn.signature, isNot(private.signature));
   });
 
-  test('serious alert leads every readout and suppresses persona jokes', () {
+  test('serious alert leads every readout and has no commentary', () {
     final day = _summary([
       _item('warning',
           assessment: const EventWeatherAssessment(
@@ -374,7 +372,6 @@ void main() {
     ]);
     final readout = _read(day);
     expect(readout.serious, isTrue);
-    expect(readout.mood, RoastMood.worried);
     expect(readout.text, startsWith('Severe Thunderstorm Warning'));
     expect(readout.fullText, startsWith('Severe Thunderstorm Warning'));
     expect(readout.text, contains('official guidance'));
@@ -392,26 +389,42 @@ void main() {
     expect(_read(online).text, contains('online'));
   });
 
-  test(
-      'all selectable personas get stable matching selection without repeated empty week',
-      () {
-    for (final persona in RoastPersonas.supportedIds) {
-      final texts = <String>{};
-      final compactTexts = <String>{};
-      for (var i = 0; i < 7; i++) {
-        final day = _summary([], day: DateTime(2026, 10, 15 + i));
-        final first = _read(day, persona: persona);
-        final again = _read(day, persona: persona);
-        expect(first.personaId, persona);
-        expect(first.text, again.text);
-        expect(first.mood, RoastMood.cozy);
-        expect(first.signature, again.signature);
-        texts.add(first.text);
-        compactTexts.add(first.compactText);
-      }
-      expect(texts, hasLength(7));
-      expect(compactTexts, hasLength(7));
+  test('empty-day readouts are stable facts without invented variety', () {
+    for (var i = 0; i < 7; i++) {
+      final day = _summary([], day: DateTime(2026, 10, 15 + i));
+      final first = _read(day);
+      final again = _read(day);
+      expect(first.text,
+          'No plans in this day’s calendar view, and no event weather to check.');
+      expect(first.compactText, 'No plans in view.');
+      expect(first.signature, again.signature);
     }
+  });
+
+  test(
+      'fallback readout labels an unnamed assumed area without claiming a venue',
+      () {
+    final result = _read(
+        _summary([_item('fallback', city: 'Your area', assessment: _rain)]));
+    expect(result.text, contains('using an assumed area'));
+    expect(result.compactText, contains('using an assumed area'));
+    expect(result.text, isNot(contains('venue')));
+  });
+
+  test('daily-only precipitation remains a broad outlook in compact readout',
+      () {
+    final result = _read(_summary([
+      _item('later',
+          assessment: const EventWeatherAssessment(
+              coverage: ForecastCoverage.daily,
+              impact: WeatherImpact.watch,
+              explanation: 'Broad day outlook',
+              condition: 'Rain',
+              peakPrecipitationChance: 60))
+    ]));
+    expect(result.text, contains('day outlook'));
+    expect(result.compactText, contains('day outlook'));
+    expect(result.compactText, contains('possible'));
   });
 
   test('unit changes invalidate cache identity without fabricated temperatures',
@@ -443,29 +456,25 @@ void main() {
     final controller = PlanCastController(
         platform: platform,
         weatherRepository: weather,
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     addTearDown(controller.dispose);
     await controller.connect();
     await controller.selectCalendars({'work'});
     final requests = weather.requests;
     final item = controller.currentEvents.single;
-    for (final persona in RoastPersonas.supportedIds) {
+    for (final unit in TemperatureUnit.values) {
       final summary = controller.summaryForDay(fixtures.now);
       controller.summaryForRange(fixtures.now);
       controller.readoutForDay(fixtures.now,
-          personaId: persona, summary: summary);
+          temperatureUnit: unit, summary: summary);
       controller.summaryForDay(fixtures.now, calendarFilter: {});
       expect(controller.cachedHoursForEvent(item), hasLength(3));
     }
     expect(weather.requests, requests);
     expect(weather.queries, isEmpty);
     expect(controller.selectedCalendarIds, {'work'});
-    final first = controller.readoutForDay(fixtures.now, personaId: 'karen');
-    expect(
-        identical(
-            first, controller.readoutForDay(fixtures.now, personaId: 'karen')),
-        isTrue);
+    final first = controller.readoutForDay(fixtures.now);
+    expect(identical(first, controller.readoutForDay(fixtures.now)), isTrue);
   });
 
   test(
@@ -481,7 +490,6 @@ void main() {
     final controller = PlanCastController(
         platform: platform,
         weatherRepository: weather,
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     addTearDown(controller.dispose);
     await controller.connect();
@@ -506,7 +514,6 @@ void main() {
     final first = PlanCastController(
         platform: platform,
         weatherRepository: weather,
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     await first.connect();
     await first.selectCalendars({'work', 'personal', 'family', 'travel'});
@@ -518,12 +525,86 @@ void main() {
     final restored = PlanCastController(
         platform: platform,
         weatherRepository: weather,
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     addTearDown(restored.dispose);
     await restored.initialize();
     expect(
         restored.selectedCalendarIds, {'work', 'personal', 'family', 'travel'});
+  });
+
+  test(
+      'upgrade preserves the actual protected four-calendar state and reminders',
+      () async {
+    final ids = {'work', 'personal', 'family', 'travel'};
+    const preferences = PlanCastPreferences(
+        notifications: true,
+        eventHeadsUp: true,
+        dayBefore: true,
+        evening: true,
+        morningMinute: 540,
+        quietStartMinute: 1320,
+        quietEndMinute: 420);
+    final protected = jsonEncode({
+      'version': SmartLocationState.version,
+      'connected': true,
+      'calendarIds': ids.toList(),
+      'preferences': preferences.toJson(),
+      'smartLocations': const SmartLocationState().toJson(),
+      'overrides': <String, Object>{},
+    });
+    final platform = _FourCalendars()
+      ..stored = protected
+      ..records = [
+        for (final id in ids) {..._record(id), 'calendarId': id}
+      ];
+    SharedPreferences.setMockInitialValues({
+      'settings.selectedPersonaId': 'unknown-retired-persona',
+      'settings.appearance': 'dark',
+      'settings.temperatureUnit': 'celsius',
+      'settings.notificationsEnabled': true,
+      'local_roast_history_v2': 'old private cache',
+    });
+    final public = await SharedPreferences.getInstance();
+    final settings =
+        await SharedPreferencesSettingsRepository(public).loadSettings();
+    expect(public.getInt(WingmanUpgradeMigration.versionKey), 1);
+    expect(public.containsKey('settings.selectedPersonaId'), isFalse);
+    expect(settings.appearance, AppAppearance.dark);
+    expect(settings.temperatureUnit, TemperatureUnit.celsius);
+    expect(settings.notificationsEnabled, isTrue);
+    expect(platform.stored, protected,
+        reason:
+            'The public settings migration cannot rewrite protected calendar state.');
+    final weather = fixtures.FakeWeather();
+    final controller = PlanCastController(
+        platform: platform,
+        weatherRepository: weather,
+        clock: () => fixtures.now);
+    await controller.initialize();
+    expect(controller.connected, isTrue);
+    expect(controller.calendarPermission, 'authorized');
+    expect(controller.selectedCalendarIds, ids);
+    expect(
+        controller.currentEvents.map((item) => item.event.calendarId).toSet(),
+        ids);
+    expect(controller.preferences.toJson(), preferences.toJson());
+    expect(weather.requests, 1,
+        reason:
+            'All four calendar events share their resolved location bundle.');
+    controller.summaryForDay(fixtures.now, calendarFilter: {'personal'});
+    expect(controller.selectedCalendarIds, ids);
+    final stored = jsonDecode(platform.stored!) as Map;
+    expect((stored['calendarIds'] as List).toSet(), ids);
+    expect(stored['preferences'], preferences.toJson());
+    controller.dispose();
+    final restored = PlanCastController(
+        platform: platform,
+        weatherRepository: weather,
+        clock: () => fixtures.now);
+    addTearDown(restored.dispose);
+    await restored.initialize();
+    expect(restored.selectedCalendarIds, ids);
+    expect(restored.preferences.toJson(), preferences.toJson());
   });
 
   test('weekly unique weather count retains usable later stay outlook', () {
@@ -597,7 +678,6 @@ void main() {
     final first = PlanCastController(
         platform: platform,
         weatherRepository: fixtures.FakeWeather(),
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     await first.initialize();
     expect(first.currentEvents.every((e) => e.venue?.lat == miami.lat), isTrue);
@@ -624,7 +704,6 @@ void main() {
     final restored = PlanCastController(
         platform: platform,
         weatherRepository: fixtures.FakeWeather(),
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     addTearDown(restored.dispose);
     await restored.initialize();
@@ -647,7 +726,6 @@ void main() {
     final controller = PlanCastController(
         platform: platform,
         weatherRepository: fixtures.FakeWeather(),
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     addTearDown(controller.dispose);
     await controller.connect();

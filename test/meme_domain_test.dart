@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grumpy_skies/features/fun/meme/meme_catalog.dart';
 import 'package:grumpy_skies/features/fun/meme/meme_editor_controller.dart';
 import 'package:grumpy_skies/features/fun/meme/models/meme_document.dart';
-import 'package:grumpy_skies/features/roasts/models/roast_persona.dart';
 
 void main() {
   test('optional roast provenance roundtrips without changing existing schema',
@@ -80,11 +79,8 @@ void main() {
       expect(legacy.map((template) => template.id).toSet(), legacyIds);
       expect(catalog.stickers.length, 24);
       expect(legacy.expand((template) => template.captionPairs).length, 90);
-      expect(catalog.personaCaptions.length, 50);
-      expect(catalog.allCaptions.length, 144);
-      expect(catalog.allCaptions.map((pair) => pair.id).toSet().length, 144);
-      expect(catalog.personaCaptions.map((pair) => pair.personaId).toSet(),
-          RoastPersonas.supportedIds.toSet());
+      expect(catalog.allCaptions.length, 94);
+      expect(catalog.allCaptions.map((pair) => pair.id).toSet().length, 94);
       for (final template in legacy) {
         expect(template.captionPairs.length, 6);
         expect(template.defaultCaption.id, '${template.id}_01');
@@ -188,8 +184,7 @@ void main() {
       }
     });
 
-    test('duplicate IDs, invalid safe zones and unknown schema/personas fail',
-        () {
+    test('duplicate IDs, invalid safe zones and unknown schema fail', () {
       final duplicate = _clone(rawCatalog);
       (duplicate['templates'] as List)
           .add((duplicate['templates'] as List).first);
@@ -198,10 +193,6 @@ void main() {
       final badZone = _clone(rawCatalog);
       badZone['templates'][0]['safeTextZones'][0]['width'] = 1.1;
       expect(() => MemeCatalog.fromJson(badZone, rawStickers),
-          throwsFormatException);
-      final badPersona = _clone(rawCatalog);
-      badPersona['personaCaptions'][0]['seedPersonaId'] = 'unrecognized';
-      expect(() => MemeCatalog.fromJson(badPersona, rawStickers),
           throwsFormatException);
       expect(
           () => MemeCatalog.fromJson(

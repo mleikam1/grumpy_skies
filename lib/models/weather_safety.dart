@@ -37,3 +37,53 @@ WeatherSafetyStatus weatherSafetyStatus(WeatherBundle? weather, DateTime now) {
   }
   return WeatherSafetyStatus.clear;
 }
+
+/// Application-owned caution from provider facts; this is not an official alert.
+bool weatherConditionsNeedAttention({
+  int? code,
+  int? tempF,
+  double? windMph,
+  int? aqi,
+  String? aqiScale,
+}) {
+  final badAir =
+      (aqiScale == 'openweather_1_5' && aqi != null && aqi >= 4 && aqi <= 5) ||
+          (aqiScale == 'us_epa' && aqi != null && aqi >= 151);
+  return {
+        200,
+        201,
+        202,
+        210,
+        211,
+        212,
+        221,
+        230,
+        231,
+        232,
+        511,
+        611,
+        612,
+        613,
+        711,
+        762,
+        771,
+        781
+      }.contains(code) ||
+      badAir ||
+      (windMph != null && windMph.isFinite && windMph >= 40) ||
+      (tempF != null && (tempF >= 105 || tempF <= -10));
+}
+
+bool weatherNeedsAttention(WeatherBundle weather, DateTime now) {
+  final current = weather.current;
+  return weatherSafetyStatus(weather, now) == WeatherSafetyStatus.activeAlert ||
+      weatherConditionsNeedAttention(
+        code: current.weatherId,
+        tempF: current.temperatureKnown && current.temperatureF.isFinite
+            ? current.temperatureF.round()
+            : null,
+        windMph: current.windKnown ? current.windMph : null,
+        aqi: current.aqi,
+        aqiScale: current.aqiScale,
+      );
+}

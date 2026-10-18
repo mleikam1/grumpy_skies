@@ -11,12 +11,8 @@ import 'package:grumpy_skies/app/daymaker_router.dart';
 import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_list.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_timeline.dart';
-import 'package:grumpy_skies/features/forecast/models/hourly_timeline.dart';
-import 'package:grumpy_skies/features/roasts/controllers/local_roast_controller.dart';
-import 'package:grumpy_skies/features/roasts/content/weather_roast_models.dart';
 import 'package:grumpy_skies/main.dart' as production;
 import 'package:grumpy_skies/services/network_counters.dart';
-import 'package:grumpy_skies/services/settings_controller.dart';
 import 'package:grumpy_skies/services/weather_location_controller.dart';
 
 /// Opt-in native profile check of the real entry point and live repositories.
@@ -47,11 +43,6 @@ void main() {
     await _waitFor(
         tester, () => locations.currentWeather?.hourly.isNotEmpty == true);
     final loaded = locations.currentWeather!;
-    final roasts = context.read<LocalRoastController>();
-    final settings = context.read<SettingsController>();
-    await _waitFor(tester, () => roasts.ready || roasts.loadError != null);
-    expect(roasts.ready, isTrue,
-        reason: 'The real bundled roast catalog must finish loading.');
     await tester.pump(const Duration(seconds: 2));
     final strip = find.byType(ForecastHourlyList);
     await tester.ensureVisible(strip);
@@ -69,27 +60,13 @@ void main() {
     await open();
     // Warm one viewport so asset decode is distinguished from measured scrolling.
     await tester.pump(const Duration(seconds: 2));
-    final plannedCards = roasts.selectHourlyTimeline(
-      persona: settings.selectedPersonaId,
-      bundle: loaded,
-      hours: forecastTimelineHours(loaded.hourly, DateTime.now()),
-      unit: settings.temperatureUnit,
-    );
-    final builtCards = find.byWidgetPredicate((widget) =>
-        widget.key is ValueKey<String> &&
-        (widget.key! as ValueKey<String>).value.startsWith('hourly-roast-'));
-    final builtCardCount = builtCards.evaluate().length;
-    final roastContext = WeatherRoastContext.fromWeatherBundle(loaded,
-        scope: RoastScope.hourly,
-        targetTime: loaded.hourly.first.time,
-        selectedLocation: locations.selectedLocation);
-    debugPrint('LIVE_FORECAST_SETUP ${jsonEncode({
-          'persona': settings.selectedPersonaId,
-          'catalog': roasts.pack?.packVersion,
-          'plannedCards': plannedCards.length,
-          'builtCards': builtCardCount,
-          'freshness': roastContext.freshness.name,
-        })}');
+    expect(
+        find.byWidgetPredicate((widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>)
+                .value
+                .startsWith('hourly-roast-')),
+        findsNothing);
     await binding.watchPerformance(() async {
       final list = find.byKey(const ValueKey('hourly-timeline-list'));
       for (var i = 0; i < 8; i++) {
@@ -128,13 +105,6 @@ void main() {
       'devicePixelRatio':
           binding.platformDispatcher.views.first.devicePixelRatio,
       'hourlyRecordsLoaded': loaded.hourly.length,
-      'selectedPersona': settings.selectedPersonaId,
-      'roastCatalogReady': roasts.ready,
-      'roastPackVersion': roasts.pack?.packVersion,
-      'roastLoadError': roasts.loadError?.toString(),
-      'selectedTimelineCards': plannedCards.length,
-      'initialBuiltTimelineCards': builtCardCount,
-      'forecastRoastFreshness': roastContext.freshness.name,
       'isOfflineCache': loaded.isOfflineCache,
       'weatherObservedAt':
           loaded.current.displayUpdatedAt.toUtc().toIso8601String(),

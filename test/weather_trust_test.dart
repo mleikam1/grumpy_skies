@@ -15,7 +15,6 @@ import 'package:grumpy_skies/features/forecast/widgets/forecast_current_weather_
 import 'package:grumpy_skies/features/forecast/widgets/forecast_daily_grid.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_metric_chips.dart';
-import 'package:grumpy_skies/features/forecast/widgets/forecast_roast_card.dart';
 import 'package:grumpy_skies/models/precipitation_coverage.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
@@ -27,7 +26,6 @@ import 'package:grumpy_skies/services/open_weather_backend_client.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
 import 'package:grumpy_skies/services/weather_location_controller.dart';
 import 'package:grumpy_skies/shared/widgets/weather_safety_banner.dart';
-import 'package:grumpy_skies/features/roasts/content/weather_roast_models.dart';
 
 final _now = DateTime.utc(2026, 9, 17, 12);
 final _location = WeatherLocation(
@@ -247,16 +245,6 @@ void main() {
     expect(result.current.displayUpdatedAt, original.current.displayUpdatedAt);
     expect(result.current.fetchedAt, original.current.fetchedAt);
     expect(weatherSafetyStatus(result, _now), WeatherSafetyStatus.stale);
-  });
-
-  test(
-      'roast display tokens convert, while matching thresholds remain Fahrenheit',
-      () {
-    final context = WeatherRoastContext.fromWeatherBundle(_weather(),
-        now: _now, temperatureUnit: TemperatureUnit.celsius);
-    expect(context.tempF, 72);
-    expect(context.render('{temp}{temp_unit}; feels {feels_like}{temp_unit}'),
-        '22°C; feels 23°C');
   });
 
   testWidgets('future observation never appears just observed', (tester) async {
@@ -500,7 +488,7 @@ void main() {
         tester.getTopLeft(find.byType(WeatherAlertsPanel)).dy,
         lessThan(
             tester.getTopLeft(find.byType(ForecastCurrentWeatherCard)).dy));
-    expect(find.byType(ForecastRoastCard), findsNothing);
+    expect(find.text('Roasts'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     controller.dispose();

@@ -12,7 +12,6 @@ import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
 import 'package:grumpy_skies/services/settings_controller.dart';
 import 'package:grumpy_skies/shared/widgets/daymaker_weather_icon.dart';
-import 'package:grumpy_skies/shared/widgets/dm_approved_components.dart';
 
 final _now = DateTime(2026, 10, 17, 8);
 const _city = LocationCandidate(
@@ -212,7 +211,7 @@ void main() {
     await pump(tester, c, const PlanCastScreen());
     await _expectStat(tester, '2 plans');
     final firstReadout = tester
-        .widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard))
+        .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard))
         .readout;
     await tester.tap(find.byKey(const ValueKey('plancast-agenda-filter')));
     await tester.pumpAndSettle();
@@ -222,7 +221,7 @@ void main() {
     expect(c.selectedCalendarIds, {'personal', 'work', 'family', 'shared'});
     expect(
         tester
-            .widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard))
+            .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard))
             .readout
             .signature,
         isNot(firstReadout.signature));
@@ -405,36 +404,33 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('persona remains selected across day tabs and rebuilds',
+  testWidgets(
+      'weather briefing follows day tabs and remains stable across rebuilds',
       (tester) async {
     final repo = _CountingWeather();
     final c = _Controller(
         [_plan('Today'), _plan('Tomorrow rain', day: 18, weather: _rain)],
         repo);
-    final settings = SettingsController()..setSelectedPersonaId('grandpa');
+    final settings = SettingsController();
     addTearDown(settings.dispose);
     await pump(tester, c, const PlanCastScreen(),
         settings: settings, width: 430);
     final today = tester
-        .widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard))
+        .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard))
         .readout;
-    expect(
-        tester
-            .widget<DmPersonaPortrait>(find.byType(DmPersonaPortrait))
-            .personaId,
-        'grandpa');
+    expect(find.byKey(const ValueKey('plancast-persona-card')), findsNothing);
     await tester.tap(find.widgetWithText(ChoiceChip, 'Tomorrow'));
     await tester.pumpAndSettle();
     final tomorrow = tester
-        .widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard))
+        .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard))
         .readout;
-    expect(tomorrow.personaId, today.personaId);
+    expect(find.byKey(const ValueKey('plancast-persona-card')), findsNothing);
     expect(tomorrow.signature, isNot(today.signature));
     c.notifyListeners();
     await tester.pumpAndSettle();
     expect(
         tester
-            .widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard))
+            .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard))
             .readout
             .text,
         tomorrow.text);

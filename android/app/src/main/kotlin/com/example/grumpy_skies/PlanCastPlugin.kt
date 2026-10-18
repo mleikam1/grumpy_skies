@@ -241,7 +241,18 @@ internal object PlanCastNative {
             (host in setOf("google.com", "www.google.com") && (uri.path == "/maps" || uri.path?.startsWith("/maps/") == true))
         return if (supported) raw else null
     }
-    private fun queue(context: Context): JSONArray = read(context, "queue")?.let { JSONArray(it) } ?: JSONArray()
+    private fun queue(context: Context): JSONArray {
+        val rows = read(context, "queue")?.let { JSONArray(it) } ?: JSONArray()
+        // Idempotent display-copy upgrade for our exact old generic invitation.
+        // Preserve reminder IDs, delivery times, event content and permissions.
+        for (i in 0 until rows.length()) {
+            val notice = rows.getJSONObject(i)
+            if (!notice.has("nativeEventId") && !notice.optBoolean("detailed") && notice.optString("body") == "Your plans. The sky’s opinion. Open PlanCast to refresh your day.") {
+                notice.put("body", "Weather for your plans. Open PlanCast to refresh your day.")
+            }
+        }
+        return rows
+    }
     private fun pending(context: Context, id: String): PendingIntent = PendingIntent.getBroadcast(context, 0, Intent(context, PlanCastReceiver::class.java).setAction("plancast.deliver").setData(Uri.parse("plancast://notice/$id")), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     private fun cancelQueue(context: Context) {
         val alarm = context.getSystemService(AlarmManager::class.java)

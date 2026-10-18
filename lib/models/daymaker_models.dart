@@ -1,5 +1,3 @@
-import '../features/roasts/content/roast_selector.dart';
-import '../features/roasts/models/roast_mood.dart';
 import 'app_appearance.dart';
 export 'app_appearance.dart';
 import 'temperature_unit.dart';
@@ -211,85 +209,6 @@ class WeatherMetric {
   }
 }
 
-class Persona {
-  final String id;
-  final String name;
-  final String title;
-  final String avatarAsset;
-  final int requiredXp;
-  final bool unlocked;
-  final String toneDescription;
-  final bool enabled;
-
-  const Persona({
-    required this.id,
-    required this.name,
-    required this.title,
-    required this.avatarAsset,
-    required this.requiredXp,
-    required this.unlocked,
-    this.toneDescription = '',
-    bool? enabled,
-  }) : enabled = enabled ?? unlocked;
-
-  String get displayName => '$name, $title';
-
-  String get badgeText => title.toUpperCase();
-
-  String get assetPath => avatarAsset;
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'title': title,
-        'avatarAsset': avatarAsset,
-        'requiredXp': requiredXp,
-        'unlocked': unlocked,
-        'toneDescription': toneDescription,
-        'enabled': enabled,
-      };
-}
-
-class Roast {
-  final String id;
-  final String personaId;
-  final String weatherSnapshotId;
-  final String text;
-  final String category;
-  final DateTime createdAt;
-  final int xpReward;
-  final RoastMood? mood;
-
-  /// Exact immutable local selection used by display, history and share.
-  final RoastSelection? selection;
-
-  const Roast({
-    required this.id,
-    required this.personaId,
-    required this.weatherSnapshotId,
-    required this.text,
-    required this.category,
-    required this.createdAt,
-    required this.xpReward,
-    this.mood,
-    this.selection,
-  });
-
-  RoastMood get resolvedMood => RoastMoodResolver.resolve(
-      personaId: personaId, text: text, explicitMood: mood);
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'personaId': personaId,
-        'weatherSnapshotId': weatherSnapshotId,
-        'text': text,
-        'category': category,
-        'createdAt': createdAt.toIso8601String(),
-        'xpReward': xpReward,
-        if (mood != null) 'mood': mood!.name,
-      };
-}
-
 class Achievement {
   final String id;
   final String name;
@@ -380,9 +299,17 @@ class RadarAlert {
 }
 
 class UserSettings {
+  static const defaults = UserSettings(
+    temperatureUnit: TemperatureUnit.fahrenheit,
+    notificationsEnabled: true,
+    adsEnabled: true,
+    xp: 420,
+    level: 3,
+    streakDays: 5,
+  );
+
   final AppAppearance appearance;
   final TemperatureUnit temperatureUnit;
-  final String selectedPersonaId;
   final bool notificationsEnabled;
   final bool adsEnabled;
   final int xp;
@@ -392,7 +319,6 @@ class UserSettings {
   const UserSettings({
     this.appearance = AppAppearance.light,
     required this.temperatureUnit,
-    required this.selectedPersonaId,
     required this.notificationsEnabled,
     required this.adsEnabled,
     required this.xp,
@@ -403,7 +329,6 @@ class UserSettings {
   UserSettings copyWith({
     AppAppearance? appearance,
     TemperatureUnit? temperatureUnit,
-    String? selectedPersonaId,
     bool? notificationsEnabled,
     bool? adsEnabled,
     int? xp,
@@ -413,7 +338,6 @@ class UserSettings {
     return UserSettings(
       appearance: appearance ?? this.appearance,
       temperatureUnit: temperatureUnit ?? this.temperatureUnit,
-      selectedPersonaId: selectedPersonaId ?? this.selectedPersonaId,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       adsEnabled: adsEnabled ?? this.adsEnabled,
       xp: xp ?? this.xp,

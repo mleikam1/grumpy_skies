@@ -29,7 +29,7 @@ class ForecastHeroAtmosphere extends StatelessWidget {
               assetPath: DmAssets.mascots.idle,
               fit: BoxFit.cover,
               alignment: Alignment.centerRight,
-              semanticLabel: 'DayMaker sun and cloud mascot',
+              semanticLabel: 'Sun and cloud weather illustration',
               // TODO(assets): Replace this mascot placeholder with the final
               // generated idle pose at DmAssets.mascots.idle.
               placeholderGradient: DMGradients.clearSky,

@@ -198,7 +198,7 @@ class MemePainter extends CustomPainter {
       canvas.restore();
     }
     if (document.watermark) {
-      _label(canvas, 'DayMaker',
+      _label(canvas, 'Wingman Weather',
           Rect.fromLTWH(width - 220, height - 38, 192, 25), 18);
     }
     if (document.layers

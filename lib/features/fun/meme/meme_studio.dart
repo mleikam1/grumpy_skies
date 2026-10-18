@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../config/app_routes.dart';
+import '../../../config/wingman_brand.dart';
 import '../../../design/dm_theme.dart';
 import '../../../models/temperature_unit.dart';
 import '../../../monetization/monetization_controller.dart';
@@ -11,7 +12,6 @@ import '../../../services/cache_service.dart';
 import '../../../services/settings_controller.dart';
 import '../../../services/weather_location_controller.dart';
 import '../../../shared/widgets/daymaker_components.dart';
-import '../../roasts/models/roast_persona.dart';
 import 'meme_catalog.dart';
 import 'meme_editor_controller.dart';
 import 'meme_suggestions.dart';
@@ -30,13 +30,11 @@ import 'widgets/meme_library.dart';
 class MemeStudio extends StatefulWidget {
   const MemeStudio(
       {super.key,
-      this.initialRoast,
       this.initialTemplateId,
       this.initialDocumentId,
       this.store,
       this.exports,
       this.recoverLostImages = true});
-  final DisplayedRoastSnapshot? initialRoast;
   final String? initialTemplateId;
   final String? initialDocumentId;
   final MemeStore? store;
@@ -119,14 +117,6 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
           setState(() => _error =
               'That template is unavailable. Choose another template.');
         }
-      }
-      if (widget.initialRoast != null && mounted) {
-        final t = MemeSuggestions.chooseTemplate(
-                catalog: catalog,
-                weatherSnapshot: widget.initialRoast!.weatherSnapshot) ??
-            catalog.templates.first;
-        _open(t.createDocument());
-        _applyRoast(widget.initialRoast!);
       }
     } catch (e) {
       if (mounted) setState(() => _error = 'Could not load the studio: $e');
@@ -269,11 +259,7 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
       return MemeWeather.fromCache(cache, locations,
           temperatureUnit: unit, includeCity: includeCity);
     }
-    final bundle = context.read<DisplayedRoastRegistry?>()?.cachedWeather;
-    return bundle == null
-        ? null
-        : MemeWeather.freeze(bundle,
-            temperatureUnit: unit, includeCity: includeCity);
+    return null;
   }
 
   Future<void> _template(MemeTemplate t) async {
@@ -358,7 +344,6 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
     final pair = MemeSuggestions.captionFor(
         catalog: _catalog!,
         template: t,
-        personaId: e.document.personaId,
         weatherSnapshot: e.document.weatherSnapshot,
         recentIds: _recent);
     e.setCaptions(pair);
@@ -366,67 +351,6 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
     _recent = await _store.recentCaptionIds();
     if (mounted && !MediaQuery.disableAnimationsOf(context)) {
       unawaited(HapticFeedback.selectionClick());
-    }
-  }
-
-  Future<void> _currentRoast() async {
-    final e = _editor;
-    if (e == null) return;
-    if (!e.canReplaceCaptions) {
-      _notice(
-          'Unlock the caption layers in Layers before replacing this pair.');
-      return;
-    }
-    final choices = context.read<DisplayedRoastRegistry?>()?.choices ??
-        [if (widget.initialRoast != null) widget.initialRoast!];
-    if (choices.isEmpty) {
-      _notice(
-          'Open Home or Roasts and use Share to Meme to copy the exact displayed roast.');
-      return;
-    }
-    final choice = await showDialog<DisplayedRoastSnapshot>(
-        context: context,
-        builder: (c) => SimpleDialog(
-                title: const Text('Choose the displayed roast'),
-                children: [
-                  for (final r in choices)
-                    SimpleDialogOption(
-                        onPressed: () => Navigator.pop(c, r),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(r.chooserLabel,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Text(r.text)
-                            ]))
-                ]));
-    if (choice == null || !mounted || !identical(e, _editor)) return;
-    if ((_openedFromSavedProject || e.hasUserEdits) &&
-        !await _confirm('Use this roast?',
-            'This replaces the caption text with the exact roast you selected.')) {
-      return;
-    }
-    if (!mounted || !identical(e, _editor)) return;
-    _applyRoast(choice);
-  }
-
-  void _applyRoast(DisplayedRoastSnapshot roast) {
-    final e = _editor!;
-    e.beginGesture();
-    try {
-      e.setCaptions(MemeCaptionPair(
-          id: roast.id,
-          top: roast.isSample ? 'SAMPLE WEATHER ROAST' : "TODAY’S FORECAST",
-          bottom: roast.text,
-          personaId: roast.personaId));
-      e.apply(e.document.copyWith(
-          personaId: roast.personaId,
-          weatherSnapshot: roast.weatherSnapshot,
-          roastSnapshot: roast.provenance));
-    } finally {
-      e.endGesture();
     }
   }
 
@@ -522,8 +446,8 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
       },
       child: DmResponsiveScaffold(
         appBar: DmHeaderBar(
-            title: 'DayMaker',
-            subtitle: 'Weather Meme Studio',
+            title: WingmanBrand.name,
+            subtitle: 'Meme Studio',
             onBackPressed: () => _guard(_back),
             actions: [
               if (_busy)
@@ -680,24 +604,6 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
                   onChanged: (name) => e.apply(
                       d.copyWith(name: name.isEmpty ? 'Untitled' : name),
                       coalesceKey: 'name')),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                  initialValue: d.personaId ?? 'neutral',
-                  key: ValueKey(d.personaId),
-                  isExpanded: true,
-                  decoration:
-                      const InputDecoration(labelText: 'Speaking persona'),
-                  items: [
-                    const DropdownMenuItem(
-                        value: 'neutral', child: Text('Original caption')),
-                    for (final p in RoastPersonaId.values)
-                      DropdownMenuItem(
-                          value: p.storageId,
-                          child:
-                              Text(RoastPersonas.byId(p.storageId).displayName))
-                  ],
-                  onChanged: (v) => e
-                      .apply(d.copyWith(personaId: v == 'neutral' ? null : v))),
               const SizedBox(height: 12),
               if (wide) tools,
             ]);
@@ -796,7 +702,6 @@ class _MemeStudioState extends State<MemeStudio> with WidgetsBindingObserver {
       catalog: _catalog!,
       section: section,
       onPhoto: () => _guard(() => _photo(layer: true)),
-      onRoast: () => _guard(_currentRoast),
       onReroll: () => _guard(_reroll),
       onUpdateWeather: (city) => _guard(() => _updateWeather(city)));
   Future<void> _openTools(String section) async {

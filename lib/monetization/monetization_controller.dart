@@ -29,7 +29,6 @@ class MonetizationController extends ChangeNotifier
       DisplayAdAdapter? displayAdapter,
       this.verifiedAdFree = false,
       this.measurementPermitted = false,
-      this.personaId,
       ConsentController? consent,
       WebAdConsent? webConsent})
       : reporter = SafeAdReporter(reporter),
@@ -54,7 +53,6 @@ class MonetizationController extends ChangeNotifier
   /// Inject only a verified entitlement; this app currently has no purchase SDK.
   bool verifiedAdFree;
   final bool measurementPermitted;
-  final String Function()? personaId;
   bool holdout = false;
   bool foreground = true;
   bool _sdkReady = false, _disposed = false;
@@ -209,7 +207,6 @@ class MonetizationController extends ChangeNotifier
   bool displayAllowed(AdPlacement placement) {
     final routeMatches = switch (placement) {
       AdPlacement.forecastBanner => _route == '/forecast',
-      AdPlacement.roastsHistoryMrec => _route == '/roasts',
       AdPlacement.funHubMrec => _route == '/fun',
       AdPlacement.memeLibraryMrec => _route == '/fun/meme',
       AdPlacement.funCompleteInterstitial => false,
@@ -256,7 +253,6 @@ class MonetizationController extends ChangeNotifier
     await copy.setSession(policy.sessionId);
     return (await copy.chooseForVisit(
             visitId: visitId,
-            personaId: personaId?.call() ?? 'general',
             enabled: config.adjacentHumor,
             isWeb: kIsWeb,
             severeWarning: weather.safetyStatus != WeatherSafetyStatus.clear))

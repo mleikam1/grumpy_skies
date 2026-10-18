@@ -3,7 +3,6 @@ import '../../../design/dm_theme.dart';
 import '../../../models/weather_models.dart';
 import 'forecast_sheet.dart';
 import 'forecast_hourly_strip.dart';
-import '../../roasts/controllers/local_roast_controller.dart';
 import '../models/hourly_timeline.dart';
 
 class ForecastInsightCard extends StatelessWidget {
@@ -12,14 +11,10 @@ class ForecastInsightCard extends StatelessWidget {
       required this.weather,
       required this.now,
       this.unavailable = false,
-      this.roasts,
-      this.personaId,
       this.clock});
   final WeatherBundle weather;
   final DateTime now;
   final bool unavailable;
-  final LocalRoastController? roasts;
-  final String? personaId;
   final DateTime Function()? clock;
   @override
   Widget build(BuildContext context) {
@@ -36,13 +31,14 @@ class ForecastInsightCard extends StatelessWidget {
         ? ''
         : forecastHourLabel(rain.time, weather.current.timezone,
             weather.current.timezoneOffset);
-    final title =
-        rain == null ? 'Your next few hours.' : 'A little plot twist at $hour.';
+    final title = rain == null
+        ? 'Your next few hours.'
+        : 'Precipitation possible around $hour.';
     final detail = unavailable
         ? 'Cached forecast · check the observation time.'
         : rain == null
             ? 'Explore the hourly forecast.'
-            : 'Rain chance ${weather.current.precipitationChanceKnown && rain.precipitationChance > weather.current.precipitationChance ? 'rises to' : 'is'} ${rain.precipitationChance}%.';
+            : 'Precipitation chance ${weather.current.precipitationChanceKnown && rain.precipitationChance > weather.current.precipitationChance ? 'rises to' : 'is'} ${rain.precipitationChance}%.';
     return Material(
         color: context.dmColors.insightSurface,
         borderRadius: BorderRadius.circular(20),
@@ -56,8 +52,6 @@ class ForecastInsightCard extends StatelessWidget {
                       ForecastHourlyStrip(
                           hourly: weather.hourly,
                           weather: weather,
-                          roasts: roasts,
-                          personaId: personaId,
                           clock: clock,
                           timezone: weather.current.timezone,
                           sunrise: weather.current.sunrise,

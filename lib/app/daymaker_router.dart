@@ -4,120 +4,102 @@ import '../config/app_routes.dart';
 import '../features/plancast/screens/plancast_screen.dart';
 import '../features/forecast/forecast_screen.dart';
 import '../features/fun/meme_generator_screen.dart';
-import '../features/fun/meme/meme_weather.dart';
 import '../features/fun/fun_zone_screen.dart';
 import '../features/radar/radar_screen.dart';
 import '../features/settings/about_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/splash/splash_screen.dart';
-import '../features/roasts/advanced_roast_reveal_screen.dart';
-import '../features/roasts/roasts_screen.dart';
 import 'daymaker_shell.dart';
 import '../monetization/ad_modal_observer.dart';
 
-final daymakerRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
-  observers: [AdModalObserver()],
-  routes: [
-    GoRoute(
-      path: AppRoutes.planCast,
-      name: 'plancast',
-      builder: (context, state) => PlanCastScreen(
-        eventId: state.uri.queryParameters['event'],
-        day: DateTime.tryParse(state.uri.queryParameters['day'] ?? ''),
-      ),
-    ),
-    GoRoute(
-      path: '/',
-      redirect: (_, __) => AppRoutes.splash,
-    ),
-    GoRoute(
-      path: AppRoutes.splash,
-      name: 'splash',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    ShellRoute(
+final daymakerRouter = createDaymakerRouter();
+
+GoRouter createDaymakerRouter({String initialLocation = AppRoutes.splash}) =>
+    GoRouter(
+      initialLocation: initialLocation,
+      redirect: (_, state) => AppRoutes.retiredRedirect(state.uri),
       observers: [AdModalObserver()],
-      builder: (context, state, child) {
-        return DaymakerShell(
-          location: state.uri.path,
-          child: child,
-        );
-      },
       routes: [
         GoRoute(
-          path: AppRoutes.forecast,
-          name: 'forecast',
-          builder: (context, state) => const ForecastScreen(),
+          path: '/',
+          redirect: (_, __) => AppRoutes.splash,
         ),
         GoRoute(
-          path: AppRoutes.roasts,
-          name: 'roasts',
-          builder: (context, state) => const RoastsScreen(),
+          path: AppRoutes.splash,
+          name: 'splash',
+          builder: (context, state) => const SplashScreen(),
+        ),
+        ShellRoute(
+          observers: [AdModalObserver()],
+          builder: (context, state, child) {
+            return DaymakerShell(
+              location: state.uri.path,
+              child: child,
+            );
+          },
           routes: [
             GoRoute(
-              path: 'reveal',
-              name: 'roastReveal',
-              builder: (context, state) => AdvancedRoastRevealScreen(
-                initialRoast: state.extra is DisplayedRoastSnapshot
-                    ? state.extra as DisplayedRoastSnapshot
-                    : null,
+              path: AppRoutes.forecast,
+              name: 'forecast',
+              builder: (context, state) => const ForecastScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.planCast,
+              name: 'plancast',
+              builder: (context, state) => PlanCastScreen(
+                eventId: state.uri.queryParameters['event'],
+                day: DateTime.tryParse(state.uri.queryParameters['day'] ?? ''),
               ),
             ),
-          ],
-        ),
-        GoRoute(
-          path: AppRoutes.radar,
-          name: 'radar',
-          builder: (context, state) => const RadarScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.fun,
-          name: 'fun',
-          builder: (context, state) => const FunZoneScreen(),
-          routes: [
             GoRoute(
-              path: 'meme',
-              name: 'memeGenerator',
-              builder: (context, state) => MemeGeneratorScreen(
-                initialTemplateId: state.uri.queryParameters['template'],
-                initialDocumentId: state.uri.queryParameters['document'],
-                initialRoast: state.extra is DisplayedRoastSnapshot
-                    ? state.extra as DisplayedRoastSnapshot
-                    : null,
-              ),
+              path: AppRoutes.radar,
+              name: 'radar',
+              builder: (context, state) => const RadarScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.fun,
+              name: 'fun',
+              builder: (context, state) => const FunZoneScreen(),
+              routes: [
+                GoRoute(
+                  path: 'meme',
+                  name: 'memeGenerator',
+                  builder: (context, state) => MemeGeneratorScreen(
+                    initialTemplateId: state.uri.queryParameters['template'],
+                    initialDocumentId: state.uri.queryParameters['document'],
+                  ),
+                ),
+              ],
+            ),
+            GoRoute(
+              path: AppRoutes.settings,
+              name: 'settings',
+              builder: (context, state) => const SettingsScreen(),
+              routes: [
+                GoRoute(
+                  path: 'about',
+                  name: 'about',
+                  builder: (context, state) => const AboutScreen(),
+                ),
+              ],
             ),
           ],
         ),
         GoRoute(
-          path: AppRoutes.settings,
-          name: 'settings',
-          builder: (context, state) => const SettingsScreen(),
-          routes: [
-            GoRoute(
-              path: 'about',
-              name: 'about',
-              builder: (context, state) => const AboutScreen(),
-            ),
-          ],
+          path: '/home',
+          redirect: (_, __) => AppRoutes.forecast,
+        ),
+        GoRoute(
+          path: '/burns',
+          redirect: (_, __) => AppRoutes.forecast,
+        ),
+        GoRoute(
+          path: '/meme-generator',
+          redirect: (_, __) => AppRoutes.memeGenerator,
+        ),
+        GoRoute(
+          path: '/about',
+          redirect: (_, __) => AppRoutes.about,
         ),
       ],
-    ),
-    GoRoute(
-      path: '/home',
-      redirect: (_, __) => AppRoutes.forecast,
-    ),
-    GoRoute(
-      path: '/burns',
-      redirect: (_, __) => AppRoutes.roasts,
-    ),
-    GoRoute(
-      path: '/meme-generator',
-      redirect: (_, __) => AppRoutes.memeGenerator,
-    ),
-    GoRoute(
-      path: '/about',
-      redirect: (_, __) => AppRoutes.about,
-    ),
-  ],
-);
+    );

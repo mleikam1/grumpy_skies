@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../roasts/content/roast_context_adapter.dart';
+import '../../../models/weather_time.dart';
 import '../plancast_models.dart';
 
 String planCastTimestamp(BuildContext context, DateTime time) {
@@ -33,7 +33,7 @@ String planCastEventTime(BuildContext context, CalendarEvent event,
   final zone = timeZone ?? event.timeZone;
   DateTime local(DateTime instant) => deviceTime
       ? instant.toLocal()
-      : roastLocalTime(instant, zone, null) ?? instant.toLocal();
+      : weatherLocalTime(instant, zone, null) ?? instant.toLocal();
   final start = local(event.startUtc);
   final end = local(event.endUtc);
   String clock(DateTime value) => TimeOfDay.fromDateTime(value).format(context);
@@ -46,7 +46,7 @@ String planCastEventTime(BuildContext context, CalendarEvent event,
 
 bool planCastCalendarTimeDiffers(CalendarEvent event) {
   if (event.isAllDay) return false;
-  final source = roastLocalTime(event.startUtc, event.timeZone, null);
+  final source = weatherLocalTime(event.startUtc, event.timeZone, null);
   if (source == null) return false;
   final device = event.startUtc.toLocal();
   return !_sameDay(source, device) ||

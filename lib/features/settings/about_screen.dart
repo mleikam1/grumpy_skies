@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/app_routes.dart';
 import '../../design/dm_theme.dart';
-import '../../shared/assets/dm_assets.dart';
-import '../../shared/widgets/dm_asset_image.dart';
+import '../../config/wingman_brand.dart';
+import '../../shared/widgets/wingman_logo.dart';
 import 'privacy_information.dart';
 import 'widgets/dm_settings_row.dart';
 
@@ -35,7 +35,7 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                          child: Text('About DayMaker',
+                          child: Text('About Wingman Weather',
                               style:
                                   Theme.of(context).textTheme.headlineLarge)),
                     ]),
@@ -48,30 +48,14 @@ class AboutScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(26),
                       ),
                       child: Column(children: [
-                        DmAssetImage(
-                          assetPath: DmAssets.mascots.idle,
-                          width: 160,
-                          height: 140,
-                          fit: BoxFit.contain,
-                          semanticLabel: 'DayMaker sun mascot',
-                          placeholderIcon: Icons.wb_sunny_rounded,
-                        ),
+                        const WingmanLogo(size: 140),
                         const SizedBox(height: 16),
-                        Text('DayMaker',
+                        Text(WingmanBrand.name,
                             style: Theme.of(context).textTheme.headlineLarge),
                         const SizedBox(height: 8),
-                        Text('Weather with personality.',
+                        Text(WingmanBrand.tagline,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 12),
-                        Text(
-                            'A personality-driven weather app that brightens your forecast '
-                            'instead of politely whispering it.',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
-                                ?.copyWith(color: colors.textSecondary)),
                       ]),
                     ),
                     const SizedBox(height: 24),
@@ -121,7 +105,7 @@ class AboutScreen extends StatelessWidget {
                       subtitle: 'Open-source notices',
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () => showLicensePage(
-                          context: context, applicationName: 'DayMaker'),
+                          context: context, applicationName: WingmanBrand.name),
                     ),
                     const SizedBox(height: 24),
                   ],

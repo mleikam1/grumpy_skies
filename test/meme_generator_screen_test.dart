@@ -10,7 +10,6 @@ import 'package:grumpy_skies/config/app_routes.dart';
 
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/fun/meme_generator_screen.dart';
-import 'package:grumpy_skies/features/fun/meme/meme_weather.dart';
 import 'package:grumpy_skies/features/fun/meme/platform/meme_export_service.dart';
 import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
 import 'package:grumpy_skies/features/fun/meme/storage/meme_store.dart';
@@ -52,6 +51,9 @@ void main() {
         await _capture(tester, 'widget_library_${width.toInt()}.png');
       }
       expect(find.text('Make the forecast\nyour punchline.'), findsOneWidget);
+      expect(find.text('Wingman Weather'), findsOneWidget);
+      expect(find.text('Meme Studio'), findsOneWidget);
+      expect(find.text('Weather Meme Studio'), findsNothing);
       expect(find.text('Pro'), findsNothing);
       expect(find.text('Make One for Today'), findsOneWidget);
       expect(find.text('Upload Photo'), findsOneWidget);
@@ -106,15 +108,7 @@ void main() {
       (tester) async {
     final store = MemeStore(MemoryMemeBackend());
     await _pumpStudio(tester, store,
-        width: 844,
-        height: 390,
-        initialRoast: DisplayedRoastSnapshot(
-            id: 'landscape_roast',
-            text: 'The clouds brought snacks.',
-            personaId: 'karen',
-            sourceKey: 'forecast',
-            sourceLabel: 'Home',
-            isSample: false));
+        width: 844, height: 390, initialTemplateId: 'storm_boss_cat');
 
     final editor = tester
         .widget<MemeDocumentCanvas>(find.byType(MemeDocumentCanvas))
@@ -245,13 +239,7 @@ void main() {
         width: 320,
         textScale: 1.6,
         reduceMotion: true,
-        initialRoast: DisplayedRoastSnapshot(
-            id: 'large_text_source',
-            text: 'A tiny rain cloud.',
-            personaId: 'karen',
-            sourceKey: 'forecast',
-            sourceLabel: 'Home',
-            isSample: false));
+        initialTemplateId: 'storm_boss_cat');
     expect(find.byTooltip('Dismiss message'), findsNothing,
         reason: tester
             .widgetList<Text>(find.byType(Text))
@@ -275,24 +263,16 @@ void main() {
     await _flush(tester, store);
   });
 
-  testWidgets(
-      'exact source snapshot enters editor without synthetic roast text',
+  testWidgets('new neutral template has no persona or generated provenance',
       (tester) async {
     final store = MemeStore(MemoryMemeBackend());
-    final source = DisplayedRoastSnapshot(
-      id: 'exact_displayed',
-      text: 'Clouds, we talked about this.\nBring snacks ☔',
-      personaId: 'grandpa',
-      sourceKey: 'forecast',
-      sourceLabel: 'Home forecast',
-      isSample: false,
-    );
-    await _pumpStudio(tester, store, initialRoast: source);
+    await _pumpStudio(tester, store, initialTemplateId: 'storm_boss_cat');
     final canvas =
         tester.widget<MemeDocumentCanvas>(find.byType(MemeDocumentCanvas));
-    expect(canvas.editor.document.layers.last.text, source.text);
-    expect(canvas.editor.document.personaId, 'grandpa');
-    expect(canvas.editor.document.weatherSnapshot, isNull);
+    expect(canvas.editor.document.personaId, isNull);
+    expect(canvas.editor.document.roastSnapshot, isNull);
+    expect(find.text('Speaking persona'), findsNothing);
+    expect(find.text('Use Current Roast'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await _flush(tester, store);
@@ -302,13 +282,6 @@ void main() {
       (tester) async {
     final store = MemeStore(MemoryMemeBackend());
     final adapter = _RecordingExportAdapter();
-    final source = DisplayedRoastSnapshot(
-        id: 'completion_source',
-        text: 'The clouds brought snacks.',
-        personaId: 'karen',
-        sourceKey: 'forecast',
-        sourceLabel: 'Forecast',
-        isSample: false);
     final router = GoRouter(initialLocation: AppRoutes.memeGenerator, routes: [
       GoRoute(
           path: AppRoutes.fun,
@@ -317,13 +290,13 @@ void main() {
       GoRoute(
           path: AppRoutes.memeGenerator,
           builder: (_, __) => MemeGeneratorScreen(
-              initialRoast: source,
+              initialTemplateId: 'storm_boss_cat',
               store: store,
               exports: MemeExportService(adapter: adapter))),
     ]);
     addTearDown(router.dispose);
     await _pumpStudio(tester, store,
-        initialRoast: source,
+        initialTemplateId: 'storm_boss_cat',
         app: MaterialApp.router(theme: _testTheme(), routerConfig: router));
     final canvas =
         tester.widget<MemeDocumentCanvas>(find.byType(MemeDocumentCanvas));
@@ -433,7 +406,7 @@ Future<void> _pumpStudio(
   double height = 900,
   double textScale = 1,
   bool reduceMotion = false,
-  DisplayedRoastSnapshot? initialRoast,
+  String? initialTemplateId,
   MemeExportService? exports,
   Widget? app,
 }) async {
@@ -475,7 +448,9 @@ Future<void> _pumpStudio(
                 child: child!,
               ),
               home: MemeGeneratorScreen(
-                  store: store, initialRoast: initialRoast, exports: exports),
+                  store: store,
+                  initialTemplateId: initialTemplateId,
+                  exports: exports),
             )));
     await Future<void>.delayed(const Duration(milliseconds: 100));
   });
@@ -484,11 +459,11 @@ Future<void> _pumpStudio(
     await tester
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 25)));
     await tester.pump();
-    if (initialRoast != null &&
+    if (initialTemplateId != null &&
         find.byType(MemeDocumentCanvas).evaluate().isNotEmpty) {
       break;
     }
-    if (initialRoast == null &&
+    if (initialTemplateId == null &&
         find.byType(MemeLibrary).evaluate().isNotEmpty &&
         tester.widget<MemeLibrary>(find.byType(MemeLibrary)).drafts.length ==
             expectedDrafts) {

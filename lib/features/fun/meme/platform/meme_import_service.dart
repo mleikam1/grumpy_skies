@@ -98,8 +98,8 @@ class MemeImportService {
   Future<MemeDocument?> pickProjectBackup() async {
     final file = await files.openFile(acceptedTypeGroups: [
       const files.XTypeGroup(
-        label: 'DayMaker project',
-        extensions: ['json', 'daymaker'],
+        label: 'Wingman Weather project',
+        extensions: ['json', 'wingman', 'daymaker'],
         mimeTypes: ['application/json'],
         // Custom .daymaker backups appear as generic data on iOS. The parser
         // validates their format and schema after selection.

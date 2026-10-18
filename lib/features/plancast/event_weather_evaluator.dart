@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../models/weather_models.dart';
-import '../roasts/content/roast_context_adapter.dart';
+import '../../models/weather_time.dart';
 import 'plancast_models.dart';
 
 /// Pure, deterministic evaluation. No geocoding, GPS, source-event mutations,
@@ -290,10 +290,10 @@ class EventWeatherEvaluator {
     final zone = weather.current.timezone;
     final localStart = event.isAllDay
         ? event.allDayStart
-        : roastLocalTime(event.startUtc, zone, null, forecast: true);
+        : weatherLocalTime(event.startUtc, zone, null, forecast: true);
     final localEnd = event.isAllDay
         ? event.allDayEnd!.subtract(const Duration(days: 1))
-        : roastLocalTime(
+        : weatherLocalTime(
             event.endUtc.subtract(const Duration(microseconds: 1)), zone, null,
             forecast: true);
     if (localStart == null || localEnd == null) {
@@ -390,10 +390,10 @@ class EventWeatherEvaluator {
     final zone = weather.current.timezone;
     final localStart = event.isAllDay
         ? event.allDayStart
-        : roastLocalTime(event.startUtc, zone, null, forecast: true);
+        : weatherLocalTime(event.startUtc, zone, null, forecast: true);
     final localLast = event.isAllDay
         ? event.allDayEnd!.subtract(const Duration(days: 1))
-        : roastLocalTime(
+        : weatherLocalTime(
             event.endUtc.subtract(const Duration(microseconds: 1)), zone, null,
             forecast: true);
     if (localStart == null || localLast == null) return null;

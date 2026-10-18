@@ -18,7 +18,7 @@ const double radarCityZoom = 10;
 /// identify native requests, and load only the visible viewport (no prefetch).
 /// See docs/ui_implementation/refinement/RADAR.md for the usage policy.
 const radarBasemapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const radarMapUserAgent = 'DayMaker/1.0 (com.example.grumpy_skies)';
+const radarMapUserAgent = 'WingmanWeather/1.0 (com.example.grumpy_skies)';
 
 class OpenWeatherRadarMap extends StatefulWidget {
   const OpenWeatherRadarMap({

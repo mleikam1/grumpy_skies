@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/app_routes.dart';
 import '../../design/dm_theme.dart';
-import '../../shared/assets/dm_assets.dart';
-import '../../shared/widgets/dm_asset_image.dart';
+import '../../config/wingman_brand.dart';
+import '../../shared/widgets/wingman_logo.dart';
 
 /// The welcome screen uses the same geometry and artwork in both appearances.
 class SplashScreen extends StatelessWidget {
@@ -19,20 +19,7 @@ class SplashScreen extends StatelessWidget {
         child: SafeArea(
           child: LayoutBuilder(builder: (context, constraints) {
             final wide = constraints.maxWidth >= 1024;
-            final mascot = Semantics(
-              image: true,
-              label: 'Happy DayMaker sun mascot',
-              child: ExcludeSemantics(
-                child: SizedBox.square(
-                  dimension: wide ? 300 : 184,
-                  child: DmAssetImage(
-                    assetPath: DmAssets.mascots.happy,
-                    fit: BoxFit.contain,
-                    placeholderIcon: Icons.wb_sunny_rounded,
-                  ),
-                ),
-              ),
-            );
+            final logo = WingmanLogo(size: wide ? 300 : 184);
             final panel = Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -44,14 +31,14 @@ class SplashScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('daymaker.',
+                  Text(WingmanBrand.name,
                       textAlign: TextAlign.center,
                       style: Theme.of(context)
                           .textTheme
                           .headlineLarge
                           ?.copyWith(fontSize: 38)),
                   const SizedBox(height: 12),
-                  Text('Weather that brightens your day.',
+                  Text(WingmanBrand.tagline,
                       textAlign: TextAlign.center,
                       style: Theme.of(context)
                           .textTheme
@@ -77,12 +64,12 @@ class SplashScreen extends StatelessWidget {
                       constraints: BoxConstraints(maxWidth: wide ? 920 : 520),
                       child: wide
                           ? Row(children: [
-                              mascot,
+                              logo,
                               const SizedBox(width: 40),
                               Expanded(child: panel)
                             ])
                           : Column(mainAxisSize: MainAxisSize.min, children: [
-                              mascot,
+                              logo,
                               const SizedBox(height: 24),
                               panel
                             ]),

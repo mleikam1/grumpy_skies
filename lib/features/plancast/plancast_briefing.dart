@@ -8,7 +8,6 @@ class PlanCastBriefingComposer {
       {required List<PlanCastEventWeather> today,
       required List<PlanCastEventWeather> tomorrow,
       required DateTime now,
-      String? personaLine,
       bool privateTitles = true}) {
     final available =
         today.where((e) => !e.isOnline && e.assessment.usable).toList();
@@ -87,9 +86,6 @@ class PlanCastBriefingComposer {
             ? null
             : '${nextDay.length} ${nextDay.length == 1 ? 'plan has' : 'plans have'} weather worth watching. ${PlanCastEventCopy.location(nextDay.first, privateLabels: privateTitles)} ${nextDay.first.assessment.advice}'
                 .trim(),
-        personaLine: today.any((e) => e.assessment.serious) || usable == 0
-            ? null
-            : personaLine,
         generatedAt: now,
         usableWeatherCount: usable,
         needsLocationCount: missing,

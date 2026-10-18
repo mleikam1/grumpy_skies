@@ -1,9 +1,5 @@
 // Synthetic preview data. Never import this library from production code.
-import '../features/roasts/content/roast_pack_repository.dart';
-import '../features/roasts/content/weather_roast_models.dart';
-import '../features/roasts/models/roast_persona.dart';
 import '../models/weather_models.dart';
-import '../repositories/fake_roast_repository.dart';
 import '../repositories/weather_repository.dart';
 import '../services/location_service.dart';
 
@@ -12,17 +8,6 @@ import '../services/location_service.dart';
 abstract final class ApprovedFixture {
   static final now = DateTime.parse('2026-10-12T10:00:00-05:00');
   static final observedAt = DateTime.parse('2026-10-12T09:58:00-05:00');
-  static const karenQuote =
-      "I'd like to speak to the manager of this humidity.";
-  static const grandpaQuote =
-      'At my age, clouds just mean a good excuse for a nap.';
-  static const personaOrder = [
-    'karen',
-    'frat_bro',
-    'politician',
-    'grandpa',
-    'two_year_old',
-  ];
   static final location = WeatherLocation(
     name: 'Overland Park',
     state: 'KS',
@@ -137,13 +122,6 @@ abstract final class ApprovedFixture {
     alertCoverageVerified: true,
     alertsCheckedAt: now,
   );
-  static String quote(String persona) => switch (persona) {
-        'karen' => karenQuote,
-        'grandpa' => grandpaQuote,
-        'frat_bro' => 'Same skies, bro. Bring the sunglasses.',
-        'politician' => 'I support this weather, pending further forecasts.',
-        _ => 'Cloud! Big cloud! I like that cloud.',
-      };
 }
 
 class ApprovedWeatherRepository extends WeatherRepository {
@@ -177,68 +155,6 @@ class ApprovedWeatherRepository extends WeatherRepository {
   Future<List<LocationCandidate>> searchLocations(
           {required String query, int limit = 5}) async =>
       [ApprovedFixture.location];
-}
-
-class ApprovedRoastRepository extends FakeRoastRepository {
-  const ApprovedRoastRepository();
-  @override
-  Future<List<Persona>> getPersonas() async => [
-        for (final id in ApprovedFixture.personaOrder)
-          RoastPersonas.byId(id).toDayMakerPersona(),
-      ];
-  @override
-  Future<Roast> getDailyRoast(
-          {required String personaId,
-          required String weatherSnapshotId}) async =>
-      Roast(
-        id: 'preview-$personaId-001',
-        personaId: personaId,
-        weatherSnapshotId: ApprovedFixture.snapshot.id,
-        text: ApprovedFixture.quote(personaId),
-        category: 'fixture',
-        createdAt: ApprovedFixture.now,
-        xpReward: 0,
-      );
-  @override
-  Future<List<Roast>> getRoastHistory({String? personaId}) async => [
-        if (personaId == null || personaId == 'karen')
-          Roast(
-              id: 'preview-karen-history',
-              personaId: 'karen',
-              weatherSnapshotId: ApprovedFixture.snapshot.id,
-              text: "Sunshine? Cute. Let's see it last.",
-              category: 'fixture',
-              createdAt: ApprovedFixture.now.subtract(const Duration(hours: 1)),
-              xpReward: 0),
-      ];
-}
-
-class ApprovedRoastPackRepository extends RoastPackRepository {
-  @override
-  Future<RoastPack> loadPack(
-          {RoastRemoteConfig remoteConfig = RoastRemoteConfig.disabled,
-          int appBuildNumber = 1}) async =>
-      RoastPack(
-        schemaVersion: 1,
-        packVersion: 'approved-preview-only',
-        generatedAt: ApprovedFixture.now,
-        personas: ApprovedFixture.personaOrder,
-        roasts: [
-          for (final id in ApprovedFixture.personaOrder)
-            RoastLine(
-                id: 'preview-$id-001',
-                persona: id,
-                type: RoastType.today,
-                tags: const [
-                  WeatherRoastTag.partlyCloudy,
-                  WeatherRoastTag.fallback
-                ],
-                dayparts: const [Daypart.any],
-                level: RoastLevel.mild,
-                weight: 1,
-                text: ApprovedFixture.quote(id)),
-        ],
-      );
 }
 
 class PreviewLocationService extends LocationService {

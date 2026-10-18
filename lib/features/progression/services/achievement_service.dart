@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../roasts/models/roast.dart';
 import '../models/achievement.dart';
 import '../models/xp_state.dart';
 
@@ -57,16 +56,9 @@ class AchievementService {
       Achievement(
         id: 'streak_30',
         name: '30-day streak',
-        description: 'A month of consistent roasting.',
+        description: 'Check the weather for a full month.',
         unlocked: false,
         xpReward: 300,
-      ),
-      Achievement(
-        id: 'all_day_roasts',
-        name: 'Around-the-clock roast',
-        description: 'View morning, afternoon, and night roasts in one day.',
-        unlocked: false,
-        xpReward: 80,
       ),
       Achievement(
         id: 'severe_weather',
@@ -74,27 +66,6 @@ class AchievementService {
         description: 'Check the app during severe weather.',
         unlocked: false,
         xpReward: 60,
-      ),
-      Achievement(
-        id: 'share_10',
-        name: 'Town crier',
-        description: 'Share 10 roasts with friends.',
-        unlocked: false,
-        xpReward: 120,
-      ),
-      Achievement(
-        id: 'karen_10',
-        name: 'Karen committed',
-        description: 'Use the Karen persona for 10 days.',
-        unlocked: false,
-        xpReward: 90,
-      ),
-      Achievement(
-        id: 'persona_switch',
-        name: 'Identity crisis',
-        description: 'Switch personas 5 times in one day.',
-        unlocked: false,
-        xpReward: 70,
       ),
       Achievement(
         id: 'level_3',
@@ -105,14 +76,14 @@ class AchievementService {
       ),
       Achievement(
         id: 'level_5',
-        name: 'Certified grump',
+        name: 'Forecast regular',
         description: 'Reach level 5.',
         unlocked: false,
         xpReward: 120,
       ),
       Achievement(
         id: 'level_10',
-        name: 'Legendary roaster',
+        name: 'Weather expert',
         description: 'Reach level 10.',
         unlocked: false,
         xpReward: 250,
@@ -132,7 +103,7 @@ class AchievementService {
     await _saveUnlocked();
   }
 
-  List<Achievement> evaluate(XpState state, {Roast? recentRoast}) {
+  List<Achievement> evaluate(XpState state, {bool severeWeather = false}) {
     final wasUnlocked = Set<String>.from(_unlockedIds);
 
     void checkAndUnlock(String id, bool condition) {
@@ -146,15 +117,7 @@ class AchievementService {
     checkAndUnlock('streak_7', state.streakCount >= 7);
     checkAndUnlock('streak_30', state.streakCount >= 30);
 
-    checkAndUnlock(
-      'all_day_roasts',
-      state.viewedMorning && state.viewedAfternoon && state.viewedNight,
-    );
-
-    checkAndUnlock(
-      'severe_weather',
-      recentRoast?.type == 'severe' || recentRoast?.type == 'storm',
-    );
+    checkAndUnlock('severe_weather', severeWeather);
 
     checkAndUnlock('level_3', state.level >= 3);
     checkAndUnlock('level_5', state.level >= 5);

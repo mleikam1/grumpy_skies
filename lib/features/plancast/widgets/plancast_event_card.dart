@@ -8,7 +8,7 @@ import '../../../models/temperature_unit.dart';
 import '../../../models/weather_models.dart';
 import '../../../services/settings_controller.dart';
 import '../../../shared/widgets/daymaker_components.dart';
-import '../../roasts/content/roast_context_adapter.dart';
+import '../../../models/weather_time.dart';
 import '../plancast_controller.dart';
 import '../screens/plancast_time_format.dart';
 import 'plancast_location_controls.dart';
@@ -246,7 +246,7 @@ Widget _weatherIcon(PlanCastEventWeather item,
         conditionDescription: assessment.condition,
         openWeatherIconCode: assessment.weatherIcon,
         forecastTime: instant,
-        forecastLocalTime: roastLocalTime(
+        forecastLocalTime: weatherLocalTime(
             instant, item.venueTimeZone, item.venueTimeZoneOffset,
             forecast: true),
         latitude: item.venue?.lat,
@@ -676,7 +676,7 @@ class _HourStrip extends StatelessWidget {
   final PlanCastEventWeather item;
   final List<HourlyForecast> hours;
   DateTime _local(DateTime instant) =>
-      roastLocalTime(instant, item.venueTimeZone, item.venueTimeZoneOffset) ??
+      weatherLocalTime(instant, item.venueTimeZone, item.venueTimeZoneOffset) ??
       instant.toLocal();
   bool get _crossesDay {
     final first = _local(hours.first.time), last = _local(hours.last.time);
@@ -715,7 +715,7 @@ class _HourStrip extends StatelessWidget {
                               style: DMTypography.bodySmall,
                               textAlign: TextAlign.center),
                         Text(
-                            TimeOfDay.fromDateTime(roastLocalTime(
+                            TimeOfDay.fromDateTime(weatherLocalTime(
                                         hour.time,
                                         item.venueTimeZone,
                                         item.venueTimeZoneOffset) ??
@@ -732,7 +732,7 @@ class _HourStrip extends StatelessWidget {
                               conditionDescription: hour.condition,
                               openWeatherIconCode: hour.weatherIcon,
                               forecastTime: hour.time,
-                              forecastLocalTime: roastLocalTime(hour.time,
+                              forecastLocalTime: weatherLocalTime(hour.time,
                                   item.venueTimeZone, item.venueTimeZoneOffset,
                                   forecast: true),
                               latitude: item.venue?.lat,
@@ -774,7 +774,7 @@ class _AlertCard extends StatelessWidget {
 DateTime _localSegmentTime(PlanCastEventWeather item, DateTime instant) => item
         .event.isAllDay
     ? instant
-    : roastLocalTime(instant, item.venueTimeZone, item.venueTimeZoneOffset) ??
+    : weatherLocalTime(instant, item.venueTimeZone, item.venueTimeZoneOffset) ??
         instant.toLocal();
 bool _midnight(DateTime time) =>
     time.hour == 0 &&

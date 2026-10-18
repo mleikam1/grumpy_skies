@@ -15,7 +15,6 @@ import 'package:grumpy_skies/config/app_routes.dart';
 import 'package:grumpy_skies/features/plancast/device_area_service.dart';
 import 'package:grumpy_skies/features/plancast/plancast_controller.dart';
 import 'package:grumpy_skies/features/plancast/platform/plancast_platform.dart';
-import 'package:grumpy_skies/features/plancast/screens/plancast_screen.dart';
 import 'package:grumpy_skies/features/plancast/screens/plancast_settings_screen.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/preview/approved_fixture.dart';
@@ -56,7 +55,6 @@ Future<void> main() async {
     weatherRepository: PlanCastPreviewWeather(() => now),
     platform: platform,
     deviceAreaService: area,
-    roastPackRepository: ApprovedRoastPackRepository(),
     clock: () => now,
   );
   await controller.initialize();
@@ -83,10 +81,6 @@ Future<void> main() async {
               : '${AppRoutes.planCast}?event=${Uri.encodeQueryComponent(event.event.id)}';
   final router = GoRouter(initialLocation: AppRoutes.forecast, routes: [
     ...session.router.configuration.routes,
-    GoRoute(
-        path: AppRoutes.planCast,
-        builder: (_, state) =>
-            PlanCastScreen(eventId: state.uri.queryParameters['event'])),
     GoRoute(
         path: '/plancast/settings',
         builder: (_, __) => const PlanCastSettingsScreen()),

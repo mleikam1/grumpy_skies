@@ -3,12 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../config/app_routes.dart';
-import '../fun/meme/meme_weather.dart';
-import '../roasts/services/displayed_roast_share.dart';
-import '../../models/temperature_unit.dart';
 import '../../repositories/fake_weather_repository.dart';
 import '../../design/dm_breakpoints.dart';
 import '../../design/dm_colors.dart';
@@ -16,25 +11,18 @@ import '../../design/dm_theme.dart';
 import 'widgets/forecast_insight_card.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
-import '../../features/roasts/models/roast_persona.dart';
-import '../../features/roasts/content/roast_pack_repository.dart';
 import '../../models/weather_models.dart';
 import '../../models/weather_safety.dart';
 import '../../monetization/ad_placement.dart';
 import '../../monetization/widgets/ad_section.dart';
-import '../../repositories/settings_repository.dart';
-import '../../repositories/pack_roast_repository.dart';
-import '../roasts/controllers/local_roast_controller.dart';
 import '../../repositories/weather_repository.dart';
 import '../../services/open_weather_backend_client.dart';
-import '../../services/settings_controller.dart';
 import '../../services/weather_location_controller.dart';
 import '../../shared/widgets/daymaker_components.dart';
 import '../../shared/widgets/weather_location_selector.dart';
 import 'widgets/forecast_dashboard_widgets.dart';
 import 'widgets/forecast_daily_strip.dart';
 import 'widgets/forecast_hourly_list.dart';
-import '../plancast/widgets/plancast_card.dart';
 
 class ForecastScreen extends StatefulWidget {
   const ForecastScreen({
@@ -92,19 +80,14 @@ class _ForecastScreenState extends State<ForecastScreen>
   }
 
   WeatherRepository? _repository;
-  RoastPackRepository? _roastPackRepository;
-  SettingsRepository? _settingsRepository;
   WeatherLocationController? _locationController;
   WeatherBundle? _weather;
-  late LocalRoastController _localRoasts;
-  bool _ownsRoastController = false;
   Object? _error;
   Timer? _autoRefreshTimer;
   String? _activeLocationKey;
   var _loading = true;
   var _loadedRepository = false;
   var _showLocationSelector = false;
-  var _selectedPersonaId = RoastPersonas.defaultPersona.id;
 
   @override
   void didChangeDependencies() {
@@ -112,13 +95,6 @@ class _ForecastScreenState extends State<ForecastScreen>
     if (_loadedRepository) return;
 
     _repository = widget.weatherRepository ?? context.read<WeatherRepository>();
-    _roastPackRepository = _readRoastPackRepository() ?? RoastPackRepository();
-    final sharedRoasts = context.read<LocalRoastController?>();
-    _ownsRoastController = sharedRoasts == null;
-    _localRoasts =
-        sharedRoasts ?? LocalRoastController(repository: _roastPackRepository);
-    _localRoasts.addListener(_onRoastContentChanged);
-    _settingsRepository = _readSettingsRepository();
     _locationController = _readLocationController() ??
         WeatherLocationController(
           repository: _repository!,
@@ -126,30 +102,12 @@ class _ForecastScreenState extends State<ForecastScreen>
     _locationController!.addListener(_handleLocationChanged);
     _loadedRepository = true;
     _startAutoRefresh();
-    unawaited(_loadSelectedPersona());
-    unawaited(_loadRoastPack());
     if (_locationController!.selectedLocation == null) {
       setState(() => _loading = false);
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _loadWeather();
       });
-    }
-  }
-
-  RoastPackRepository? _readRoastPackRepository() {
-    try {
-      return context.read<RoastPackRepository>();
-    } catch (_) {
-      return null;
-    }
-  }
-
-  SettingsRepository? _readSettingsRepository() {
-    try {
-      return context.read<SettingsRepository>();
-    } catch (_) {
-      return null;
     }
   }
 
@@ -165,8 +123,6 @@ class _ForecastScreenState extends State<ForecastScreen>
 
   @override
   void dispose() {
-    _localRoasts.removeListener(_onRoastContentChanged);
-    if (_ownsRoastController) _localRoasts.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _autoRefreshTimer?.cancel();
     _locationController?.removeListener(_handleLocationChanged);
@@ -179,41 +135,6 @@ class _ForecastScreenState extends State<ForecastScreen>
     } catch (_) {
       return null;
     }
-  }
-
-  Future<void> _loadSelectedPersona() async {
-    final repository = _settingsRepository;
-    if (repository == null) return;
-
-    try {
-      final settings = await repository.loadSettings();
-      if (!mounted) return;
-      setState(() {
-        _selectedPersonaId =
-            RoastPersonas.normalizeId(settings.selectedPersonaId);
-      });
-    } catch (error) {
-      if (kDebugMode) {
-        debugPrint('[GrumpySkies] selected persona load error: $error');
-      }
-    }
-  }
-
-  String _selectedPersonaIdForBuild() {
-    try {
-      final controller = context.watch<SettingsController>();
-      return RoastPersonas.normalizeId(controller.selectedPersonaId);
-    } catch (_) {
-      return _selectedPersonaId;
-    }
-  }
-
-  void _onRoastContentChanged() {
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _loadRoastPack() async {
-    await _localRoasts.initialize();
   }
 
   void _startAutoRefresh() {
@@ -234,7 +155,6 @@ class _ForecastScreenState extends State<ForecastScreen>
     final location = _locationController?.selectedLocation;
     if (location == null) {
       if (!mounted) return;
-      _readMemeRegistry()?.clearSource('forecast');
       setState(() {
         _requestSerial++;
         _weather = null;
@@ -251,7 +171,6 @@ class _ForecastScreenState extends State<ForecastScreen>
       return;
     }
 
-    _readMemeRegistry()?.clearSource('forecast');
     _activeLocationKey = key;
     _weather = null;
     _showLocationSelector = false;
@@ -284,7 +203,6 @@ class _ForecastScreenState extends State<ForecastScreen>
         location: location,
       );
       if (!mounted || requestSerial != _requestSerial) return;
-      _localRoasts.publishWeather(weather, location);
       setState(() => _weather = weather);
       _locationController?.updateWeatherSafety(weather, location);
       _locationController?.markWeatherLoaded();
@@ -301,17 +219,6 @@ class _ForecastScreenState extends State<ForecastScreen>
 
   static String _locationKey(LocationCandidate location) {
     return '${location.lat.toStringAsFixed(4)},${location.lon.toStringAsFixed(4)}';
-  }
-
-  void _showNextRoast(String personaId) {
-    _localRoasts.select(
-        persona: personaId,
-        bundle: _weather,
-        now: _now,
-        unit: context.read<SettingsController?>()?.temperatureUnit ??
-            TemperatureUnit.fahrenheit,
-        another: true);
-    setState(() {});
   }
 
   @override
@@ -368,9 +275,6 @@ class _ForecastScreenState extends State<ForecastScreen>
 
     final weather = _weather!;
     final snapshot = _snapshotForWeather(weather);
-    final selectedPersonaId = _selectedPersonaIdForBuild();
-    final selectedPersona =
-        RoastPersonas.byId(selectedPersonaId).toDayMakerPersona();
     final now = _now;
     final relevantAlerts =
         weather.alerts.where((alert) => alert.isRelevantAt(now)).toList();
@@ -378,27 +282,6 @@ class _ForecastScreenState extends State<ForecastScreen>
         weatherFreshness(weather.current.displayUpdatedAt, now) ==
             WeatherFreshness.fresh;
     final cached = weather.isOfflineCache || _error != null;
-    final roast = _roastForWeather(weather, snapshot, selectedPersona.id);
-    final memeSource = _memeSource(roast, weather);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          !identical(_weather, weather) ||
-          RoastPersonas.normalizeId(
-                  context.read<SettingsController?>()?.selectedPersonaId ??
-                      _selectedPersonaId) !=
-              selectedPersona.id ||
-          _showLocationSelector) {
-        return;
-      }
-      if (relevantAlerts.isNotEmpty) {
-        _readMemeRegistry()?.clearSource('forecast');
-        return;
-      }
-      _readMemeRegistry()?.publish(memeSource, weather: weather);
-      if (roast.selection != null) {
-        _localRoasts.commitDisplayed(roast.selection!);
-      }
-    });
     final location = (weather.current.locationName.isNotEmpty
         ? weather.current.locationName
         : _locationController?.selectedLocation?.displayName ?? '');
@@ -477,25 +360,9 @@ class _ForecastScreenState extends State<ForecastScreen>
                       const SizedBox(height: 8),
                       ForecastInsightCard(
                           weather: weather,
-                          roasts: _localRoasts,
-                          personaId: selectedPersona.id,
                           clock: widget.clock,
                           now: now,
                           unavailable: cached || !observationFresh),
-                      if (relevantAlerts.isEmpty) ...[
-                        const SizedBox(height: 10),
-                        ForecastRoastCard(
-                          persona: selectedPersona,
-                          roast: roast,
-                          sourceLabel:
-                              memeSource.isSample ? 'Sample roast' : null,
-                          onNewRoast: () => _showNextRoast(selectedPersona.id),
-                          onShare: () =>
-                              showDisplayedRoastShareSheet(context, memeSource),
-                          onShareToMeme: () => context
-                              .push(AppRoutes.memeGenerator, extra: memeSource),
-                        ),
-                      ],
                       ForecastDailyStrip(
                         daily: weather.daily,
                         timezone: weather.current.timezone,
@@ -508,16 +375,12 @@ class _ForecastScreenState extends State<ForecastScreen>
                       ForecastHourlyList(
                         hourly: weather.hourly,
                         weather: weather,
-                        roasts: _localRoasts,
-                        personaId: selectedPersona.id,
                         clock: widget.clock,
                         timezone: weather.current.timezone,
                         referenceTime: now,
                         timezoneOffset: weather.current.timezoneOffset,
                         errorMessage: weather.hourlyForecastMessage,
                       ),
-                      const SizedBox(height: 12),
-                      const PlanCastCard(),
                       const SizedBox(height: 12),
                       Text(
                           _observationLabel(
@@ -557,39 +420,6 @@ class _ForecastScreenState extends State<ForecastScreen>
     );
   }
 
-  DisplayedRoastRegistry? _readMemeRegistry() {
-    try {
-      return context.read<DisplayedRoastRegistry>();
-    } catch (_) {
-      return null;
-    }
-  }
-
-  DisplayedRoastSnapshot _memeSource(Roast roast, WeatherBundle weather) {
-    var unit = TemperatureUnit.fahrenheit;
-    try {
-      unit = context.read<SettingsController>().temperatureUnit;
-    } catch (_) {
-      // Independent forecast widget tests do not require app-level settings.
-    }
-    return DisplayedRoastSnapshot(
-      id: roast.id,
-      text: roast.text,
-      personaId: roast.personaId,
-      mood: roast.resolvedMood,
-      selection: roast.selection,
-      sourceKey: 'forecast',
-      sourceLabel: 'Home forecast',
-      isSample: _repository is FakeWeatherRepository,
-      weatherSnapshot: MemeWeather.freeze(
-        weather,
-        temperatureUnit: unit,
-        isSample: _repository is FakeWeatherRepository,
-        now: _now,
-      ),
-    );
-  }
-
   static String _observationLabel(DateTime updated, DateTime now) {
     if (updated.millisecondsSinceEpoch <= 0) {
       return 'Observation time unavailable';
@@ -601,18 +431,6 @@ class _ForecastScreenState extends State<ForecastScreen>
       return 'Observed ${age.inMinutes} min ago${age > const Duration(minutes: 30) ? ' · Stale' : ''}';
     }
     return 'Observed ${age.inHours} hours ago · Stale';
-  }
-
-  Roast _roastForWeather(
-      WeatherBundle weather, WeatherSnapshot snapshot, String personaId) {
-    final selection = _localRoasts.select(
-        persona: personaId,
-        bundle: weather,
-        now: _now,
-        unit: context.read<SettingsController?>()?.temperatureUnit ??
-            TemperatureUnit.fahrenheit);
-    return PackRoastRepository.fromSelection(selection,
-        weatherSnapshotId: snapshot.id);
   }
 
   static WeatherSnapshot _snapshotForWeather(WeatherBundle weather) {

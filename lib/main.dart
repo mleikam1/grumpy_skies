@@ -9,20 +9,14 @@ import 'app.dart';
 import 'features/plancast/plancast_controller.dart';
 import 'features/plancast/widgets/plancast_lifecycle.dart';
 import 'app/daymaker_router.dart';
-import 'features/fun/meme/meme_weather.dart';
-import 'features/roasts/content/roast_pack_repository.dart';
-import 'features/roasts/controllers/local_roast_controller.dart';
-import 'features/roasts/services/roast_debug_inspector.dart';
-import 'features/roasts/widgets/roast_foreground_sync.dart';
 import 'repositories/open_weather_repository.dart';
-import 'repositories/pack_roast_repository.dart';
-import 'repositories/roast_repository.dart';
 import 'repositories/settings_repository.dart';
+import 'repositories/fun_repository.dart';
+import 'repositories/local_fun_repository.dart';
 import 'repositories/shared_preferences_settings_repository.dart';
 import 'repositories/weather_repository.dart';
 import 'services/cache_service.dart';
 import 'services/open_weather_backend_client.dart';
-import 'services/persona_roast_service.dart';
 import 'services/settings_controller.dart';
 import 'services/weather_location_controller.dart';
 import 'features/progression/services/achievement_service.dart';
@@ -34,39 +28,32 @@ void main() async {
 
   final weatherClient = OpenWeatherBackendClient();
   final weatherCache = await CacheService.create();
-  final roastPackCache = await DurableRoastPackCache.create();
   final weatherRepository = OpenWeatherRepository(
     client: weatherClient,
     cacheService: weatherCache,
   );
-  final roastPackRepository = RoastPackRepository(cache: roastPackCache);
-  final localRoasts = LocalRoastController(repository: roastPackRepository);
-  // Pack initialization runs independently; an application-owned fallback is
-  // available immediately and optional updates remain disabled by default.
-  unawaited(localRoasts.initialize());
-  final roastRepository =
-      PackRoastRepository(packs: roastPackRepository, controller: localRoasts);
   final settingsRepository = await SharedPreferencesSettingsRepository.create();
   final settingsController = SettingsController(repository: settingsRepository);
   await settingsController.loadSettings();
   final locationController = await WeatherLocationController.create(
     repository: weatherRepository,
   );
-  final roastService = PersonaRoastService(controller: localRoasts);
-  final displayedRoasts = await DisplayedRoastRegistry.restore();
-  assert(() {
-    registerRoastInspector(localRoasts, displayedRoasts);
-    return true;
-  }());
   final xpService = await XpService.create();
   final achievementService = await AchievementService.create();
+  void evaluateAchievements() => achievementService.evaluate(
+        xpService.state,
+        severeWeather:
+            locationController.safetyStatus == WeatherSafetyStatus.activeAlert,
+      );
+  evaluateAchievements();
+  xpService.addListener(evaluateAchievements);
+  locationController.addListener(evaluateAchievements);
 
   final planCast = PlanCastController(weatherRepository: weatherRepository);
 
   final monetization = MonetizationController(
     config: AdConfig.fromEnvironment(),
     weather: locationController,
-    personaId: () => settingsController.selectedPersonaId,
   );
 
   // Gate-only router observation closes async presentation races for browser
@@ -86,13 +73,8 @@ void main() async {
         Provider<OpenWeatherBackendClient>.value(value: weatherClient),
         Provider<WeatherRepository>.value(value: weatherRepository),
         Provider<CacheService>.value(value: weatherCache),
-        ChangeNotifierProvider<DisplayedRoastRegistry>.value(
-            value: displayedRoasts),
-        Provider<RoastPackRepository>.value(value: roastPackRepository),
-        ChangeNotifierProvider<LocalRoastController>.value(value: localRoasts),
-        Provider<RoastRepository>.value(value: roastRepository),
+        Provider<FunRepository>.value(value: const LocalFunRepository()),
         Provider<SettingsRepository>.value(value: settingsRepository),
-        Provider<PersonaRoastService>.value(value: roastService),
         ChangeNotifierProvider<WeatherLocationController>.value(
           value: locationController,
         ),
@@ -105,8 +87,7 @@ void main() async {
       child: PlanCastLifecycle(
         controller: planCast,
         router: daymakerRouter,
-        child: RoastForegroundSync(
-            controller: localRoasts, child: const GrumpySkiesApp()),
+        child: const GrumpySkiesApp(),
       ),
     ),
   );

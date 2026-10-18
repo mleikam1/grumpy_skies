@@ -189,7 +189,7 @@ class _WeatherLocationSelectorState extends State<WeatherLocationSelector> {
           ),
           const SizedBox(height: DMSpacing.sm),
           Text(
-            'Grumpy Skies needs your location to show your local forecast, radar, alerts, and weather roasts.',
+            'Wingman Weather needs your location to show your local forecast, radar, and alerts.',
             style: DMTypography.body.copyWith(
               color: context.dmColors.textSecondary,
             ),

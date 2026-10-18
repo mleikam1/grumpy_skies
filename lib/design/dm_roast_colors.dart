@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Shared sky treatment for persona roast cards and their forecaster presentation.
-/// It follows the resolved app theme, independently of persona, mood, or weather.
+/// Existing sky palette retained for the PlanCast weather briefing.
+/// Internal token names remain stable to preserve the approved light/dark colors.
 @immutable
 class DMRoastColors extends ThemeExtension<DMRoastColors> {
   const DMRoastColors({

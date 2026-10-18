@@ -111,7 +111,6 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
         : null;
     final filter = calendarId == null ? null : {calendarId};
     final settings = context.watch<SettingsController?>();
-    final persona = settings?.selectedPersonaId ?? 'karen';
     final unit = settings?.temperatureUnit ?? TemperatureUnit.fahrenheit;
     final range =
         week ? c.summaryForRange(today, calendarFilter: filter) : null;
@@ -137,7 +136,7 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
         children: [
           _daySelectors(requestedDay),
           const SizedBox(height: DMSpacing.sm),
-          if (summary != null) _persona(c, summary, persona, unit, filter),
+          if (summary != null) _briefing(c, summary, unit, filter),
           if (range != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: DMSpacing.xs),
@@ -204,7 +203,7 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
               Text(MaterialLocalizations.of(context).formatFullDate(daily.day),
                   style: DMTypography.labelLarge),
               const SizedBox(height: DMSpacing.xs),
-              _persona(c, daily, persona, unit, filter, compact: true),
+              _briefing(c, daily, unit, filter, compact: true),
               const SizedBox(height: DMSpacing.sm),
               ..._agenda(daily, c.loading),
             ]
@@ -295,23 +294,20 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
     );
   }
 
-  Widget _persona(PlanCastController c, PlanCastDaySummary summary,
-      String persona, TemperatureUnit unit, Set<String>? filter,
+  Widget _briefing(PlanCastController c, PlanCastDaySummary summary,
+      TemperatureUnit unit, Set<String>? filter,
       {bool compact = false}) {
     final readout = c.readoutForDay(summary.day,
-        personaId: persona,
-        temperatureUnit: unit,
-        calendarFilter: filter,
-        summary: summary);
-    return PlanCastPersonaCard(
-        key: ValueKey('persona-${summary.day}-${filter?.join(',') ?? 'all'}'),
+        temperatureUnit: unit, calendarFilter: filter, summary: summary);
+    return PlanCastBriefingCard(
+        key: ValueKey('briefing-${summary.day}-${filter?.join(',') ?? 'all'}'),
         readout: readout,
         compact: compact,
         contextLabel: compact
             ? null
             : planCastDate(context, summary.day, now: c.clock().toLocal()),
         listening: _speakingDay == summary.day,
-        onListen: () => _listen(c, summary, persona, unit, filter),
+        onListen: () => _listen(c, summary, unit, filter),
         expandedContent: Text(readout.fullText, style: DMTypography.body));
   }
 
@@ -339,7 +335,7 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
       ];
 
   Future<void> _listen(PlanCastController c, PlanCastDaySummary summary,
-      String persona, TemperatureUnit unit, Set<String>? filter) async {
+      TemperatureUnit unit, Set<String>? filter) async {
     final request = ++_speechRequest;
     final stopping = _speakingDay == summary.day;
     if (_speakingDay != null) await c.stopSpeaking();
@@ -357,7 +353,6 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
     });
     try {
       final spoken = c.readoutForDay(summary.day,
-          personaId: persona,
           temperatureUnit: unit,
           calendarFilter: filter,
           summary: summary,
@@ -380,8 +375,7 @@ class _PlanCastScreenState extends State<PlanCastScreen> {
 
   Widget _connect(PlanCastController c) =>
       ListView(padding: const EdgeInsets.all(DMSpacing.lg), children: [
-        const Text('Your plans. The sky’s opinion.',
-            style: DMTypography.headingSmall),
+        const Text('Weather for your plans', style: DMTypography.headingSmall),
         const SizedBox(height: DMSpacing.md),
         const Text(planCastPrivacyExplanation),
         const SizedBox(height: DMSpacing.md),

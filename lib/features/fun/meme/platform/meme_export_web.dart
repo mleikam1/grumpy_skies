@@ -42,7 +42,8 @@ class BrowserMemeExportAdapter implements MemeExportAdapter {
   Future<MemeTransferResult> sharePng(Uint8List bytes, String fileName,
       {Rect? origin}) async {
     final data = web.ShareData(
-        files: [_file(bytes, fileName, 'image/png')].toJS, title: 'DayMaker');
+        files: [_file(bytes, fileName, 'image/png')].toJS,
+        title: 'Wingman Weather');
     try {
       if (!web.window.navigator.canShare(data)) {
         return _download(bytes, fileName, 'image/png');

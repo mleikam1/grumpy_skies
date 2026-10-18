@@ -1,4 +1,4 @@
-/// Typed registry of planned DayMaker asset paths.
+/// Typed registry of weather, creative-tool, and Wingman Weather asset paths.
 ///
 /// Some generated files may not exist yet. When these paths are used in UI,
 /// load them through fallback-aware widgets or helpers.
@@ -8,7 +8,6 @@ final class DmAssets {
   static const brand = DmBrandAssets._();
   static const backgrounds = DmBackgroundAssets._();
   static const mascots = DmMascotAssets._();
-  static const personas = DmPersonaAssets._();
   static const icons = DmIconAssets._();
   static const badges = DmBadgeAssets._();
   static const fun = DmFunIllustrationAssets._();
@@ -22,10 +21,7 @@ final class DmBrandAssets {
   const DmBrandAssets._();
 
   final String appIcon = 'assets/brand/app_icon.png';
-  final String appIconForeground = 'assets/brand/app_icon_foreground.png';
-  final String logoMark = 'assets/brand/logo_mark.png';
-  final String logoLockup = 'assets/brand/logo_lockup.png';
-  final String wordmark = 'assets/brand/wordmark.png';
+  final String logo = 'assets/brand/wingman_weather_logo.png';
 }
 
 final class DmBackgroundAssets {
@@ -34,8 +30,6 @@ final class DmBackgroundAssets {
   final DmSplashBackgroundAssets splash = const DmSplashBackgroundAssets._();
   final DmForecastBackgroundAssets forecast =
       const DmForecastBackgroundAssets._();
-  final DmRoastsBackgroundAssets roasts = const DmRoastsBackgroundAssets._();
-  final DmRevealBackgroundAssets reveal = const DmRevealBackgroundAssets._();
   final DmRadarBackgroundAssets radar = const DmRadarBackgroundAssets._();
   final DmFunBackgroundAssets fun = const DmFunBackgroundAssets._();
   final DmMemeBackgroundSceneAssets meme =
@@ -66,24 +60,6 @@ final class DmForecastBackgroundAssets {
   final String storm = 'assets/backgrounds/forecast/storm.png';
   final String wind = 'assets/backgrounds/forecast/wind.png';
   final String fog = 'assets/backgrounds/forecast/fog.png';
-}
-
-final class DmRoastsBackgroundAssets {
-  const DmRoastsBackgroundAssets._();
-
-  final String defaultScene = 'assets/backgrounds/roasts/default.png';
-  final String morning = 'assets/backgrounds/roasts/morning.png';
-  final String afternoon = 'assets/backgrounds/roasts/afternoon.png';
-  final String night = 'assets/backgrounds/roasts/night.png';
-  final String severe = 'assets/backgrounds/roasts/severe.png';
-}
-
-final class DmRevealBackgroundAssets {
-  const DmRevealBackgroundAssets._();
-
-  final String fog = 'assets/backgrounds/reveal/fog.png';
-  final String scratch = 'assets/backgrounds/reveal/scratch.png';
-  final String spotlight = 'assets/backgrounds/reveal/spotlight.png';
 }
 
 final class DmRadarBackgroundAssets {
@@ -131,41 +107,8 @@ final class DmAboutBackgroundAssets {
 final class DmMascotAssets {
   const DmMascotAssets._();
 
-  // TODO(assets): Add final DayMaker mascot poses at these exact paths.
+  // Retained non-persona weather illustration used by the existing hero.
   final String idle = 'assets/mascots/daymaker_idle.png';
-  final String happy = 'assets/mascots/daymaker_happy.png';
-  final String annoyed = 'assets/mascots/daymaker_annoyed.png';
-  final String thinking = 'assets/mascots/daymaker_thinking.png';
-  final String roasting = 'assets/mascots/daymaker_roasting.png';
-  final String umbrella = 'assets/mascots/daymaker_umbrella.png';
-  final String sleepy = 'assets/mascots/daymaker_sleepy.png';
-  final String severeAlert = 'assets/mascots/daymaker_severe_alert.png';
-}
-
-final class DmPersonaAssets {
-  const DmPersonaAssets._();
-
-  final String karenRoastQueen =
-      'assets/approved_v1/personas/karen_portrait.png';
-  final String fratBroBarometerBro =
-      'assets/approved_v1/personas/frat_bro_portrait.png';
-  final String twoYearOldTinyThunder =
-      'assets/approved_v1/personas/two_year_old_portrait.png';
-  final String politicianSpinDoctor =
-      'assets/approved_v1/personas/politician_portrait.png';
-  final String grandpaCloudHistorian =
-      'assets/approved_v1/personas/grandpa_portrait.png';
-
-  final String karen = 'assets/approved_v1/personas/karen_portrait.png';
-  final String fratBro = 'assets/approved_v1/personas/frat_bro_portrait.png';
-  final String grandpa = 'assets/approved_v1/personas/grandpa_portrait.png';
-  final String politician =
-      'assets/approved_v1/personas/politician_portrait.png';
-  final String toddler =
-      'assets/approved_v1/personas/two_year_old_portrait.png';
-  final String snarkyStorm = 'assets/personas/snarky_storm.png';
-  final String cloudyCynic = 'assets/personas/cloudy_cynic.png';
-  final String sunnySass = 'assets/personas/sunny_sass.png';
 }
 
 final class DmIconAssets {
@@ -185,7 +128,6 @@ final class DmNavIconAssets {
 
   final String home = 'assets/icons/nav/home.png';
   final String forecast = 'assets/icons/nav/forecast.png';
-  final String roasts = 'assets/icons/nav/roasts.png';
   final String radar = 'assets/icons/nav/radar.png';
   final String fun = 'assets/icons/nav/fun.png';
   final String meme = 'assets/icons/nav/meme.png';
@@ -271,7 +213,6 @@ final class DmFunIconAssets {
   final String streak = 'assets/icons/fun/streak.png';
   final String trophy = 'assets/icons/fun/trophy.png';
   final String spark = 'assets/icons/fun/spark.png';
-  final String roast = 'assets/icons/fun/roast.png';
   final String meme = 'assets/icons/fun/meme.png';
   final String quiz = 'assets/icons/fun/quiz.png';
   final String surprise = 'assets/icons/fun/surprise.png';
@@ -280,7 +221,6 @@ final class DmFunIconAssets {
 final class DmSettingsIconAssets {
   const DmSettingsIconAssets._();
 
-  final String persona = 'assets/icons/settings/persona.png';
   final String units = 'assets/icons/settings/units.png';
   final String notifications = 'assets/icons/settings/notifications.png';
   final String location = 'assets/icons/settings/location.png';
@@ -293,16 +233,10 @@ final class DmBadgeAssets {
   const DmBadgeAssets._();
 
   // TODO(assets): Add generated badge art at these exact paths.
-  final String firstRoast = 'assets/badges/first_roast.png';
   final String weekStreak = 'assets/badges/week_streak.png';
   final String monthStreak = 'assets/badges/month_streak.png';
-  final String allDayRoasts = 'assets/badges/all_day_roasts.png';
   final String severeWeather = 'assets/badges/severe_weather.png';
-  final String socialRoaster = 'assets/badges/social_roaster.png';
-  final String karenMode = 'assets/badges/karen_mode.png';
-  final String personaSwitcher = 'assets/badges/persona_switcher.png';
   final String levelFive = 'assets/badges/level_five.png';
-  final String legendaryRoaster = 'assets/badges/legendary_roaster.png';
 }
 
 final class DmFunIllustrationAssets {
@@ -315,7 +249,6 @@ final class DmFunIllustrationAssets {
   final String achievementUnlocked = 'assets/fun/achievement_unlocked.png';
   final String streakCelebration = 'assets/fun/streak_celebration.png';
   final String weatherQuiz = 'assets/fun/weather_quiz.png';
-  final String roastHistory = 'assets/fun/roast_history.png';
   final String sharePrompt = 'assets/fun/share_prompt.png';
   final String crazyDayWheel = 'assets/fun/crazy_day_wheel.png';
 }
@@ -345,7 +278,6 @@ final class DmMemeStickerAssets {
   final String thermometer = 'assets/meme_stickers/thermometer.png';
   final String sadSun = 'assets/meme_stickers/sad_sun.png';
   final String speechBubble = 'assets/meme_stickers/speech_bubble.png';
-  final String roastStamp = 'assets/meme_stickers/roast_stamp.png';
   final String warningLabel = 'assets/meme_stickers/warning_label.png';
 }
 
@@ -373,6 +305,5 @@ final class DmTextureAssets {
   final String frost = 'assets/textures/frost.png';
   final String heatHaze = 'assets/textures/heat_haze.png';
   final String cardGrain = 'assets/textures/card_grain.png';
-  final String scratchMask = 'assets/textures/scratch_mask.png';
   final String vignette = 'assets/textures/vignette.png';
 }

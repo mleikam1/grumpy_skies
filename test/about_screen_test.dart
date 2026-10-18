@@ -69,7 +69,7 @@ void main() {
     expect(finder, findsWidgets);
   }
 
-  testWidgets('About screen renders DayMaker content across breakpoints',
+  testWidgets('About screen renders Wingman Weather content across breakpoints',
       (tester) async {
     for (final size in const [
       Size(390, 844),
@@ -79,17 +79,9 @@ void main() {
       await pumpAboutScreen(tester, size: size);
 
       expect(tester.takeException(), isNull);
-      expect(find.text('About DayMaker'), findsOneWidget);
-      expect(find.text('DayMaker'), findsOneWidget);
-      expect(find.text('Weather with personality.'), findsWidgets);
-      expect(
-        find.text(
-          'A personality-driven weather app that brightens your forecast '
-          'instead of politely whispering it.',
-        ),
-        findsOneWidget,
-      );
-
+      expect(find.text('About Wingman Weather'), findsOneWidget);
+      expect(find.text('Wingman Weather'), findsOneWidget);
+      expect(find.text('We’ve got your back, in any weather.'), findsWidgets);
       await scrollUntilTextVisible(tester, 'Live Data Sources');
 
       expect(find.text('Live Data Sources'), findsOneWidget);
@@ -115,7 +107,7 @@ void main() {
   testWidgets('About back button returns to Settings', (tester) async {
     await pumpAboutScreen(tester, size: const Size(390, 844));
 
-    expect(find.text('About DayMaker'), findsOneWidget);
+    expect(find.text('About Wingman Weather'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pumpAndSettle();

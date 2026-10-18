@@ -4,16 +4,13 @@ import '../../../design/dm_colors.dart';
 import '../../../design/dm_spacing.dart';
 import '../../../design/dm_theme.dart';
 import '../../../design/dm_typography.dart';
-import '../../../shared/widgets/dm_approved_components.dart';
-import '../../../shared/widgets/dm_roast_mood_badge.dart';
-import '../../../shared/widgets/dm_roast_surface.dart';
-import '../../roasts/models/roast_persona.dart';
+import 'plancast_briefing_surface.dart';
 import '../plancast_controller.dart';
 
-/// The same approved portrait and sky surface as Today, with PlanCast copy.
+/// The existing sky surface now presents only a factual weather briefing.
 /// This widget only presents a resolved readout; it never loads weather.
-class PlanCastPersonaCard extends StatefulWidget {
-  const PlanCastPersonaCard({
+class PlanCastBriefingCard extends StatefulWidget {
+  const PlanCastBriefingCard({
     super.key,
     required this.readout,
     this.compact = false,
@@ -31,16 +28,15 @@ class PlanCastPersonaCard extends StatefulWidget {
   final String? contextLabel;
 
   @override
-  State<PlanCastPersonaCard> createState() => _PlanCastPersonaCardState();
+  State<PlanCastBriefingCard> createState() => _PlanCastBriefingCardState();
 }
 
-class _PlanCastPersonaCardState extends State<PlanCastPersonaCard> {
+class _PlanCastBriefingCardState extends State<PlanCastBriefingCard> {
   bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.dmRoastColors;
-    final persona = RoastPersonas.byId(widget.readout.personaId);
     final compact = widget.compact;
     final copy = Text(
       compact ? widget.readout.compactText : widget.readout.text,
@@ -58,54 +54,23 @@ class _PlanCastPersonaCardState extends State<PlanCastPersonaCard> {
               style: DMTypography.label.copyWith(color: colors.textSecondary)),
           const SizedBox(height: DMSpacing.xxs),
         ],
-        Text("${persona.displayName}'s take",
+        Text("Your day ahead",
             style: DMTypography.labelLarge.copyWith(
                 color: colors.textPrimary, fontWeight: FontWeight.w800)),
-        if (!compact) ...[
-          const SizedBox(height: DMSpacing.xs),
-          Wrap(spacing: DMSpacing.xs, runSpacing: DMSpacing.xxs, children: [
-            DmPersonaTitleBadge(label: persona.badgeText, colors: colors),
-            DmRoastMoodBadge(mood: widget.readout.mood, colors: colors),
-          ]),
-        ],
       ],
     );
-    return DmRoastSurface(
-      key: const ValueKey('plancast-persona-card'),
+    return PlanCastBriefingSurface(
+      key: const ValueKey('plancast-briefing-card'),
       colors: colors,
       borderRadius: BorderRadius.circular(compact ? 16 : 22),
       padding: EdgeInsets.all(compact ? DMSpacing.xs : DMSpacing.sm),
       child: LayoutBuilder(builder: (context, constraints) {
-        final reflow = !compact &&
-            (constraints.maxWidth < 285 ||
-                MediaQuery.textScalerOf(context).scale(14) > 20);
-        final portrait = DmPersonaPortrait(
-          personaId: persona.id,
-          mood: widget.readout.mood,
-          width: compact ? 48 : 64,
-          height: compact ? 64 : 84,
-          cacheWidth: compact ? 192 : 320,
-          cacheHeight: compact ? 256 : 416,
-        );
         return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                portrait,
-                const SizedBox(width: DMSpacing.sm),
-                Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        heading,
-                        if (!reflow) ...[
-                          const SizedBox(height: DMSpacing.xs),
-                          copy,
-                        ],
-                      ]),
-                ),
-              ]),
-              if (reflow) ...[const SizedBox(height: DMSpacing.sm), copy],
+              heading,
+              const SizedBox(height: DMSpacing.xs),
+              copy,
               if (widget.onListen != null ||
                   widget.expandedContent != null) ...[
                 const SizedBox(height: DMSpacing.xxs),

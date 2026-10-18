@@ -89,8 +89,6 @@ void main() {
   });
 
   test('placement content counts represent actual publisher items', () {
-    expect(hasEligibleContent(AdPlacement.roastsHistoryMrec, 3), isFalse);
-    expect(hasEligibleContent(AdPlacement.roastsHistoryMrec, 4), isTrue);
     expect(hasEligibleContent(AdPlacement.memeLibraryMrec, 5), isFalse);
     expect(hasEligibleContent(AdPlacement.memeLibraryMrec, 6), isTrue);
     expect(hasEligibleContent(AdPlacement.memeLibraryMrec, 60, sample: true),

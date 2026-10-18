@@ -409,6 +409,9 @@ class MemeDocument {
   final MemeBackground background;
   final List<MemeLayer> layers;
   final Map<String, dynamic>? weatherSnapshot;
+
+  /// Opaque legacy provenance. Retained solely to round-trip saved projects;
+  /// new documents and caption suggestions never populate this field.
   final Map<String, dynamic>? roastSnapshot;
   final String visualStyle;
   final bool watermark;
@@ -595,7 +598,7 @@ class MemeDocument {
       if (jsonEncode(roast).length > 8000 ||
           roast.keys.any((key) => !allowed.contains(key)) ||
           roast.values.any((v) => v is! String)) {
-        throw const FormatException('Invalid roast provenance.');
+        throw const FormatException('Invalid saved caption provenance.');
       }
       for (final field in ['weatherTimestamp', 'windowStart', 'windowEnd']) {
         if (roast.containsKey(field)) _date(roast, field);

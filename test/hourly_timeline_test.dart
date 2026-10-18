@@ -5,7 +5,6 @@ import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/forecast/models/hourly_timeline.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_strip.dart';
 import 'package:grumpy_skies/features/forecast/widgets/forecast_hourly_timeline.dart';
-import 'package:grumpy_skies/features/roasts/controllers/local_roast_controller.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/preview/approved_fixture.dart';
 import 'package:grumpy_skies/services/network_counters.dart';
@@ -204,8 +203,7 @@ void main() {
     }
   }
 
-  testWidgets(
-      'prepared jokes commit only visible exposure and remain stable on reopen without requests',
+  testWidgets('expanded hourly rows have no interstitials or extra requests',
       (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -218,14 +216,6 @@ void main() {
       ...ApprovedFixture.weather.toJson(),
       'hourly': hours.map((h) => h.toJson()).toList()
     });
-    final roasts = LocalRoastController();
-    await tester.runAsync(() => roasts.initialize(persist: false));
-    roasts.publishWeather(weather, weather.location);
-    addTearDown(roasts.dispose);
-    final prepared = roasts.selectHourlyTimeline(
-        persona: 'karen', hours: hours, bundle: weather, now: now);
-    expect(prepared.length, greaterThan(1));
-    expect(roasts.exposures, isEmpty);
     NetworkCounters.instance.reset();
     await tester.pumpWidget(MaterialApp(
         theme: DMTheme.light,
@@ -233,41 +223,34 @@ void main() {
             body: ForecastHourlyStrip(
                 hourly: hours,
                 weather: weather,
-                roasts: roasts,
-                personaId: 'karen',
                 referenceTime: now,
                 clock: () => now,
                 timezone: 'America/Chicago'))));
     await tester.pumpAndSettle();
-    expect(roasts.exposures, isEmpty);
-    await tester.tap(find.text('See all'));
-    await tester.pumpAndSettle();
-    expect(roasts.exposures, isNotEmpty);
-    final avatars = tester.widgetList<Image>(find.descendant(
-        of: find.byType(ForecastHourlyTimeline), matching: find.byType(Image)));
-    expect(avatars, isNotEmpty);
-    for (final avatar in avatars) {
-      expect(avatar.filterQuality, FilterQuality.medium);
-      expect(avatar.image, isA<ResizeImage>());
-      expect((avatar.image as ResizeImage).height, 42);
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.text('See all'));
+      await tester.pumpAndSettle();
+      final list = tester
+          .widget<ListView>(find.byKey(const ValueKey('hourly-timeline-list')));
+      final dates = hours
+          .map((h) => forecastDateKey(h.time, 'America/Chicago', null))
+          .toSet();
+      expect(list.childrenDelegate.estimatedChildCount,
+          hours.length + dates.length);
+      expect(find.textContaining('take'), findsNothing);
+      expect(
+          find.byWidgetPredicate((w) =>
+              w.key is ValueKey<String> &&
+              (w.key! as ValueKey<String>).value.startsWith('hourly-roast-')),
+          findsNothing);
+      await tester.tap(find.byTooltip('Close forecast'));
+      await tester.pumpAndSettle();
     }
-    expect(roasts.exposures.length, lessThan(prepared.length));
-    final visibleBefore = roasts.exposures.length;
-    await tester.pump(const Duration(seconds: 1));
-    expect(roasts.exposures.length, visibleBefore);
-    await tester.tap(find.byTooltip('Close forecast'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('See all'));
-    await tester.pumpAndSettle();
-    final reopened = roasts.selectHourlyTimeline(
-        persona: 'karen', hours: hours, bundle: weather, now: now);
-    expect(reopened.map((r) => r.selection.id),
-        prepared.map((r) => r.selection.id));
     expect(NetworkCounters.instance.snapshot, isEmpty);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('current hazard stays prominent and never records timeline humor',
+  testWidgets('current hazard stays prominent without a persona provider',
       (tester) async {
     final now = ApprovedFixture.now;
     final weather = WeatherBundle.fromJson({
@@ -280,10 +263,6 @@ void main() {
       'hourly':
           List.generate(12, (i) => hour(now.add(Duration(hours: i))).toJson()),
     });
-    final roasts = LocalRoastController();
-    await tester.runAsync(() => roasts.initialize(persist: false));
-    roasts.publishWeather(weather, weather.location);
-    addTearDown(roasts.dispose);
     final scroll = ScrollController();
     addTearDown(scroll.dispose);
     await tester.pumpWidget(MaterialApp(
@@ -293,15 +272,12 @@ void main() {
                 scrollController: scroll,
                 hourly: weather.hourly,
                 weather: weather,
-                roasts: roasts,
-                personaId: 'karen',
                 clock: () => now))));
     await tester.pumpAndSettle();
     expect(
         find.text(
             'Weather conditions need attention. Check the weather details and available official alerts.'),
         findsOneWidget);
-    expect(roasts.exposures, isEmpty);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });

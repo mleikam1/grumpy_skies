@@ -81,9 +81,9 @@ PlanCastEventWeather item(
         venueTimeZoneOffset: venueOffset,
         participation: participation);
 
-PlanCastBriefing brief(List<PlanCastEventWeather> plans, {String? opinion}) =>
+PlanCastBriefing brief(List<PlanCastEventWeather> plans) =>
     const PlanCastBriefingComposer()
-        .compose(today: plans, tomorrow: [], now: now, personaLine: opinion);
+        .compose(today: plans, tomorrow: [], now: now);
 
 Map<String, dynamic> eventNotice(PlanCastEventWeather plan,
         {bool detailed = false, DateTime? sync}) =>
@@ -226,12 +226,12 @@ void main() {
             weather: assessment(
                 coverage: ForecastCoverage.needsLocation,
                 impact: WeatherImpact.unavailable)),
-      ], opinion: 'Unjustified joke');
+      ]);
       expect(result.usableWeatherCount, 0);
       expect(result.needsLocationCount, 1);
       expect(result.text, contains('Weather coverage is not available yet'));
       expect(result.text, isNot(contains('No material')));
-      expect(result.personaLine, isNull);
+      expect(result.text, isNot(contains('One last opinion')));
       expect(result.beforeYouGo, contains('one default area'));
     });
 

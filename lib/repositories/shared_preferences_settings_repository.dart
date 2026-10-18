@@ -1,17 +1,15 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../data/daymaker_sample_data.dart';
-import '../features/roasts/models/roast_persona.dart';
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
 import 'settings_repository.dart';
+import '../services/wingman_upgrade_migration.dart';
 
 class SharedPreferencesSettingsRepository extends SettingsRepository {
   SharedPreferencesSettingsRepository(this._preferences);
 
   static const _appearanceKey = 'settings.appearance';
   static const _temperatureUnitKey = 'settings.temperatureUnit';
-  static const _selectedPersonaIdKey = 'settings.selectedPersonaId';
   static const _notificationsEnabledKey = 'settings.notificationsEnabled';
   static const _adsEnabledKey = 'settings.adsEnabled';
   static const _xpKey = 'settings.xp';
@@ -28,15 +26,12 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
 
   @override
   Future<UserSettings> loadSettings() async {
-    const defaults = DayMakerSampleData.userSettings;
+    await WingmanUpgradeMigration.run(_preferences);
+    const defaults = UserSettings.defaults;
 
     return defaults.copyWith(
       appearance: _readAppearance(),
       temperatureUnit: _readTemperatureUnit() ?? defaults.temperatureUnit,
-      selectedPersonaId: RoastPersonas.normalizeId(
-        _preferences.getString(_selectedPersonaIdKey) ??
-            defaults.selectedPersonaId,
-      ),
       notificationsEnabled: _preferences.getBool(_notificationsEnabledKey) ??
           defaults.notificationsEnabled,
       adsEnabled: _preferences.getBool(_adsEnabledKey) ?? defaults.adsEnabled,
@@ -53,10 +48,6 @@ class SharedPreferencesSettingsRepository extends SettingsRepository {
       _preferences.setString(
         _temperatureUnitKey,
         settings.temperatureUnit.name,
-      ),
-      _preferences.setString(
-        _selectedPersonaIdKey,
-        RoastPersonas.normalizeId(settings.selectedPersonaId),
       ),
       _preferences.setBool(
         _notificationsEnabledKey,

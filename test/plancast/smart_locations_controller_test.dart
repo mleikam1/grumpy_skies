@@ -87,7 +87,6 @@ void main() {
         platform: platform,
         weatherRepository: weather,
         deviceAreaService: area,
-        roastPackRepository: fixtures.FakeRoastPackRepository(),
         clock: () => fixtures.now);
     addTearDown(value.dispose);
     return value;

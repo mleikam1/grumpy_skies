@@ -9,25 +9,22 @@ import '../app/daymaker_shell.dart';
 import '../config/app_routes.dart';
 import '../design/dm_theme.dart';
 import '../features/forecast/forecast_screen.dart';
+import '../features/plancast/screens/plancast_screen.dart';
 import '../features/fun/fun_zone_screen.dart';
-import '../features/fun/meme/meme_weather.dart';
 import '../features/fun/meme/storage/meme_store.dart';
 import '../features/fun/meme_generator_screen.dart';
 import '../features/radar/radar_screen.dart';
-import '../features/roasts/advanced_roast_reveal_screen.dart';
-import '../features/roasts/content/roast_pack_repository.dart';
-import '../features/roasts/roasts_screen.dart';
 import '../features/settings/about_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../models/weather_models.dart';
 import '../models/temperature_unit.dart';
 import '../repositories/in_memory_settings_repository.dart';
-import '../repositories/roast_repository.dart';
 import '../repositories/settings_repository.dart';
+import '../repositories/fun_repository.dart';
+import '../repositories/local_fun_repository.dart';
 import '../repositories/weather_repository.dart';
 import '../services/open_weather_backend_client.dart';
-import '../services/persona_roast_service.dart';
 import '../services/settings_controller.dart';
 import '../services/weather_location_controller.dart';
 import 'approved_fixture.dart';
@@ -45,8 +42,6 @@ class ApprovedPreviewSession {
       initialSettings: UserSettings(
         appearance: appearance,
         temperatureUnit: TemperatureUnit.fahrenheit,
-        selectedPersonaId:
-            initialLocation == AppRoutes.roasts ? 'grandpa' : 'karen',
         notificationsEnabled: false,
         adsEnabled: false,
         xp: 0,
@@ -65,23 +60,9 @@ class ApprovedPreviewSession {
       httpClient: network,
       baseUrl: 'https://preview.invalid',
     );
-    if (initialLocation == AppRoutes.roastReveal) {
-      displayedRoasts.publish(
-          DisplayedRoastSnapshot(
-            id: 'preview-karen-001',
-            text: ApprovedFixture.karenQuote,
-            personaId: 'karen',
-            sourceKey: 'forecast',
-            sourceLabel: 'Today',
-            isSample: true,
-            capturedAt: ApprovedFixture.now,
-            weatherSnapshot: MemeWeather.freeze(ApprovedFixture.weather,
-                includeCity: true, isSample: true, now: ApprovedFixture.now),
-          ),
-          weather: ApprovedFixture.weather);
-    }
     router = GoRouter(
       initialLocation: initialLocation,
+      redirect: (_, state) => AppRoutes.retiredRedirect(state.uri),
       routes: [
         GoRoute(
           path: AppRoutes.splash,
@@ -99,15 +80,11 @@ class ApprovedPreviewSession {
                   ForecastScreen(clock: () => ApprovedFixture.now),
             ),
             GoRoute(
-              path: AppRoutes.roasts,
-              builder: (_, __) => RoastsScreen(
-                  isSample: true, clock: () => ApprovedFixture.now),
-              routes: [
-                GoRoute(
-                  path: 'reveal',
-                  builder: (_, __) => const AdvancedRoastRevealScreen(),
-                ),
-              ],
+              path: AppRoutes.planCast,
+              builder: (_, state) => PlanCastScreen(
+                eventId: state.uri.queryParameters['event'],
+                day: DateTime.tryParse(state.uri.queryParameters['day'] ?? ''),
+              ),
             ),
             GoRoute(
               path: AppRoutes.radar,
@@ -125,9 +102,6 @@ class ApprovedPreviewSession {
                     recoverLostImages: false,
                     initialTemplateId: state.uri.queryParameters['template'],
                     initialDocumentId: state.uri.queryParameters['document'],
-                    initialRoast: state.extra is DisplayedRoastSnapshot
-                        ? state.extra as DisplayedRoastSnapshot
-                        : null,
                   ),
                 ),
               ],
@@ -151,7 +125,6 @@ class ApprovedPreviewSession {
   final weather = ApprovedWeatherRepository();
   final network = PreviewNoNetworkClient();
   final memeStore = MemeStore(MemoryMemeBackend());
-  final displayedRoasts = DisplayedRoastRegistry();
   late final InMemorySettingsRepository settingsRepository;
   late final SettingsController settings;
   late final WeatherLocationController location;
@@ -169,17 +142,11 @@ class ApprovedPreviewSession {
         providers: [
           Provider<WeatherRepository>.value(value: weather),
           Provider<OpenWeatherBackendClient>.value(value: backend),
-          Provider<RoastRepository>.value(
-              value: const ApprovedRoastRepository()),
-          Provider<RoastPackRepository>.value(
-              value: ApprovedRoastPackRepository()),
+          Provider<FunRepository>.value(value: const LocalFunRepository()),
           Provider<SettingsRepository>.value(value: settingsRepository),
-          Provider<PersonaRoastService>.value(value: PersonaRoastService()),
           ChangeNotifierProvider<SettingsController>.value(value: settings),
           ChangeNotifierProvider<WeatherLocationController>.value(
               value: location),
-          ChangeNotifierProvider<DisplayedRoastRegistry>.value(
-              value: displayedRoasts),
         ],
         child: Builder(builder: (context) {
           final appearance = context.watch<SettingsController>().appearance;
@@ -187,7 +154,7 @@ class ApprovedPreviewSession {
             key: captureKey,
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
-              title: 'DayMaker — synthetic fixture preview',
+              title: 'Wingman Weather — synthetic fixture preview',
               theme: DMTheme.lightTheme,
               darkTheme: DMTheme.darkTheme,
               themeMode: appearance.themeMode,
@@ -209,7 +176,6 @@ class ApprovedPreviewSession {
     router.dispose();
     settings.dispose();
     location.dispose();
-    displayedRoasts.dispose();
     network.close();
   }
 }

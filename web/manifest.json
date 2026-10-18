@@ -1,11 +1,11 @@
 {
-    "name": "grumpy_skies",
-    "short_name": "grumpy_skies",
+    "name": "Wingman Weather",
+    "short_name": "Wingman Weather",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "We’ve got your back, in any weather.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

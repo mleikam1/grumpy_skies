@@ -327,7 +327,7 @@ void main() {
         (tester) async {
       final c = _Controller([_item('Tree trimming'), _item('Lunch')]);
       await pump(tester, c, const PlanCastScreen(), dark: dark, width: 390);
-      expect(find.byType(PlanCastPersonaCard), findsOneWidget);
+      expect(find.byType(PlanCastBriefingCard), findsOneWidget);
       expect(find.text('Listen'), findsOneWidget);
       expect(find.text('Less'), findsNothing);
       expect(find.textContaining('You have 2 plans'), findsNothing);
@@ -335,8 +335,8 @@ void main() {
       await tester.tap(find.text('Full readout'));
       await tester.pumpAndSettle();
       expect(find.text('Less'), findsOneWidget);
-      final card =
-          tester.widget<PlanCastPersonaCard>(find.byType(PlanCastPersonaCard));
+      final card = tester
+          .widget<PlanCastBriefingCard>(find.byType(PlanCastBriefingCard));
       expect(find.text(card.readout.fullText), findsOneWidget);
       await tester.ensureVisible(find.text('Less'));
       await tester.pumpAndSettle();

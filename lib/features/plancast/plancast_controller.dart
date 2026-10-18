@@ -7,9 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/temperature_unit.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/weather_repository.dart';
-import '../roasts/content/roast_pack_repository.dart';
-import '../roasts/content/weather_roast_models.dart';
-import '../roasts/services/local_roast_engine.dart';
 import 'calendar_repository.dart';
 import 'device_area_service.dart';
 import 'location_resolver.dart';
@@ -37,7 +34,6 @@ class PlanCastController extends ChangeNotifier {
       {required WeatherRepository weatherRepository,
       PlanCastPlatform? platform,
       CalendarRepository? calendarRepository,
-      RoastPackRepository? roastPackRepository,
       DeviceAreaService? deviceAreaService,
       SmartLocationLookup? locationLookup,
       this.locationResolver = const SmartLocationResolver(),
@@ -46,7 +42,6 @@ class PlanCastController extends ChangeNotifier {
       : platform = platform ?? PlanCastPlatform(),
         clock = clock ?? DateTime.now,
         venueWeather = VenueWeatherRepository(weatherRepository, clock: clock),
-        _roastPackRepository = roastPackRepository ?? RoastPackRepository(),
         _injectedCalendars = calendarRepository,
         deviceAreaService = deviceAreaService ??
             ForegroundDeviceAreaService(
@@ -72,7 +67,6 @@ class PlanCastController extends ChangeNotifier {
   final DateTime Function() clock;
   final VenueWeatherRepository venueWeather;
   final CalendarRepository? _injectedCalendars;
-  final RoastPackRepository _roastPackRepository;
   late final CalendarRepository calendarRepository =
       _injectedCalendars ?? DeviceCalendarRepository(platform);
   final evaluator = const EventWeatherEvaluator();
@@ -84,13 +78,10 @@ class PlanCastController extends ChangeNotifier {
   final Map<String, Set<String>> _routineReservations = {};
   final Map<String, DateTime> _reservationTimes = {};
   final Set<String> _deferredEvents = {};
-  LocalRoastEngine _roasts = LocalRoastEngine();
-  RoastPack? _pack;
   final Map<String, EventOverride> _overrides = {};
   final Map<String, WeatherBundle> _eventWeather = {};
   final Map<String, String> _eventWeatherVenueKeys = {};
   final Map<String, PlanCastBriefing> _briefings = {};
-  final Map<String, String> _opinions = {};
   final Map<String, PlanCastReadout> _readouts = {};
   // Current-day completed identity is memory-only and never used for requests.
   List<CalendarEvent> _completedEvents = const [];
@@ -200,17 +191,6 @@ class PlanCastController extends ChangeNotifier {
           'PlanCast could not load. Your normal forecast is still available.';
     }
     _notify();
-    // Local bundled content only. No external pack sync or private roast history.
-    unawaited(_loadRoasts());
-  }
-
-  Future<void> _loadRoasts() async {
-    try {
-      _pack = await _roastPackRepository.loadPack();
-      _briefings.clear();
-      _opinions.clear();
-      _notify();
-    } catch (_) {/* Humor is optional. */}
   }
 
   /// Called only by the explicit Connect action after the privacy explanation.
@@ -730,21 +710,18 @@ class PlanCastController extends ChangeNotifier {
   }
 
   PlanCastReadout readoutForDay(DateTime day,
-      {required String personaId,
-      TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit,
+      {TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit,
       Set<String>? calendarFilter,
       PlanCastDaySummary? summary,
       bool privateTitles = true}) {
     final snapshot =
         summary ?? summaryForDay(day, calendarFilter: calendarFilter);
-    final key =
-        '${snapshot.signature}|$personaId|${temperatureUnit.name}|$privateTitles';
+    final key = '${snapshot.signature}|${temperatureUnit.name}|$privateTitles';
     if (_readouts.length >= 64) _readouts.remove(_readouts.keys.first);
     return _readouts.putIfAbsent(
         key,
         () => const PlanCastReadoutComposer().compose(
             summary: snapshot,
-            personaId: personaId,
             now: clock(),
             temperatureUnit: temperatureUnit,
             privateTitles: privateTitles));
@@ -805,21 +782,17 @@ class PlanCastController extends ChangeNotifier {
   }
 
   PlanCastBriefing briefingForDay(DateTime day,
-      {String? personaLine,
-      String? persona,
-      bool? privateTitles,
+      {bool? privateTitles,
       TemperatureUnit temperatureUnit = TemperatureUnit.fahrenheit}) {
     final today = eventsForDay(day);
     final tomorrow = eventsForDay(DateTime(day.year, day.month, day.day + 1));
     final hideTitles = privateTitles ?? true;
-    final opinion = personaLine ??
-        (persona == null ? null : _opinion(today, persona, temperatureUnit));
     final signature = [...today, ...tomorrow]
         .map((e) =>
             '${e.event.id}|${e.event.title}|${e.event.startUtc}|${e.event.endUtc}|${e.event.timeZone}|${e.venueTimeZone}|${e.resolvedLocation?.signature}|${e.assessment.coverage}|${e.assessment.impact}|${e.assessment.forecastUpdatedAt}|${e.assessment.peakPrecipitationChance}|${e.assessment.explanation}')
         .join(';');
     final key =
-        '${day.year}-${day.month}-${day.day}|$hideTitles|${temperatureUnit.name}|$opinion|${planCastId(signature)}';
+        '${day.year}-${day.month}-${day.day}|$hideTitles|${temperatureUnit.name}|${planCastId(signature)}';
     if (_briefings.length > 32) _briefings.remove(_briefings.keys.first);
     return _briefings.putIfAbsent(
         key,
@@ -827,57 +800,7 @@ class PlanCastController extends ChangeNotifier {
             today: today,
             tomorrow: tomorrow,
             now: clock(),
-            personaLine: opinion,
             privateTitles: hideTitles));
-  }
-
-  String? _opinion(List<PlanCastEventWeather> day, String persona,
-      TemperatureUnit temperatureUnit) {
-    if (_pack == null || day.any((e) => e.assessment.serious)) return null;
-    final item = day
-        .where((e) =>
-            e.assessment.usable &&
-            e.assessment.coverage == ForecastCoverage.hourly)
-        .firstOrNull;
-    if (item == null) return null;
-    final weather = _eventWeather[item.event.id];
-    if (weather == null) return null;
-    final key =
-        '${item.event.id}|$persona|${item.venue == null ? '' : VenueWeatherRepository.keyFor(item.venue!)}|'
-        '${item.assessment.forecastUpdatedAt}|${item.assessment.condition}|${item.assessment.peakPrecipitationChance}|'
-        '${item.assessment.minTemperatureC}|${item.assessment.maxTemperatureC}|${item.assessment.maxWindKph}|${item.assessment.impact}';
-    // Unit changes rerender the same engine selection instead of keeping a
-    // previously cached Fahrenheit string or choosing a different punchline.
-    final opinion = _opinions.putIfAbsent('$key|${temperatureUnit.name}', () {
-      // Roast placeholders may include a city name. Never substitute a calendar
-      // venue/address there, including in a privacy-preserving spoken briefing.
-      final roastVenue = item.venue == null
-          ? null
-          : LocationCandidate(
-              name: 'this area',
-              country: '',
-              lat: item.venue!.lat,
-              lon: item.venue!.lon,
-              source: 'plancast');
-      final context = WeatherRoastContext.fromWeatherBundle(weather,
-          now: clock(),
-          temperatureUnit: temperatureUnit,
-          scope: RoastScope.hourly,
-          targetTime: item.event.startUtc,
-          targetEnd: item.event.endUtc,
-          selectedLocation: roastVenue);
-      if (context.requiresSafetyMessage) return '';
-      return _roasts
-          .select(
-              pack: _pack!,
-              context: context,
-              persona: persona,
-              type: RoastType.hourly,
-              maxLevel: RoastLevel.mild,
-              slot: key)
-          .renderedText;
-    });
-    return opinion.trim().isEmpty ? null : opinion;
   }
 
   Future<void> dismissInvitation() async {
@@ -935,7 +858,6 @@ class PlanCastController extends ChangeNotifier {
     _eventWeatherVenueKeys.clear();
     venueWeather.clear();
     _invalidateBriefings();
-    _roasts = LocalRoastEngine();
     _notify();
     // Wait for prior protected writes before deletion so a late save cannot
     // resurrect private data after disconnect.
@@ -991,7 +913,6 @@ class PlanCastController extends ChangeNotifier {
 
   void _invalidateBriefings() {
     _briefings.clear();
-    _opinions.clear();
     _readouts.clear();
   }
 

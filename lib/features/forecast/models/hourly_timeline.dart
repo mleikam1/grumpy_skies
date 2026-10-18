@@ -1,5 +1,5 @@
 import '../../../models/weather_models.dart';
-import '../../roasts/content/roast_context_adapter.dart';
+import '../../../models/weather_time.dart';
 
 /// Provider instants are the identity. Repeated DST clock labels are not duplicates.
 List<HourlyForecast> forecastTimelineHours(
@@ -14,7 +14,7 @@ List<HourlyForecast> forecastTimelineHours(
 }
 
 DateTime forecastLocalTime(DateTime time, String? timezone, int? offset) =>
-    roastLocalTime(time, timezone, offset) ?? time.toUtc();
+    weatherLocalTime(time, timezone, offset) ?? time.toUtc();
 
 bool forecastIsCurrentHour(DateTime time, DateTime now) =>
     !now.isBefore(time) && now.isBefore(time.add(const Duration(hours: 1)));

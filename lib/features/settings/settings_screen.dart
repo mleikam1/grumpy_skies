@@ -10,8 +10,6 @@ import '../../design/dm_theme.dart';
 import '../../models/app_appearance.dart';
 import '../../design/dm_spacing.dart';
 import '../../design/dm_typography.dart';
-import '../../features/roasts/models/roast_persona.dart';
-import '../../features/roasts/widgets/persona_avatar.dart';
 import '../../models/temperature_unit.dart';
 import '../../services/settings_controller.dart';
 import '../../services/weather_location_controller.dart';
@@ -171,9 +169,6 @@ class _PreferencesColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final persona =
-        RoastPersonas.byId(settings.selectedPersonaId).toDayMakerPersona();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -188,7 +183,7 @@ class _PreferencesColumn extends StatelessWidget {
             icon: Icons.thermostat_rounded,
             accentColor: DMColors.sunriseAmber,
             title: 'Forecast temperature',
-            subtitle: 'Choose how DayMaker shows every dramatic degree.',
+            subtitle: 'Choose how Wingman Weather shows temperatures.',
             child: DmSegmentedControl<TemperatureUnit>(
               semanticLabel: 'Temperature unit selector',
               selectedValue: settings.temperatureUnit,
@@ -243,19 +238,6 @@ class _PreferencesColumn extends StatelessWidget {
         ],
         SizedBox(height: gap),
         _SettingsSection(
-          title: 'Default Persona',
-          child: DmSettingsRow(
-            leading: PersonaAvatar(persona: persona, size: 56),
-            title: '${persona.name}, ${persona.badgeText}',
-            subtitle: RoastPersonas.byId(persona.id).toneDescription,
-            trailing: const _Chevron(),
-            onTap: () => context.go(AppRoutes.roasts),
-            semanticLabel:
-                'Default persona ${persona.name} ${persona.badgeText}',
-          ),
-        ),
-        SizedBox(height: gap),
-        _SettingsSection(
           title: 'Notifications',
           child: DmSettingsRow(
             icon: Icons.notifications_active_outlined,
@@ -288,7 +270,7 @@ class _PreferencesColumn extends StatelessWidget {
           child: DmSettingsRow(
             icon: Icons.event_note_outlined,
             accentColor: context.dmColors.insightIcon,
-            title: 'Your plans. The sky’s opinion.',
+            title: 'Weather for your plans',
             subtitle:
                 'Optional device calendars, briefings, and event weather.',
             trailing: const _Chevron(),
@@ -451,7 +433,7 @@ class _AppColumn extends StatelessWidget {
           child: DmSettingsRow(
             icon: Icons.info_outline_rounded,
             accentColor: DMColors.skyBlue,
-            title: 'About DayMaker',
+            title: 'About Wingman Weather',
             subtitle: 'Version, credits, and the fine print.',
             trailing: const _Chevron(),
             onTap: () => context.go(AppRoutes.about),

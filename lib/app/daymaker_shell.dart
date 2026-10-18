@@ -19,8 +19,8 @@ class DaymakerShell extends StatefulWidget {
 
   static const tabLocations = <String>[
     AppRoutes.forecast,
+    AppRoutes.planCast,
     AppRoutes.radar,
-    AppRoutes.roasts,
     AppRoutes.fun,
   ];
 
@@ -28,8 +28,8 @@ class DaymakerShell extends StatefulWidget {
   State<DaymakerShell> createState() => _DaymakerShellState();
 
   static int indexForLocation(String location) {
-    if (location.startsWith(AppRoutes.roasts)) return 2;
-    if (location.startsWith(AppRoutes.radar)) return 1;
+    if (location.startsWith(AppRoutes.planCast)) return 1;
+    if (location.startsWith(AppRoutes.radar)) return 2;
     if (location.startsWith(AppRoutes.fun)) return 3;
     if (location.startsWith(AppRoutes.settings)) return -1;
     return 0;
@@ -67,8 +67,7 @@ class _DaymakerShellState extends State<DaymakerShell> {
             ? constraints.maxWidth
             : MediaQuery.sizeOf(context).width;
         final showNavigation = !location.startsWith(AppRoutes.settings) &&
-            !location.startsWith(AppRoutes.memeGenerator) &&
-            !location.startsWith(AppRoutes.roastReveal);
+            !location.startsWith(AppRoutes.memeGenerator);
         final bottomReserve = showNavigation
             ? DmBottomNav.reservedHeightFor(context, width)
             : 0.0;

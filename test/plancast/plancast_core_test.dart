@@ -10,9 +10,7 @@ import 'package:grumpy_skies/features/plancast/plancast_controller.dart';
 import 'package:grumpy_skies/features/plancast/plancast_notification_planner.dart';
 import 'package:grumpy_skies/features/plancast/platform/plancast_platform.dart';
 import 'package:grumpy_skies/features/plancast/venue_weather_repository.dart';
-import 'package:grumpy_skies/features/roasts/content/roast_context_adapter.dart';
-import 'package:grumpy_skies/features/roasts/content/roast_pack_repository.dart';
-import 'package:grumpy_skies/features/roasts/content/weather_roast_models.dart';
+import 'package:grumpy_skies/models/weather_time.dart';
 import 'package:grumpy_skies/models/temperature_unit.dart';
 import 'package:grumpy_skies/models/weather_models.dart';
 import 'package:grumpy_skies/repositories/weather_repository.dart';
@@ -154,10 +152,10 @@ void main() {
           event(location: ' 123  old st ').recurringKey);
     });
     test('fall-back duplicate clock hours keep distinct UTC instants', () {
-      final first = roastLocalTime(
+      final first = weatherLocalTime(
           DateTime.utc(2026, 11, 1, 6, 30), 'America/Chicago', null,
           forecast: true)!;
-      final second = roastLocalTime(
+      final second = weatherLocalTime(
           DateTime.utc(2026, 11, 1, 7, 30), 'America/Chicago', null,
           forecast: true)!;
       expect(first.hour, 1);
@@ -688,7 +686,7 @@ void main() {
       expect(c.eventsForDay(tomorrow).single.event.nativeId, 'tomorrow');
       expect(w.requests, 1);
     });
-    test('persona units rerender locally and never expose private venue names',
+    test('briefing variants stay local and never expose private venue names',
         () async {
       final p = FakePlatform()
         ..records = [
@@ -699,38 +697,31 @@ void main() {
           }
         ];
       // The shared evaluator fixture has deliberately severe current wind;
-      // use benign current conditions when testing optional persona rendering.
+      // use benign current conditions when testing factual briefing rendering.
       final w = FakeWeather()..result = weather(currentWindKph: 10);
       final c = PlanCastController(
-          weatherRepository: w,
-          platform: p,
-          roastPackRepository: FakeRoastPackRepository(),
-          clock: () => now);
+          weatherRepository: w, platform: p, clock: () => now);
       addTearDown(c.dispose);
       await c.connect();
       await c.selectCalendars({'work'});
       await Future<void>.delayed(Duration.zero);
-      final fahrenheit = c.briefingForDay(now, persona: 'karen');
-      final celsius = c.briefingForDay(now,
-          persona: 'karen', temperatureUnit: TemperatureUnit.celsius);
-      expect(fahrenheit.personaLine, 'At this area: 68°F. Same opinion.');
-      expect(celsius.personaLine, 'At this area: 20°C. Same opinion.');
+      final fahrenheit = c.briefingForDay(now);
+      final celsius =
+          c.briefingForDay(now, temperatureUnit: TemperatureUnit.celsius);
+      expect(fahrenheit.text, celsius.text);
+      expect(fahrenheit.text, isNot(contains('One last opinion')));
       expect(celsius.text, isNot(contains('Private medical')));
       expect(
-          identical(
-              celsius,
-              c.briefingForDay(now,
-                  persona: 'karen', temperatureUnit: TemperatureUnit.celsius)),
+          identical(celsius,
+              c.briefingForDay(now, temperatureUnit: TemperatureUnit.celsius)),
           isTrue);
-      expect(identical(fahrenheit, c.briefingForDay(now, persona: 'karen')),
-          isTrue);
+      expect(identical(fahrenheit, c.briefingForDay(now)), isTrue);
       expect(w.requests, 1);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getKeys().where((key) => key.contains('roast')), isEmpty);
       expect(p.stored, isNot(contains('Same opinion')));
     });
-    test('newer local roast safety gate suppresses optional PlanCast humor',
-        () async {
+    test('briefing uses future event facts rather than current wind', () async {
       final p = FakePlatform()
         ..records = [
           {
@@ -739,18 +730,15 @@ void main() {
           }
         ];
       final c = PlanCastController(
-          weatherRepository: FakeWeather(),
-          platform: p,
-          roastPackRepository: FakeRoastPackRepository(),
-          clock: () => now);
+          weatherRepository: FakeWeather(), platform: p, clock: () => now);
       addTearDown(c.dispose);
       await c.connect();
       await c.selectCalendars({'work'});
       await Future<void>.delayed(Duration.zero);
       // Future event facts do not borrow the current 100 km/h observation,
-      // while the existing roast system conservatively suppresses its humor.
+      // and the factual briefing does not add an unrelated current warning.
       expect(c.currentEvents.single.assessment.serious, isFalse);
-      expect(c.briefingForDay(now, persona: 'karen').personaLine, isNull);
+      expect(c.briefingForDay(now).text, isNot(contains('100')));
     });
     test(
         'permission revoked during calendar read purges before publication or persistence',
@@ -983,15 +971,12 @@ void main() {
               weather: null,
               now: now,
               hasLocation: false));
-      final briefing = const PlanCastBriefingComposer().compose(
-          today: [severe, missing],
-          tomorrow: [],
-          now: now,
-          personaLine: 'A joke');
+      final briefing = const PlanCastBriefingComposer()
+          .compose(today: [severe, missing], tomorrow: [], now: now);
       expect(briefing.needsLocationCount, 1);
       expect(briefing.usableWeatherCount, 1);
       expect(briefing.text, isNot(contains('Private medical')));
-      expect(briefing.personaLine, isNull);
+      expect(briefing.text, isNot(contains('One last opinion')));
     });
     test(
         'initialization never requests permission; connect never selects calendars',
@@ -1178,30 +1163,4 @@ class FakeWeather extends WeatherRepository {
   Future<List<RadarAlert>> getRadarAlerts(
           {required double latitude, required double longitude}) async =>
       [];
-}
-
-class FakeRoastPackRepository extends RoastPackRepository {
-  @override
-  Future<RoastPack> loadPack({
-    RoastRemoteConfig remoteConfig = RoastRemoteConfig.disabled,
-    int appBuildNumber = 1,
-  }) async =>
-      RoastPack(
-          schemaVersion: 1,
-          packVersion: 'plancast-test',
-          generatedAt: now,
-          personas: const [
-            'karen'
-          ],
-          roasts: const [
-            RoastLine(
-                id: 'plancast-unit-line',
-                persona: 'karen',
-                type: RoastType.hourly,
-                tags: [WeatherRoastTag.fallback],
-                dayparts: [Daypart.any],
-                level: RoastLevel.mild,
-                weight: 1,
-                text: 'At {city}: {temp}{temp_unit}. Same opinion.')
-          ]);
 }

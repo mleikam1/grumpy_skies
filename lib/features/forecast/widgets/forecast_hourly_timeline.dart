@@ -10,11 +10,6 @@ import '../../../models/weather_safety.dart';
 import '../../../services/settings_controller.dart';
 import '../../../shared/widgets/active_viewport.dart';
 import '../../../shared/widgets/daymaker_weather_icon.dart';
-import '../../../shared/widgets/dm_approved_components.dart';
-import '../../roasts/controllers/local_roast_controller.dart';
-import '../../roasts/content/roast_context_adapter.dart';
-import '../../roasts/content/weather_roast_models.dart';
-import '../../roasts/models/roast_persona.dart';
 import '../models/hourly_timeline.dart';
 import 'forecast_temperature.dart';
 
@@ -25,8 +20,6 @@ class ForecastHourlyTimeline extends StatefulWidget {
     required this.scrollController,
     required this.hourly,
     this.weather,
-    this.roasts,
-    this.personaId,
     this.timezone,
     this.timezoneOffset,
     this.clock,
@@ -35,8 +28,6 @@ class ForecastHourlyTimeline extends StatefulWidget {
   final ScrollController scrollController;
   final List<HourlyForecast> hourly;
   final WeatherBundle? weather;
-  final LocalRoastController? roasts;
-  final String? personaId;
   final String? timezone;
   final int? timezoneOffset;
   final DateTime Function()? clock;
@@ -47,19 +38,15 @@ class ForecastHourlyTimeline extends StatefulWidget {
 
 class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
     with WidgetsBindingObserver {
-  LocalRoastController? _roasts;
   SettingsController? _settings;
   Timer? _freshnessTimer;
   List<HourlyForecast> _hours = [];
-  List<HourlyTimelineRoast> _jokes = [];
   List<_TimelineEntry> _entries = [];
-  final _seen = <String>{};
   late DateTime _now;
   TemperatureUnit _unit = TemperatureUnit.fahrenheit;
-  String _persona = RoastPersonas.defaultPersona.id;
 
   DateTime get _clock => (widget.clock ?? DateTime.now)();
-  WeatherBundle? get _weather => _roasts?.weather ?? widget.weather;
+  WeatherBundle? get _weather => widget.weather;
   String? get _timezone => _weather?.current.timezone ?? widget.timezone;
   int? get _offset => _weather?.current.timezoneOffset ?? widget.timezoneOffset;
 
@@ -72,13 +59,7 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final roasts = widget.roasts ?? context.read<LocalRoastController?>();
     final settings = context.read<SettingsController?>();
-    if (!identical(_roasts, roasts)) {
-      _roasts?.removeListener(_changed);
-      _roasts = roasts;
-      _roasts?.addListener(_changed);
-    }
     if (!identical(_settings, settings)) {
       _settings?.removeListener(_changed);
       _settings = settings;
@@ -106,22 +87,7 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
   void _prepare() {
     _now = _clock;
     _unit = _settings?.temperatureUnit ?? TemperatureUnit.fahrenheit;
-    _persona = _settings?.selectedPersonaId ??
-        widget.personaId ??
-        RoastPersonas.defaultPersona.id;
     _hours = forecastTimelineHours(_weather?.hourly ?? widget.hourly, _now);
-    _jokes = _roasts?.selectHourlyTimeline(
-          persona: _persona,
-          hours: _hours,
-          bundle: _weather,
-          now: _now,
-          unit: _unit,
-        ) ??
-        const [];
-    final jokesByTime = {
-      for (final joke in _jokes)
-        joke.targetTime.toUtc().millisecondsSinceEpoch: joke
-    };
     _entries = [];
     String? previousDate;
     for (final hour in _hours) {
@@ -130,8 +96,6 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
         _entries.add(_TimelineEntry.date(hour.time));
         previousDate = date;
       }
-      final joke = jokesByTime[hour.time.toUtc().millisecondsSinceEpoch];
-      if (joke != null) _entries.add(_TimelineEntry.roast(joke));
       _entries.add(_TimelineEntry.hour(hour));
     }
   }
@@ -145,25 +109,9 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
     }
   }
 
-  void _expose(HourlyTimelineRoast joke, bool active) {
-    if (!active || _roasts == null) return;
-    final selection = joke.selection;
-    final key =
-        selection.selectionId ?? '${joke.targetTime.toUtc()}:${selection.id}';
-    if (_seen.contains(key)) return;
-    if (!_roasts!.isSelectionEligible(selection,
-        bundle: _weather, now: _clock, unit: _unit)) {
-      _changed();
-      return;
-    }
-    _seen.add(key);
-    _roasts!.commitDisplayed(selection);
-  }
-
   @override
   void dispose() {
     _freshnessTimer?.cancel();
-    _roasts?.removeListener(_changed);
     _settings?.removeListener(_changed);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -178,9 +126,7 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
             const <WeatherAlert>[];
     final safetyMessage = safety == WeatherSafetyStatus.activeAlert
         ? '${alerts.map((alert) => alert.event).join(' · ')}. Read the official alert details on Today and follow local guidance.'
-        : weather != null &&
-                WeatherRoastContext.fromWeatherBundle(weather, now: _now)
-                    .requiresSafetyMessage
+        : weather != null && weatherNeedsAttention(weather, _now)
             ? 'Weather conditions need attention. Check the weather details and available official alerts.'
             : null;
     return ActiveViewport(
@@ -208,19 +154,6 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: context.dmColors.textSecondary)),
-            );
-          }
-          final joke = entry.joke;
-          if (joke != null) {
-            return ActiveViewport(
-              key: ValueKey(
-                  'hourly-roast-${joke.targetTime.toUtc().millisecondsSinceEpoch}-${joke.selection.selectionId ?? joke.selection.id}'),
-              minimumVisibleFraction: .5,
-              onActiveChanged: (active) => _expose(joke, active),
-              child: _HourlyRoastCard(
-                  joke: joke,
-                  timeLabel:
-                      forecastHourLabel(joke.targetTime, _timezone, _offset)),
             );
           }
           final hour = entry.hour!;
@@ -256,18 +189,10 @@ class _ForecastHourlyTimelineState extends State<ForecastHourlyTimeline>
 }
 
 class _TimelineEntry {
-  const _TimelineEntry.hour(this.hour)
-      : date = null,
-        joke = null;
-  const _TimelineEntry.date(this.date)
-      : hour = null,
-        joke = null;
-  const _TimelineEntry.roast(this.joke)
-      : hour = null,
-        date = null;
+  const _TimelineEntry.hour(this.hour) : date = null;
+  const _TimelineEntry.date(this.date) : hour = null;
   final HourlyForecast? hour;
   final DateTime? date;
-  final HourlyTimelineRoast? joke;
 }
 
 class _HourlyDetailRow extends StatelessWidget {
@@ -297,12 +222,12 @@ class _HourlyDetailRow extends StatelessWidget {
     final temperature = hour.temperatureKnown && hour.temperatureC.isFinite
         ? forecastTemperature(hour.temperatureC, unit)
         : '—';
-    final severe = roastWeatherTags(
+    final severe = weatherConditionsNeedAttention(
       code: hour.weatherId,
       tempF: hour.temperatureKnown && hour.temperatureC.isFinite
           ? hour.temperatureF.round()
           : null,
-    ).contains(WeatherRoastTag.severe);
+    );
     final details =
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(hour.condition.isEmpty ? 'Condition unavailable' : hour.condition,
@@ -368,51 +293,6 @@ class _HourlyDetailRow extends StatelessWidget {
         ]),
         if (largeText)
           Padding(padding: const EdgeInsets.only(top: 8), child: details),
-      ]),
-    );
-  }
-}
-
-class _HourlyRoastCard extends StatelessWidget {
-  const _HourlyRoastCard({required this.joke, required this.timeLabel});
-  final HourlyTimelineRoast joke;
-  final String timeLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final selection = joke.selection;
-    final colors = context.dmColors;
-    final name = RoastPersonas.byId(selection.persona).displayName;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: colors.surfaceSecondary,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.border)),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        DmPersonaPortrait(
-            personaId: selection.persona,
-            mood: selection.mood,
-            width: 38,
-            height: 42,
-            cacheHeight: (42 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-            filterQuality: FilterQuality.medium),
-        const SizedBox(width: 10),
-        Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('$name’s take · $timeLabel',
-              style: TextStyle(
-                  fontSize: 11,
-                  height: 1.35,
-                  fontWeight: FontWeight.w700,
-                  color: colors.textSecondary)),
-          const SizedBox(height: 4),
-          Text(selection.renderedText,
-              style: const TextStyle(
-                  fontSize: 14, height: 1.4, fontWeight: FontWeight.w600)),
-        ])),
       ]),
     );
   }

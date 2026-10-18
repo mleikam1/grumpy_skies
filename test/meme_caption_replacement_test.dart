@@ -4,10 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 import 'package:grumpy_skies/design/dm_theme.dart';
 import 'package:grumpy_skies/features/fun/meme/meme_catalog.dart';
-import 'package:grumpy_skies/features/fun/meme/meme_weather.dart';
 import 'package:grumpy_skies/features/fun/meme/rendering/meme_renderer.dart';
 import 'package:grumpy_skies/features/fun/meme/storage/meme_store.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_document_canvas.dart';
@@ -46,23 +44,10 @@ void main() {
     ]);
     final store = MemeStore(MemoryMemeBackend());
     await store.save(saved);
-    final registry = DisplayedRoastRegistry()
-      ..publish(DisplayedRoastSnapshot(
-        id: 'displayed_roast_42',
-        text: 'Exact displayed roast, with Mixed Case ☁',
-        personaId: 'grandpa',
-        sourceKey: 'forecast',
-        sourceLabel: 'Home',
-        isSample: false,
-        weatherSnapshot: const {'source': 'cached', 'temperature': 22},
-      ));
-    addTearDown(registry.dispose);
     await tester.runAsync(() async {
       await loadMemeFonts();
-      await tester.pumpWidget(ChangeNotifierProvider.value(
-          value: registry,
-          child: MaterialApp(
-              theme: DMTheme.light, home: MemeGeneratorScreen(store: store))));
+      await tester.pumpWidget(MaterialApp(
+          theme: DMTheme.light, home: MemeGeneratorScreen(store: store)));
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     for (var attempt = 0; attempt < 40; attempt++) {
@@ -116,41 +101,24 @@ void main() {
         isNot(before['layers'][0]['text']));
   });
 
-  testWidgets(
-      'reopened custom captions require confirmation before exact roast transfer',
+  testWidgets('reopened project has no retired caption transfer or selector',
       (tester) async {
     final canvas = await reopen(tester);
-    final before = canvas.editor.document.toJson();
-    await tester.tap(find.text('Use Current Roast'));
-    await _settle(tester);
-    await tester.tap(find.text('Exact displayed roast, with Mixed Case ☁'));
-    await _settle(tester);
-    expect(find.text('Use this roast?'), findsOneWidget);
-    expect(canvas.editor.document.toJson(), before);
-    await tester.tap(find.text('Keep editing'));
-    await _settle(tester);
-    expect(canvas.editor.document.toJson(), before);
-    await tester.tap(find.text('Use Current Roast'));
-    await _settle(tester);
-    await tester.tap(find.text('Exact displayed roast, with Mixed Case ☁'));
-    await _settle(tester);
-    await tester.tap(find.text('Replace'));
-    await _settle(tester);
-    expect(canvas.editor.document.layers.last.text,
-        'Exact displayed roast, with Mixed Case ☁');
-    expect(canvas.editor.document.personaId, 'grandpa');
-    expect(canvas.editor.document.weatherSnapshot!['temperature'], 22);
+    expect(
+        canvas.editor.document.layers.first.text, 'My carefully written setup');
+    expect(find.text('Use Current Roast'), findsNothing);
+    expect(find.text('Speaking persona'), findsNothing);
   });
 
   testWidgets(
-      'locked caption refuses both replacement actions without changing pair or weather',
+      'locked caption refuses replacement without changing pair or weather',
       (tester) async {
     final canvas = await reopen(tester);
     canvas.editor
         .updateLayer(canvas.editor.document.layers.last.copyWith(locked: true));
     await tester.pump();
     final before = canvas.editor.document.toJson();
-    for (final action in ['Reroll Caption', 'Use Current Roast']) {
+    for (final action in ['Reroll Caption']) {
       await tester.tap(find.text(action));
       await _settle(tester);
       expect(

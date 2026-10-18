@@ -178,7 +178,7 @@ void main() {
     final base = tiles.first;
     expect(base.urlTemplate, 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
     expect(base.panBuffer, 0);
-    expect(base.tileProvider.headers['User-Agent'], contains('DayMaker'));
+    expect(base.tileProvider.headers['User-Agent'], contains('WingmanWeather'));
     expect(
         tiles.skip(1).every(
             (tile) => tile.urlTemplate!.startsWith('https://radar.test/')),

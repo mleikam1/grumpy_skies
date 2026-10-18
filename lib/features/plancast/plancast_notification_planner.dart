@@ -91,7 +91,7 @@ class PlanCastNotificationPlanner {
         notices.add(notice(
             planCastId('morning|${dayKey(day)}'),
             morning,
-            'Your plans. The sky’s opinion. Open PlanCast to refresh your day.',
+            'Weather for your plans. Open PlanCast to refresh your day.',
             '/plancast?day=${dayKey(day)}'));
       }
     }

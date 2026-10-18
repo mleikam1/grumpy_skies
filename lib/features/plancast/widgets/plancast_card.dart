@@ -9,7 +9,6 @@ import '../../../config/app_routes.dart';
 import '../../../design/dm_typography.dart';
 import '../../../shared/widgets/daymaker_components.dart';
 import '../../../services/settings_controller.dart';
-import '../../roasts/models/roast_persona.dart';
 import '../plancast_controller.dart';
 import '../screens/plancast_screen.dart';
 import 'plancast_presentation.dart';
@@ -26,13 +25,12 @@ class PlanCastCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final settings = context.watch<SettingsController?>();
-    final persona = RoastPersonas.normalizeId(settings?.selectedPersonaId);
     final unit = settings?.temperatureUnit ?? TemperatureUnit.fahrenheit;
     final today = controller.clock().toLocal();
     final summary = controller.summaryForDay(today);
     final items = summary.events;
     final readout = controller.readoutForDay(today,
-        personaId: persona, temperatureUnit: unit, summary: summary);
+        temperatureUnit: unit, summary: summary);
     void open() => context.push(AppRoutes.planCast);
     return DmGlassCard(
       key: const ValueKey('plancast-card'),
@@ -56,7 +54,7 @@ class PlanCastCard extends StatelessWidget {
                           .copyWith(color: context.dmColors.textSecondary)),
               ]),
               const SizedBox(height: DMSpacing.xxs),
-              Text('Your plans. The sky’s opinion.',
+              Text('Weather for your plans',
                   style: DMTypography.bodySmall
                       .copyWith(color: context.dmColors.textSecondary)),
             ]),
@@ -87,7 +85,7 @@ class PlanCastCard extends StatelessWidget {
         ] else if (controller.loading && items.isEmpty) ...[
           const PlanCastLoadingPreview(compact: true),
         ] else ...[
-          PlanCastPersonaCard(readout: readout, compact: true),
+          PlanCastBriefingCard(readout: readout, compact: true),
           const SizedBox(height: DMSpacing.sm),
           PlanCastSummaryRow(summary: summary, compact: true),
           if (controller.loading)

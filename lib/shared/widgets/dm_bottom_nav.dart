@@ -32,11 +32,11 @@ class DmBottomNav extends StatelessWidget {
         icon: Icons.wb_sunny_outlined,
         semanticLabel: 'Today tab'),
     DmBottomNavItem(
-        label: 'Radar', icon: Icons.radar, semanticLabel: 'Radar tab'),
+        label: 'PlanCast',
+        icon: Icons.event_note_outlined,
+        semanticLabel: 'PlanCast tab'),
     DmBottomNavItem(
-        label: 'Roasts',
-        icon: Icons.local_fire_department_outlined,
-        semanticLabel: 'Roasts tab'),
+        label: 'Radar', icon: Icons.radar, semanticLabel: 'Radar tab'),
     DmBottomNavItem(
         label: 'Fun',
         icon: Icons.emoji_emotions_outlined,
@@ -46,10 +46,49 @@ class DmBottomNav extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final List<DmBottomNavItem> items;
 
-  static double reservedHeightFor(BuildContext context, double width) =>
-      MediaQuery.paddingOf(context).bottom +
-      70 +
-      (MediaQuery.textScalerOf(context).scale(11) - 11).clamp(0, 22);
+  static TextStyle _labelMeasureStyle(BuildContext context) =>
+      (Theme.of(context).textTheme.bodyMedium ?? const TextStyle()).copyWith(
+        fontSize: 11,
+        height: 1.2,
+        fontWeight: FontWeight.w700,
+      );
+
+  static String _labelForWidth(
+      BuildContext context, DmBottomNavItem item, double width) {
+    if (item.label != 'PlanCast') return item.label;
+    final painter = TextPainter(
+      text: TextSpan(text: item.label, style: _labelMeasureStyle(context)),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final needsWrap = painter.width > width;
+    painter.dispose();
+    return needsWrap ? 'Plan\nCast' : item.label;
+  }
+
+  static double reservedHeightFor(BuildContext context, double width) {
+    // The longer PlanCast label can wrap at large accessibility sizes. Reserve
+    // its actual height so the bar never covers the page's last content row.
+    final barWidth = (width - 20).clamp(1.0, 600.0);
+    final labelWidth = ((barWidth - _barInset * 2) / defaultItems.length - 8)
+        .clamp(1.0, double.infinity);
+    var labelHeight = 0.0;
+    for (final item in defaultItems) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: _labelForWidth(context, item, labelWidth),
+          style: _labelMeasureStyle(context),
+        ),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+      )..layout(maxWidth: labelWidth);
+      if (painter.height > labelHeight) labelHeight = painter.height;
+      painter.dispose();
+    }
+    final itemHeight = (24 + 3 + labelHeight + 12).clamp(52.0, double.infinity);
+    return MediaQuery.paddingOf(context).bottom +
+        (itemHeight + _barInset * 2 + 10).ceilToDouble();
+  }
 
   BorderRadius _itemRadius(int index, TextDirection direction) {
     // Keep the end selection concentric with the bar's inset rounded edge.
@@ -119,7 +158,14 @@ class DmBottomNav extends StatelessWidget {
                                                         .navSelectedForeground
                                                     : colors.navInactive),
                                             const SizedBox(height: 3),
-                                            Text(items[index].label,
+                                            LayoutBuilder(
+                                              builder: (context, constraints) =>
+                                                  Text(
+                                                _labelForWidth(
+                                                    context,
+                                                    items[index],
+                                                    constraints.maxWidth),
+                                                textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                     fontSize: 11,
                                                     height: 1.2,
@@ -130,7 +176,9 @@ class DmBottomNav extends StatelessWidget {
                                                     color: index == currentIndex
                                                         ? colors
                                                             .navSelectedForeground
-                                                        : colors.navInactive)),
+                                                        : colors.navInactive),
+                                              ),
+                                            ),
                                           ]),
                                     ),
                                   )),

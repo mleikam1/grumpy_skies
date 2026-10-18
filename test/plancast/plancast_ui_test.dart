@@ -260,7 +260,7 @@ void main() {
     expect(
         find.textContaining('An offline voice is unavailable'), findsOneWidget);
     expect(device.spoken, isNot(contains('private appointment')));
-    expect(find.byType(PlanCastPersonaCard), findsOneWidget);
+    expect(find.byType(PlanCastBriefingCard), findsOneWidget);
   });
 
   testWidgets('notification denial cannot disconnect calendars',

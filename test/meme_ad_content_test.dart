@@ -4,8 +4,6 @@ import 'package:grumpy_skies/features/fun/meme/meme_catalog.dart';
 import 'package:grumpy_skies/features/fun/meme/meme_completion.dart';
 import 'package:grumpy_skies/features/fun/meme/models/meme_document.dart';
 import 'package:grumpy_skies/features/fun/meme/widgets/meme_library.dart';
-import 'package:grumpy_skies/features/roasts/widgets/roast_history_list.dart';
-import 'package:grumpy_skies/models/daymaker_models.dart' show Roast;
 import 'package:grumpy_skies/monetization/ad_placement.dart';
 import 'package:grumpy_skies/monetization/widgets/ad_section.dart';
 
@@ -40,8 +38,7 @@ void main() {
             body: MemeLibrary(
       catalog: MemeCatalog(
           templates: catalog.templates.take(count).toList(),
-          stickers: catalog.stickers,
-          personaCaptions: catalog.personaCaptions),
+          stickers: catalog.stickers),
       drafts: const [],
       favorites: const {},
       onTemplate: select ?? (_) {},
@@ -111,49 +108,6 @@ void main() {
   testWidgets('five actual publisher templates cannot create a slot',
       (tester) async {
     await showLibrary(tester, count: 5);
-    expect(find.byType(AdSection), findsNothing);
-  });
-
-  Future<void> showRoasts(WidgetTester tester, int count,
-      {bool actual = true, bool emptyText = false}) async {
-    await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-            body: SingleChildScrollView(
-                child: RoastHistoryList(
-                    containsActualContent: actual,
-                    roasts: List.generate(
-                        count,
-                        (i) => Roast(
-                            id: 'real-$i',
-                            personaId: 'karen',
-                            weatherSnapshotId: 'weather-$i',
-                            text: emptyText
-                                ? ''
-                                : 'Actual weather commentary number $i.',
-                            category: 'weather',
-                            createdAt: DateTime.utc(2026, 9, 17),
-                            xpReward: 0)),
-                    personas: const [],
-                    onShareRoast: (_) {})))));
-    await tester.pumpAndSettle();
-  }
-
-  testWidgets('roast minimum counts real complete text cards only',
-      (tester) async {
-    await showRoasts(tester, 3);
-    expect(find.byType(AdSection), findsNothing);
-    await showRoasts(tester, 4);
-    final ad = tester.widget<AdSection>(find.byType(AdSection));
-    expect(ad.placement, AdPlacement.roastsHistoryMrec);
-    expect(ad.contentCount, 4);
-    expect(
-        tester.getTopLeft(find.byType(AdSection)).dy,
-        greaterThan(tester
-            .getTopLeft(find.text('Actual weather commentary number 3.'))
-            .dy));
-    await showRoasts(tester, 8, actual: false);
-    expect(find.byType(AdSection), findsNothing);
-    await showRoasts(tester, 8, emptyText: true);
     expect(find.byType(AdSection), findsNothing);
   });
 }

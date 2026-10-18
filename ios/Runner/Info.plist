@@ -12,7 +12,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Grumpy Skies</string>
+	<string>Wingman Weather</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -20,7 +20,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>grumpy_skies</string>
+	<string>Wingman Weather</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -34,7 +34,7 @@
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>WeatherRadar</key>
-		<string>Grumpy Skies uses your approximate location to center live weather and radar.</string>
+		<string>Wingman Weather uses your approximate location to center live weather and radar.</string>
 	</dict>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>PlanCast reads only your selected device calendars to match plans with weather. iOS requires full calendar access to read existing events; PlanCast never changes them.</string>
@@ -45,13 +45,13 @@
 	<key>UIBackgroundModes</key>
 	<array><string>fetch</string></array>
 	<key>NSCameraUsageDescription</key>
-	<string>DayMaker uses the camera only when you choose to take a photo for your meme.</string>
+	<string>Wingman Weather uses the camera only when you choose to take a photo for your meme.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>DayMaker lets you choose a photo to edit locally in your meme.</string>
+	<string>Wingman Weather lets you choose a photo to edit locally in your meme.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>DayMaker saves your finished meme to Photos when you tap Save Image.</string>
+	<string>Wingman Weather saves your finished meme to Photos when you tap Save Image.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Grumpy Skies uses your location to show local weather, radar, alerts, and forecasts.</string>
+	<string>Wingman Weather uses your location to show local weather, radar, alerts, and forecasts.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

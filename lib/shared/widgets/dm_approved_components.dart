@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/app_routes.dart';
+import '../../config/wingman_brand.dart';
 import '../../design/dm_theme.dart';
-import '../../features/roasts/models/roast_persona.dart';
-import '../../features/roasts/models/roast_mood.dart';
-import '../assets/persona_emotion_assets.dart';
+import 'wingman_logo.dart';
 
 /// Shared geometry for the approved light layout and its dark surface treatment.
 class DmPageHeader extends StatelessWidget {
@@ -23,24 +22,25 @@ class DmPageHeader extends StatelessWidget {
                 : context.go(AppRoutes.forecast),
             icon: const Icon(Icons.arrow_back_rounded),
           ),
-        if (title == null) ...[
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-                color: context.dmColors.primary, shape: BoxShape.circle),
-            child: Icon(Icons.wb_sunny_outlined,
-                size: 25, color: context.dmColors.onPrimary),
-          ),
-          const SizedBox(width: 8),
+        if (title == null)
           Expanded(
-              child: Text('daymaker.',
-                  style: TextStyle(
-                      fontSize: 27,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -1.2,
-                      color: context.dmColors.textPrimary))),
-        ] else
+              child: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const WingmanLogo(),
+                const SizedBox(height: 4),
+                Text(WingmanBrand.headerTagline,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        height: 1.3,
+                        color: context.dmColors.textSecondary)),
+              ],
+            ),
+          ))
+        else
           Expanded(
               child: Text(title!,
                   style: const TextStyle(
@@ -84,62 +84,6 @@ class DmApprovedSectionHeader extends StatelessWidget {
                 const Icon(Icons.chevron_right, size: 18)
               ])),
       ]);
-}
-
-class DmPersonaPortrait extends StatelessWidget {
-  const DmPersonaPortrait({
-    super.key,
-    required this.personaId,
-    this.mood,
-    this.width,
-    this.height,
-    this.cacheWidth,
-    this.cacheHeight,
-    this.filterQuality = FilterQuality.high,
-  });
-  final String personaId;
-  final RoastMood? mood;
-  final double? width;
-  final double? height;
-
-  /// Optional physical-pixel decode dimensions for compact uses such as avatars.
-  /// Leaving them unset preserves the existing full-resolution hero behavior.
-  final int? cacheWidth;
-  final int? cacheHeight;
-  final FilterQuality filterQuality;
-
-  static String pathFor(String id, {RoastMood? mood}) => mood == null
-      ? PersonaEmotionAssets.legacyPortrait(id)
-      : PersonaEmotionAssets.path(id, mood);
-
-  @override
-  Widget build(BuildContext context) {
-    final paths = PersonaEmotionAssets.fallbacks(personaId, mood);
-    Widget portrait(int index) => Image.asset(
-          paths[index],
-          width: width,
-          height: height,
-          fit: BoxFit.contain,
-          alignment: Alignment.topCenter,
-          cacheWidth: cacheWidth,
-          cacheHeight: cacheHeight,
-          filterQuality: filterQuality,
-          semanticLabel: '${RoastPersonas.byId(personaId).displayName}'
-              '${mood == null ? '' : ', ${mood!.label}'} portrait',
-          errorBuilder: (_, __, ___) => index + 1 < paths.length
-              ? portrait(index + 1)
-              : SizedBox(
-                  width: width,
-                  height: height,
-                  child: Center(
-                      child: Text(RoastPersonas.byId(personaId).displayName,
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: context.dmColors.textSecondary),
-                          textAlign: TextAlign.center))),
-        );
-    return portrait(0);
-  }
 }
 
 class DmApprovedAction extends StatelessWidget {

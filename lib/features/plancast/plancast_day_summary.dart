@@ -13,7 +13,7 @@ enum PlanCastDayState {
   completed
 }
 
-/// A single immutable snapshot drives rows, counts, and the persona readout.
+/// A single immutable snapshot drives rows, counts, and the weather readout.
 class PlanCastDaySummary {
   PlanCastDaySummary._({
     required this.day,

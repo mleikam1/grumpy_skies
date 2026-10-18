@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../design/dm_theme.dart';
+import '../config/wingman_brand.dart';
 import '../models/app_appearance.dart';
 import '../services/settings_controller.dart';
 import 'daymaker_router.dart';
@@ -18,7 +19,7 @@ class DaymakerApp extends StatelessWidget {
       (settings) => settings?.appearance ?? AppAppearance.light,
     );
     return MaterialApp.router(
-      title: 'DayMaker',
+      title: WingmanBrand.name,
       theme: DMTheme.lightTheme,
       darkTheme: DMTheme.darkTheme,
       themeMode: appearance.themeMode,

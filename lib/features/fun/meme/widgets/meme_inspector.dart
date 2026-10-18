@@ -17,13 +17,12 @@ class MemeInspector extends StatelessWidget {
       required this.catalog,
       required this.section,
       required this.onPhoto,
-      required this.onRoast,
       required this.onReroll,
       required this.onUpdateWeather});
   final MemeEditorController editor;
   final MemeCatalog catalog;
   final String section;
-  final VoidCallback onPhoto, onRoast, onReroll;
+  final VoidCallback onPhoto, onReroll;
   final void Function(bool includeCity) onUpdateWeather;
 
   @override
@@ -61,8 +60,6 @@ class MemeInspector extends StatelessWidget {
               label: const Text('Add text')),
           OutlinedButton(
               onPressed: onReroll, child: const Text('Reroll Caption')),
-          OutlinedButton(
-              onPressed: onRoast, child: const Text('Use Current Roast')),
         ]),
         const SizedBox(height: 16),
         for (final caption in editor.document.layers.where((x) =>
@@ -93,7 +90,7 @@ class MemeInspector extends StatelessWidget {
               decoration: const InputDecoration(labelText: 'Font'),
               items: const [
                 DropdownMenuItem(
-                    value: 'MemeSans', child: Text('DayMaker Sans')),
+                    value: 'MemeSans', child: Text('Wingman Sans')),
                 DropdownMenuItem(value: 'MemeMono', child: Text('Retro Mono'))
               ],
               onChanged: l.locked
@@ -447,7 +444,7 @@ class MemeInspector extends StatelessWidget {
               })
       ]),
       const SizedBox(height: 16),
-      const Text('Visual style • separate from persona'),
+      const Text('Visual style'),
       Wrap(spacing: 8, children: [
         for (final style in ['epic', 'cute', 'sarcastic', 'cozy', 'retro'])
           ChoiceChip(
@@ -463,7 +460,7 @@ class MemeInspector extends StatelessWidget {
               editor.apply(d.copyWith(background: b.copyWith(color: color)))),
       SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('DayMaker watermark'),
+          title: const Text('Wingman Weather watermark'),
           value: d.watermark,
           onChanged: (v) => editor.apply(d.copyWith(watermark: v))),
       if (b.assetRef != null && !b.assetRef!.startsWith('assets/')) ...[

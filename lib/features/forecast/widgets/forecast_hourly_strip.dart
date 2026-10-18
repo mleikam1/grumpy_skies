@@ -3,7 +3,6 @@ import 'forecast_sheet.dart';
 import 'package:flutter/material.dart';
 import '../models/hourly_timeline.dart';
 import 'forecast_hourly_timeline.dart';
-import '../../roasts/controllers/local_roast_controller.dart';
 
 import '../../../design/dm_radius.dart';
 import '../../../design/dm_spacing.dart';
@@ -24,8 +23,6 @@ class ForecastHourlyStrip extends StatelessWidget {
     this.errorMessage,
     this.timezone,
     this.weather,
-    this.roasts,
-    this.personaId,
     this.clock,
   });
 
@@ -37,8 +34,6 @@ class ForecastHourlyStrip extends StatelessWidget {
   final String? errorMessage;
   final String? timezone;
   final WeatherBundle? weather;
-  final LocalRoastController? roasts;
-  final String? personaId;
   final DateTime Function()? clock;
 
   @override
@@ -101,8 +96,6 @@ class ForecastHourlyStrip extends StatelessWidget {
                           scrollController: controller,
                           hourly: hourly,
                           weather: weather,
-                          roasts: roasts,
-                          personaId: personaId,
                           timezone: timezone,
                           timezoneOffset: timezoneOffset,
                           clock: clock,

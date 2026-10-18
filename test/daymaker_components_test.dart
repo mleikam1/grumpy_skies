@@ -35,17 +35,18 @@ void main() {
     );
 
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Roasts'), findsOneWidget);
+    expect(find.text('Roasts'), findsNothing);
+    expect(find.text('PlanCast'), findsOneWidget);
     expect(find.text('Radar'), findsOneWidget);
     expect(find.text('Fun'), findsOneWidget);
     expect(find.text('Settings'), findsNothing);
     expect(DmBottomNav.defaultItems.map((item) => item.label),
-        ['Today', 'Radar', 'Roasts', 'Fun']);
+        ['Today', 'PlanCast', 'Radar', 'Fun']);
 
     await tester.tap(find.bySemanticsLabel('Radar tab'));
     await tester.pumpAndSettle();
 
-    expect(selectedIndex, 1);
+    expect(selectedIndex, 2);
   });
 
   testWidgets('DmAssetImage renders gradient placeholder for missing assets',

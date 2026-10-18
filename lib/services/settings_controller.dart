@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-import '../data/daymaker_sample_data.dart';
-import '../features/roasts/models/roast_persona.dart';
 import '../models/temperature_unit.dart';
 import '../models/weather_models.dart';
 import '../repositories/settings_repository.dart';
@@ -10,7 +8,7 @@ import '../repositories/settings_repository.dart';
 class SettingsController extends ChangeNotifier {
   SettingsController({
     SettingsRepository? repository,
-    UserSettings initialSettings = DayMakerSampleData.userSettings,
+    UserSettings initialSettings = UserSettings.defaults,
   })  : _repository = repository,
         _settings = initialSettings;
 
@@ -30,8 +28,6 @@ class SettingsController extends ChangeNotifier {
 
   TemperatureUnit get temperatureUnit => _settings.temperatureUnit;
 
-  String get selectedPersonaId => _settings.selectedPersonaId;
-
   bool get notificationsEnabled => _settings.notificationsEnabled;
 
   bool get adsEnabled => _settings.adsEnabled;
@@ -45,14 +41,13 @@ class SettingsController extends ChangeNotifier {
   Future<void> loadSettings() async {
     final repository = _repository;
     if (repository == null) {
-      _settings = _normalized(_settings);
       _isLoaded = true;
       if (!_disposed) notifyListeners();
       return;
     }
 
     try {
-      _settings = _normalized(await repository.loadSettings());
+      _settings = await repository.loadSettings();
       _lastError = null;
     } catch (error) {
       _lastError = error;
@@ -72,12 +67,6 @@ class SettingsController extends ChangeNotifier {
     _updateSettings(_settings.copyWith(temperatureUnit: unit));
   }
 
-  void setSelectedPersonaId(String personaId) {
-    final normalized = RoastPersonas.normalizeId(personaId);
-    if (normalized == _settings.selectedPersonaId) return;
-    _updateSettings(_settings.copyWith(selectedPersonaId: normalized));
-  }
-
   void setNotificationsEnabled(bool enabled) {
     if (enabled == _settings.notificationsEnabled) return;
     _updateSettings(_settings.copyWith(notificationsEnabled: enabled));
@@ -89,7 +78,7 @@ class SettingsController extends ChangeNotifier {
   }
 
   void _updateSettings(UserSettings next) {
-    _settings = _normalized(next);
+    _settings = next;
     _lastError = null;
     notifyListeners();
     if (_repository != null) {
@@ -134,11 +123,5 @@ class SettingsController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     super.dispose();
-  }
-
-  UserSettings _normalized(UserSettings settings) {
-    return settings.copyWith(
-      selectedPersonaId: RoastPersonas.normalizeId(settings.selectedPersonaId),
-    );
   }
 }

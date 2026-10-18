@@ -60,7 +60,7 @@ void main() {
       final settings = await repository.loadSettings();
       expect(settings.appearance, AppAppearance.dark);
       expect(settings.temperatureUnit, TemperatureUnit.celsius);
-      expect(settings.selectedPersonaId, 'grandpa');
+      expect(prefs.containsKey('settings.selectedPersonaId'), isFalse);
       expect(settings.notificationsEnabled, false);
       expect(settings.xp, 1234);
       expect(settings.level, 9);
@@ -102,7 +102,6 @@ void main() {
     controller.setAppearance(AppAppearance.dark);
     controller.setTemperatureUnit(TemperatureUnit.celsius);
     controller.setAppearance(AppAppearance.system);
-    controller.setSelectedPersonaId('grandpa');
     expect(repository.writes, hasLength(1));
     expect(controller.appearance, AppAppearance.system);
     repository.completeNext();
@@ -113,7 +112,6 @@ void main() {
     await controller.waitForPendingSave();
     expect(repository.saved.appearance, AppAppearance.system);
     expect(repository.saved.temperatureUnit, TemperatureUnit.celsius);
-    expect(repository.saved.selectedPersonaId, 'grandpa');
     expect(controller.isSaving, false);
     controller.dispose();
   });
@@ -294,7 +292,6 @@ void main() {
       'appearance changes retain route, mounted state, scroll and an editable draft',
       (tester) async {
     final controller = SettingsController();
-    controller.setSelectedPersonaId('grandpa');
     final key = GlobalKey<_StateProbeState>();
     final router = GoRouter(initialLocation: '/fun/meme', routes: [
       GoRoute(path: '/fun/meme', builder: (_, __) => _StateProbe(key: key)),
@@ -315,7 +312,6 @@ void main() {
     expect(key.currentState!.scroll.offset, 300);
     expect(key.currentState!.draft.text, 'Exact quote, unchanged.');
     expect(router.routeInformationProvider.value.uri.path, '/fun/meme');
-    expect(controller.selectedPersonaId, 'grandpa');
   });
 }
 

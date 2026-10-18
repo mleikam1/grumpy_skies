@@ -397,14 +397,13 @@ class PlanCastBriefing {
       required this.worthWatching,
       required this.beforeYouGo,
       this.tomorrow,
-      this.personaLine,
       required this.generatedAt,
       required this.usableWeatherCount,
       required this.needsLocationCount,
       this.automaticLocationCount = 0,
       this.reviewLocationCount = 0});
   final String yourDay, worthWatching, beforeYouGo;
-  final String? tomorrow, personaLine;
+  final String? tomorrow;
   final DateTime generatedAt;
   final int usableWeatherCount, needsLocationCount;
   final int automaticLocationCount, reviewLocationCount;
@@ -412,7 +411,6 @@ class PlanCastBriefing {
         'Your day. $yourDay',
         'Worth watching. $worthWatching',
         'Before you go. $beforeYouGo',
-        if (tomorrow != null) 'Tomorrow. $tomorrow',
-        if (personaLine != null) 'One last opinion. $personaLine'
+        if (tomorrow != null) 'Tomorrow. $tomorrow'
       ].join('\n\n');
 }
