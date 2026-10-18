@@ -1,156 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
-import 'package:provider/provider.dart';
-
-import 'package:grumpy_skies/design/dm_theme.dart';
-import 'package:grumpy_skies/preview/approved_preview.dart';
-import 'package:grumpy_skies/features/radar/radar_screen.dart';
 import 'package:grumpy_skies/features/radar/widgets/open_weather_radar_map.dart';
-import 'package:grumpy_skies/repositories/fake_weather_repository.dart';
-import 'package:grumpy_skies/repositories/weather_repository.dart';
-import 'package:grumpy_skies/services/open_weather_backend_client.dart';
-import 'package:grumpy_skies/services/weather_location_controller.dart';
+import 'package:grumpy_skies/shared/widgets/dm_bottom_nav.dart';
 
-import 'helpers/daymaker_test_helpers.dart';
+import 'helpers/radar_test_harness.dart';
 
 void main() {
-  Widget buildSubject({http.Client? httpClient}) {
-    const repository = FakeWeatherRepository();
-    final locationController = WeatherLocationController(
-      repository: repository,
-      initialLocation: buildTestWeatherLocation(),
-    );
-
-    return MultiProvider(
-      providers: [
-        Provider<WeatherRepository>.value(value: repository),
-        Provider<OpenWeatherBackendClient>.value(
-          value: OpenWeatherBackendClient(
-            baseUrl: 'https://example.com/api',
-            httpClient: httpClient ?? _healthyRadarClient(),
-          ),
-        ),
-        ChangeNotifierProvider<WeatherLocationController>.value(
-          value: locationController,
-        ),
-      ],
-      child: MaterialApp(
-        theme: DMTheme.light,
-        home: RadarScreen(tileProvider: PreviewMemoryTiles()),
-      ),
-    );
-  }
-
-  testWidgets('RadarScreen renders compact DayMaker radar shell',
+  testWidgets('RadarScreen has one playback dock and preserves app navigation',
       (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
-
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(find.text('Radar'), findsWidgets);
-    expect(find.text('Demo City, US'), findsWidgets);
-    expect(find.text('Chaos Meter'), findsOneWidget);
-    expect(find.text('Radar controls'), findsOneWidget);
-    expect(find.text('FutureCast'), findsNothing);
-    expect(find.text('Latest'), findsWidgets);
-    expect(find.bySemanticsLabel('Radar legend and info'), findsOneWidget);
-    expect(find.text('Radar product'), findsNothing);
-    expect(find.text('Selected frame'), findsNothing);
-    expect(find.text('Map center'), findsNothing);
-  });
-
-  testWidgets('RadarScreen keeps controls and alert panel available on web',
-      (tester) async {
-    tester.view.physicalSize = const Size(1200, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
-
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(find.bySemanticsLabel('Zoom in'), findsOneWidget);
-    expect(find.bySemanticsLabel('Recenter radar map'), findsOneWidget);
-    expect(find.bySemanticsLabel('Radar layers'), findsOneWidget);
-    expect(find.bySemanticsLabel('Radar legend and info'), findsOneWidget);
-
-    await tester.tap(find.bySemanticsLabel('Radar legend and info'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('NOAA MRMS radar'), findsOneWidget);
+    final h = RadarTestHarness();
+    await h.pump(tester);
+    expect(find.text('Overland Park, KS'), findsOneWidget);
+    expect(find.text('Live Radar'), findsOneWidget);
     expect(find.text('FutureCast'), findsOneWidget);
-    expect(find.text('Precipitation legend'), findsOneWidget);
-    expect(find.byTooltip('Minimize'), findsOneWidget);
-    expect(find.byTooltip('Close'), findsWidgets);
+    expect(find.bySemanticsLabel('Play radar timeline'), findsOneWidget);
+    expect(find.byType(DmBottomNav), findsOneWidget);
+    expect(find.textContaining('Latest · 9:58 AM'), findsOneWidget);
+    expect(find.textContaining('Chaos '), findsOneWidget);
+    expect(find.byTooltip('Expand map'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await h.dispose(tester);
   });
 
-  testWidgets('RadarScreen defaults map to city-level zoom', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
+  testWidgets('desktop secondary controls keep zoom and timing accessible',
+      (tester) async {
+    final h = RadarTestHarness();
+    await h.pump(tester, size: const Size(1200, 900));
+    await tester.tap(find.byTooltip('Radar layers'));
+    await RadarTestHarness.settle(tester);
+    expect(find.text('Weather overlay'), findsOneWidget);
+    expect(find.text('Zoom in'), findsOneWidget);
+    expect(find.text('Zoom out'), findsOneWidget);
+    final map =
+        tester.widget<OpenWeatherRadarMap>(find.byType(OpenWeatherRadarMap));
+    await tester.tap(find.text('Zoom in'));
+    await tester.pump();
+    expect(map.mapController.camera.zoom, 11);
+    await tester.tap(find.byTooltip('Close Layers'));
+    await RadarTestHarness.settle(tester);
+    await tester.tap(find.text('Details'));
+    await RadarTestHarness.settle(tester);
+    expect(find.textContaining('Selected frame:'), findsOneWidget);
+    expect(find.textContaining('Last successful metadata refresh:'),
+        findsOneWidget);
+    expect(find.text('Refresh radar'), findsOneWidget);
+    expect(find.textContaining('not confirmed clear weather'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await h.dispose(tester);
+  });
 
+  testWidgets('RadarScreen retains city-level map zoom', (tester) async {
+    final h = RadarTestHarness();
+    await h.pump(tester);
     final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
     expect(map.options.initialZoom, radarCityZoom);
     expect(radarCityZoom, inInclusiveRange(9.5, 10.5));
+    await h.dispose(tester);
   });
 
-  testWidgets('RadarScreen shows one clean unavailable state for tile fallback',
-      (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
-
-    await tester.pumpWidget(
-      buildSubject(
-        httpClient: MockClient((_) async {
-          return http.Response(
-            '{"ok":false,"source":"noaa_mrms",'
-            '"humanReadableMessage":"Radar source unavailable; base map still usable.",'
-            '"fallbackCode":"noaa_unavailable"}',
-            200,
-            headers: {'content-type': 'application/json'},
-          );
-        }),
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pump();
-
+  testWidgets('unavailable tiles never imply clear weather', (tester) async {
+    final h = RadarTestHarness(available: false);
+    await h.pump(tester);
+    expect(find.text('Radar source unavailable; base map still usable.'),
+        findsOneWidget);
+    expect(find.byType(FlutterMap), findsOneWidget);
     expect(tester.takeException(), isNull);
-    expect(
-      find.text(
-        'Radar source unavailable; base map still usable.',
-      ),
-      findsOneWidget,
-    );
+    await h.dispose(tester);
   });
-}
 
-http.Client _healthyRadarClient() {
-  return MockClient((_) async {
-    return http.Response(
-      '{"ok":true,"source":"noaa_mrms",'
-      '"humanReadableMessage":"NOAA MRMS radar is available.",'
-      '"upstreamStatus":200,"upstreamContentType":"image/png",'
-      '"firstBytesHex":"89504E470D0A1A0A","isImage":true,'
-      '"latestFrameTimestamp":1782492600,"availableFrameCount":19}',
-      200,
-      headers: {'content-type': 'application/json'},
-    );
+  testWidgets(
+      'missing metadata has no synthetic selected frame or weather tiles',
+      (tester) async {
+    final h = RadarTestHarness(empty: true);
+    await h.pump(tester);
+    final map =
+        tester.widget<OpenWeatherRadarMap>(find.byType(OpenWeatherRadarMap));
+    expect(map.frame, isNull);
+    expect(find.text('Radar unavailable'), findsOneWidget);
+    expect(tester.widgetList<TileLayer>(find.byType(TileLayer)), hasLength(1));
+    expect(tester.takeException(), isNull);
+    await h.dispose(tester);
   });
 }

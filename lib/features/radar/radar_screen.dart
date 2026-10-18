@@ -1,1772 +1,873 @@
-import '../../design/dm_theme.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../../design/dm_colors.dart';
-import '../../design/dm_gradients.dart';
-import '../../design/dm_radius.dart';
-import '../../design/dm_shadows.dart';
-import '../../design/dm_spacing.dart';
-import '../../design/dm_typography.dart';
+import '../../design/dm_theme.dart';
 import '../../models/weather_models.dart';
 import '../../repositories/fake_weather_repository.dart';
 import '../../repositories/weather_repository.dart';
 import '../../services/chaos_score_service.dart';
 import '../../services/open_weather_backend_client.dart';
 import '../../services/weather_location_controller.dart';
-import '../../shared/widgets/daymaker_components.dart';
 import '../../shared/widgets/weather_location_selector.dart';
-import '../../utils/radar_time.dart';
+import 'radar_expansion_notification.dart';
+import 'radar_playback_controller.dart';
+import 'radar_presentation.dart';
+import 'radar_session.dart';
 import 'widgets/open_weather_radar_map.dart';
+import 'widgets/radar_control_dock.dart';
+import 'widgets/radar_color_scale.dart';
 
 class RadarScreen extends StatefulWidget {
-  const RadarScreen({super.key, this.tileProvider});
+  const RadarScreen({super.key, this.tileProvider, this.controller, this.now});
 
-  /// Optional dependency for offline previews; production uses network tiles.
+  /// Existing offline preview/test boundaries; production uses live providers.
   final TileProvider? tileProvider;
-
+  final RadarPlaybackController? controller;
+  final DateTime Function()? now;
   @override
   State<RadarScreen> createState() => _RadarScreenState();
 }
 
-enum _RadarSheetState {
-  open,
-  minimized,
-  closed,
-}
-
 class _RadarScreenState extends State<RadarScreen> with WidgetsBindingObserver {
   final _mapController = MapController();
-
-  WeatherLocationController? _locationController;
+  final _chromeChanges = ValueNotifier<int>(0);
+  final _dockKey = GlobalKey();
+  final _dockScroll = ScrollController();
+  WeatherLocationController? _location;
+  WeatherRepository? _repository;
   OpenWeatherBackendClient? _client;
-  WeatherRepository? _weatherRepository;
-  Timer? _playTimer;
-  Timer? _boundaryTimer;
-  RadarMode _mode = RadarMode.usForecast;
-  RadarFrame? _previousFrame;
+  RadarPlaybackController? _radar;
   WeatherBundle? _chaosWeather;
-  List<RadarFrame> _frames = const [];
-  var _playing = false;
-  var _sheetState = _RadarSheetState.minimized;
-  var _timelineIndex = 0;
-  var _loadedDependencies = false;
-  var _loadingFrames = false;
-  var _loadingChaos = false;
-  var _checkingFutureCast = false;
-  var _futureCastAvailable = true;
-  var _showChaosMeter = true;
-  var _frameLoadSerial = 0;
-  var _chaosLoadSerial = 0;
-  var _tileIssue = false;
-  var _basemapIssue = false;
-  var _tileIssueUpdateQueued = false;
-  var _tileIssueGeneration = 0;
-  String? _frameLoadMessage;
-  String? _futureCastMessage;
-  String? _tileIssueCode;
-  String? _chaosMessage;
+  SharedPreferences? _preferences;
+  bool _ownsLocation = false;
+  bool _ownsRadar = false;
+  bool _expanded = false;
+  bool _panelOpen = false;
+  bool _overlayVisible = true;
+  bool _basemapIssue = false;
+  bool _frameLoading = false;
+  bool _foreground = true;
+  bool _tickerEnabled = true;
+  bool _followingLocation = true;
+  bool _mapReady = false;
+  bool _deactivated = false;
+  double _opacity = .65;
+  String? _tileIssue;
+  String? _locationKey;
+  int _chaosSerial = 0;
+  DateTime get _now => widget.now?.call() ?? DateTime.now();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_loadedDependencies) return;
+    _tickerEnabled = TickerMode.valuesOf(context).enabled;
+    if (_location == null) {
+      WidgetsBinding.instance.addObserver(this);
+      final lifecycle = WidgetsBinding.instance.lifecycleState;
+      _foreground = lifecycle == null || lifecycle == AppLifecycleState.resumed;
+      _repository =
+          context.read<WeatherRepository?>() ?? const FakeWeatherRepository();
+      _location = context.read<WeatherLocationController?>();
+      _ownsLocation = _location == null;
+      _location ??= WeatherLocationController(repository: _repository!);
+      _client = context.read<OpenWeatherBackendClient?>() ??
+          OpenWeatherBackendClient();
+      _location!.addListener(_locationChanged);
+      _locationChanged();
+      unawaited(_restoreOpacity());
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _radar?.setActive(_foreground && _tickerEnabled);
+    });
+  }
 
-    WidgetsBinding.instance.addObserver(this);
-    _locationController = _readLocationController() ??
-        WeatherLocationController(
-          repository: _readWeatherRepository() ?? const FakeWeatherRepository(),
-        );
-    _client = _readClient() ?? OpenWeatherBackendClient();
-    _weatherRepository =
-        _readWeatherRepository() ?? const FakeWeatherRepository();
-    _locationController!.addListener(_handleLocationChanged);
-    final location = _locationController!.selectedLocation;
-    _mode = _defaultModeFor(location);
-    _loadFrames(keepSelectedTimestamp: false);
-    _loadChaosWeather();
-    _refreshFutureCastAvailability();
-    _startBoundaryTimer();
-    _loadedDependencies = true;
+  Future<void> _restoreOpacity() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      _preferences = preferences;
+      final value = preferences.getDouble('radar.overlayOpacity.v1');
+      if (value != null && value.isFinite) {
+        setState(() => _opacity = value.clamp(.1, 1));
+      }
+    } catch (_) {/* A local preference failure never fetches remotely. */}
+  }
+
+  void _locationChanged() {
+    final location = _location?.selectedLocation;
+    if (location == null) return;
+    final key = '${location.lat}:${location.lon}';
+    if (key == _locationKey) {
+      final loaded = _location!.currentWeather;
+      if (loaded != null && !identical(loaded, _chaosWeather)) {
+        _chaosWeather = loaded;
+        if (mounted) setState(() {});
+      }
+      return;
+    }
+    _locationKey = key;
+    _tileIssue = null;
+    _basemapIssue = false;
+    _chaosWeather = _location!.currentWeather;
+    if (_radar == null) {
+      final session = context.read<RadarSession?>();
+      _ownsRadar = widget.controller == null && session == null;
+      _radar = widget.controller ??
+          session?.obtain(
+              client: _client!, location: location, now: widget.now) ??
+          RadarPlaybackController(
+              client: _client!, location: location, now: widget.now);
+      // A location may have changed on Today while this retained controller
+      // was inactive. Apply that location before resuming any metadata work.
+      unawaited(_radar!.setLocation(location));
+      _radar!.setActive(_foreground && _tickerEnabled);
+      _radar!.addListener(_radarChanged);
+      unawaited(_radar!.initialize());
+    } else {
+      unawaited(_radar!.setLocation(location));
+    }
+    unawaited(_loadChaosWeather(location));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _mapReady) _recenter();
+    });
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _loadChaosWeather(LocationCandidate location) async {
+    final serial = ++_chaosSerial;
+    if (_chaosWeather != null) return;
+    try {
+      // Same existing once-per-location weather path, reused when already loaded.
+      final weather = await _repository!.getWeather(
+          latitude: location.lat, longitude: location.lon, location: location);
+      if (!mounted || serial != _chaosSerial) return;
+      setState(() => _chaosWeather = weather);
+    } catch (_) {/* No invented score when the weather is unavailable. */}
+  }
+
+  void _radarChanged() {
+    if (mounted && !_deactivated) setState(() {});
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    _radar?.setActive(_foreground && _tickerEnabled);
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void deactivate() {
+    _deactivated = true;
+    _radar?.setActive(false, notify: false);
+    super.deactivate();
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    _deactivated = false;
+    _radar?.setActive(_foreground && _tickerEnabled);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _playTimer?.cancel();
-    _boundaryTimer?.cancel();
-    _locationController?.removeListener(_handleLocationChanged);
+    _location?.removeListener(_locationChanged);
+    if (_ownsLocation) _location?.dispose();
+    _radar?.removeListener(_radarChanged);
+    if (_ownsRadar) _radar?.dispose();
+    _mapController.dispose();
+    _dockScroll.dispose();
+    _chromeChanges.dispose();
     super.dispose();
   }
 
-  @override
-  void deactivate() {
-    _playTimer?.cancel();
-    _playing = false;
-    super.deactivate();
-  }
+  RadarPresentation get _presentation => RadarPresentation(
+        mode: _radar!.mode,
+        frames: _radar!.frames,
+        frame: _radar!.selectedFrame,
+        now: _now,
+        timezone: _chaosWeather?.current.timezone,
+        timezoneOffset: _chaosWeather?.current.timezoneOffset,
+        refreshedAt: _radar!.lastSuccessfulRefresh,
+      );
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) return;
-    if (_playing) _setPlayback(false);
-  }
-
-  WeatherLocationController? _readLocationController() {
-    try {
-      return context.read<WeatherLocationController>();
-    } catch (_) {
+  ChaosScore? get _chaos {
+    final weather = _chaosWeather;
+    final sourceTime = weather?.current.sourceUpdatedAt;
+    if (!_radar!.isLatest ||
+        _radar!.mode == RadarMode.futureCast ||
+        weather == null ||
+        weather.isOfflineCache ||
+        sourceTime == null ||
+        !weather.current.temperatureKnown ||
+        !weather.current.windKnown ||
+        !weather.current.precipitationChanceKnown ||
+        _now.difference(sourceTime) > const Duration(minutes: 30) ||
+        sourceTime.isAfter(_now.add(const Duration(minutes: 2)))) {
       return null;
     }
+    return ChaosScoreService.evaluate(weather);
   }
 
-  OpenWeatherBackendClient? _readClient() {
-    try {
-      return context.read<OpenWeatherBackendClient>();
-    } catch (_) {
-      return null;
-    }
+  void _changeChrome(VoidCallback change) {
+    setState(change);
+    _chromeChanges.value++;
   }
 
-  WeatherRepository? _readWeatherRepository() {
-    try {
-      return context.read<WeatherRepository>();
-    } catch (_) {
-      return null;
-    }
+  void _setExpanded(bool value) {
+    if (_expanded == value) return;
+    _changeChrome(() => _expanded = value);
+    RadarExpansionNotification(value).dispatch(context);
   }
 
-  void _handleLocationChanged() {
-    _clearTileIssue();
-    _basemapIssue = false;
-    _mode = _defaultModeFor(_locationController?.selectedLocation);
-    _previousFrame = null;
-    _chaosWeather = null;
-    _chaosMessage = null;
-    _loadFrames(keepSelectedTimestamp: false);
-    _loadChaosWeather();
-    _refreshFutureCastAvailability();
-    _recenter();
-    if (mounted) setState(() {});
-  }
-
-  void _startBoundaryTimer() {
-    _boundaryTimer?.cancel();
-    _boundaryTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (!mounted || _frames.isEmpty) return;
-      final wasLatest = _selectedFrame.isLatest;
-      _loadFrames(keepSelectedTimestamp: !wasLatest);
-    });
-  }
-
-  void _togglePlayback() {
-    _setPlayback(!_playing);
-  }
-
-  void _setPlayback(bool playing) {
-    _playTimer?.cancel();
-    if (!mounted) {
-      _playing = playing;
-      return;
-    }
-
-    setState(() => _playing = playing);
-    if (!playing || _frames.isEmpty) return;
-
-    _playTimer = Timer.periodic(const Duration(milliseconds: 900), (_) {
-      if (!mounted || _frames.isEmpty) return;
-      final next = _nextRenderableIndex(_timelineIndex);
-      if (next == _timelineIndex) return;
-      _selectTimelineIndex(next);
-    });
-  }
-
-  Future<void> _loadFrames({required bool keepSelectedTimestamp}) async {
-    final location = _locationController?.selectedLocation;
-    final client = _client;
-    if (location == null || client == null) return;
-
-    final mode = _effectiveModeFor(location);
-    final previousTimestamp = keepSelectedTimestamp && _frames.isNotEmpty
-        ? _selectedFrame.timestamp
-        : null;
-    final serial = ++_frameLoadSerial;
-    setState(() {
-      _loadingFrames = true;
-      _frameLoadMessage = null;
-      _tileIssue = false;
-      _tileIssueCode = null;
-      _tileIssueUpdateQueued = false;
-      _tileIssueGeneration++;
-    });
-
-    try {
-      final frameSet = await client.radarFrames(
-        mode: mode,
-        latitude: location.lat,
-        longitude: location.lon,
-        hours: 6,
-      );
-      if (!mounted || serial != _frameLoadSerial) return;
-      final frames = frameSet.frames
-          .where((frame) => frame.renderable)
-          .toList(growable: false);
-      final target = previousTimestamp ?? _preferredLatestTimestamp(frames);
-      setState(() {
-        _mode = mode;
-        _frames = frames;
-        _timelineIndex = frames.isEmpty ? 0 : _nearestIndexFor(target);
-        _loadingFrames = false;
-        _frameLoadMessage = frames.isEmpty
-            ? frameSet.diagnosticMessage ??
-                'Radar source temporarily unavailable.'
-            : frameSet.diagnosticMessage;
-        if (frameSet.futureCastAvailable) _futureCastAvailable = true;
-      });
-      _preloadUpcomingFrames();
-    } on OpenWeatherBackendException catch (error) {
-      if (!mounted || serial != _frameLoadSerial) return;
-      setState(() {
-        _loadingFrames = false;
-        _frameLoadMessage = error.message;
-        _frames = const [];
-        _timelineIndex = 0;
-      });
-    }
-  }
-
-  int _nearestIndexFor(int timestamp) {
-    if (_frames.isEmpty) return 0;
-    var bestIndex = 0;
-    var bestDistance = (timestamp - _frames.first.timestamp).abs();
-    for (var index = 1; index < _frames.length; index++) {
-      final distance = (timestamp - _frames[index].timestamp).abs();
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestIndex = index;
-      }
-    }
-    return bestIndex;
-  }
-
-  RadarFrame get _selectedFrame {
-    if (_frames.isEmpty) {
-      final latest = roundToNearestPastRadarUnix(
-        mode: _mode,
-      );
-      return RadarFrame(
-        timestamp: latest,
-        label: _mode == RadarMode.futureCast ? 'Now' : 'Latest',
-        type: RadarFrameType.latest,
-        isLatest: true,
-        source: _mode.sourceParam,
-      );
-    }
-    return _frames[_timelineIndex.clamp(0, _frames.length - 1)];
-  }
-
-  RadarMode _defaultModeFor(LocationCandidate? location) {
-    if (location == null) return RadarMode.usForecast;
-    if (location.isUs || _coordinateLooksUs(location.lat, location.lon)) {
-      return RadarMode.usForecast;
-    }
-    return RadarMode.global;
-  }
-
-  RadarMode _effectiveModeFor(LocationCandidate location) {
-    if (!(location.isUs || _coordinateLooksUs(location.lat, location.lon))) {
-      return RadarMode.global;
-    }
-    return _mode == RadarMode.global ? RadarMode.usForecast : _mode;
-  }
-
-  void _jumpToLatest() {
-    if (_frames.isEmpty) return;
-    _selectTimelineIndex(_latestIndexForMode());
-  }
-
-  void _selectTimelineIndex(int index) {
-    if (_frames.isEmpty) return;
-    final nextIndex = index.clamp(0, _frames.length - 1);
-    final nextFrame = _frames[nextIndex];
-    setState(() {
-      _previousFrame = _selectedFrame;
-      _timelineIndex = nextIndex;
-      _clearTileIssue();
-      if (!nextFrame.renderable) {
-        _tileIssue = true;
-        _tileIssueCode = 'radar_frame_unavailable';
-      }
-    });
-    _preloadUpcomingFrames();
-  }
-
-  int _latestIndexForMode() {
-    if (_frames.isEmpty) return 0;
-    final latestIndex = _frames.indexWhere((frame) => frame.isLatest);
-    if (latestIndex >= 0) return latestIndex;
-    return _mode == RadarMode.futureCast ? 0 : _frames.length - 1;
-  }
-
-  int _nextRenderableIndex(int startIndex) {
-    if (_frames.length < 2) return startIndex;
-    for (var step = 1; step <= _frames.length; step++) {
-      final index = (startIndex + step) % _frames.length;
-      if (_frames[index].renderable) return index;
-    }
-    return startIndex;
-  }
-
-  int _preferredLatestTimestamp(List<RadarFrame> frames) {
-    if (frames.isEmpty) {
-      return roundToNearestPastRadarUnix(mode: _mode);
-    }
-    for (final frame in frames) {
-      if (frame.isLatest) return frame.timestamp;
-    }
-    return _mode == RadarMode.futureCast
-        ? frames.first.timestamp
-        : frames.last.timestamp;
-  }
-
-  void _setMode(RadarMode mode) {
-    if (mode == _mode) return;
-    final location = _locationController?.selectedLocation;
-    final usLocation = location != null &&
-        (location.isUs || _coordinateLooksUs(location.lat, location.lon));
-    if (mode == RadarMode.futureCast && !usLocation) {
-      setState(() {
-        _tileIssue = true;
-        _tileIssueCode = 'futurecast_unavailable';
-      });
-      return;
-    }
-    _setPlayback(false);
-    _previousFrame = null;
-    setState(() => _mode = mode);
-    _loadFrames(keepSelectedTimestamp: false);
-  }
-
-  Future<void> _refreshFutureCastAvailability() async {
-    final location = _locationController?.selectedLocation;
-    final client = _client;
-    if (location == null || client == null) return;
-    if (!(location.isUs || _coordinateLooksUs(location.lat, location.lon))) {
-      setState(() {
-        _futureCastAvailable = false;
-        _futureCastMessage = 'FutureCast is available for US locations.';
-      });
-      return;
-    }
-    if (_checkingFutureCast) return;
-    _checkingFutureCast = true;
-    setState(() => _futureCastAvailable = true);
-    try {
-      final frameSet = await client.radarFrames(
-        mode: RadarMode.futureCast,
-        latitude: location.lat,
-        longitude: location.lon,
-        hours: 1,
-      );
-      if (!mounted) return;
-      setState(() {
-        _futureCastAvailable = true;
-        _futureCastMessage = frameSet.diagnosticMessage;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _futureCastAvailable = true;
-        _futureCastMessage =
-            'FutureCast requires OpenWeather precipitation forecast map access.';
-      });
-    } finally {
-      _checkingFutureCast = false;
-    }
-  }
-
-  Future<void> _loadChaosWeather() async {
-    final location = _locationController?.selectedLocation;
-    final repository = _weatherRepository;
-    if (location == null || repository == null || !_showChaosMeter) return;
-
-    final serial = ++_chaosLoadSerial;
-    setState(() {
-      _loadingChaos = true;
-      _chaosMessage = null;
-    });
-
-    try {
-      final weather = await repository.getWeather(
-        latitude: location.lat,
-        longitude: location.lon,
-        location: location,
-      );
-      if (!mounted || serial != _chaosLoadSerial) return;
-      setState(() {
-        _chaosWeather = weather;
-        _loadingChaos = false;
-      });
-    } catch (_) {
-      if (!mounted || serial != _chaosLoadSerial) return;
-      setState(() {
-        _loadingChaos = false;
-        _chaosMessage = 'Weather signals unavailable';
-      });
-    }
-  }
-
-  void _preloadUpcomingFrames() {
-    final location = _locationController?.selectedLocation;
-    final client = _client;
-    if (location == null || client == null || _frames.length < 2) return;
-    for (var step = 1; step <= math.min(2, _frames.length - 1); step++) {
-      final frame = _frames[(_timelineIndex + step) % _frames.length];
-      client.radarTileHealth(
-        mode: _mode,
-        timestamp: frame.timestamp,
-        latitude: location.lat,
-        longitude: location.lon,
-        source: frame.source,
-      );
-    }
-  }
-
-  void _zoomBy(double delta) {
+  void _zoom(double delta) {
+    if (!_mapReady) return;
     final camera = _mapController.camera;
     _mapController.move(camera.center, (camera.zoom + delta).clamp(3, 12));
   }
 
   void _recenter() {
-    final location = _locationController?.selectedLocation;
-    if (location == null) return;
-    _mapController.move(LatLng(location.lat, location.lon), radarCityZoom);
+    final location = _location?.selectedLocation;
+    if (location == null || !_mapReady) return;
+    final box = _dockKey.currentContext?.findRenderObject() as RenderBox?;
+    final bottom = (box?.hasSize == true ? box!.size.height : 170.0) + 36;
+    final top = MediaQuery.paddingOf(context).top + (_expanded ? 88 : 132);
+    _followingLocation = true;
+    _mapController.move(LatLng(location.lat, location.lon), radarCityZoom,
+        offset: Offset(0, (top - bottom) / 2));
   }
 
-  void _openInfoSheet() {
-    setState(() => _sheetState = _RadarSheetState.open);
-  }
-
-  void _toggleInfoSheet() {
-    setState(() {
-      _sheetState = _sheetState == _RadarSheetState.open
-          ? _RadarSheetState.minimized
-          : _RadarSheetState.open;
-    });
-  }
-
-  void _minimizeInfoSheet() {
-    setState(() => _sheetState = _RadarSheetState.minimized);
-  }
-
-  void _closeInfoSheet() {
-    setState(() => _sheetState = _RadarSheetState.closed);
-  }
-
-  void _closeChaosMeter() {
-    setState(() => _showChaosMeter = false);
-  }
-
-  void _handleTileIssue(String? code) {
-    if (code == null) {
-      if (!_tileIssue && _tileIssueCode == null) return;
-      setState(() {
-        _tileIssue = false;
-        _tileIssueCode = null;
-        _tileIssueUpdateQueued = false;
-        _tileIssueGeneration++;
-      });
-      return;
+  Future<void> _showPanel(
+      String title, Widget Function(BuildContext) body) async {
+    if (_panelOpen || !mounted) return;
+    _panelOpen = true;
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: false,
+        builder: (sheetContext) => AnimatedBuilder(
+            animation: Listenable.merge([_radar!, _chromeChanges]),
+            builder: (context, _) => ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(context).height * .82,
+                      maxWidth: 640),
+                  child: SafeArea(
+                      top: false,
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
+                            child: Row(children: [
+                              Expanded(
+                                  child: Text(title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge)),
+                              IconButton(
+                                  tooltip: 'Close $title',
+                                  icon: const Icon(Icons.close_rounded),
+                                  onPressed: () =>
+                                      Navigator.of(sheetContext).pop()),
+                            ])),
+                        Flexible(
+                            child: SingleChildScrollView(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                                child: body(context))),
+                      ])),
+                )),
+      );
+    } finally {
+      _panelOpen = false;
     }
-    _showTileIssue(code);
   }
 
-  void _showTileIssue(String code) {
-    if (_tileIssueUpdateQueued || !mounted) return;
-    if (_tileIssue && _tileIssueCode == code) return;
+  void _showLocation() => _showPanel(
+      'Radar location',
+      (context) => WeatherLocationSelector(
+          controller: _location!,
+          title: 'Choose a location',
+          onLocationSelected: (_) =>
+              Navigator.of(context, rootNavigator: true).pop()));
 
-    final generation = _tileIssueGeneration;
-    _tileIssueUpdateQueued = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || generation != _tileIssueGeneration) return;
-      _tileIssueUpdateQueued = false;
-      if (_tileIssue && _tileIssueCode == code) return;
-      setState(() {
-        _tileIssue = true;
-        _tileIssueCode = code;
+  void _showChaos() {
+    final score = _chaos;
+    if (score == null) return;
+    _showPanel('Chaos Meter', (context) => _chaosDetails(context, score));
+  }
+
+  Widget _chaosDetails(BuildContext context, ChaosScore score) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Chaos ${score.value} · ${score.label}',
+            style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 8),
+        Text(score.explanation),
+        const SizedBox(height: 12),
+        const Text(
+            'A snapshot of current and upcoming weather signals for this location. '
+            'It is not a warning or a measurement of the selected radar image.'),
+      ]);
+
+  void _showLayers() => _showPanel(
+      'Layers',
+      (context) =>
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text(_radar!.mode.label,
+                style: Theme.of(context).textTheme.titleMedium),
+            SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Weather overlay'),
+                value: _overlayVisible,
+                onChanged: (value) =>
+                    _changeChrome(() => _overlayVisible = value)),
+            Text('Weather opacity · ${(_opacity * 100).round()}%'),
+            Slider(
+                value: _opacity,
+                min: .1,
+                max: 1,
+                divisions: 18,
+                semanticFormatterCallback: (value) =>
+                    '${(value * 100).round()} percent weather opacity',
+                label: '${(_opacity * 100).round()}%',
+                onChanged: (value) => _changeChrome(() => _opacity = value),
+                onChangeEnd: (value) {
+                  unawaited(_preferences?.setDouble(
+                      'radar.overlayOpacity.v1', value));
+                }),
+            const Divider(),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              OutlinedButton.icon(
+                  onPressed: () => _zoom(1),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Zoom in')),
+              OutlinedButton.icon(
+                  onPressed: () => _zoom(-1),
+                  icon: const Icon(Icons.remove),
+                  label: const Text('Zoom out')),
+              OutlinedButton.icon(
+                  onPressed: _recenter,
+                  icon: const Icon(Icons.my_location),
+                  label: const Text('Recenter')),
+            ]),
+            const SizedBox(height: 12),
+            Text(
+                _followingLocation
+                    ? 'Centered on the selected location.'
+                    : 'Map moved. Recenter returns to the selected location.',
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 8),
+            const Text(
+                'Pinch to zoom and drag to explore. Map appearance follows your app theme.'),
+          ]));
+
+  void _showDetails() => _showPanel('Radar details', (context) {
+        final p = _presentation;
+        final chaos = _chaos;
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(p.sourceLabel, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          Text('Selected frame: ${p.frameTimeLabel}'),
+          const SizedBox(height: 8),
+          Text(p.subtitle),
+          if (p.refreshedTimeLabel != null) ...[
+            const SizedBox(height: 8),
+            Text('Last successful metadata refresh: ${p.refreshedTimeLabel}'),
+          ],
+          if (_radar!.mode == RadarMode.futureCast) ...[
+            const SizedBox(height: 8),
+            Text('Forecast issue time: ${p.forecastIssueTimeLabel}'),
+          ],
+          const SizedBox(height: 12),
+          Text(_location!.selectedLocation!.displayName),
+          const Divider(),
+          _legendDetails(context),
+          const Divider(),
+          if (chaos != null) ...[
+            _chaosDetails(context, chaos),
+            const Divider(),
+          ],
+          Wrap(spacing: 8, children: [
+            TextButton.icon(
+                onPressed: _radar!.loading ? null : () => _radar!.refresh(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Refresh radar')),
+            TextButton.icon(
+                onPressed:
+                    _radar!.canJumpToNow ? _radar!.jumpToLatestOrNow : null,
+                icon: const Icon(Icons.schedule),
+                label: Text(_radar!.mode == RadarMode.futureCast
+                    ? 'Nearest forecast to now'
+                    : 'Latest observation')),
+          ]),
+          const Text(
+              'Playback uses the available frames at the existing 0.9-second cadence. '
+              'Missing images are unavailable data, not confirmed clear weather.'),
+          const SizedBox(height: 8),
+          RadarMapAttribution(
+              source:
+                  _radar!.selectedFrame?.source ?? _radar!.mode.sourceParam),
+        ]);
       });
-    });
+
+  Widget _legendDetails(BuildContext context) {
+    final source = _radar!.selectedFrame?.source ?? _radar!.mode.sourceParam;
+    final noaa = source == 'noaa_mrms';
+    final global = source == 'openweather_global';
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      RadarColorScale(source: source, compact: false),
+      const SizedBox(height: 12),
+      Text(noaa || global
+          ? 'The map retains the provider’s reflectivity colors. Reflectivity is measured in dBZ; it is not a direct rainfall-rate measurement.'
+          : 'The map retains OpenWeather’s US forecast radar colors. Its available metadata and product guide do not specify numeric color thresholds.'),
+      if (!global) ...[
+        const SizedBox(height: 6),
+        const Text(
+            'Open the provider guide for interpretation. Missing imagery does not confirm clear weather.'),
+      ],
+      TextButton.icon(
+          onPressed: () => launchUrl(
+              Uri.parse(noaa
+                  ? 'https://radar.weather.gov/'
+                  : global
+                      ? 'https://openweathermap.org/api/global-precipitation-map-forecast'
+                      : 'https://openweathermap.org/api/us-precipitation-map-forecast'),
+              mode: LaunchMode.externalApplication),
+          icon: const Icon(Icons.open_in_new, size: 18),
+          label: Text(noaa ? 'NOAA radar guide' : 'OpenWeather radar guide')),
+    ]);
   }
 
-  void _clearTileIssue() {
-    _tileIssue = false;
-    _tileIssueCode = null;
-    _tileIssueUpdateQueued = false;
-    _tileIssueGeneration++;
+  void _showLegend() => _showPanel('Color scale', _legendDetails);
+
+  String? get _notice {
+    if (_basemapIssue) {
+      return 'Base map tiles could not load. Check your connection and try moving the map.';
+    }
+    if (_radar!.loading && _radar!.selectedFrame == null) {
+      return 'Loading radar frames…';
+    }
+    if (_tileIssue != null) return _tileMessage(_tileIssue!);
+    if (_radar!.message != null) return _radar!.message;
+    if (!_overlayVisible) return 'Weather overlay hidden';
+    if (_frameLoading) return 'Loading selected image…';
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final location = _locationController?.selectedLocation;
-    final client = _client;
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: DmAppBackground(
-        gradient: context.dmColors.heroGradient,
-        color: context.dmColors.appBackground,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth.isFinite
-                ? constraints.maxWidth
-                : MediaQuery.sizeOf(context).width;
-
-            if (location == null || client == null) {
-              return _RadarLocationPrompt(
-                controller: _locationController!,
-                onSelected: (_) => setState(() {}),
-              );
-            }
-
-            final mode = _effectiveModeFor(location);
-            final frame = _selectedFrame;
-            final mediaPadding = MediaQuery.paddingOf(context);
-            final bottomInset = mediaPadding.bottom;
-            final safeTop = mediaPadding.top;
-            final horizontal = width < 600 ? DMSpacing.sm : DMSpacing.xl;
-            final sheetOpen = _sheetState == _RadarSheetState.open;
-            final sheetMinimized = _sheetState == _RadarSheetState.minimized;
-            final openSheetHeight = math.min(
-              constraints.maxHeight * (width < 700 ? 0.36 : 0.34),
-              width < 700 ? 280.0 : 300.0,
-            );
-            final chaosScore = _chaosWeather == null
-                ? null
-                : ChaosScoreService.evaluate(_chaosWeather!);
-            final chaosWidth = math.min(232.0, width - horizontal * 2 - 76);
-
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                OpenWeatherRadarMap(
-                  tileProvider: widget.tileProvider,
-                  client: client,
-                  mapController: _mapController,
-                  location: location,
-                  mode: mode,
-                  frame: frame,
-                  previousFrame: _previousFrame,
-                  onTileIssue: _handleTileIssue,
-                  onBasemapIssue: (hasIssue) {
-                    if (mounted && _basemapIssue != hasIssue) {
-                      setState(() => _basemapIssue = hasIssue);
-                    }
-                  },
-                ),
-                Positioned(
-                  top: safeTop + DMSpacing.sm,
-                  left: horizontal,
-                  right: horizontal + 60,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _RadarStatusStack(
-                        locationName: _locationLabel(location),
-                        frameLabel: frame.label,
-                        modeLabel: mode.modeChipLabel,
+    final location = _location?.selectedLocation;
+    if (location == null || _radar == null) {
+      return Scaffold(
+          body: SafeArea(
+              child: ListView(padding: const EdgeInsets.all(16), children: [
+        if (_location != null)
+          WeatherLocationSelector(
+              controller: _location!, title: 'Choose a radar location'),
+      ])));
+    }
+    final radar = _radar!;
+    return PopScope<void>(
+      canPop: !_expanded,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _expanded) _setExpanded(false);
+      },
+      child: Shortcuts(
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.escape): DismissIntent()
+        },
+        child: Actions(
+            actions: {
+              DismissIntent: CallbackAction<DismissIntent>(onInvoke: (_) {
+                if (_expanded) _setExpanded(false);
+                return null;
+              }),
+            },
+            child: Focus(
+                autofocus: true,
+                onKeyEvent: (_, event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape &&
+                      _expanded &&
+                      !_panelOpen) {
+                    _setExpanded(false);
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: Scaffold(
+                  backgroundColor: context.dmColors.appBackground,
+                  body: LayoutBuilder(builder: (context, constraints) {
+                    final wide = constraints.maxWidth >= 700;
+                    final short = constraints.maxHeight < 450 && wide;
+                    final inset = wide ? 24.0 : 12.0;
+                    final top = MediaQuery.paddingOf(context).top + 12;
+                    final bottom = _expanded
+                        ? MediaQuery.paddingOf(context).bottom + 12
+                        : 6.0;
+                    final large =
+                        MediaQuery.textScalerOf(context).scale(14) > 21;
+                    final chaos = _chaos;
+                    final frameKey =
+                        '${radar.mode}:${radar.selectedFrame?.timestamp}';
+                    return Stack(fit: StackFit.expand, children: [
+                      OpenWeatherRadarMap(
+                        key: const ValueKey('persistent-radar-map'),
+                        tileProvider: widget.tileProvider,
+                        client: _client!,
+                        mapController: _mapController,
+                        location: location,
+                        mode: radar.mode,
+                        frame: radar.selectedFrame,
+                        opacity: _opacity,
+                        overlayVisible: _overlayVisible,
+                        active: _foreground && _tickerEnabled,
+                        recenterOnLocationChange: false,
+                        onMapReady: () {
+                          _mapReady = true;
+                          _recenter();
+                        },
+                        onPositionChanged: (_, hasGesture) {
+                          _mapReady = true;
+                          if (hasGesture) _followingLocation = false;
+                        },
+                        onFrameLoading: (loading) {
+                          if (mounted &&
+                              frameKey ==
+                                  '${radar.mode}:${radar.selectedFrame?.timestamp}' &&
+                              _frameLoading != loading) {
+                            setState(() => _frameLoading = loading);
+                          }
+                        },
+                        onTileIssue: (issue) {
+                          if (mounted &&
+                              frameKey ==
+                                  '${radar.mode}:${radar.selectedFrame?.timestamp}' &&
+                              _tileIssue != issue) {
+                            setState(() => _tileIssue = issue);
+                          }
+                        },
+                        onBasemapIssue: (issue) {
+                          if (mounted && _basemapIssue != issue) {
+                            setState(() => _basemapIssue = issue);
+                          }
+                        },
                       ),
-                      if (_showChaosMeter && chaosWidth >= 168) ...[
-                        const SizedBox(height: DMSpacing.sm),
-                        SizedBox(
-                          width: chaosWidth,
-                          child: _ChaosMeterCard(
-                            score: chaosScore,
-                            loading: _loadingChaos,
-                            message: _chaosMessage,
-                            onClose: _closeChaosMeter,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: safeTop + DMSpacing.sm,
-                  right: horizontal,
-                  child: _RadarFloatingControls(
-                    playing: _playing,
-                    onPlayPause: _togglePlayback,
-                    onLatest: _jumpToLatest,
-                    onRecenter: _recenter,
-                    onZoomIn: () => _zoomBy(1),
-                    onZoomOut: () => _zoomBy(-1),
-                    onLayers: _openInfoSheet,
-                    onInfo: _toggleInfoSheet,
-                  ),
-                ),
-                Positioned(
-                  left: horizontal,
-                  right: horizontal,
-                  bottom: bottomInset + DMSpacing.sm,
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 900),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadarMapAttribution(source: frame.source),
-                          if (_basemapIssue ||
-                              _tileIssue ||
-                              _frameLoadMessage != null ||
-                              _loadingFrames) ...[
-                            const SizedBox(height: DMSpacing.xs),
-                            _RadarNoticeBanner(
-                              message: _basemapIssue
-                                  ? 'Base map tiles could not load. Check your connection and try moving the map.'
-                                  : _loadingFrames
-                                      ? 'Loading radar frames...'
-                                      : _tileIssue
-                                          ? _tileIssueMessage(_tileIssueCode)
-                                          : _frameLoadMessage!,
-                            ),
-                          ],
-                          if (sheetOpen) ...[
-                            const SizedBox(height: DMSpacing.xs),
-                            _RadarBottomSheet(
-                              height: openSheetHeight,
-                              frame: frame,
-                              frames: _frames,
-                              timelineIndex: _timelineIndex,
-                              playing: _playing,
-                              mode: mode,
-                              locationName: _locationLabel(location),
-                              futureCastAvailable: _futureCastAvailable,
-                              futureCastMessage: _futureCastMessage,
-                              onModeChanged: _setMode,
-                              onTimelineChanged: _onTimelineChanged,
-                              onPlayPause: _togglePlayback,
-                              onLatest: _jumpToLatest,
-                              onMinimize: _minimizeInfoSheet,
-                              onClose: _closeInfoSheet,
-                            ),
-                          ],
-                          if (sheetMinimized) ...[
-                            const SizedBox(height: DMSpacing.xs),
-                            _RadarSheetTab(
-                              frame: frame,
-                              mode: mode,
-                              onOpen: _openInfoSheet,
-                              onClose: _closeInfoSheet,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                      Positioned(
+                          top: top,
+                          left: inset,
+                          right: inset,
+                          child: Align(
+                              alignment: short
+                                  ? Alignment.topLeft
+                                  : Alignment.topCenter,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                    maxWidth: short
+                                        ? constraints.maxWidth * .4
+                                        : 900),
+                                child: _expanded
+                                    ? _expandedHeader(location)
+                                    : _header(location),
+                              ))),
+                      if (!_expanded &&
+                          !large &&
+                          !short &&
+                          (chaos != null || radar.mode == RadarMode.futureCast))
+                        Positioned(
+                            top: top + (large ? 108 : 80),
+                            left: inset,
+                            right: inset + 64,
+                            child: Align(
+                                alignment: Alignment.topLeft,
+                                child: RadarSurface(
+                                    borderRadius: 28,
+                                    child: InkWell(
+                                        onTap:
+                                            chaos == null ? null : _showChaos,
+                                        child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 8),
+                                            child: ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minHeight: 32),
+                                                child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                          chaos == null
+                                                              ? Icons.timeline
+                                                              : Icons
+                                                                  .bubble_chart_outlined,
+                                                          size: 22),
+                                                      const SizedBox(width: 8),
+                                                      Flexible(
+                                                          child: Text(
+                                                              chaos == null
+                                                                  ? 'Forecast view'
+                                                                  : 'Chaos ${chaos.value} · ${chaos.label}',
+                                                              style: const TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700))),
+                                                      if (chaos != null)
+                                                        const Icon(
+                                                            Icons.expand_more,
+                                                            size: 20),
+                                                    ]))))))),
+                      Positioned(
+                          right: short ? null : inset,
+                          left: short ? inset : null,
+                          top: short
+                              ? top + 90
+                              : large
+                                  ? top + 132
+                                  : math.max(
+                                      top + 162, constraints.maxHeight * .25),
+                          child: Flex(
+                              direction: (short || large)
+                                  ? Axis.horizontal
+                                  : Axis.vertical,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                RadarSurface(
+                                    borderRadius: 28,
+                                    child: IconButton(
+                                        tooltip: 'Recenter radar map',
+                                        onPressed: _recenter,
+                                        icon: const Icon(Icons.my_location,
+                                            size: 26))),
+                                const SizedBox(height: 10, width: 10),
+                                RadarSurface(
+                                    borderRadius: 28,
+                                    child: IconButton(
+                                        tooltip: 'Radar layers',
+                                        onPressed: _showLayers,
+                                        icon: const Icon(Icons.layers_outlined,
+                                            size: 26))),
+                              ])),
+                      Positioned(
+                          left: short ? constraints.maxWidth * .46 : inset,
+                          right: inset,
+                          bottom: bottom,
+                          child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                    maxWidth: wide ? 700 : 600,
+                                    maxHeight: math.max(
+                                        80,
+                                        constraints.maxHeight -
+                                            top -
+                                            (short
+                                                ? 8
+                                                : large
+                                                    ? 196
+                                                    : _expanded
+                                                        ? 104
+                                                        : 146))),
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                          child: Scrollbar(
+                                              controller: _dockScroll,
+                                              thumbVisibility: large || short,
+                                              child: SingleChildScrollView(
+                                                  controller: _dockScroll,
+                                                  child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        if (_expanded)
+                                                          Align(
+                                                              alignment: Alignment
+                                                                  .centerLeft,
+                                                              child: RadarSurface(
+                                                                  borderRadius:
+                                                                      20,
+                                                                  child: TextButton.icon(
+                                                                      onPressed:
+                                                                          _showLegend,
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .gradient,
+                                                                          size:
+                                                                              18),
+                                                                      label: Text(
+                                                                          radar.mode == RadarMode.futureCast
+                                                                              ? 'Forecast · Color scale'
+                                                                              : 'Reflectivity · dBZ',
+                                                                          style:
+                                                                              const TextStyle(fontSize: 12))))),
+                                                        RadarControlDock(
+                                                            key: _dockKey,
+                                                            controller: radar,
+                                                            presentation:
+                                                                _presentation,
+                                                            expanded: _expanded,
+                                                            onDetails:
+                                                                _showDetails,
+                                                            onLegend:
+                                                                _showLegend,
+                                                            status: _notice,
+                                                            loading: radar
+                                                                    .loading ||
+                                                                _frameLoading),
+                                                      ])))),
+                                      const SizedBox(height: 2),
+                                      RadarMapAttribution(
+                                          source: radar.selectedFrame?.source ??
+                                              radar.mode.sourceParam),
+                                    ]),
+                              ))),
+                    ]);
+                  }),
+                ))),
       ),
     );
   }
 
-  void _onTimelineChanged(double value) {
-    _selectTimelineIndex(value.round());
-  }
-}
+  Widget _header(LocationCandidate location) => RadarSurface(
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: Row(children: [
+            const Icon(Icons.radar, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+                child: InkWell(
+                    onTap: _showLocation,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('Radar',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700)),
+                              Semantics(
+                                  button: true,
+                                  onTap: _showLocation,
+                                  label:
+                                      'Choose radar location, ${location.displayName}',
+                                  child: ExcludeSemantics(
+                                      child: Row(children: [
+                                    Flexible(
+                                        child: Text(_shortLocation(location),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: context
+                                                    .dmColors.textSecondary))),
+                                    Icon(Icons.expand_more,
+                                        size: 20,
+                                        color: context.dmColors.textSecondary),
+                                  ]))),
+                            ])))),
+            IconButton(
+                tooltip: 'Expand map',
+                onPressed: () => _setExpanded(true),
+                icon: const Icon(Icons.fullscreen_rounded, size: 28)),
+          ])));
 
-class _RadarLocationPrompt extends StatelessWidget {
-  const _RadarLocationPrompt({
-    required this.controller,
-    required this.onSelected,
-  });
-
-  final WeatherLocationController controller;
-  final ValueChanged<LocationCandidate> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding:
-            DMSpacing.pagePaddingForWidth(MediaQuery.sizeOf(context).width),
-        children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: WeatherLocationSelector(
-                controller: controller,
-                title: 'Choose a radar location',
-                onLocationSelected: onSelected,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RadarStatusStack extends StatelessWidget {
-  const _RadarStatusStack({
-    required this.locationName,
-    required this.frameLabel,
-    required this.modeLabel,
-  });
-
-  final String locationName;
-  final String frameLabel;
-  final String modeLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topLeft,
-      child: _RadarStatusPill(
-        locationName: locationName,
-        frameLabel: frameLabel,
-        modeLabel: modeLabel,
-      ),
-    );
-  }
-}
-
-class _RadarStatusPill extends StatelessWidget {
-  const _RadarStatusPill({
-    required this.locationName,
-    required this.frameLabel,
-    required this.modeLabel,
-  });
-
-  final String locationName;
-  final String frameLabel;
-  final String modeLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return DmGlassCard(
-      padding: const EdgeInsets.all(DMSpacing.sm),
-      borderRadius: DMRadius.large,
-      borderColor: context.dmColors.border,
-      blurSigma: 0,
-      shadows: DMShadows.soft,
-      semanticLabel: 'Radar, $locationName, $modeLabel, $frameLabel',
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 430),
-        child: Column(
+  Widget _expandedHeader(LocationCandidate location) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(children: [
-              Icon(Icons.radar, color: context.dmColors.textPrimary, size: 20),
-              const SizedBox(width: DMSpacing.xs),
-              Text('Radar',
-                  style: DMTypography.labelLarge
-                      .copyWith(color: context.dmColors.textPrimary)),
-            ]),
-            const SizedBox(height: 4),
-            Text(locationName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: DMTypography.label
-                    .copyWith(color: context.dmColors.textSecondary)),
-            const SizedBox(height: DMSpacing.xs),
-            Wrap(spacing: DMSpacing.xs, runSpacing: 4, children: [
-              _RadarFrameBadge(label: frameLabel),
-              _RadarModeBadge(label: modeLabel),
-            ]),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RadarModeBadge extends StatelessWidget {
-  const _RadarModeBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: context.dmColors.surfaceRaised,
-        borderRadius: DMRadius.full,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DMSpacing.xs,
-          vertical: DMSpacing.xxs,
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: DMTypography.labelSmall.copyWith(
-            color: context.dmColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RadarFrameBadge extends StatelessWidget {
-  const _RadarFrameBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: DMColors.sunriseYellow,
-        borderRadius: DMRadius.full,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DMSpacing.xs,
-          vertical: DMSpacing.xxs,
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: DMTypography.labelSmall.copyWith(
-            color: DMColors.deepNavy,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RadarFloatingControls extends StatelessWidget {
-  const _RadarFloatingControls({
-    required this.playing,
-    required this.onPlayPause,
-    required this.onLatest,
-    required this.onRecenter,
-    required this.onZoomIn,
-    required this.onZoomOut,
-    required this.onLayers,
-    required this.onInfo,
-  });
-
-  final bool playing;
-  final VoidCallback onPlayPause;
-  final VoidCallback onLatest;
-  final VoidCallback onRecenter;
-  final VoidCallback onZoomIn;
-  final VoidCallback onZoomOut;
-  final VoidCallback onLayers;
-  final VoidCallback onInfo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        DmIconButton(
-          icon: Icon(playing ? Icons.pause : Icons.play_arrow),
-          semanticLabel:
-              playing ? 'Pause radar timeline' : 'Play radar timeline',
-          tooltip: playing ? 'Pause' : 'Play',
-          variant: DmIconButtonVariant.filled,
-          onPressed: onPlayPause,
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        DmIconButton(
-          icon: const Icon(Icons.update),
-          semanticLabel: 'Show latest radar frame',
-          tooltip: 'Latest',
-          onPressed: onLatest,
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        DmIconButton(
-          icon: const Icon(Icons.my_location),
-          semanticLabel: 'Recenter radar map',
-          tooltip: 'Recenter',
-          onPressed: onRecenter,
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        DmIconButton(
-          icon: const Icon(Icons.add),
-          semanticLabel: 'Zoom in',
-          tooltip: 'Zoom in',
-          onPressed: onZoomIn,
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        DmIconButton(
-          icon: const Icon(Icons.remove),
-          semanticLabel: 'Zoom out',
-          tooltip: 'Zoom out',
-          onPressed: onZoomOut,
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        DmIconButton(
-          icon: const Icon(Icons.layers_outlined),
-          semanticLabel: 'Radar layers',
-          tooltip: 'Layers',
-          onPressed: onLayers,
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        DmIconButton(
-          icon: const Icon(Icons.info_outline),
-          semanticLabel: 'Radar legend and info',
-          tooltip: 'Info',
-          onPressed: onInfo,
-        ),
-      ],
-    );
-  }
-}
-
-class _ChaosMeterCard extends StatelessWidget {
-  const _ChaosMeterCard({
-    required this.score,
-    required this.loading,
-    required this.message,
-    required this.onClose,
-  });
-
-  final ChaosScore? score;
-  final bool loading;
-  final String? message;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final value = score?.value;
-    final label = score?.label ?? (loading ? 'Checking' : 'Unavailable');
-    final explanation =
-        message ?? score?.explanation ?? 'Reading weather signals';
-
-    return DmGlassCard(
-      padding: const EdgeInsets.fromLTRB(
-        DMSpacing.sm,
-        DMSpacing.xs,
-        DMSpacing.xs,
-        DMSpacing.sm,
-      ),
-      borderRadius: DMRadius.large,
-      gradient: DMGradients.glassNavy,
-      borderColor: context.dmColors.glassBorderStrong,
-      shadows: DMShadows.floating,
-      semanticLabel: 'Chaos Meter',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Chaos Meter',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelSmall.copyWith(
-                    color: context.dmColors.textMuted,
-                  ),
-                ),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                tooltip: 'Close Chaos Meter',
-                constraints:
-                    const BoxConstraints.tightFor(width: 44, height: 44),
-                icon: const Icon(Icons.close_rounded, size: 16),
-                color: context.dmColors.textMuted,
-                onPressed: onClose,
-              ),
-            ],
-          ),
-          const SizedBox(height: DMSpacing.xxs),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (loading && value == null)
-                const SizedBox.square(
-                  dimension: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              else
-                Text(
-                  value == null ? '--' : '$value',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.numeral.copyWith(
-                    color: context.dmColors.textPrimary,
-                  ),
-                ),
-              const SizedBox(width: DMSpacing.xs),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DMTypography.labelLarge,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: DMSpacing.xxs),
-          Text(
-            explanation,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DMTypography.labelSmall.copyWith(
-              color: context.dmColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RadarSheetTab extends StatelessWidget {
-  const _RadarSheetTab({
-    required this.frame,
-    required this.mode,
-    required this.onOpen,
-    required this.onClose,
-  });
-
-  final RadarFrame frame;
-  final RadarMode mode;
-  final VoidCallback onOpen;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return DmGlassCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DMSpacing.sm,
-        vertical: DMSpacing.xs,
-      ),
-      borderRadius: DMRadius.full,
-      gradient: DMGradients.glassNavy,
-      borderColor: context.dmColors.glassBorderStrong,
-      shadows: DMShadows.floating,
-      semanticLabel: 'Minimized radar controls',
-      child: Row(
-        children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            tooltip: 'Open radar controls',
-            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-            icon: const Icon(Icons.keyboard_arrow_up_rounded),
-            color: context.dmColors.textPrimary,
-            onPressed: onOpen,
-          ),
-          const SizedBox(width: DMSpacing.xs),
-          Expanded(
-            child: InkWell(
-              borderRadius: DMRadius.full,
-              onTap: onOpen,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Radar controls',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: DMTypography.labelLarge,
-                  ),
-                  Text(
-                    '${mode.modeChipLabel} · ${frame.label}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: DMTypography.labelSmall.copyWith(
-                      color: context.dmColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            tooltip: 'Close radar controls',
-            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-            icon: const Icon(Icons.close_rounded),
-            color: context.dmColors.textSecondary,
-            onPressed: onClose,
-          ),
-        ],
-      ),
-    );
-  }
+                  Flexible(
+                      child: RadarSurface(
+                          borderRadius: 28,
+                          child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                        _radar!.mode == RadarMode.futureCast
+                                            ? Icons.timeline
+                                            : Icons.radar,
+                                        size: 24),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                        child: Text(
+                                            _radar!.mode == RadarMode.futureCast
+                                                ? 'FutureCast'
+                                                : 'Live Radar',
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700))),
+                                  ])))),
+                  const SizedBox(width: 12),
+                  RadarSurface(
+                      borderRadius: 28,
+                      child: TextButton.icon(
+                          onPressed: () => _setExpanded(false),
+                          icon: const Icon(Icons.fullscreen_exit),
+                          label: const Text('Done'),
+                          style: TextButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16)))),
+                ]),
+            const SizedBox(height: 6),
+            RadarSurface(
+                borderRadius: 18,
+                child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: Text(_shortLocation(location),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: context.dmColors.textSecondary)))),
+          ]);
 }
 
-class _RadarBottomSheet extends StatelessWidget {
-  const _RadarBottomSheet({
-    required this.height,
-    required this.frame,
-    required this.frames,
-    required this.timelineIndex,
-    required this.playing,
-    required this.mode,
-    required this.locationName,
-    required this.futureCastAvailable,
-    required this.futureCastMessage,
-    required this.onModeChanged,
-    required this.onTimelineChanged,
-    required this.onPlayPause,
-    required this.onLatest,
-    required this.onMinimize,
-    required this.onClose,
-  });
-
-  final double height;
-  final RadarFrame frame;
-  final List<RadarFrame> frames;
-  final int timelineIndex;
-  final bool playing;
-  final RadarMode mode;
-  final String locationName;
-  final bool futureCastAvailable;
-  final String? futureCastMessage;
-  final ValueChanged<RadarMode> onModeChanged;
-  final ValueChanged<double> onTimelineChanged;
-  final VoidCallback onPlayPause;
-  final VoidCallback onLatest;
-  final VoidCallback onMinimize;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      height: height,
-      child: DmGlassCard(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DMSpacing.sm,
-          vertical: DMSpacing.xs,
-        ),
-        borderRadius: DMRadius.large,
-        gradient: DMGradients.glassNavy,
-        borderColor: context.dmColors.glassBorderStrong,
-        shadows: DMShadows.floating,
-        semanticLabel: 'Radar timeline and information',
-        child: Column(
-          children: [
-            _SheetHandle(
-              onMinimize: onMinimize,
-              onClose: onClose,
-            ),
-            Expanded(
-              child: _ExpandedRadarSheetBody(
-                frame: frame,
-                frames: frames,
-                timelineIndex: timelineIndex,
-                playing: playing,
-                mode: mode,
-                locationName: locationName,
-                futureCastAvailable: futureCastAvailable,
-                futureCastMessage: futureCastMessage,
-                onModeChanged: onModeChanged,
-                onTimelineChanged: onTimelineChanged,
-                onPlayPause: onPlayPause,
-                onLatest: onLatest,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+String _shortLocation(LocationCandidate location) {
+  final name = location.displayName.trim();
+  return name.replaceFirst(RegExp(r',\s*(US|United States)$'), '');
 }
 
-class _SheetHandle extends StatelessWidget {
-  const _SheetHandle({
-    required this.onMinimize,
-    required this.onClose,
-  });
-
-  final VoidCallback onMinimize;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Semantics(
-            button: true,
-            label: 'Minimize radar controls',
-            child: ExcludeSemantics(
-              child: InkWell(
-                borderRadius: DMRadius.full,
-                onTap: onMinimize,
-                child: SizedBox(
-                  height: 48,
-                  child: Center(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: context.dmColors.glassBorderStrong,
-                        borderRadius: DMRadius.full,
-                      ),
-                      child: const SizedBox(width: 42, height: 4),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          tooltip: 'Minimize',
-          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          color: context.dmColors.textSecondary,
-          onPressed: onMinimize,
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          tooltip: 'Close',
-          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-          icon: const Icon(Icons.close_rounded),
-          color: context.dmColors.textSecondary,
-          onPressed: onClose,
-        ),
-      ],
-    );
-  }
-}
-
-class _ExpandedRadarSheetBody extends StatelessWidget {
-  const _ExpandedRadarSheetBody({
-    required this.frame,
-    required this.frames,
-    required this.timelineIndex,
-    required this.playing,
-    required this.mode,
-    required this.locationName,
-    required this.futureCastAvailable,
-    required this.futureCastMessage,
-    required this.onModeChanged,
-    required this.onTimelineChanged,
-    required this.onPlayPause,
-    required this.onLatest,
-  });
-
-  final RadarFrame frame;
-  final List<RadarFrame> frames;
-  final int timelineIndex;
-  final bool playing;
-  final RadarMode mode;
-  final String locationName;
-  final bool futureCastAvailable;
-  final String? futureCastMessage;
-  final ValueChanged<RadarMode> onModeChanged;
-  final ValueChanged<double> onTimelineChanged;
-  final VoidCallback onPlayPause;
-  final VoidCallback onLatest;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        _RadarModeSelector(
-          mode: mode,
-          futureCastAvailable: futureCastAvailable,
-          futureCastMessage: futureCastMessage,
-          onModeChanged: onModeChanged,
-        ),
-        const SizedBox(height: DMSpacing.sm),
-        _CompactRadarTimeline(
-          frame: frame,
-          frames: frames,
-          timelineIndex: timelineIndex,
-          playing: playing,
-          mode: mode,
-          onTimelineChanged: onTimelineChanged,
-          onPlayPause: onPlayPause,
-          onLatest: onLatest,
-        ),
-        const SizedBox(height: DMSpacing.sm),
-        Wrap(
-          spacing: DMSpacing.xs,
-          runSpacing: DMSpacing.xs,
-          children: [
-            _RadarInfoChip(
-              icon: Icons.layers_outlined,
-              label: mode.label,
-            ),
-            _RadarInfoChip(
-              icon: Icons.schedule_rounded,
-              label: _formatRadarTime(
-                frame.timestamp,
-                isLatest: frame.isLatest,
-                latestLabel: frame.label == 'Now' ? 'Now' : 'Latest',
-              ),
-            ),
-            _RadarInfoChip(
-              icon: Icons.place_outlined,
-              label: locationName,
-            ),
-          ],
-        ),
-        const SizedBox(height: DMSpacing.sm),
-        const _RadarLegend(),
-        const SizedBox(height: DMSpacing.xs),
-        Text(
-          mode == RadarMode.usForecast
-              ? 'Radar © NOAA/NWS MRMS'
-              : 'Radar © OpenWeather',
-          style: DMTypography.labelSmall.copyWith(
-            color: context.dmColors.textMuted,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _RadarModeSelector extends StatelessWidget {
-  const _RadarModeSelector({
-    required this.mode,
-    required this.futureCastAvailable,
-    required this.futureCastMessage,
-    required this.onModeChanged,
-  });
-
-  final RadarMode mode;
-  final bool futureCastAvailable;
-  final String? futureCastMessage;
-  final ValueChanged<RadarMode> onModeChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: DMSpacing.xs,
-      runSpacing: DMSpacing.xs,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        DmPillButton(
-          label: 'Live Radar',
-          semanticLabel: 'Show Live Radar',
-          leading: const Icon(Icons.radar),
-          variant: DmPillButtonVariant.glass,
-          selected: mode == RadarMode.usForecast,
-          padding: const EdgeInsets.symmetric(
-            horizontal: DMSpacing.sm,
-            vertical: DMSpacing.xs,
-          ),
-          onPressed: () => onModeChanged(RadarMode.usForecast),
-        ),
-        DmPillButton(
-          label: 'FutureCast',
-          semanticLabel: futureCastAvailable
-              ? 'Show FutureCast'
-              : 'FutureCast requires OpenWeather precipitation forecast map access',
-          leading: const Icon(Icons.timeline),
-          variant: DmPillButtonVariant.glass,
-          selected: mode == RadarMode.futureCast,
-          padding: const EdgeInsets.symmetric(
-            horizontal: DMSpacing.sm,
-            vertical: DMSpacing.xs,
-          ),
-          onPressed: futureCastAvailable
-              ? () => onModeChanged(RadarMode.futureCast)
-              : null,
-        ),
-        if (!futureCastAvailable && futureCastMessage != null)
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
-            child: Text(
-              futureCastMessage!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: DMTypography.labelSmall.copyWith(
-                color: context.dmColors.textMuted,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _CompactRadarTimeline extends StatelessWidget {
-  const _CompactRadarTimeline({
-    required this.frame,
-    required this.frames,
-    required this.timelineIndex,
-    required this.playing,
-    required this.mode,
-    required this.onTimelineChanged,
-    required this.onPlayPause,
-    required this.onLatest,
-  });
-
-  final RadarFrame frame;
-  final List<RadarFrame> frames;
-  final int timelineIndex;
-  final bool playing;
-  final RadarMode mode;
-  final ValueChanged<double> onTimelineChanged;
-  final VoidCallback onPlayPause;
-  final VoidCallback onLatest;
-
-  @override
-  Widget build(BuildContext context) {
-    final max = math.max(frames.length - 1, 1).toDouble();
-    final divisions = math.max(frames.length - 1, 1);
-    final historyLabel = switch (mode) {
-      RadarMode.usForecast => '-90 min',
-      RadarMode.futureCast => 'Now',
-      RadarMode.global => '-2h',
+String _tileMessage(String code) => switch (code) {
+      'openweather_radar_access_denied' ||
+      'openweather_key_rejected' ||
+      'OPENWEATHER_API_KEY_UNAVAILABLE' ||
+      'OPENWEATHER_API_KEY_MISSING' ||
+      'futurecast_unavailable' =>
+        'This radar layer is not available from the weather service.',
+      'noaa_tile_empty' ||
+      'openweather_tile_empty' ||
+      'openweather_not_found' ||
+      'radar_frame_unavailable' =>
+        'Selected image unavailable. Clear conditions cannot be confirmed.',
+      'noaa_unavailable' ||
+      'noaa_timeout' ||
+      'noaa_rate_limited' ||
+      'noaa_request_failed' ||
+      'noaa_tile_invalid_content' =>
+        'Radar source unavailable; base map still usable.',
+      _ => 'Radar temporarily unavailable. The base map is still usable.',
     };
-    final stepLabel =
-        mode == RadarMode.usForecast ? 'MRMS frames' : '10 min frames';
-    final endLabel = mode == RadarMode.futureCast ? '+6h' : 'Latest';
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            DmIconButton(
-              icon: Icon(playing ? Icons.pause : Icons.play_arrow),
-              semanticLabel:
-                  playing ? 'Pause radar timeline' : 'Play radar timeline',
-              tooltip: playing ? 'Pause' : 'Play',
-              variant: DmIconButtonVariant.filled,
-              onPressed: onPlayPause,
-            ),
-            const SizedBox(width: DMSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    frame.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: DMTypography.labelLarge,
-                  ),
-                  const SizedBox(height: DMSpacing.xxs),
-                  Text(
-                    _formatRadarTime(
-                      frame.timestamp,
-                      isLatest: frame.isLatest,
-                      latestLabel: frame.label == 'Now' ? 'Now' : 'Latest',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: DMTypography.labelSmall.copyWith(
-                      color: context.dmColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: DMSpacing.sm),
-            DmPillButton(
-              label: 'Latest',
-              semanticLabel: 'Show latest radar frame',
-              variant: DmPillButtonVariant.glass,
-              padding: const EdgeInsets.symmetric(
-                horizontal: DMSpacing.sm,
-                vertical: DMSpacing.xxs,
-              ),
-              onPressed: onLatest,
-            ),
-          ],
-        ),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 6,
-            activeTrackColor: DMColors.skyBlue,
-            inactiveTrackColor: context.dmColors.glassStrong,
-            thumbColor: DMColors.sunriseYellow,
-            overlayColor: DMColors.opacity(DMColors.sunriseYellow, 0.18),
-            valueIndicatorColor: context.dmColors.surfaceRaised,
-            tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 0),
-          ),
-          child: SizedBox(
-            height: 32,
-            child: Slider(
-              value: timelineIndex.clamp(0, max.toInt()).toDouble(),
-              min: 0,
-              max: max,
-              divisions: divisions,
-              label: frame.label,
-              semanticFormatterCallback: (value) {
-                return 'Radar timeline '
-                    '${_frameLabelFor(frames, value.round())}';
-              },
-              onChanged: onTimelineChanged,
-            ),
-          ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                historyLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: DMTypography.labelSmall.copyWith(
-                  color: context.dmColors.textMuted,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                stepLabel,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: DMTypography.labelSmall.copyWith(
-                  color: context.dmColors.textSecondary,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                endLabel,
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: DMTypography.labelSmall.copyWith(
-                  color: context.dmColors.textMuted,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _RadarInfoChip extends StatelessWidget {
-  const _RadarInfoChip({
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: DMColors.opacity(DMColors.cloudWhite, 0.08),
-        borderRadius: DMRadius.full,
-        border: Border.all(color: context.dmColors.glassBorder),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DMSpacing.sm,
-          vertical: DMSpacing.xs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon,
-                color: context.dmColors.textSecondary, size: DMSpacing.iconSm),
-            const SizedBox(width: DMSpacing.xs),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: DMTypography.labelSmall.copyWith(
-                  color: context.dmColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RadarLegend extends StatelessWidget {
-  const _RadarLegend();
-
-  @override
-  Widget build(BuildContext context) {
-    const items = [
-      _LegendItem('Light', Color(0xFF62D9FF)),
-      _LegendItem('Moderate', Color(0xFF3BFF83)),
-      _LegendItem('Heavy', Color(0xFFFFD84D)),
-      _LegendItem('Severe', Color(0xFFFF5A6E)),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Precipitation legend',
-          style: DMTypography.label
-              .copyWith(color: context.dmColors.textSecondary),
-        ),
-        const SizedBox(height: DMSpacing.xs),
-        Wrap(
-          spacing: DMSpacing.sm,
-          runSpacing: DMSpacing.xs,
-          children: [
-            for (final item in items)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: item.color,
-                      borderRadius: DMRadius.full,
-                    ),
-                    child: const SizedBox(width: 28, height: 8),
-                  ),
-                  const SizedBox(width: DMSpacing.xs),
-                  Text(
-                    item.label,
-                    style: DMTypography.labelSmall.copyWith(
-                      color: context.dmColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _LegendItem {
-  const _LegendItem(this.label, this.color);
-
-  final String label;
-  final Color color;
-}
-
-class _RadarNoticeBanner extends StatelessWidget {
-  const _RadarNoticeBanner({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return DmGlassCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DMSpacing.sm,
-        vertical: DMSpacing.xs,
-      ),
-      borderRadius: DMRadius.full,
-      gradient: DMGradients.glassNavy,
-      borderColor: DMColors.sunriseYellow,
-      shadows: DMShadows.floating,
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: context.dmColors.textPrimary,
-            size: DMSpacing.iconMd,
-          ),
-          const SizedBox(width: DMSpacing.xs),
-          Expanded(
-            child: Text(
-              message,
-              style: DMTypography.bodySmall.copyWith(
-                color: context.dmColors.textPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-bool _coordinateLooksUs(double latitude, double longitude) {
-  return latitude >= 18 &&
-      latitude <= 72 &&
-      longitude >= -170 &&
-      longitude <= -64;
-}
-
-String _locationLabel(LocationCandidate location) {
-  if (location.source == WeatherLocationSource.device.storageValue) {
-    return location.displayName.trim().isEmpty
-        ? 'Current location'
-        : location.displayName;
-  }
-  if (location.source == WeatherLocationSource.unknown.storageValue) {
-    return '${location.displayName} approximate';
-  }
-  return location.displayName;
-}
-
-String _frameLabelFor(List<RadarFrame> frames, int index) {
-  if (frames.isEmpty) return 'Latest';
-  return frames[index.clamp(0, frames.length - 1)].label;
-}
-
-String _tileIssueMessage(String? code) {
-  return switch (code) {
-    'openweather_radar_access_denied' ||
-    'openweather_key_rejected' ||
-    'OPENWEATHER_API_KEY_UNAVAILABLE' ||
-    'OPENWEATHER_API_KEY_MISSING' =>
-      'This radar layer is unavailable because the weather service has not authorized it.',
-    'futurecast_unavailable' =>
-      'FutureCast requires OpenWeather precipitation forecast map access.',
-    'radar_frame_unavailable' => 'Radar frame unavailable.',
-    'openweather_invalid_request' => 'Radar frame unavailable.',
-    'openweather_not_found' ||
-    'openweather_tile_empty' =>
-      'No precipitation nearby right now. Try zooming out.',
-    'noaa_tile_empty' => 'No precipitation nearby right now. Try zooming out.',
-    'noaa_invalid_request' => 'Radar frame unavailable.',
-    'noaa_timeout' ||
-    'noaa_unavailable' ||
-    'noaa_rate_limited' ||
-    'noaa_request_failed' ||
-    'noaa_tile_invalid_content' =>
-      'Radar source unavailable; base map still usable.',
-    'openweather_timeout' ||
-    'openweather_unavailable' ||
-    'radar_tile_network_error' ||
-    'weather_backend_unreachable' =>
-      'Radar temporarily unavailable. The base map is still usable.',
-    _ => 'Radar temporarily unavailable. The base map is still usable.',
-  };
-}
-
-String _formatRadarTime(
-  int timestamp, {
-  bool isLatest = false,
-  String latestLabel = 'Latest',
-}) {
-  final time = dateTimeFromUnixSeconds(timestamp);
-  if (isLatest) return latestLabel;
-
-  final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-  final minute = time.minute.toString().padLeft(2, '0');
-  final suffix = time.hour >= 12 ? 'PM' : 'AM';
-  return '${time.month}/${time.day} $hour:$minute $suffix';
-}

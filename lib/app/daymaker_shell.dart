@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../monetization/monetization_controller.dart';
 
 import '../config/app_routes.dart';
+import '../features/radar/radar_expansion_notification.dart';
+import '../features/radar/radar_session.dart';
 import '../shared/widgets/dm_bottom_nav.dart';
 import '../shared/widgets/weather_safety_banner.dart';
 
@@ -37,6 +39,8 @@ class DaymakerShell extends StatefulWidget {
 }
 
 class _DaymakerShellState extends State<DaymakerShell> {
+  bool _radarExpanded = false;
+  final _radarSession = RadarSession();
   void _syncRoute() {
     context
         .read<MonetizationController?>()
@@ -52,7 +56,14 @@ class _DaymakerShellState extends State<DaymakerShell> {
   @override
   void didUpdateWidget(DaymakerShell oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.location != oldWidget.location) _radarExpanded = false;
     _syncRoute();
+  }
+
+  @override
+  void dispose() {
+    _radarSession.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,53 +72,69 @@ class _DaymakerShellState extends State<DaymakerShell> {
     final child = widget.child;
     final currentIndex = DaymakerShell.indexForLocation(location);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth.isFinite
-            ? constraints.maxWidth
-            : MediaQuery.sizeOf(context).width;
-        final showNavigation = !location.startsWith(AppRoutes.settings) &&
-            !location.startsWith(AppRoutes.memeGenerator);
-        final bottomReserve = showNavigation
-            ? DmBottomNav.reservedHeightFor(context, width)
-            : 0.0;
+    return Provider<RadarSession>.value(
+      value: _radarSession,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth.isFinite
+              ? constraints.maxWidth
+              : MediaQuery.sizeOf(context).width;
+          final showNavigation =
+              !(location == AppRoutes.radar && _radarExpanded) &&
+                  !location.startsWith(AppRoutes.settings) &&
+                  !location.startsWith(AppRoutes.memeGenerator);
+          final bottomReserve = showNavigation
+              ? DmBottomNav.reservedHeightFor(context, width)
+              : 0.0;
 
-        return ColoredBox(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                bottom: bottomReserve,
-                left: 0,
-                child: Column(children: [
-                  if (location != AppRoutes.forecast)
-                    const WeatherSafetyBanner(),
-                  Expanded(child: child),
-                ]),
-              ),
-              if (showNavigation)
+          return ColoredBox(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Stack(
+              children: [
                 Positioned(
+                  top: 0,
                   right: 0,
-                  bottom: 0,
+                  bottom: bottomReserve,
                   left: 0,
-                  child: DmBottomNav(
-                    currentIndex: currentIndex,
-                    onDestinationSelected: (index) {
-                      final destination = DaymakerShell.tabLocations[index];
-                      if (location == destination) return;
-                      context
-                          .read<MonetizationController?>()
-                          ?.setRoute(destination);
-                      context.go(destination);
-                    },
-                  ),
+                  child: Column(children: [
+                    if (location != AppRoutes.forecast)
+                      const WeatherSafetyBanner(),
+                    Expanded(
+                        child: NotificationListener<RadarExpansionNotification>(
+                      onNotification: (notification) {
+                        if (location == AppRoutes.radar &&
+                            _radarExpanded != notification.expanded) {
+                          setState(
+                              () => _radarExpanded = notification.expanded);
+                        }
+                        return true;
+                      },
+                      child: child,
+                    )),
+                  ]),
                 ),
-            ],
-          ),
-        );
-      },
+                if (showNavigation)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    child: DmBottomNav(
+                      currentIndex: currentIndex,
+                      onDestinationSelected: (index) {
+                        final destination = DaymakerShell.tabLocations[index];
+                        if (location == destination) return;
+                        context
+                            .read<MonetizationController?>()
+                            ?.setRoute(destination);
+                        context.go(destination);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
